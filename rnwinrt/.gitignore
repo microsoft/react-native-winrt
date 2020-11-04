@@ -1,0 +1,16 @@
+.nuget
+.vscode
+.vs
+*.user
+*_i.c
+*_p.c
+*.c
+test*.xml
+build
+packages
+Debug
+Release
+Generated Files
+obj
+GeneratedProjections.h
+GeneratedProjections.cpp

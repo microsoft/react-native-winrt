@@ -1,0 +1,30 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ItemGroup>
+    <ClCompile Include="main.cpp" />
+    <ClCompile Include="pch.cpp" />
+    <ClCompile Include="CommandReader.cpp" />
+    <ClCompile Include="MetadataHelpers.cpp" />
+    <ClCompile Include="Settings.cpp" />
+    <ClCompile Include="Writer.cpp" />
+    <ClCompile Include="FileGenerator.cpp" />
+    <ClCompile Include="ValueConverters.cpp" />
+    <ClCompile Include="TypeFilter.cpp" />
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="pch.h" />
+    <ClInclude Include="CommandReader.h" />
+    <ClInclude Include="Settings.h" />
+    <ClInclude Include="MetadataHelpers.h" />
+    <ClInclude Include="Writer.h" />
+    <ClInclude Include="FileGenerator.h" />
+    <ClInclude Include="ValueConverters.h" />
+    <ClInclude Include="TypeFilter.h" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="packages.config" />
+  </ItemGroup>
+  <ItemGroup>
+    <ResourceCompile Include="version.rc" />
+  </ItemGroup>
+</Project>
