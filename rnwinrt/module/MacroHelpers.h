@@ -65,64 +65,93 @@
 #define EXPAND_SEQUENCE_PAIR(x, y, z, i, d) EXPAND_SEQUENCE_PAIR##i(x, y, z, d)
 
 #define EXPAND_DEFINITIONS1(x) x##(1)
-#define EXPAND_DEFINITIONS2(x) EXPAND_DEFINITIONS1(x)\
-x##(2)
-#define EXPAND_DEFINITIONS3(x) EXPAND_DEFINITIONS2(x)\
-x##(3)
-#define EXPAND_DEFINITIONS4(x) EXPAND_DEFINITIONS3(x)\
-x##(4)
-#define EXPAND_DEFINITIONS5(x) EXPAND_DEFINITIONS4(x)\
-x##(5)
-#define EXPAND_DEFINITIONS6(x) EXPAND_DEFINITIONS5(x)\
-x##(6)
-#define EXPAND_DEFINITIONS7(x) EXPAND_DEFINITIONS6(x)\
-x##(7)
-#define EXPAND_DEFINITIONS8(x) EXPAND_DEFINITIONS7(x)\
-x##(8)
-#define EXPAND_DEFINITIONS9(x) EXPAND_DEFINITIONS8(x)\
-x##(9)
-#define EXPAND_DEFINITIONS10(x) EXPAND_DEFINITIONS9(x)\
-x##(10)
-#define EXPAND_DEFINITIONS11(x) EXPAND_DEFINITIONS10(x)\
-x##(11)
-#define EXPAND_DEFINITIONS12(x) EXPAND_DEFINITIONS11(x)\
-x##(12)
-#define EXPAND_DEFINITIONS13(x) EXPAND_DEFINITIONS12(x)\
-x##(13)
-#define EXPAND_DEFINITIONS14(x) EXPAND_DEFINITIONS13(x)\
-x##(14)
-#define EXPAND_DEFINITIONS15(x) EXPAND_DEFINITIONS14(x)\
-x##(15)
-#define EXPAND_DEFINITIONS16(x) EXPAND_DEFINITIONS15(x)\
-x##(16)
-#define EXPAND_DEFINITIONS17(x) EXPAND_DEFINITIONS16(x)\
-x##(17)
-#define EXPAND_DEFINITIONS18(x) EXPAND_DEFINITIONS17(x)\
-x##(18)
-#define EXPAND_DEFINITIONS19(x) EXPAND_DEFINITIONS18(x)\
-x##(19)
-#define EXPAND_DEFINITIONS20(x) EXPAND_DEFINITIONS19(x)\
-x##(20)
-#define EXPAND_DEFINITIONS21(x) EXPAND_DEFINITIONS20(x)\
-x##(21)
-#define EXPAND_DEFINITIONS22(x) EXPAND_DEFINITIONS21(x)\
-x##(22)
-#define EXPAND_DEFINITIONS23(x) EXPAND_DEFINITIONS22(x)\
-x##(23)
-#define EXPAND_DEFINITIONS24(x) EXPAND_DEFINITIONS23(x)\
-x##(24)
-#define EXPAND_DEFINITIONS25(x) EXPAND_DEFINITIONS24(x)\
-x##(25)
-#define EXPAND_DEFINITIONS26(x) EXPAND_DEFINITIONS25(x)\
-x##(26)
-#define EXPAND_DEFINITIONS27(x) EXPAND_DEFINITIONS26(x)\
-x##(27)
-#define EXPAND_DEFINITIONS28(x) EXPAND_DEFINITIONS27(x)\
-x##(28)
-#define EXPAND_DEFINITIONS29(x) EXPAND_DEFINITIONS28(x)\
-x##(29)
-#define EXPAND_DEFINITIONS30(x) EXPAND_DEFINITIONS29(x)\
-x##(30)
+#define EXPAND_DEFINITIONS2(x)                                                                                         \
+    EXPAND_DEFINITIONS1(x)                                                                                             \
+    x##(2)
+#define EXPAND_DEFINITIONS3(x)                                                                                         \
+    EXPAND_DEFINITIONS2(x)                                                                                             \
+    x##(3)
+#define EXPAND_DEFINITIONS4(x)                                                                                         \
+    EXPAND_DEFINITIONS3(x)                                                                                             \
+    x##(4)
+#define EXPAND_DEFINITIONS5(x)                                                                                         \
+    EXPAND_DEFINITIONS4(x)                                                                                             \
+    x##(5)
+#define EXPAND_DEFINITIONS6(x)                                                                                         \
+    EXPAND_DEFINITIONS5(x)                                                                                             \
+    x##(6)
+#define EXPAND_DEFINITIONS7(x)                                                                                         \
+    EXPAND_DEFINITIONS6(x)                                                                                             \
+    x##(7)
+#define EXPAND_DEFINITIONS8(x)                                                                                         \
+    EXPAND_DEFINITIONS7(x)                                                                                             \
+    x##(8)
+#define EXPAND_DEFINITIONS9(x)                                                                                         \
+    EXPAND_DEFINITIONS8(x)                                                                                             \
+    x##(9)
+#define EXPAND_DEFINITIONS10(x)                                                                                        \
+    EXPAND_DEFINITIONS9(x)                                                                                             \
+    x##(10)
+#define EXPAND_DEFINITIONS11(x)                                                                                        \
+    EXPAND_DEFINITIONS10(x)                                                                                            \
+    x##(11)
+#define EXPAND_DEFINITIONS12(x)                                                                                        \
+    EXPAND_DEFINITIONS11(x)                                                                                            \
+    x##(12)
+#define EXPAND_DEFINITIONS13(x)                                                                                        \
+    EXPAND_DEFINITIONS12(x)                                                                                            \
+    x##(13)
+#define EXPAND_DEFINITIONS14(x)                                                                                        \
+    EXPAND_DEFINITIONS13(x)                                                                                            \
+    x##(14)
+#define EXPAND_DEFINITIONS15(x)                                                                                        \
+    EXPAND_DEFINITIONS14(x)                                                                                            \
+    x##(15)
+#define EXPAND_DEFINITIONS16(x)                                                                                        \
+    EXPAND_DEFINITIONS15(x)                                                                                            \
+    x##(16)
+#define EXPAND_DEFINITIONS17(x)                                                                                        \
+    EXPAND_DEFINITIONS16(x)                                                                                            \
+    x##(17)
+#define EXPAND_DEFINITIONS18(x)                                                                                        \
+    EXPAND_DEFINITIONS17(x)                                                                                            \
+    x##(18)
+#define EXPAND_DEFINITIONS19(x)                                                                                        \
+    EXPAND_DEFINITIONS18(x)                                                                                            \
+    x##(19)
+#define EXPAND_DEFINITIONS20(x)                                                                                        \
+    EXPAND_DEFINITIONS19(x)                                                                                            \
+    x##(20)
+#define EXPAND_DEFINITIONS21(x)                                                                                        \
+    EXPAND_DEFINITIONS20(x)                                                                                            \
+    x##(21)
+#define EXPAND_DEFINITIONS22(x)                                                                                        \
+    EXPAND_DEFINITIONS21(x)                                                                                            \
+    x##(22)
+#define EXPAND_DEFINITIONS23(x)                                                                                        \
+    EXPAND_DEFINITIONS22(x)                                                                                            \
+    x##(23)
+#define EXPAND_DEFINITIONS24(x)                                                                                        \
+    EXPAND_DEFINITIONS23(x)                                                                                            \
+    x##(24)
+#define EXPAND_DEFINITIONS25(x)                                                                                        \
+    EXPAND_DEFINITIONS24(x)                                                                                            \
+    x##(25)
+#define EXPAND_DEFINITIONS26(x)                                                                                        \
+    EXPAND_DEFINITIONS25(x)                                                                                            \
+    x##(26)
+#define EXPAND_DEFINITIONS27(x)                                                                                        \
+    EXPAND_DEFINITIONS26(x)                                                                                            \
+    x##(27)
+#define EXPAND_DEFINITIONS28(x)                                                                                        \
+    EXPAND_DEFINITIONS27(x)                                                                                            \
+    x##(28)
+#define EXPAND_DEFINITIONS29(x)                                                                                        \
+    EXPAND_DEFINITIONS28(x)                                                                                            \
+    x##(29)
+#define EXPAND_DEFINITIONS30(x)                                                                                        \
+    EXPAND_DEFINITIONS29(x)                                                                                            \
+    x##(30)
 #define EXPAND_DEFINITIONS(x, i) EXPAND_DEFINITIONS##i(x)
 
 #define COMMA ,

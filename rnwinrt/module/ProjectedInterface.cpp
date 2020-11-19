@@ -1,4 +1,5 @@
 #include "pch.h"
+
 #include "ProjectedInterface.h"
 #include "ProjectedValueConverters.h"
 #include <rnwinrt\Projections.g.h>
@@ -14,8 +15,10 @@ namespace WinRTTurboModule
         return (it == s_interfaceMap.end()) ? nullptr : it->second;
     }
 
-    ProjectedInterface::ProjectedInterface(const winrt::guid& iid, InstanceFactory factory, InitializerFunction initializer)
-        : m_iid(iid), m_factory(factory), m_initializer(initializer)
+    ProjectedInterface::ProjectedInterface(
+        const winrt::guid& iid, InstanceFactory factory, InitializerFunction initializer) :
+        m_iid(iid),
+        m_factory(factory), m_initializer(initializer)
     {
     }
 
@@ -31,7 +34,8 @@ namespace WinRTTurboModule
         return it == methods.end() ? nullptr : it->second;
     }
 
-    std::shared_ptr<ProjectedFunction> ProjectedInterface::FindMethod(const std::string_view& name, const uint16_t numArgs)
+    std::shared_ptr<ProjectedFunction> ProjectedInterface::FindMethod(
+        const std::string_view& name, const uint16_t numArgs)
     {
         auto method = FindMethod(name);
         return method->CanInvoke(numArgs) ? method : nullptr;
@@ -62,7 +66,8 @@ namespace WinRTTurboModule
         return it == properties.end() ? nullptr : it->second;
     }
 
-    const std::unordered_map<std::string_view, std::shared_ptr<IProjectedPropertyBase>>& ProjectedInterface::Properties()
+    const std::unordered_map<std::string_view, std::shared_ptr<IProjectedPropertyBase>>& ProjectedInterface::
+        Properties()
     {
         EnsureInitialized();
         return m_propertyMap;
@@ -81,7 +86,8 @@ namespace WinRTTurboModule
         return m_eventMap;
     }
 
-    std::shared_ptr<IProjectedInterfaceInstance> ProjectedInterface::CreateInstance(const std::shared_ptr<ProjectionsContext>& context, const winrt::Windows::Foundation::IInspectable& instance)
+    std::shared_ptr<IProjectedInterfaceInstance> ProjectedInterface::CreateInstance(
+        const std::shared_ptr<ProjectionsContext>& context, const winrt::Windows::Foundation::IInspectable& instance)
     {
         return m_factory(context, instance, shared_from_this());
     }
@@ -118,15 +124,17 @@ namespace WinRTTurboModule
     {
         ProjectedInterfaceData InitIActivationFactoryInterface()
         {
-            return
-            {
-                { },
-                { ProjectedFunction::Create("activateInstance"sv, ProjectedFunctionOverload::Create<winrt::Windows::Foundation::IActivationFactory>(&winrt::Windows::Foundation::IActivationFactory::ActivateInstance<winrt::Windows::Foundation::IInspectable>, ConvertInterfaceToValue<winrt::Windows::Foundation::IInspectable>)) },
-                { }
-            };
+            return { {},
+                { ProjectedFunction::Create("activateInstance"sv,
+                    ProjectedFunctionOverload::Create<winrt::Windows::Foundation::IActivationFactory>(
+                        &winrt::Windows::Foundation::IActivationFactory::ActivateInstance<
+                            winrt::Windows::Foundation::IInspectable>,
+                        ConvertInterfaceToValue<winrt::Windows::Foundation::IInspectable>)) },
+                {} };
         }
 
-        // TODO: For the sake of Windows.Storage.Streams.IBufferAccess, IBufferByteAccess should be projected (unlike Chakra) which would make IRandomAccessStream far more usable with JS.
+        // TODO: For the sake of Windows.Storage.Streams.IBufferAccess, IBufferByteAccess should be projected (unlike
+        // Chakra) which would make IRandomAccessStream far more usable with JS.
     }
 
     void ProjectedInterface::EnsureInterfaceMap()
@@ -137,7 +145,9 @@ namespace WinRTTurboModule
             s_interfaceMap.reserve(projectedInterfaces.size() + 1);
 
             // IActivationFactory is a Classic COM interface and cannot be generated from a winmd,
-            s_interfaceMap[__uuidof(::IActivationFactory)] = ProjectedInterface::Create<winrt::Windows::Foundation::IActivationFactory>(InitIActivationFactoryInterface);
+            s_interfaceMap[__uuidof(::IActivationFactory)] =
+                ProjectedInterface::Create<winrt::Windows::Foundation::IActivationFactory>(
+                    InitIActivationFactoryInterface);
             for (auto&& projectedInterface : projectedInterfaces)
             {
                 s_interfaceMap[projectedInterface->InterfaceId()] = std::move(projectedInterface);

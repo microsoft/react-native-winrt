@@ -1,4 +1,5 @@
 #include "pch.h"
+
 #include "ProjectionsContext.h"
 
 namespace WinRTTurboModule
@@ -6,7 +7,8 @@ namespace WinRTTurboModule
     std::map<DWORD, std::weak_ptr<ProjectionsContext>> ProjectionsContext::s_instanceMap;
     wil::srwlock ProjectionsContext::s_lock;
 
-    std::shared_ptr<ProjectionsContext> ProjectionsContext::Create(jsi::Runtime& runtime, const std::shared_ptr<react::CallInvoker>& invoker)
+    std::shared_ptr<ProjectionsContext> ProjectionsContext::Create(
+        jsi::Runtime& runtime, const std::shared_ptr<react::CallInvoker>& invoker)
     {
         auto context = std::make_shared<ProjectionsContext>(runtime, invoker);
 
@@ -29,8 +31,9 @@ namespace WinRTTurboModule
         return nullptr;
     }
 
-    ProjectionsContext::ProjectionsContext(jsi::Runtime& runtime, const std::shared_ptr<react::CallInvoker>& invoker)
-        : Runtime(runtime), Invoker(std::make_shared<CallInvokerWrapper>(invoker)), InstanceFactory(*this), EventRegistrar(*this)
+    ProjectionsContext::ProjectionsContext(jsi::Runtime& runtime, const std::shared_ptr<react::CallInvoker>& invoker) :
+        Runtime(runtime), Invoker(std::make_shared<CallInvokerWrapper>(invoker)), InstanceFactory(*this),
+        EventRegistrar(*this)
     {
     }
 

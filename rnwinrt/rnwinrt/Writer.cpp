@@ -1,5 +1,6 @@
 #pragma once
 #include "pch.h"
+
 #include "Writer.h"
 
 constexpr size_t c_reservedSize = 16 * 1024;
@@ -112,7 +113,9 @@ void Writer::Write(const winmd::reader::TypeDef& type)
     }
     else if (namespaceFullName == "Windows.Foundation.Numerics"sv)
     {
-        // While the ABI types are also translated from the projected types, C++/WinRT replaces those with its own types.
+        // While the ABI types are also translated from the projected types, C++/WinRT replaces those with its own
+        // types.
+        // clang-format off
         static const std::map<std::string_view, std::string_view> s_numericsMap = {
             { "Matrix3x2", "float3x2"sv },
             { "Matrix4x4", "float4x4"sv },
@@ -122,9 +125,10 @@ void Writer::Write(const winmd::reader::TypeDef& type)
             { "Vector3", "float3"sv },
             { "Vector4", "float4"sv }
         };
-        
+        // clang-format on
+
         const auto it = s_numericsMap.find(typeName);
-        Write("winrt::@::%", namespaceFullName,  it == s_numericsMap.end() ? typeName : it->second);
+        Write("winrt::@::%", namespaceFullName, it == s_numericsMap.end() ? typeName : it->second);
     }
     else
     {
@@ -182,68 +186,69 @@ void Writer::Write(const winmd::reader::TypeSig& signature)
 
 void Writer::Write(const winmd::reader::TypeSig::value_type& type)
 {
-    std::visit([&](auto&& type)
-    {
-        using T = std::decay_t<decltype(type)>;
-        if constexpr (std::is_same_v<T, winmd::reader::ElementType>)
-        {
-            switch (type)
+    std::visit(
+        [&](auto&& type) {
+            using T = std::decay_t<decltype(type)>;
+            if constexpr (std::is_same_v<T, winmd::reader::ElementType>)
             {
-            case winmd::reader::ElementType::Boolean:
-                Write("bool"sv);
-                break;
-            case winmd::reader::ElementType::Char:
-                Write("char16_t"sv);
-                break;
-            case winmd::reader::ElementType::I1:
-                Write("int8_t"sv);
-                break;
-            case winmd::reader::ElementType::U1:
-                Write("uint8_t"sv);
-                break;
-            case winmd::reader::ElementType::I2:
-                Write("int16_t"sv);
-                break;
-            case winmd::reader::ElementType::U2:
-                Write("uint16_t"sv);
-                break;
-            case winmd::reader::ElementType::I4:
-                Write("int32_t"sv);
-                break;
-            case winmd::reader::ElementType::U4:
-                Write("uint32_t"sv);
-                break;
-            case winmd::reader::ElementType::I8:
-                Write("int64_t"sv);
-                break;
-            case winmd::reader::ElementType::U8:
-                Write("uint64_t"sv);
-                break;
-            case winmd::reader::ElementType::R4:
-                Write("float"sv);
-                break;
-            case winmd::reader::ElementType::R8:
-                Write("double"sv);
-                break;
-            case winmd::reader::ElementType::String:
-                Write("winrt::hstring"sv);
-                break;
-            case winmd::reader::ElementType::Object:
-                Write("winrt::Windows::Foundation::IInspectable"sv);
-                break;
-            default:
-                FAIL_FAST();
+                switch (type)
+                {
+                case winmd::reader::ElementType::Boolean:
+                    Write("bool"sv);
+                    break;
+                case winmd::reader::ElementType::Char:
+                    Write("char16_t"sv);
+                    break;
+                case winmd::reader::ElementType::I1:
+                    Write("int8_t"sv);
+                    break;
+                case winmd::reader::ElementType::U1:
+                    Write("uint8_t"sv);
+                    break;
+                case winmd::reader::ElementType::I2:
+                    Write("int16_t"sv);
+                    break;
+                case winmd::reader::ElementType::U2:
+                    Write("uint16_t"sv);
+                    break;
+                case winmd::reader::ElementType::I4:
+                    Write("int32_t"sv);
+                    break;
+                case winmd::reader::ElementType::U4:
+                    Write("uint32_t"sv);
+                    break;
+                case winmd::reader::ElementType::I8:
+                    Write("int64_t"sv);
+                    break;
+                case winmd::reader::ElementType::U8:
+                    Write("uint64_t"sv);
+                    break;
+                case winmd::reader::ElementType::R4:
+                    Write("float"sv);
+                    break;
+                case winmd::reader::ElementType::R8:
+                    Write("double"sv);
+                    break;
+                case winmd::reader::ElementType::String:
+                    Write("winrt::hstring"sv);
+                    break;
+                case winmd::reader::ElementType::Object:
+                    Write("winrt::Windows::Foundation::IInspectable"sv);
+                    break;
+                default:
+                    FAIL_FAST();
+                }
             }
-        }
-        else if constexpr (std::is_same_v<T, winmd::reader::GenericTypeIndex>)
-        {
-            // Nothing
-        }
-        else
-        {
-            Write(type);
-        }
-    }, type);
+            else if constexpr (std::is_same_v<T, winmd::reader::GenericTypeIndex>)
+            {
+                // Nothing
+            }
+            else
+            {
+                Write(type);
+            }
+        },
+        type);
 }
 
 void Writer::WriteCode(const std::string_view& value)
@@ -294,7 +299,7 @@ std::string Writer::ToLowerCase(const std::string_view& value)
 {
     std::string converted(value);
 #pragma warning(push)
-#pragma warning(disable: 4244) // conversion from 'int' to 'char' for tolower
+#pragma warning(disable : 4244) // conversion from 'int' to 'char' for tolower
     std::transform(converted.begin(), converted.end(), converted.begin(), ::tolower);
 #pragma warning(pop)
     return converted;

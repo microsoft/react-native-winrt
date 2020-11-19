@@ -1,23 +1,26 @@
 #include "pch.h"
+
 #include "WinRTTurboModule.h"
 #include "WinRTTurboModuleFactory.h"
 #include <rnwinrt\Projections.g.h>
 
 namespace WinRTTurboModule
 {
-    jsi::Value __hostFunction_WinRTTurboModuleSpecJSI_initialize(jsi::Runtime& runtime, react::TurboModule& turboModule, const jsi::Value* args, size_t count)
+    jsi::Value __hostFunction_WinRTTurboModuleSpecJSI_initialize(
+        jsi::Runtime& runtime, react::TurboModule& turboModule, const jsi::Value* args, size_t count)
     {
         static_cast<WinRTTurboModuleSpecJSI*>(&turboModule)->initialize(runtime);
         return jsi::Value::undefined();
     }
 
-    WinRTTurboModuleSpecJSI::WinRTTurboModuleSpecJSI(const std::shared_ptr<react::CallInvoker>& invoker) : TurboModule("WinRTTurboModule", invoker)
+    WinRTTurboModuleSpecJSI::WinRTTurboModuleSpecJSI(const std::shared_ptr<react::CallInvoker>& invoker) :
+        TurboModule("WinRTTurboModule", invoker)
     {
         methodMap_["initialize"] = MethodMetadata{ 0, __hostFunction_WinRTTurboModuleSpecJSI_initialize };
     }
 
-    WinRTTurboModule::WinRTTurboModule(const std::shared_ptr<react::CallInvoker>& invoker)
-        : WinRTTurboModuleSpecJSI(invoker), m_invoker(invoker)
+    WinRTTurboModule::WinRTTurboModule(const std::shared_ptr<react::CallInvoker>& invoker) :
+        WinRTTurboModuleSpecJSI(invoker), m_invoker(invoker)
     {
         APTTYPE type;
         APTTYPEQUALIFIER typeQualifier;
@@ -39,7 +42,8 @@ namespace WinRTTurboModule
     }
 }
 
-std::shared_ptr<react::TurboModule> CreateWinRTTurboModule(const std::shared_ptr<facebook::react::CallInvoker>& jsInvoker)
+std::shared_ptr<react::TurboModule> CreateWinRTTurboModule(
+    const std::shared_ptr<facebook::react::CallInvoker>& jsInvoker)
 {
     return std::make_shared<WinRTTurboModule::WinRTTurboModule>(jsInvoker);
 }

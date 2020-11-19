@@ -1,4 +1,5 @@
 #include "pch.h"
+
 #include "MetadataHelpers.h"
 
 std::map<std::string_view, std::shared_ptr<Namespace>> Namespace::GetRoots(const Settings& settings)
@@ -13,8 +14,9 @@ std::map<std::string_view, std::shared_ptr<Namespace>> Namespace::GetRoots(const
         }
 
         std::string_view previousFullName = previousNamespace ? previousNamespace->FullName() : ""sv;
-        if (previousNamespace && ((currentFullName.length() < previousFullName.length() + 1) || (currentFullName[previousFullName.length()] != L'.') ||
-            (currentFullName.compare(0, previousFullName.length(), previousFullName))))
+        if (previousNamespace && ((currentFullName.length() < previousFullName.length() + 1) ||
+                                     (currentFullName[previousFullName.length()] != L'.') ||
+                                     (currentFullName.compare(0, previousFullName.length(), previousFullName))))
         {
             // This namespace is not a child of 'previousNamespace' so ensure it from the root.
             previousNamespace = nullptr;
@@ -24,8 +26,9 @@ std::map<std::string_view, std::shared_ptr<Namespace>> Namespace::GetRoots(const
         // Namespaces returned from the cache are in order, so if there are any gaps we need to ensure an empty
         // parent namespace. e.g. if "a" is followed by "a.b.c" we should ensure "b" too. We also not need to handle
         // going from "a.b.c" to an unrelated "x.y".
-        std::string_view remainingNameSegments = previousFullName.empty() ? currentFullName : currentFullName.substr(previousFullName.length() + 1);
-        
+        std::string_view remainingNameSegments =
+            previousFullName.empty() ? currentFullName : currentFullName.substr(previousFullName.length() + 1);
+
         while (!remainingNameSegments.empty())
         {
             const auto delim = remainingNameSegments.find(".");
@@ -49,7 +52,8 @@ std::map<std::string_view, std::shared_ptr<Namespace>> Namespace::GetRoots(const
             }
             else
             {
-                previousNamespace = std::make_shared<Namespace>(previousNamespace, std::string(currentNameSegment), isFinalSegment ? &members : nullptr);
+                previousNamespace = std::make_shared<Namespace>(
+                    previousNamespace, std::string(currentNameSegment), isFinalSegment ? &members : nullptr);
                 targetMap[previousNamespace->Name()] = previousNamespace;
             }
         }
@@ -57,8 +61,11 @@ std::map<std::string_view, std::shared_ptr<Namespace>> Namespace::GetRoots(const
     return roots;
 }
 
-Namespace::Namespace(const std::shared_ptr<Namespace>& parent, std::string&& name, const winmd::reader::cache::namespace_members* members)
-    : m_name(std::forward<std::string>(name)), m_members(members), m_parent(parent ? std::optional<std::weak_ptr<Namespace>>(parent) : std::optional<std::weak_ptr<Namespace>>())
+Namespace::Namespace(const std::shared_ptr<Namespace>& parent, std::string&& name,
+    const winmd::reader::cache::namespace_members* members) :
+    m_name(std::forward<std::string>(name)),
+    m_members(members),
+    m_parent(parent ? std::optional<std::weak_ptr<Namespace>>(parent) : std::optional<std::weak_ptr<Namespace>>())
 {
 }
 
@@ -164,7 +171,8 @@ bool Namespace::Enumerate(const std::function<bool(const Namespace&)>& fn, bool 
     return true;
 }
 
-bool Namespace::EnumerateAll(const std::map<std::string_view, std::shared_ptr<Namespace>>& namespaces, const std::function<bool(const Namespace&)>& fn, bool postorder)
+bool Namespace::EnumerateAll(const std::map<std::string_view, std::shared_ptr<Namespace>>& namespaces,
+    const std::function<bool(const Namespace&)>& fn, bool postorder)
 {
     for (const auto& child : namespaces)
     {
@@ -221,7 +229,8 @@ bool HasAllowedTypes(const Settings& settings, const winmd::reader::cache::names
     return false;
 }
 
-bool IsNamespaceAllowed(const Settings& settings, const std::string_view& namespaceFullName, const winmd::reader::cache::namespace_members& members)
+bool IsNamespaceAllowed(const Settings& settings, const std::string_view& namespaceFullName,
+    const winmd::reader::cache::namespace_members& members)
 {
     if (!HasAllowedTypes(settings, members))
     {
@@ -233,12 +242,14 @@ bool IsNamespaceAllowed(const Settings& settings, const std::string_view& namesp
 
 bool IsMethodAllowed(const Settings& settings, const winmd::reader::MethodDef& methodDef)
 {
-    if (!settings.IncludeDeprecated && HasAttribute(methodDef, "Windows.Foundation.Metadata"sv, "DeprecatedAttribute"sv))
+    if (!settings.IncludeDeprecated &&
+        HasAttribute(methodDef, "Windows.Foundation.Metadata"sv, "DeprecatedAttribute"sv))
     {
         return false;
     }
 
-    if (!settings.IncludeWebHostHidden && HasAttribute(methodDef, "Windows.Foundation.Metadata"sv, "WebHostHiddenAttribute"sv))
+    if (!settings.IncludeWebHostHidden &&
+        HasAttribute(methodDef, "Windows.Foundation.Metadata"sv, "WebHostHiddenAttribute"sv))
     {
         return false;
     }
@@ -253,7 +264,8 @@ bool IsTypeAllowed(const Settings& settings, const winmd::reader::TypeDef& typeD
         return false;
     }
 
-    if (isClass && settings.FilterToAllowForWeb && !HasAttribute(typeDef, "Windows.Foundation.Metadata"sv, "AllowForWebAttribute"sv))
+    if (isClass && settings.FilterToAllowForWeb &&
+        !HasAttribute(typeDef, "Windows.Foundation.Metadata"sv, "AllowForWebAttribute"sv))
     {
         return false;
     }
@@ -263,9 +275,11 @@ bool IsTypeAllowed(const Settings& settings, const winmd::reader::TypeDef& typeD
         return false;
     }
 
-    if (!settings.IncludeWebHostHidden && HasAttribute(typeDef, "Windows.Foundation.Metadata"sv, "WebHostHiddenAttribute"sv))
+    if (!settings.IncludeWebHostHidden &&
+        HasAttribute(typeDef, "Windows.Foundation.Metadata"sv, "WebHostHiddenAttribute"sv))
     {
-        // Special-case Windows.Foundation.IPropertyValueStatics which should not be WebHostHidden as it breaks basic language features by omission.
+        // Special-case Windows.Foundation.IPropertyValueStatics which should not be WebHostHidden as it breaks basic
+        // language features by omission.
         if (typeDef.TypeNamespace() == "Windows.Foundation"sv)
         {
             if (isClass ? (typeDef.TypeName() == "PropertyValue"sv) : (typeDef.TypeName() == "IPropertyValueStatics"sv))
@@ -281,11 +295,11 @@ bool IsTypeAllowed(const Settings& settings, const winmd::reader::TypeDef& typeD
 
 std::vector<ActivationFactoryInterfaceInfo> GetActivationFactoryInterfaces(const winmd::reader::TypeDef& classDef)
 {
-    auto GetSystemTypeDef = [&](const winmd::reader::CustomAttributeSig& signature) -> winmd::reader::TypeDef
-    {
+    auto GetSystemTypeDef = [&](const winmd::reader::CustomAttributeSig& signature) -> winmd::reader::TypeDef {
         for (const auto& arg : signature.FixedArgs())
         {
-            if (const auto typeParam = std::get_if<winmd::reader::ElemSig::SystemType>(&std::get<winmd::reader::ElemSig>(arg.value).value))
+            if (const auto typeParam =
+                    std::get_if<winmd::reader::ElemSig::SystemType>(&std::get<winmd::reader::ElemSig>(arg.value).value))
             {
                 return classDef.get_cache().find_required(typeParam->name);
             }
@@ -324,7 +338,8 @@ std::vector<ActivationFactoryInterfaceInfo> GetActivationFactoryInterfaces(const
 
             for (auto&& arg : signature.FixedArgs())
             {
-                if (auto visibility = std::get_if<winmd::reader::ElemSig::EnumValue>(&std::get<winmd::reader::ElemSig>(arg.value).value))
+                if (auto visibility = std::get_if<winmd::reader::ElemSig::EnumValue>(
+                        &std::get<winmd::reader::ElemSig>(arg.value).value))
                 {
                     info.IsVisible = std::get<int32_t>(visibility->value) == 2;
                     break;
@@ -336,27 +351,27 @@ std::vector<ActivationFactoryInterfaceInfo> GetActivationFactoryInterfaces(const
             continue;
         }
 
-        std::string name; 
+        std::string name;
         if (info.TypeDef)
         {
             name = std::string(info.TypeDef.TypeNamespace()) + "::" + std::string(info.TypeDef.TypeName());
         }
 
-        // If activatable and without a TypeDef, then it it activable with zero-params with the ClassicCOM IActivationFactory.
+        // If activatable and without a TypeDef, then it it activable with zero-params with the ClassicCOM
+        // IActivationFactory.
         result.push_back(std::move(info));
     }
 
     return result;
 }
 
-MethodOverloadInfo::MethodOverloadInfo(winmd::reader::MethodDef def)
-    : Def(std::move(def))
+MethodOverloadInfo::MethodOverloadInfo(winmd::reader::MethodDef def) : Def(std::move(def))
 {
     const auto signature = def.Signature();
     const auto returnType = signature.ReturnType();
     const auto paramSigs = signature.Params();
     auto paramList = def.ParamList();
-    
+
     // The first param might be the return value unlike the first param signature.
     const auto paramCount = static_cast<uint32_t>(std::distance(paramSigs.first, paramSigs.second));
     if (returnType && (paramList.first != paramList.second) && (paramList.first.Sequence() == 0))
@@ -364,10 +379,10 @@ MethodOverloadInfo::MethodOverloadInfo(winmd::reader::MethodDef def)
         ++paramList.first;
     }
 
-    // Special-case out-params corresponding to out-param arrays since the caller passes in the array to write to. For example:
-    // "HRESULT II2cDevice::Read([range(0x00000000, 0x7FFFFFFF)] [in] UINT32 __bufferSize, [out] [size_is(__bufferSize)] BYTE* buffer)"
-    // is treated like "WINRT_IMPL_AUTO(void) Read(array_view<uint8_t> buffer) const" by C++/WinRT and similarly JS would be
-    // expected to pass in an-array.
+    // Special-case out-params corresponding to out-param arrays since the caller passes in the array to write to. For
+    // example: "HRESULT II2cDevice::Read([range(0x00000000, 0x7FFFFFFF)] [in] UINT32 __bufferSize, [out]
+    // [size_is(__bufferSize)] BYTE* buffer)" is treated like "WINRT_IMPL_AUTO(void) Read(array_view<uint8_t> buffer)
+    // const" by C++/WinRT and similarly JS would be expected to pass in an-array.
 
     for (uint32_t i = 0; i < paramCount; ++i)
     {
@@ -433,10 +448,11 @@ bool IsSpecialOmittedStruct(const winmd::reader::TypeDef& type)
 
     if (type.TypeNamespace() == "Windows.Foundation"sv)
     {
+        // clang-format off
         static const std::set<std::string_view> c_typeNames = {
             // DateTime and TimeSpan are converted to C++ types unlike the original projections so they need to
             // be custom implemented not just because of JS's incompatible handling of time (i.e., in ms).
-            "Windows.Foundation", "DateTime"sv, 
+            "Windows.Foundation", "DateTime"sv,
             "Windows.Foundation", "TimeSpan"sv,
 
             // C++/WinRT projects this as winrt::event_token but this will not be exposed to JS as events are projected
@@ -449,6 +465,7 @@ bool IsSpecialOmittedStruct(const winmd::reader::TypeDef& type)
             // Point, Rect, Size can be code-gen'd without any problems. C++/WinRT does implement helpers structs but
             // it keeps field names matching the IDL so there is not need to special-case them.
         };
+        // clang-format on
         return c_typeNames.find(type.TypeName()) != c_typeNames.end();
     }
     return false;

@@ -3,7 +3,8 @@
 
 namespace WinRTTurboModule
 {
-    struct ProjectedAsyncOperationBaseMethods final : public std::enable_shared_from_this<ProjectedAsyncOperationBaseMethods>
+    struct ProjectedAsyncOperationBaseMethods final :
+        public std::enable_shared_from_this<ProjectedAsyncOperationBaseMethods>
     {
         ProjectedAsyncOperationBaseMethods(const std::shared_ptr<ProjectionsContext>& context);
         virtual ~ProjectedAsyncOperationBaseMethods() = default;
@@ -19,7 +20,8 @@ namespace WinRTTurboModule
         }
 
     private:
-        jsi::Value HandleThen(const jsi::Value& onResolved, const jsi::Value& onRejected, const jsi::Value& onProgress, bool forDone = false);
+        jsi::Value HandleThen(const jsi::Value& onResolved, const jsi::Value& onRejected, const jsi::Value& onProgress,
+            bool forDone = false);
 
         struct Continuation
         {
@@ -38,7 +40,7 @@ namespace WinRTTurboModule
     };
 
     struct ProjectedAsyncOperationBase : public jsi::HostObject
-    { 
+    {
         ProjectedAsyncOperationBase(const std::shared_ptr<ProjectionsContext>& context);
         virtual ~ProjectedAsyncOperationBase() = default;
 
@@ -55,25 +57,30 @@ namespace WinRTTurboModule
         std::optional<jsi::Value> m_operation;
     };
 
-    struct IsAsyncAction{};
-    struct NoAsyncProgress{};
+    struct IsAsyncAction
+    {
+    };
+    struct NoAsyncProgress
+    {
+    };
 
-    template<typename T, typename R = IsAsyncAction, typename P = NoAsyncProgress>
+    template <typename T, typename R = IsAsyncAction, typename P = NoAsyncProgress>
     struct ProjectedAsyncOperation final : public ProjectedAsyncOperationBase
     {
         ProjectedAsyncOperation(const std::shared_ptr<ProjectionsContext>& context, const T& instance,
-            NativeToValueConverter<R> valueConverter = nullptr, NativeToValueConverter<P> progressConverter = nullptr)
-                : ProjectedAsyncOperationBase(context), m_instance(instance)
+            NativeToValueConverter<R> valueConverter = nullptr, NativeToValueConverter<P> progressConverter = nullptr) :
+            ProjectedAsyncOperationBase(context),
+            m_instance(instance)
         {
             AwaitCompletion(context, instance, valueConverter, m_methods);
 
             if constexpr (!std::is_same_v<P, NoAsyncProgress>)
             {
-                // Progress(...) internally calls winrt::impl::make_agile_delegate so the lambda should be called on the original thread
-                // rather than on some arbitrary background thread.
+                // Progress(...) internally calls winrt::impl::make_agile_delegate so the lambda should be called on the
+                // original thread rather than on some arbitrary background thread.
                 m_instance.Progress(
-                    [progressConverter, methods{ m_methods }, context{ std::shared_ptr<ProjectionsContext>(context) }](const auto& sender, const auto& progress)
-                    {
+                    [progressConverter, methods{ m_methods }, context{ std::shared_ptr<ProjectionsContext>(context) }](
+                        const auto& sender, const auto& progress) {
                         methods->OnProgress(progressConverter(context, progress));
                     });
             }
@@ -105,39 +112,26 @@ namespace WinRTTurboModule
                     // PERF: If co_await causes code-bloat, it is reasonable to just use a Completed delegate instead.
                     co_await instance;
                     invoker->Call(
-                        [&runtime, methods]()
-                        {
-                            methods->OnCompleted(jsi::Value::undefined(), true /*succeeded*/);
-                        }
-                    );
+                        [&runtime, methods]() { methods->OnCompleted(jsi::Value::undefined(), true /*succeeded*/); });
                 }
                 else
                 {
-                    invoker->Call(
-                        [methods, converter, context{ std::move(context) }, result{ co_await instance }]()
-                        {
-                            methods->OnCompleted(converter(context, result), true /*succeeded*/);
-                        }
-                    );
+                    invoker->Call([methods, converter, context{ std::move(context) }, result{ co_await instance }]() {
+                        methods->OnCompleted(converter(context, result), true /*succeeded*/);
+                    });
                 }
             }
             catch (winrt::hresult_error e)
             {
-                invoker->Call(
-                    [&runtime, methods, e{ std::move(e) }]()
-                    {
-                        methods->OnCompleted(CreateError(runtime, e), false /*succeeded*/);
-                    }
-                );
+                invoker->Call([&runtime, methods, e{ std::move(e) }]() {
+                    methods->OnCompleted(CreateError(runtime, e), false /*succeeded*/);
+                });
             }
             catch (std::exception e)
             {
-                invoker->Call(
-                    [&runtime, methods, e{ std::move(e) }]()
-                    {
-                        methods->OnCompleted(CreateError(runtime, e), false /*succeeded*/);
-                    }
-                );
+                invoker->Call([&runtime, methods, e{ std::move(e) }]() {
+                    methods->OnCompleted(CreateError(runtime, e), false /*succeeded*/);
+                });
             }
         }
 
