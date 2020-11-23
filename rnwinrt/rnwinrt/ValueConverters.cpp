@@ -1,4 +1,5 @@
 #include "pch.h"
+
 #include "ValueConverters.h"
 
 ProjectedValueKind GetProjectedValueKind(const winmd::reader::TypeDef& typeDef)
@@ -47,7 +48,7 @@ ProjectedValueKind GetProjectedValueKind(const winmd::reader::coded_index<winmd:
     }
     else
     {
-        FAIL_FAST_IF(typeDefOrRef !=  winmd::reader::TypeDefOrRef::TypeRef);
+        FAIL_FAST_IF(typeDefOrRef != winmd::reader::TypeDefOrRef::TypeRef);
         const auto typeRef = type.TypeRef();
         if ((typeRef.TypeNamespace() == "System"sv) && (typeRef.TypeName() == "Guid"sv))
         {
@@ -139,27 +140,29 @@ ProjectedValueKind GetProjectedValueKind(const winmd::reader::TypeSig& typeSig)
     ProjectedValueKind kind = ProjectedValueKind::Unknown;
 
     std::string_view result;
-    std::visit([&](auto&& type)
-    {
-        using T = std::decay_t<decltype(type)>;
-        if constexpr (std::is_same_v<T, winmd::reader::ElementType> || std::is_same_v<T, winmd::reader::coded_index<winmd::reader::TypeDefOrRef>> ||
-            std::is_same_v<T, winmd::reader::GenericTypeInstSig>)
-        {
-            kind = GetProjectedValueKind(type);
-        }
-        else if constexpr (std::is_same_v<T, winmd::reader::GenericTypeIndex>)
-        {
-            FAIL_FAST();
-        }
-        else if constexpr (std::is_same_v<T, winmd::reader::GenericMethodTypeIndex>)
-        {
-            FAIL_FAST();
-        }
-        else
-        {
-            FAIL_FAST();
-        }
-    }, typeSig.Type());
+    std::visit(
+        [&](auto&& type) {
+            using T = std::decay_t<decltype(type)>;
+            if constexpr (std::is_same_v<T, winmd::reader::ElementType> ||
+                          std::is_same_v<T, winmd::reader::coded_index<winmd::reader::TypeDefOrRef>> ||
+                          std::is_same_v<T, winmd::reader::GenericTypeInstSig>)
+            {
+                kind = GetProjectedValueKind(type);
+            }
+            else if constexpr (std::is_same_v<T, winmd::reader::GenericTypeIndex>)
+            {
+                FAIL_FAST();
+            }
+            else if constexpr (std::is_same_v<T, winmd::reader::GenericMethodTypeIndex>)
+            {
+                FAIL_FAST();
+            }
+            else
+            {
+                FAIL_FAST();
+            }
+        },
+        typeSig.Type());
 
     return kind;
 }
@@ -339,24 +342,26 @@ std::vector<winmd::reader::TypeSig> GetGenericParamTypeSigs(const winmd::reader:
     std::vector<winmd::reader::TypeSig> result;
     result.reserve(2);
 
-    std::visit([&](auto&& type)
-    {
-        using T = std::decay_t<decltype(type)>;
-        if constexpr (std::is_same_v<T, winmd::reader::GenericTypeInstSig>)
-        {
-            const auto args = type.GenericArgs();
-            result.insert(result.begin(), args.first, args.second);
-        }
-        else
-        {
-            FAIL_FAST();
-        }
-    }, typeSig.Type());
+    std::visit(
+        [&](auto&& type) {
+            using T = std::decay_t<decltype(type)>;
+            if constexpr (std::is_same_v<T, winmd::reader::GenericTypeInstSig>)
+            {
+                const auto args = type.GenericArgs();
+                result.insert(result.begin(), args.first, args.second);
+            }
+            else
+            {
+                FAIL_FAST();
+            }
+        },
+        typeSig.Type());
 
     return result;
 }
 
-std::vector<std::string> GetValueConverters(FileWriter& writer, const std::vector<winmd::reader::TypeSig>& paramTypeSigs, bool toValue,
+std::vector<std::string> GetValueConverters(FileWriter& writer,
+    const std::vector<winmd::reader::TypeSig>& paramTypeSigs, bool toValue,
     std::map<std::string, std::vector<winmd::reader::TypeSig>>* specializedInterfaceReferences)
 {
     std::vector<std::string> result;
@@ -370,14 +375,16 @@ std::vector<std::string> GetValueConverters(FileWriter& writer, const std::vecto
         }
         else
         {
-            result.push_back(GetValueToNativeConverter(writer, typeSig, false /*isInout*/, specializedInterfaceReferences));
+            result.push_back(
+                GetValueToNativeConverter(writer, typeSig, false /*isInout*/, specializedInterfaceReferences));
         }
     }
 
     return result;
 }
 
-std::string GetNativeToValueConverter(FileWriter& writer, const winmd::reader::TypeSig& typeSig, std::map<std::string, std::vector<winmd::reader::TypeSig>>* specializedInterfaceReferences)
+std::string GetNativeToValueConverter(FileWriter& writer, const winmd::reader::TypeSig& typeSig,
+    std::map<std::string, std::vector<winmd::reader::TypeSig>>* specializedInterfaceReferences)
 {
     const auto kind = GetProjectedValueKind(typeSig);
     const auto converterName = GetConverterName(kind);
@@ -387,22 +394,27 @@ std::string GetNativeToValueConverter(FileWriter& writer, const winmd::reader::T
         const auto specializedInterfaceName = writer.WriteTemp("%"sv, typeSig);
         auto paramTypeSigs = GetGenericParamTypeSigs(typeSig);
 
-        // Even if we are not using it for an AsyncOperation or Reference/ReferenceArray, we should recursively evaluate to ensure
-        // we account for all specialized interfaces in 'specializedInterfaceReferences'.
-        const auto genericsParamConverters = GetValueConverters(writer, paramTypeSigs, !IsEventHandler(kind) /*toValue*/, specializedInterfaceReferences);
+        // Even if we are not using it for an AsyncOperation or Reference/ReferenceArray, we should recursively evaluate
+        // to ensure we account for all specialized interfaces in 'specializedInterfaceReferences'.
+        const auto genericsParamConverters = GetValueConverters(
+            writer, paramTypeSigs, !IsEventHandler(kind) /*toValue*/, specializedInterfaceReferences);
 
-        if (specializedInterfaceReferences && (specializedInterfaceReferences->find(specializedInterfaceName) == specializedInterfaceReferences->end()))
+        if (specializedInterfaceReferences &&
+            (specializedInterfaceReferences->find(specializedInterfaceName) == specializedInterfaceReferences->end()))
         {
             specializedInterfaceReferences->emplace(specializedInterfaceName, std::move(paramTypeSigs));
         }
 
         if (IsAsyncOperation(kind) || IsReference(kind) || IsEventHandler(kind))
         {
-            return writer.WriteTemp("Convert%ToValue<%, %>"sv, converterName, specializedInterfaceName, Writer::BindList(", "sv, genericsParamConverters));
+            return writer.WriteTemp("Convert%ToValue<%, %>"sv, converterName, specializedInterfaceName,
+                Writer::BindList(", "sv, genericsParamConverters));
         }
     }
 
-    auto typeConverter = IsTemplatedKind(kind) ? writer.WriteTemp("Convert%ToValue<%>"sv, converterName, typeSig.Type()) : writer.WriteTemp("Convert%ToValue"sv, converterName);
+    auto typeConverter = IsTemplatedKind(kind) ?
+                             writer.WriteTemp("Convert%ToValue<%>"sv, converterName, typeSig.Type()) :
+                             writer.WriteTemp("Convert%ToValue"sv, converterName);
     if (typeSig.is_szarray())
     {
         return writer.WriteTemp("ConvertComArrayToValue<%, %>"sv, typeSig.Type(), typeConverter);
@@ -421,18 +433,21 @@ std::string GetValueToNativeConverter(FileWriter& writer, const winmd::reader::T
         const auto specializedInterfaceName = writer.WriteTemp("%"sv, typeSig);
         auto paramTypeSigs = GetGenericParamTypeSigs(typeSig);
 
-        // Even if we are not using it for an AsyncOperation or Reference/ReferenceArray, we should recursively evaluate to ensure
-        // we account for all specialized interfaces in 'specializedInterfaceReferences'.
-        const auto genericsParamConverters = GetValueConverters(writer, paramTypeSigs, IsEventHandler(kind) /*toValue*/, specializedInterfaceReferences);
+        // Even if we are not using it for an AsyncOperation or Reference/ReferenceArray, we should recursively evaluate
+        // to ensure we account for all specialized interfaces in 'specializedInterfaceReferences'.
+        const auto genericsParamConverters =
+            GetValueConverters(writer, paramTypeSigs, IsEventHandler(kind) /*toValue*/, specializedInterfaceReferences);
 
-        if (specializedInterfaceReferences && (specializedInterfaceReferences->find(specializedInterfaceName) == specializedInterfaceReferences->end()))
+        if (specializedInterfaceReferences &&
+            (specializedInterfaceReferences->find(specializedInterfaceName) == specializedInterfaceReferences->end()))
         {
             specializedInterfaceReferences->emplace(specializedInterfaceName, std::move(paramTypeSigs));
         }
 
         if (IsReference(kind) || IsEventHandler(kind))
         {
-            return writer.WriteTemp("ConvertValueTo%<%, %>"sv, GetConverterName(kind), specializedInterfaceName, Writer::BindList(", ", genericsParamConverters));
+            return writer.WriteTemp("ConvertValueTo%<%, %>"sv, GetConverterName(kind), specializedInterfaceName,
+                Writer::BindList(", ", genericsParamConverters));
         }
     }
 
@@ -449,9 +464,11 @@ std::string GetValueToNativeConverter(FileWriter& writer, const winmd::reader::T
     {
         if (isInout)
         {
-            return writer.WriteTemp("ConvertValueToWriteOnlyArrayView<%, Convert%ToValue%>"sv, typeSig.Type(), converterName, converterTemplateArgs);
+            return writer.WriteTemp("ConvertValueToWriteOnlyArrayView<%, Convert%ToValue%>"sv, typeSig.Type(),
+                converterName, converterTemplateArgs);
         }
-        return writer.WriteTemp("ConvertValueToReadOnlyArrayView<%, ConvertValueTo%%>"sv, typeSig.Type(), converterName, converterTemplateArgs);
+        return writer.WriteTemp("ConvertValueToReadOnlyArrayView<%, ConvertValueTo%%>"sv, typeSig.Type(), converterName,
+            converterTemplateArgs);
     }
     return writer.WriteTemp("ConvertValueTo%%"sv, converterName, converterTemplateArgs);
 }

@@ -3,11 +3,11 @@
 namespace WinRTTurboModule
 {
     struct ProjectionsContext;
-    
+
     struct ProjectedRuntimeClassInstanceFactory
     {
         explicit ProjectedRuntimeClassInstanceFactory(ProjectionsContext& context);
-        
+
         jsi::Value Get(const winrt::Windows::Foundation::IInspectable& instance);
         bool Remove(const winrt::Windows::Foundation::IInspectable& instance);
 

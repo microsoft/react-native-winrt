@@ -1,10 +1,13 @@
 #include "pch.h"
+
 #include "ProjectedValueProvider.h"
 
 namespace WinRTTurboModule
 {
-    ProjectedHostObjectProvider::ProjectedHostObjectProvider(const std::string_view& name, const std::shared_ptr<jsi::HostObject>& hostObject)
-        : m_name(name), m_hostObject(hostObject)
+    ProjectedHostObjectProvider::ProjectedHostObjectProvider(
+        const std::string_view& name, const std::shared_ptr<jsi::HostObject>& hostObject) :
+        m_name(name),
+        m_hostObject(hostObject)
     {
     }
 

@@ -1,4 +1,5 @@
 #include "pch.h"
+
 #include "Settings.h"
 
 namespace
@@ -10,7 +11,8 @@ namespace
 
         std::vector<std::string> result;
         result.resize(input.size() + reference.size());
-        std::set_union(std::make_move_iterator(input.begin()), std::make_move_iterator(input.end()), std::make_move_iterator(reference.begin()), std::make_move_iterator(reference.end()), result.begin());
+        std::set_union(std::make_move_iterator(input.begin()), std::make_move_iterator(input.end()),
+            std::make_move_iterator(reference.begin()), std::make_move_iterator(reference.end()), result.begin());
 
         return result;
     }
@@ -24,7 +26,7 @@ namespace
             includes.insert(include);
         }
 
-        for (auto && include : commandReader.Values("filter"sv))
+        for (auto&& include : commandReader.Values("filter"sv))
         {
             includes.insert(include);
         }
@@ -43,15 +45,12 @@ namespace
     }
 }
 
-Settings::Settings(const CommandReader& commandReader)
-    : OutputFolder(std::filesystem::path(commandReader.Value("output"sv)) / "rnwinrt"sv),
-      Cache(GetInput(commandReader)),
-      Filter(GetInclude(commandReader), GetExclude(commandReader)),
-      PchFileName(commandReader.Value("pch"sv, "pch.h"sv)),
-      FilterToAllowForWeb(commandReader.Exists("allowforwebexclusively"sv)),
-      IncludeDeprecated(commandReader.Exists("deprecatedincluded"sv)),
-      IncludeWebHostHidden(commandReader.Exists("webhosthiddenincluded"sv)),
-      Verbose(commandReader.Exists("verbose"sv))
+Settings::Settings(const CommandReader& commandReader) :
+    OutputFolder(std::filesystem::path(commandReader.Value("output"sv)) / "rnwinrt"sv), Cache(GetInput(commandReader)),
+    Filter(GetInclude(commandReader), GetExclude(commandReader)), PchFileName(commandReader.Value("pch"sv, "pch.h"sv)),
+    FilterToAllowForWeb(commandReader.Exists("allowforwebexclusively"sv)),
+    IncludeDeprecated(commandReader.Exists("deprecatedincluded"sv)),
+    IncludeWebHostHidden(commandReader.Exists("webhosthiddenincluded"sv)), Verbose(commandReader.Exists("verbose"sv))
 {
     std::filesystem::create_directories(OutputFolder);
 }

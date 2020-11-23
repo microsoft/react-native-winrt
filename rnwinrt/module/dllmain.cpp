@@ -2,10 +2,10 @@
 
 #include <jsi\jsi.cpp>
 
-#pragma warning (push)
-#pragma warning (disable: 4267) // 'argument': conversion from 'size_t' to 'unsigned int', possible loss of data
+#pragma warning(push)
+#pragma warning(disable : 4267) // 'argument': conversion from 'size_t' to 'unsigned int', possible loss of data
 #include <TurboModule\Core\TurboModule.cpp>
-#pragma warning (pop)
+#pragma warning(pop)
 
 STDAPI_(BOOL) DllMain(_In_ HINSTANCE instance, DWORD reason, _In_opt_ void* /*reserved*/)
 {

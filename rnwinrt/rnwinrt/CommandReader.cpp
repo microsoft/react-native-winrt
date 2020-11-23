@@ -1,19 +1,23 @@
 #include "pch.h"
+
 #include "CommandReader.h"
+
 namespace
 {
     void CheckSdkRegRead(LSTATUS result)
     {
         if (result != ERROR_SUCCESS)
         {
-            throw std::invalid_argument("Could not find the Windows SDK in the registry with error: " + std::to_string(HRESULT_FROM_WIN32(result)));
+            throw std::invalid_argument("Could not find the Windows SDK in the registry with error: " +
+                                        std::to_string(HRESULT_FROM_WIN32(result)));
         }
     }
 
     wil::unique_hkey OpenSdk()
     {
         wil::unique_hkey key;
-        CheckSdkRegRead(RegOpenKeyExW(HKEY_LOCAL_MACHINE, L"SOFTWARE\\Microsoft\\Windows Kits\\Installed Roots", 0, KEY_READ, &key));
+        CheckSdkRegRead(RegOpenKeyExW(
+            HKEY_LOCAL_MACHINE, L"SOFTWARE\\Microsoft\\Windows Kits\\Installed Roots", 0, KEY_READ, &key));
         return key;
     }
 
@@ -25,7 +29,8 @@ namespace
         CheckSdkRegRead(RegQueryValueExW(key.get(), L"KitsRoot10", nullptr, nullptr, nullptr, &pathSizeBytes));
 
         std::wstring root((pathSizeBytes / sizeof(wchar_t)) - 1, L'?');
-        CheckSdkRegRead(RegQueryValueExW(key.get(), L"KitsRoot10", nullptr, nullptr, reinterpret_cast<BYTE*>(root.data()), &pathSizeBytes));
+        CheckSdkRegRead(RegQueryValueExW(
+            key.get(), L"KitsRoot10", nullptr, nullptr, reinterpret_cast<BYTE*>(root.data()), &pathSizeBytes));
 
         return root;
     }
@@ -90,7 +95,7 @@ namespace
             PSTR nextPart = subkey.data();
             bool forceNewer = false;
 
-            for (size_t i = 0; ; ++i)
+            for (size_t i = 0;; ++i)
             {
                 const auto versionPart = strtoul(nextPart, &nextPart, 10);
 
@@ -137,7 +142,8 @@ namespace
         }
     };
 
-    void AddFilesFromXml(std::set<std::string>& files, const std::string& sdkVersion, const std::filesystem::path& xmlPath, const std::filesystem::path& sdkPath)
+    void AddFilesFromXml(std::set<std::string>& files, const std::string& sdkVersion,
+        const std::filesystem::path& xmlPath, const std::filesystem::path& sdkPath)
     {
         wil::com_ptr<IStream> stream;
         CheckXmlRead(SHCreateStreamOnFileW(xmlPath.c_str(), STGM_READ, &stream));
@@ -184,8 +190,8 @@ namespace
     }
 }
 
-CommandReader::CommandReader(const uint32_t argc, char** argv, const Option* const options, size_t optionsCount)
-    : m_options(options), m_optionsCount(optionsCount)
+CommandReader::CommandReader(const uint32_t argc, char** argv, const Option* const options, size_t optionsCount) :
+    m_options(options), m_optionsCount(optionsCount)
 {
     if (argc < 2)
     {
@@ -211,11 +217,13 @@ CommandReader::CommandReader(const uint32_t argc, char** argv, const Option* con
         }
         else if (option.MaxArgs == option.MinArgs && count != option.MaxArgs)
         {
-            ThrowInvalidArg("Option '", option.Name, "' requires exactly ", std::to_string(option.MaxArgs), " value(s)");
+            ThrowInvalidArg(
+                "Option '", option.Name, "' requires exactly ", std::to_string(option.MaxArgs), " value(s)");
         }
         else if (count < option.MinArgs)
         {
-            ThrowInvalidArg("Option '", option.Name, "' requires at least ", std::to_string(option.MinArgs), " value(s)");
+            ThrowInvalidArg(
+                "Option '", option.Name, "' requires at least ", std::to_string(option.MinArgs), " value(s)");
         }
         else if (count > option.MaxArgs)
         {
@@ -259,12 +267,12 @@ std::string CommandReader::Value(const std::string_view& name, const std::string
     return result->second.front();
 }
 
-std::set<std::string> CommandReader::Files(const std::string_view& name, std::function<bool(std::string_view)> directoryFilter) const
+std::set<std::string> CommandReader::Files(
+    const std::string_view& name, std::function<bool(std::string_view)> directoryFilter) const
 {
     std::set<std::string> files;
 
-    auto add_directory = [&](auto&& path)
-    {
+    auto add_directory = [&](auto&& path) {
         for (auto&& file : std::filesystem::directory_iterator(path))
         {
             if (std::filesystem::is_regular_file(file))
@@ -296,9 +304,11 @@ std::set<std::string> CommandReader::Files(const std::string_view& name, std::fu
         {
             std::array<char, 260> local{};
 #ifdef _WIN64
-            ExpandEnvironmentStringsA("%windir%\\System32\\WinMetadata", local.data(), static_cast<uint32_t>(local.size()));
+            ExpandEnvironmentStringsA(
+                "%windir%\\System32\\WinMetadata", local.data(), static_cast<uint32_t>(local.size()));
 #else
-            ExpandEnvironmentStringsA("%windir%\\SysNative\\WinMetadata", local.data(), static_cast<uint32_t>(local.size()));
+            ExpandEnvironmentStringsA(
+                "%windir%\\SysNative\\WinMetadata", local.data(), static_cast<uint32_t>(local.size()));
 #endif
             add_directory(local.data());
             continue;
@@ -358,7 +368,7 @@ const Option* CommandReader::Find(const std::string_view& name) const
     std::string normalized(name);
 
 #pragma warning(push)
-#pragma warning(disable: 4244) // conversion from 'int' to 'char', possible loss of data
+#pragma warning(disable : 4244) // conversion from 'int' to 'char', possible loss of data
     std::transform(normalized.begin(), normalized.end(), normalized.begin(), ::tolower);
 #pragma warning(pop)
 

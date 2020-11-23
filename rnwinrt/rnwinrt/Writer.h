@@ -17,7 +17,6 @@ struct Writer
     bool IsFileEqual(const std::string_view& fileName) const;
     bool IsFileEqual(const std::filesystem::path& fileName) const;
 
-
     // General
     void Write(const std::string_view& value)
     {
@@ -29,13 +28,14 @@ struct Writer
         m_first.push_back(value);
     }
 
-    template<typename T, std::enable_if_t<std::is_same_v<T, bool>, int> = 0>
+    template <typename T, std::enable_if_t<std::is_same_v<T, bool>, int> = 0>
     void Write(const T value)
     {
         Write(value ? "true"sv : "false"sv);
     }
 
-    template<typename T, std::enable_if_t<(std::is_integral_v<T> && !std::is_same_v<T, bool>) || std::is_floating_point_v<T>, int> = 0>
+    template <typename T,
+        std::enable_if_t<(std::is_integral_v<T> && !std::is_same_v<T, bool>) || std::is_floating_point_v<T>, int> = 0>
     void Write(const T value)
     {
         Write(std::to_string(value));
@@ -81,7 +81,8 @@ struct Writer
     void WritePrintF(PCSTR format, Args const&... args)
     {
 #pragma warning(push)
-#pragma warning(disable: 4996) // snprintf is not as secure as _snprintf_s but the latter doesn't return the number of characters that would be stored.
+#pragma warning(disable : 4996) // snprintf is not as secure as _snprintf_s but the latter doesn't return the number of
+                                // characters that would be stored.
         char stackBuffer[256];
         size_t size = snprintf(stackBuffer, ARRAYSIZE(stackBuffer), format, args...);
         FAIL_FAST_IF(size < 0);
@@ -109,8 +110,7 @@ struct Writer
     template <typename T>
     static auto BindList(const std::string_view& delimiter, const T& list)
     {
-        return [&](Writer& writer)
-        {
+        return [&](Writer& writer) {
             bool first{ true };
 
             for (const auto& item : list)
@@ -180,13 +180,11 @@ private:
 class FileWriter final : public Writer
 {
 public:
-    FileWriter(const std::string_view& fileName)
-        : m_fileName(fileName)
+    FileWriter(const std::string_view& fileName) : m_fileName(fileName)
     {
     }
 
-    FileWriter(const std::filesystem::path& fileName)
-        : m_fileName(fileName.string())
+    FileWriter(const std::filesystem::path& fileName) : m_fileName(fileName.string())
     {
     }
 

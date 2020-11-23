@@ -1,6 +1,7 @@
 #include "pch.h"
-#include "TypeFilter.h"
+
 #include "MetadataHelpers.h"
+#include "TypeFilter.h"
 
 bool TypeFilter::Includes(const winmd::reader::TypeDef& type) const
 {
@@ -67,7 +68,8 @@ bool TypeFilter::Includes(std::string_view const& typeNamespace, std::string_vie
     return m_defaultInclude;
 }
 
-bool TypeFilter::Match(const std::string_view& typeNamespace, const std::string_view& typeName, const std::string_view& match) noexcept
+bool TypeFilter::Match(
+    const std::string_view& typeNamespace, const std::string_view& typeName, const std::string_view& match) noexcept
 {
     if (match.size() <= typeNamespace.size())
     {
