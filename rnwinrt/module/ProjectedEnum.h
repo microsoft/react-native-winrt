@@ -6,8 +6,9 @@ namespace WinRTTurboModule
     class ProjectedEnum final : public jsi::HostObject
     {
     public:
-        using InitializerFunction = std::unordered_map<std::string_view, int64_t>(*)();
-        static std::shared_ptr<IProjectedValueProvider> Create(const std::string_view& name, InitializerFunction initializer);
+        using InitializerFunction = std::unordered_map<std::string_view, int64_t> (*)();
+        static std::shared_ptr<IProjectedValueProvider> Create(
+            const std::string_view& name, InitializerFunction initializer);
 
         ProjectedEnum(const std::string_view& name, InitializerFunction initializer);
         virtual ~ProjectedEnum() = default;

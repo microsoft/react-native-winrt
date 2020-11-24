@@ -1,16 +1,18 @@
 #include "pch.h"
-#include "ProjectedEnum.h"
+
 #include "JsiHelpers.h"
+#include "ProjectedEnum.h"
 
 namespace WinRTTurboModule
 {
-    std::shared_ptr<IProjectedValueProvider> ProjectedEnum::Create(const std::string_view& name, InitializerFunction initializer)
+    std::shared_ptr<IProjectedValueProvider> ProjectedEnum::Create(
+        const std::string_view& name, InitializerFunction initializer)
     {
         return std::make_shared<ProjectedHostObjectProvider>(name, std::make_shared<ProjectedEnum>(name, initializer));
     }
 
-    ProjectedEnum::ProjectedEnum(const std::string_view& name, InitializerFunction initializer)
-        : m_name(name), m_initializer(initializer)
+    ProjectedEnum::ProjectedEnum(const std::string_view& name, InitializerFunction initializer) :
+        m_name(name), m_initializer(initializer)
     {
     }
 
@@ -30,13 +32,15 @@ namespace WinRTTurboModule
 
     void ProjectedEnum::set(jsi::Runtime& runtime, const jsi::PropNameID& propName, const jsi::Value& value)
     {
-        throw jsi::JSError(runtime, std::string("TypeError: Cannot assign to property '") + propName.utf8(runtime) + "' to a projected WinRT enum");
+        throw jsi::JSError(runtime, std::string("TypeError: Cannot assign to property '") + propName.utf8(runtime) +
+                                        "' to a projected WinRT enum");
     }
 
     std::vector<jsi::PropNameID> ProjectedEnum::getPropertyNames(jsi::Runtime& runtime)
     {
-        // PERF: It would be nice if these were copyable but PropNameID is only moveable. It might be possible to store and reuse jsi::String,
-        // which might avoid deep copies. Could we return an empty vector like TurboModule given it inherits it from HostObject?
+        // PERF: It would be nice if these were copyable but PropNameID is only moveable. It might be possible to store
+        // and reuse jsi::String, which might avoid deep copies. Could we return an empty vector like TurboModule given
+        // it inherits it from HostObject?
         std::vector<jsi::PropNameID> propNames;
         propNames.reserve(m_propertyMap.size());
 

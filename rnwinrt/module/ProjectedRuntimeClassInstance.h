@@ -7,9 +7,11 @@ namespace WinRTTurboModule
     class ProjectedRuntimeClassInstance final : public jsi::HostObject
     {
     public:
-        static jsi::Value Get(const std::shared_ptr<ProjectionsContext>& context, const winrt::Windows::Foundation::IInspectable& instance);
+        static jsi::Value Get(const std::shared_ptr<ProjectionsContext>& context,
+            const winrt::Windows::Foundation::IInspectable& instance);
 
-        ProjectedRuntimeClassInstance(const std::shared_ptr<ProjectionsContext>& context, const winrt::Windows::Foundation::IInspectable& instance);
+        ProjectedRuntimeClassInstance(const std::shared_ptr<ProjectionsContext>& context,
+            const winrt::Windows::Foundation::IInspectable& instance);
         virtual ~ProjectedRuntimeClassInstance();
 
         virtual jsi::Value get(jsi::Runtime& runtime, const jsi::PropNameID& propName) override;
@@ -38,6 +40,9 @@ namespace WinRTTurboModule
         bool m_isInitialized{};
     };
 
-    jsi::Function CreateCompositeConstructor(jsi::Runtime& runtime, std::string className, std::vector<std::shared_ptr<IProjectedInterfaceInstance>> factoryInterfaceInstances);
-    jsi::Value CreateCompositeMethod(jsi::Runtime& runtime, std::string methodName, std::vector<std::pair<std::shared_ptr<IProjectedInterfaceInstance>, std::shared_ptr<ProjectedFunction>>> interfaceMethods);
+    jsi::Function CreateCompositeConstructor(jsi::Runtime& runtime, std::string className,
+        std::vector<std::shared_ptr<IProjectedInterfaceInstance>> factoryInterfaceInstances);
+    jsi::Value CreateCompositeMethod(jsi::Runtime& runtime, std::string methodName,
+        std::vector<std::pair<std::shared_ptr<IProjectedInterfaceInstance>, std::shared_ptr<ProjectedFunction>>>
+            interfaceMethods);
 }

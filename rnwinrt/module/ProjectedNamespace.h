@@ -7,10 +7,13 @@ namespace WinRTTurboModule
     class ProjectedNamespace final : public jsi::HostObject
     {
     public:
-        using InitializerFunction = std::vector<std::shared_ptr<IProjectedValueProvider>>(*)(const std::shared_ptr<ProjectionsContext>&);
-        static std::shared_ptr<IProjectedValueProvider> Create(const std::string_view& name, const std::shared_ptr<ProjectionsContext>& context, InitializerFunction initializer);
+        using InitializerFunction = std::vector<std::shared_ptr<IProjectedValueProvider>> (*)(
+            const std::shared_ptr<ProjectionsContext>&);
+        static std::shared_ptr<IProjectedValueProvider> Create(const std::string_view& name,
+            const std::shared_ptr<ProjectionsContext>& context, InitializerFunction initializer);
 
-        ProjectedNamespace(const std::string_view& name, const std::shared_ptr<ProjectionsContext>& context, InitializerFunction initializer);
+        ProjectedNamespace(const std::string_view& name, const std::shared_ptr<ProjectionsContext>& context,
+            InitializerFunction initializer);
         virtual ~ProjectedNamespace() = default;
 
         virtual jsi::Value get(jsi::Runtime& runtime, const jsi::PropNameID& propName) override;

@@ -5,7 +5,8 @@ struct Namespace : public std::enable_shared_from_this<Namespace>
 {
     static std::map<std::string_view, std::shared_ptr<Namespace>> GetRoots(const Settings& settings);
 
-    Namespace(const std::shared_ptr<Namespace>& parent, std::string&& name, const winmd::reader::cache::namespace_members* members = nullptr);
+    Namespace(const std::shared_ptr<Namespace>& parent, std::string&& name,
+        const winmd::reader::cache::namespace_members* members = nullptr);
 
     const std::string& Name() const noexcept;
     const std::string& FullName(bool useCppDelim = false) const;
@@ -18,9 +19,10 @@ struct Namespace : public std::enable_shared_from_this<Namespace>
     uint32_t Depth() const;
 
     bool Enumerate(const std::function<bool(const Namespace&)>& fn, bool postorder = false) const;
-    static bool EnumerateAll(const std::map<std::string_view, std::shared_ptr<Namespace>>& namespaces, const std::function<bool(const Namespace&)>& fn, bool postorder = false);
+    static bool EnumerateAll(const std::map<std::string_view, std::shared_ptr<Namespace>>& namespaces,
+        const std::function<bool(const Namespace&)>& fn, bool postorder = false);
 
-private: 
+private:
     const std::optional<std::weak_ptr<Namespace>> m_parent;
     const std::string m_name;
     const winmd::reader::cache::namespace_members* m_members;
@@ -31,7 +33,8 @@ private:
     mutable std::string m_fullNameCpp;
 };
 
-bool IsNamespaceAllowed(const Settings& settings, const std::string_view& namespaceFullName, const winmd::reader::cache::namespace_members& members);
+bool IsNamespaceAllowed(const Settings& settings, const std::string_view& namespaceFullName,
+    const winmd::reader::cache::namespace_members& members);
 bool IsMethodAllowed(const Settings& settings, const winmd::reader::MethodDef& methodDef);
 bool IsTypeAllowed(const Settings& settings, const winmd::reader::TypeDef& typeDef, const bool isClass = false);
 

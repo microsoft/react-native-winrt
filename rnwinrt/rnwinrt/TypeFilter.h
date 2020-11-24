@@ -1,6 +1,5 @@
 #pragma once
 
-
 // winmd::reader::filter has a rather unfortunate design that if no include filters are specified and only includes,
 // it treats the outcome as an exclude even if no exclude filter matches. That is it doesn't assume a default include
 // if only excludes are specified, where-as the opposite does correctly imply a default exclude. Hence, we would have
@@ -8,7 +7,8 @@
 // filtering. C++/WinRT has this problem, but depending on usage, it only applies it only has to generate include
 // rules for the relatively smaller set of types it generates component implementations for rather than the full set
 // of references. In the case of RN/WinRT it would be applying the filter to the union of inputs and references
-// making such a filter inadvisable. Hence this forks the original implementation and assume default include with only excludes.
+// making such a filter inadvisable. Hence this forks the original implementation and assume default include with only
+// excludes.
 
 struct TypeFilter
 {
@@ -33,8 +33,7 @@ struct TypeFilter
             m_rules.push_back({ exclude, false });
         }
 
-        std::sort(m_rules.begin(), m_rules.end(), [](auto const& lhs, auto const& rhs)
-        {
+        std::sort(m_rules.begin(), m_rules.end(), [](auto const& lhs, auto const& rhs) {
             auto size_compare = int(lhs.first.size()) - int(rhs.first.size());
             return (size_compare > 0) || ((size_compare == 0) && !lhs.second);
         });
@@ -47,7 +46,8 @@ struct TypeFilter
 
 private:
     bool Includes(std::string_view const& typeNamespace, std::string_view const& typeName) const noexcept;
-    static bool Match(const std::string_view& typeNamespace, const std::string_view& typeName, std::string_view const& match) noexcept;
+    static bool Match(const std::string_view& typeNamespace, const std::string_view& typeName,
+        std::string_view const& match) noexcept;
 
     std::vector<std::pair<std::string, bool>> m_rules;
     bool m_defaultInclude = true;

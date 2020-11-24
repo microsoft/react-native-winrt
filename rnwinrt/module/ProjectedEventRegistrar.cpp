@@ -1,15 +1,16 @@
 #include "pch.h"
+
 #include "ProjectedEventRegistrar.h"
 #include "ProjectionsContext.h"
 
 namespace WinRTTurboModule
 {
-    ProjectedEventRegistrar::ProjectedEventRegistrar(ProjectionsContext& context)
-        : m_context(context)
+    ProjectedEventRegistrar::ProjectedEventRegistrar(ProjectionsContext& context) : m_context(context)
     {
     }
 
-    std::shared_ptr<ProjectedEventInstance> ProjectedEventRegistrar::Get(const winrt::Windows::Foundation::IInspectable& inspectable, const std::shared_ptr<IProjectedEventBase>& event)
+    std::shared_ptr<ProjectedEventInstance> ProjectedEventRegistrar::Get(
+        const winrt::Windows::Foundation::IInspectable& inspectable, const std::shared_ptr<IProjectedEventBase>& event)
     {
 #if _DEBUG
         FAIL_FAST_IF(m_context.Invoker->ThreadId != ::GetCurrentThreadId());
@@ -25,14 +26,10 @@ namespace WinRTTurboModule
             entry.WeakRef = inspectable;
         }
 
-        // Most objects would have a small number of event handlers, thus to reduce memory usage and lookup times we can just
-        // use plain a std::vector with O(n) lookup.
+        // Most objects would have a small number of event handlers, thus to reduce memory usage and lookup times we can
+        // just use plain a std::vector with O(n) lookup.
         const auto it = std::find_if(entry.EventInstances.begin(), entry.EventInstances.end(),
-            [&event](const std::shared_ptr<ProjectedEventInstance>& instance)
-            {
-                return instance->Event() == event;
-            }
-        );
+            [&event](const std::shared_ptr<ProjectedEventInstance>& instance) { return instance->Event() == event; });
 
         if (it != entry.EventInstances.end())
         {

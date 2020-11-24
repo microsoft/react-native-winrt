@@ -1,4 +1,5 @@
 #include "pch.h"
+
 #include "CommandReader.h"
 #include "FileGenerator.h"
 #include "MetadataHelpers.h"
@@ -6,20 +7,23 @@
 
 namespace
 {
-    constexpr Option c_commandOptions[]
-    {
+    constexpr Option c_commandOptions[]{
         { "input", Option::NoMinArgs, Option::NoMaxArgs, "<spec>", "Windows metadata to include in projection" },
         { "reference" }, // Has the same effect as "input" with RN/WinRT and is include here to match C++/WinRT.
         { "output", Option::NoMinArgs, 1, "<path>", "Location of generated code" },
-        { "include", Option::NoMinArgs, Option::NoMaxArgs, "<prefix>", "One or more prefixes to include in input. Essential Inclusions: Windows.Foundation" },
+        { "include", Option::NoMinArgs, Option::NoMaxArgs, "<prefix>",
+            "One or more prefixes to include in input. Essential Inclusions: Windows.Foundation" },
         { "filter" }, // Legacy name for "include" to match C++/WinRT.
-        { "exclude", Option::NoMinArgs, Option::NoMaxArgs, "<prefix>", "One or more prefixes to exclude from input. Suggested Exclusions: Windows.Phone and Windows.Web.UI" },
+        { "exclude", Option::NoMinArgs, Option::NoMaxArgs, "<prefix>",
+            "One or more prefixes to exclude from input. Suggested Exclusions: Windows.Phone and Windows.Web.UI" },
         { "pch", 0, 1, "<name>", "Specify name of precompiled header file (defaults to pch.h)" },
         { "help", Option::NoMinArgs, Option::NoMaxArgs, {}, "Show detailed help with examples" },
         { "?" },
-        { "allowforwebexclusively", Option::NoMinArgs, 0, {}, "Restricts factories and statics exposed to JavaScript to those with AllowForWeb." },
+        { "allowforwebexclusively", Option::NoMinArgs, 0, {},
+            "Restricts factories and statics exposed to JavaScript to those with AllowForWeb." },
         { "deprecatedincluded", Option::NoMinArgs, 0, {}, "Includes types and methods that are marked deprecated." },
-        { "webhosthiddenincluded", Option::NoMinArgs, 0, {}, "Includes types annotated with WebHostHidden that are intended to be hidden from JS callers." },
+        { "webhosthiddenincluded", Option::NoMinArgs, 0, {},
+            "Includes types annotated with WebHostHidden that are intended to be hidden from JS callers." },
         { "verbose", Option::NoMinArgs, 0, {}, "Enables verbose logging" },
     };
 
@@ -38,7 +42,7 @@ namespace
             }
 
             std::stringstream arg;
-            arg << "-" << option.Name << " " <<  option.Arg;
+            arg << "-" << option.Name << " " << option.Arg;
             arg.tellg();
 
             std::cout << "  ";
@@ -47,7 +51,6 @@ namespace
             std::cout << std::left << arg.str();
             std::cout.width(0);
             std::cout << option.Description << std::endl;
-
         }
 
         std::cout << R"(  @<path>             Response file containing command line options)" << std::endl;

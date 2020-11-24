@@ -15,7 +15,6 @@ namespace WinRTTurboModule
 
     jsi::String CreateString(jsi::Runtime& runtime, const std::wstring_view& value);
 
-
     jsi::Value CreateError(jsi::Runtime& runtime, const std::string_view& message);
     jsi::Value CreateError(jsi::Runtime& runtime, const std::exception& exception);
     jsi::Value CreateError(jsi::Runtime& runtime, const winrt::hresult_error& error);
@@ -38,13 +37,13 @@ namespace WinRTTurboModule
     {
         CallInvokerWrapper(const std::shared_ptr<react::CallInvoker>& CallInvokerWrapper);
 
-        // Run the function synchronously if on the JS thread or asynchronously if not. 
+        // Run the function synchronously if on the JS thread or asynchronously if not.
         void Call(std::function<void()>&& func);
 
         // Always queue the function to run asynchronously.
         void CallAsync(std::function<void()>&& func);
 
-        // Run the function synchronously if on the JS thread or asynchronously and block until complete if not. 
+        // Run the function synchronously if on the JS thread or asynchronously and block until complete if not.
         void CallSync(std::function<void()>&& func);
 
         const DWORD ThreadId;

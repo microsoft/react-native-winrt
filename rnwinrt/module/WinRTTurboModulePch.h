@@ -1,17 +1,17 @@
 ﻿#pragma once
-#pragma warning(disable: 4100) // unreferenced formal parameter
+#pragma warning(disable : 4100) // unreferenced formal parameter
 
 #define NOMINMAX
-
 #include <windows.h>
+
 #include <combaseapi.h>
 
 #ifdef GetCurrentTime
 #undef GetCurrentTime
 #endif
 
-#include <wil\cppwinrt.h>
 #include <wil\com.h>
+#include <wil\cppwinrt.h>
 #include <wil\win32_helpers.h>
 #include <wil\winrt.h>
 
@@ -28,11 +28,11 @@
 
 #include <inspectable.h>
 #include <unknwn.h>
-#include <winrt\Windows.Foundation.h>
 #include <winrt\Windows.Foundation.Collections.h>
+#include <winrt\Windows.Foundation.h>
 
-#include <jsi\jsi.h>
 #include <TurboModule\Core\TurboModule.h>
+#include <jsi\jsi.h>
 
 namespace jsi
 {
@@ -49,7 +49,7 @@ namespace std
     template <>
     struct less<winrt::guid>
     {
-        bool operator() (const winrt::guid& left, const winrt::guid& right) const
+        bool operator()(const winrt::guid& left, const winrt::guid& right) const
         {
             return memcmp(&left, &right, sizeof(winrt::guid)) < 0;
         }
