@@ -136,4 +136,5 @@
     <Error Condition="!Exists('$(SolutionDir)\packages\Microsoft.Windows.WinMD.1.0.191022.1\build\native\Microsoft.Windows.WinMD.props')" Text="$([System.String]::Format('$(ErrorText)', '$(SolutionDir)\packages\Microsoft.Windows.WinMD.1.0.191022.1\build\native\Microsoft.Windows.WinMD.props'))" />
     <Error Condition="!Exists('$(SolutionDir)\packages\Microsoft.Windows.ImplementationLibrary.1.0.191107.2\build\native\Microsoft.Windows.ImplementationLibrary.targets')" Text="$([System.String]::Format('$(ErrorText)', '$(SolutionDir)\packages\Microsoft.Windows.ImplementationLibrary.1.0.191107.2\build\native\Microsoft.Windows.ImplementationLibrary.targets'))" />
   </Target>
+  <Target Name="Deploy" />
 </Project>

@@ -22,10 +22,11 @@ namespace WinRTTurboModule
 
     jsi::Value ConvertCharToValue(const std::shared_ptr<ProjectionsContext>& context, const char16_t& value)
     {
-        std::string multibyteString(8, '\0');
-        winrt::check_bool(::WideCharToMultiByte(CP_UTF8, WC_ERR_INVALID_CHARS, reinterpret_cast<PCWSTR>(&value), 1,
-           &multibyteString[0], static_cast<int32_t>(multibyteString.size()), L'\0' /*lpDefaultChar*/, nullptr /*lpUsedDefaultChar*/));
-        return jsi::String::createFromUtf8(context->Runtime, multibyteString);
+        char buffer[8];
+        auto bytes = ::WideCharToMultiByte(CP_UTF8, WC_ERR_INVALID_CHARS, reinterpret_cast<PCWSTR>(&value), 1, buffer,
+            static_cast<int>(std::size(buffer)), nullptr, nullptr);
+        winrt::check_bool(bytes);
+        return jsi::String::createFromUtf8(context->Runtime, reinterpret_cast<uint8_t*>(buffer), bytes);
     }
 
     char16_t ConvertValueToChar(const std::shared_ptr<ProjectionsContext>& context, const jsi::Value& value)

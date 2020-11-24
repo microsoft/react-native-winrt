@@ -1,0 +1,23 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="15.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ItemGroup>
+    <ClCompile Include="pch.cpp" />
+    <ClCompile Include="$(GeneratedFilesDir)module.g.cpp" />
+    <ClCompile Include="Composable.cpp" />
+    <ClCompile Include="Derived.cpp" />
+    <ClCompile Include="TestRunner.cpp" />
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="pch.h" />
+    <ClInclude Include="Composable.h" />
+    <ClInclude Include="Derived.h" />
+    <ClInclude Include="TestRunner.h" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="TestComponent.def" />
+    <None Include="packages.config" />
+  </ItemGroup>
+  <ItemGroup>
+    <Midl Include="TestComponent.idl" />
+  </ItemGroup>
+</Project>

@@ -1,0 +1,258 @@
+
+namespace TestComponent
+{
+    // All language projections must deal with blittable vs. non-blittable structs somehow. In C++/WinRT, only structs
+    // containing String or IReference<T> are non-blittable since they result in structs that are not trivially destructible.
+    // In C#/WinRT, structs containing Boolean and Char are also non-blittable according to the following doc:
+    // https://docs.microsoft.com/en-us/dotnet/framework/interop/blittable-and-non-blittable-types
+
+    struct Blittable
+    {
+        UInt8 A;
+        UInt16 B;
+        UInt32 C;
+        UInt64 D;
+        Int16 E;
+        Int32 F;
+        Int64 G;
+        Single H;
+        Double I;
+        Guid J;
+    };
+
+    struct NonBlittable
+    {
+        Boolean A;
+        Char B;
+        String C;
+        Windows.Foundation.IReference<Int64> D;
+    };
+
+    struct Nested
+    {
+        Blittable Blittable;
+        NonBlittable NonBlittable;
+    };
+
+    //delegate Boolean Param1Handler(Boolean a, out Boolean b);
+    //delegate UInt8 Param2Handler(UInt8 a, out UInt8 b);
+    //delegate UInt16 Param3Handler(UInt16 a, out UInt16 b);
+    //delegate UInt32 Param4Handler(UInt32 a, out UInt32 b);
+    //delegate UInt64 Param5Handler(UInt64 a, out UInt64 b);
+    //delegate Int16 Param6Handler(Int16 a, out Int16 b);
+    //delegate Int32 Param7Handler(Int32 a, out Int32 b);
+    //delegate Int64 Param8Handler(Int64 a, out Int64 b);
+    //delegate Single Param9Handler(Single a, out Single b);
+    //delegate Double Param10Handler(Double a, out Double b);
+    //delegate Char Param11Handler(Char a, out Char b);
+    //delegate String Param12Handler(String a, out String b);
+    //delegate Blittable Param13Handler(Blittable a, ref const Blittable b, out Blittable c);
+    //delegate NonBlittable Param14Handler(NonBlittable a, ref const NonBlittable b, out NonBlittable c);
+    //delegate Nested Param15Handler(Nested a, ref const Nested b, out Nested c);
+
+    //delegate Boolean[] Array1Handler(Boolean[] a, ref Boolean[] b, out Boolean[] c);
+    //delegate UInt8[] Array2Handler(UInt8[] a, ref UInt8[] b, out UInt8[] c);
+    //delegate UInt16[] Array3Handler(UInt16[] a, ref UInt16[] b, out UInt16[] c);
+    //delegate UInt32[] Array4Handler(UInt32[] a, ref UInt32[] b, out UInt32[] c);
+    //delegate UInt64[] Array5Handler(UInt64[] a, ref UInt64[] b, out UInt64[] c);
+    //delegate Int16[] Array6Handler(Int16[] a, ref Int16[] b, out Int16[] c);
+    //delegate Int32[] Array7Handler(Int32[] a, ref Int32[] b, out Int32[] c);
+    //delegate Int64[] Array8Handler(Int64[] a, ref Int64[] b, out Int64[] c);
+    //delegate Single[] Array9Handler(Single[] a, ref Single[] b, out Single[] c);
+    //delegate Double[] Array10Handler(Double[] a, ref Double[] b, out Double[] c);
+    //delegate Char[] Array11Handler(Char[] a, ref Char[] b, out Char[] c);
+    //delegate String[] Array12Handler(String[] a, ref String[] b, out String[] c);
+    //delegate Blittable[] Array13Handler(Blittable[] a, ref Blittable[] b, out Blittable[] c);
+    //delegate NonBlittable[] Array14Handler(NonBlittable[] a, ref NonBlittable[] b, out NonBlittable[] c);
+    //delegate Nested[] Array15Handler(Nested[] a, ref Nested[] b, out Nested[] c);
+    //delegate Windows.Foundation.IStringable[] Array16Handler(Windows.Foundation.IStringable[] a, ref Windows.Foundation.IStringable[] b, out Windows.Foundation.IStringable[] c);
+
+    //delegate Windows.Foundation.Collections.IIterable<String> Collection1Handler(Windows.Foundation.Collections.IIterable<String> a, out Windows.Foundation.Collections.IIterable<String> b);
+    //delegate Windows.Foundation.Collections.IIterable<Windows.Foundation.Collections.IKeyValuePair<String, String> > Collection2Handler(Windows.Foundation.Collections.IIterable<Windows.Foundation.Collections.IKeyValuePair<String, String> > a, out Windows.Foundation.Collections.IIterable<Windows.Foundation.Collections.IKeyValuePair<String, String> > b);
+    //delegate Windows.Foundation.Collections.IMap<String, String> Collection3Handler(Windows.Foundation.Collections.IMap<String, String> a, out Windows.Foundation.Collections.IMap<String, String> b);
+    //delegate Windows.Foundation.Collections.IMapView<String, String> Collection4Handler(Windows.Foundation.Collections.IMapView<String, String> a, out Windows.Foundation.Collections.IMapView<String, String> b);
+    //delegate Windows.Foundation.Collections.IVector<String> Collection5Handler(Windows.Foundation.Collections.IVector<String> a, out Windows.Foundation.Collections.IVector<String> b);
+    //delegate Windows.Foundation.Collections.IVectorView<String> Collection6Handler(Windows.Foundation.Collections.IVectorView<String> a, out Windows.Foundation.Collections.IVectorView<String> b);
+
+    //delegate Windows.Foundation.IAsyncAction Async1Handler(Windows.Foundation.IAsyncAction suspend, Boolean fail);
+    //delegate Windows.Foundation.IAsyncActionWithProgress<Int32> Async2Handler(Windows.Foundation.IAsyncAction suspend, Boolean fail, Int32 progress);
+    //delegate Windows.Foundation.IAsyncOperation<Int32> Async3Handler(Windows.Foundation.IAsyncAction suspend, Boolean fail, Int32 result);
+    //delegate Windows.Foundation.IAsyncOperationWithProgress<Int32, Int32> Async4Handler(Windows.Foundation.IAsyncAction suspend, Boolean fail, Int32 result, Int32 progress);
+
+    interface ITests
+    {
+        UInt32 Percentage{ get; };
+        void Simple();
+
+        Boolean Param1(Boolean a, out Boolean b);
+        UInt8 Param2(UInt8 a, out UInt8 b);
+        UInt16 Param3(UInt16 a, out UInt16 b);
+        UInt32 Param4(UInt32 a, out UInt32 b);
+        UInt64 Param5(UInt64 a, out UInt64 b);
+        Int16 Param6(Int16 a, out Int16 b);
+        Int32 Param7(Int32 a, out Int32 b);
+        Int64 Param8(Int64 a, out Int64 b);
+        Single Param9(Single a, out Single b);
+        Double Param10(Double a, out Double b);
+        Char Param11(Char a, out Char b);
+        //String Param12(String a, out String b);
+        //Blittable Param13(Blittable a, ref const Blittable b, out Blittable c);
+        //NonBlittable Param14(NonBlittable a, ref const NonBlittable b, out NonBlittable c);
+        //Nested Param15(Nested a, ref const Nested b, out Nested c);
+
+        //void Param1Call(Param1Handler handler);
+        //void Param2Call(Param2Handler handler);
+        //void Param3Call(Param3Handler handler);
+        //void Param4Call(Param4Handler handler);
+        //void Param5Call(Param5Handler handler);
+        //void Param6Call(Param6Handler handler);
+        //void Param7Call(Param7Handler handler);
+        //void Param8Call(Param8Handler handler);
+        //void Param9Call(Param9Handler handler);
+        //void Param10Call(Param10Handler handler);
+        //void Param11Call(Param11Handler handler);
+        //void Param12Call(Param12Handler handler);
+        //void Param13Call(Param13Handler handler);
+        //void Param14Call(Param14Handler handler);
+        //void Param15Call(Param15Handler handler);
+
+        //Boolean[] Array1(Boolean[] a, ref Boolean[] b, out Boolean[] c);
+        //UInt8[] Array2(UInt8[] a, ref UInt8[] b, out UInt8[] c);
+        //UInt16[] Array3(UInt16[] a, ref UInt16[] b, out UInt16[] c);
+        //UInt32[] Array4(UInt32[] a, ref UInt32[] b, out UInt32[] c);
+        //UInt64[] Array5(UInt64[] a, ref UInt64[] b, out UInt64[] c);
+        //Int16[] Array6(Int16[] a, ref Int16[] b, out Int16[] c);
+        //Int32[] Array7(Int32[] a, ref Int32[] b, out Int32[] c);
+        //Int64[] Array8(Int64[] a, ref Int64[] b, out Int64[] c);
+        //Single[] Array9(Single[] a, ref Single[] b, out Single[] c);
+        //Double[] Array10(Double[] a, ref Double[] b, out Double[] c);
+        //Char[] Array11(Char[] a, ref Char[] b, out Char[] c);
+        //String[] Array12(String[] a, ref String[] b, out String[] c);
+        //Blittable[] Array13(Blittable[] a, ref Blittable[] b, out Blittable[] c);
+        //NonBlittable[] Array14(NonBlittable[] a, ref NonBlittable[] b, out NonBlittable[] c);
+        //Nested[] Array15(Nested[] a, ref Nested[] b, out Nested[] c);
+        //Windows.Foundation.IStringable[] Array16(Windows.Foundation.IStringable[] a, ref Windows.Foundation.IStringable[] b, out Windows.Foundation.IStringable[] c);
+
+        //void Array1Call(Array1Handler handler);
+        //void Array2Call(Array2Handler handler);
+        //void Array3Call(Array3Handler handler);
+        //void Array4Call(Array4Handler handler);
+        //void Array5Call(Array5Handler handler);
+        //void Array6Call(Array6Handler handler);
+        //void Array7Call(Array7Handler handler);
+        //void Array8Call(Array8Handler handler);
+        //void Array9Call(Array9Handler handler);
+        //void Array10Call(Array10Handler handler);
+        //void Array11Call(Array11Handler handler);
+        //void Array12Call(Array12Handler handler);
+        //void Array13Call(Array13Handler handler);
+        //void Array14Call(Array14Handler handler);
+        //void Array15Call(Array15Handler handler);
+        //void Array16Call(Array16Handler handler);
+
+        //Windows.Foundation.Collections.IIterable<String> Collection1(Windows.Foundation.Collections.IIterable<String> a, out Windows.Foundation.Collections.IIterable<String> b);
+        //Windows.Foundation.Collections.IIterable<Windows.Foundation.Collections.IKeyValuePair<String, String> > Collection2(Windows.Foundation.Collections.IIterable<Windows.Foundation.Collections.IKeyValuePair<String, String> > a, out Windows.Foundation.Collections.IIterable<Windows.Foundation.Collections.IKeyValuePair<String, String> > b);
+        //Windows.Foundation.Collections.IMap<String, String> Collection3(Windows.Foundation.Collections.IMap<String, String> a, out Windows.Foundation.Collections.IMap<String, String> b);
+        //Windows.Foundation.Collections.IMapView<String, String> Collection4(Windows.Foundation.Collections.IMapView<String, String> a, out Windows.Foundation.Collections.IMapView<String, String> b);
+        //Windows.Foundation.Collections.IVector<String> Collection5(Windows.Foundation.Collections.IVector<String> a, out Windows.Foundation.Collections.IVector<String> b);
+        //Windows.Foundation.Collections.IVectorView<String> Collection6(Windows.Foundation.Collections.IVectorView<String> a, out Windows.Foundation.Collections.IVectorView<String> b);
+
+        //void Collection1Call(Collection1Handler handler);
+        //void Collection2Call(Collection2Handler handler);
+        //void Collection3Call(Collection3Handler handler);
+        //void Collection4Call(Collection4Handler handler);
+        //void Collection5Call(Collection5Handler handler);
+        //void Collection6Call(Collection6Handler handler);
+
+        //Windows.Foundation.IAsyncAction Async1(Windows.Foundation.IAsyncAction suspend, Boolean fail);
+        //Windows.Foundation.IAsyncActionWithProgress<Int32> Async2(Windows.Foundation.IAsyncAction suspend, Boolean fail, Int32 progress);
+        //Windows.Foundation.IAsyncOperation<Int32> Async3(Windows.Foundation.IAsyncAction suspend, Boolean fail, Int32 result);
+        //Windows.Foundation.IAsyncOperationWithProgress<Int32, Int32> Async4(Windows.Foundation.IAsyncAction suspend, Boolean fail, Int32 result, Int32 progress);
+
+        //void Async1Call(Async1Handler handler);
+        //void Async2Call(Async2Handler handler);
+        //void Async3Call(Async3Handler handler);
+        //void Async4Call(Async4Handler handler);
+
+        //event Windows.Foundation.EventHandler<Int32> Event1;
+        //event Windows.Foundation.TypedEventHandler<ITests, Int32> Event2;
+
+        //void Event1Call(Int32 value);
+        //void Event2Call(Int32 value);
+    }
+
+    //delegate void TestHandler(ITests tests);
+
+    [attributeusage(target_runtimeclass)]
+    attribute CustomTestAttribute
+    {
+        String SomeString;
+        Int32 SomeInt;
+        Boolean SomeBool;
+    }
+
+    [CustomTest("Hello, World!", 1975, TRUE)]
+    runtimeclass TestRunner
+    {
+    //    // Throws an exception if ITests is not implemented correctly.
+    //    static void TestProducer(ITests callee);
+
+    //    // Returns 100 (percent) if the calling language projection faithfully covered all tests.
+    //    static UInt32 TestConsumer(TestHandler caller);
+
+    //    // Test C++/WinRT as both caller and callee.
+    //    static void TestSelf();
+
+        // Returns an implementation of ITests for independently driven testing.
+        static ITests MakeTests();
+
+    //    // Helpers in support of Rust/WinRT testing.
+    //    static Windows.Foundation.Collections.IVector<Int32> CreateInt32Vector();
+    //    static Windows.Foundation.Collections.IVector<String> CreateStringVector();
+    //    static Windows.Foundation.Collections.IVector<Windows.Foundation.IStringable> CreateStringableVector();
+    //    static Windows.Foundation.TimeSpan CreateTimeSpan(UInt32 milliseconds);
+    //    static Windows.Foundation.IAsyncAction CreateAsyncAction(UInt32 milliseconds);
+    //    static String ExpectObject(Object value);
+    }
+
+    //interface IRequiredOne
+    //{
+    //    Int32 One();
+    //};
+
+    //interface IRequiredTwo requires IRequiredOne
+    //{
+    //    Int32 Two();
+    //};
+
+    //interface IRequiredThree requires IRequiredOne, IRequiredTwo
+    //{
+    //    Int32 Three();
+    //};
+
+    //interface IRequiredFour requires IRequiredOne, IRequiredTwo, IRequiredThree
+    //{
+    //    Int32 Four();
+    //};
+
+    //unsealed runtimeclass Composable : IRequiredOne, IRequiredTwo, IRequiredThree, IRequiredFour
+    //{
+    //    Composable();
+
+    //    [method_name("CreateWithValue")]
+    //    Composable(Int32 init);
+
+    //    Int32 Value{ get; set; };
+
+    //    static Int32 ExpectComposable(Composable t);
+    //    static Int32 ExpectRequiredOne(IRequiredOne t);
+    //    static Int32 ExpectRequiredTwo(IRequiredTwo t);
+    //    static Int32 ExpectRequiredThree(IRequiredThree t);
+    //    static Int32 ExpectRequiredFour(IRequiredFour t);
+    //}
+
+    //unsealed runtimeclass Derived : Composable, IRequiredOne, IRequiredTwo, IRequiredThree, IRequiredFour
+    //{
+    //    Derived();
+    //}
+}
