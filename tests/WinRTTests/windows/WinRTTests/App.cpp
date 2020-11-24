@@ -5,7 +5,6 @@
 #include "AutolinkedNativeModules.g.h"
 #include "ReactPackageProvider.h"
 
-
 using namespace winrt::WinRTTests;
 using namespace winrt::WinRTTests::implementation;
 using namespace winrt;

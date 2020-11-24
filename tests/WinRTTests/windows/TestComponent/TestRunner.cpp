@@ -1,6 +1,10 @@
 #include "pch.h"
+
 #include "TestRunner.h"
+
 #include "TestRunner.g.cpp"
+
+// clang-format off
 
 using namespace winrt;
 using namespace Windows::Foundation;

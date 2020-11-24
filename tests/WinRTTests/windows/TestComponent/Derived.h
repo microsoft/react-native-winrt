@@ -1,4 +1,7 @@
 #pragma once
+
+// clang-format off
+
 //#include "Derived.g.h"
 //#include "Composable.h"
 //

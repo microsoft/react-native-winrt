@@ -1,4 +1,7 @@
 #include "pch.h"
+
+// clang-format off
+
 //#include "Composable.h"
 //#include "Composable.g.cpp"
 //

@@ -2,7 +2,6 @@
 #include "MainPage.g.h"
 #include <winrt/Microsoft.ReactNative.h>
 
-
 namespace winrt::WinRTTests::implementation
 {
     struct MainPage : MainPageT<MainPage>
@@ -17,5 +16,3 @@ namespace winrt::WinRTTests::factory_implementation
     {
     };
 }
-
-

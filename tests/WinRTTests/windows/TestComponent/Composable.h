@@ -1,4 +1,6 @@
 #pragma once
+// clang-format off
+
 //#include "Composable.g.h"
 //
 //namespace winrt::TestComponent::implementation
