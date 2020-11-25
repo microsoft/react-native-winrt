@@ -40,12 +40,17 @@ export class Scenario extends Component {
         }
     }
 
+    rerunTest() {
+        this.props.scenario.invoke(this.props.scenario);
+    }
+
     render() {
         return (
             <View style={styles.listEntry}>
                 <Text style={styles.rowItem}>{this.props.scenario.name}</Text>
+                <Text style={[styles.rowItem, {flex: 1}]}>{this.props.scenario.failureText}</Text>
                 <Text style={[styles.rowItem, this.textStyle()]}>{this.resultText()}</Text>
-                <Text>{this.props.scenario.failureText}</Text>
+                <Button style={styles.rowItem} onPress={this.rerunTest.bind(this)} title='Rerun'/>
             </View>
         );
     }

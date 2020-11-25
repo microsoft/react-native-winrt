@@ -21,6 +21,10 @@ if (module) {
             return { returnValue: val, b: val };
         }
 
+        paramNWithRef(val) {
+            return { returnValue: val, c: val };
+        }
+
         param1(val) { return this.paramN(val); }
         param2(val) { return this.paramN(val); }
         param3(val) { return this.paramN(val); }
@@ -28,6 +32,20 @@ if (module) {
         param5(val) { return this.paramN(val); }
         param6(val) { return this.paramN(val); }
         param7(val) { return this.paramN(val); }
+        param8(val) { return this.paramN(val); }
+        param9(val) { return this.paramN(val); }
+        param10(val) { return this.paramN(val); }
+        param11(val) { return this.paramN(val); }
+        param12(val) { return this.paramN(val); }
+        param13(val, valRef) { return this.paramNWithRef(val); }
+        param14(val, valRef) { return this.paramNWithRef(val); }
+        param15(val, valRef) { return this.paramNWithRef(val); }
+
+        addEventListener(name, fn) {}
+        removeEventListener(name, fn) {}
+
+        event1Call(val) {}
+        event2Call(val) {}
     }
 
     global.TestComponent = {

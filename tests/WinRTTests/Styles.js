@@ -7,29 +7,29 @@ import { StyleSheet } from "react-native";
 
 export var styles = StyleSheet.create({
     headerBanner: {
-      backgroundColor: 'lightgray',
-      alignItems: 'center',
-      paddingVertical: 10,
+        backgroundColor: 'lightgray',
+        alignItems: 'center',
+        paddingVertical: 10,
     },
     scrollView: {
-      flex: 1,
+        flex: 1,
     },
     listEntry: {
+        alignSelf: 'stretch',
         flexDirection: 'row',
-        justifyContent: 'center',
         alignItems: 'center',
     },
     rowItem: {
-      marginVertical: 5,
-      marginHorizontal: 10,
+        marginVertical: 5,
+        marginHorizontal: 10,
     },
     progressText: {
-      color: 'darkgray'
+        color: 'darkgray'
     },
     passText: {
-      color: 'green',
+        color: 'green',
     },
     failText: {
-      color: 'red',
+        color: 'red',
     },
-  });
+});

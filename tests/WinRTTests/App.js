@@ -20,15 +20,71 @@ function assert(val) {
     }
 }
 
+function stringify(val) {
+    if (val == null) return 'null';
+    else if (typeof(val) == 'object') return JSON.stringify(val);
+    return val.toString();
+}
+
+function checkEquals(lhs, rhs) {
+    if (typeof(lhs) != typeof(rhs)) {
+        return {
+            success: false,
+            msg: 'Types are not the same. \'' + typeof(lhs) + '\' (' + stringify(lhs) + ') vs \'' + typeof(rhs) + '\' (' + stringify(rhs) + ')'
+        };
+    } else if ((lhs == null) && (rhs == null)) {
+        return { success: true };
+    } else if ((lhs == null) || (rhs == null)) {
+        return {
+            success: false,
+            msg: '\'' + stringify(lhs) + '\' =/= \'' + stringify(rhs) + '\''
+        };
+    }
+
+    if (typeof(lhs) === 'object') {
+        for (var prop in lhs) {
+            if (!rhs.hasOwnProperty(prop)) {
+                return {
+                    success: false,
+                    msg: 'Object does not have property \'' + prop + '\''
+                };
+            }
+        }
+
+        for (var prop in rhs) {
+            if (!lhs.hasOwnProperty(prop)) {
+                return {
+                    success: false,
+                    msg: 'Object does not have property \'' + prop + '\''
+                };
+            }
+
+            var result = checkEquals(lhs[prop], rhs[prop]);
+            if (!result.success) return result;
+        }
+    } else {
+        if (lhs != rhs) {
+            return {
+                success: false,
+                msg: '\'' + stringify(lhs) + '\' =/= \'' + stringify(rhs) + '\''
+            };
+        }
+    }
+
+    return { success: true };
+}
+
 function assertEqual(lhs, rhs) {
-    if (lhs != rhs) {
-        throw new Error('Assertion failed! \'' + lhs.toString() + '\' == \'' + rhs.toString() + '\'');
+    var result = checkEquals(lhs, rhs);
+    if (!result.success) {
+        throw new Error('Assertion failed! ' + result.msg);
     }
 }
 
 function assertNotEqual(lhs, rhs) {
-    if (lhs == rhs) {
-        throw new Error('Assertion failed! ' + lhs.toString() + ' != ' + rhs.toString());
+    var result = checkEquals(lhs, rhs);
+    if (result.success) {
+        throw new Error('Assertion failed! \'' + stringify(lhs) + '\' == \'' + stringify(rhs) + '\'');
     }
 }
 
@@ -70,9 +126,22 @@ class App extends Component {
         new TestScenario('ITests::Param9', this.runParam9.bind(this)),
         new TestScenario('ITests::Param10', this.runParam10.bind(this)),
         new TestScenario('ITests::Param11', this.runParam11.bind(this)),
+        new TestScenario('ITests::Param12', this.runParam12.bind(this)),
+        new TestScenario('ITests::Param13', this.runParam13.bind(this)),
+        new TestScenario('ITests::Param14', this.runParam14.bind(this)),
+        new TestScenario('ITests::Param15', this.runParam15.bind(this)),
+        // new TestScenario('ITests::Collection1', this.runCollection1.bind(this)),
+        new TestScenario('ITests::Event1', this.runEvent1.bind(this)),
+        new TestScenario('ITests::Event2', this.runEvent2.bind(this)),
     ];
 
     runSync(scenario, fn) {
+        if (scenario.result != TestResult.NotRun) {
+            --this.completedCount;
+            if (scenario.result == TestResult.Pass) --this.passCount;
+            scenario.result = TestResult.NotRun;
+        }
+
         var result = TestResult.Fail;
         try {
             fn();
@@ -280,12 +349,155 @@ class App extends Component {
 
     runParam11(scenario) {
         this.runSync(scenario, () => {
-            var vals = ['a', 'b', 'c']; // Char16
+            var vals = ['a', 'b', 'c', '⚾']; // Char16
             for (var val of vals) {
                 var { returnValue, b } = this.tests.param11(val);
                 assertEqual(returnValue, val);
                 assertEqual(b, val);
             }
+        });
+    }
+
+    runParam12(scenario) {
+        this.runSync(scenario, () => {
+            var vals = ['', '\0', 'foobar', 'foo\0bar']; // String
+            for (var val of vals) {
+                var { returnValue, b } = this.tests.param12(val);
+                assertEqual(returnValue, val);
+                assertEqual(b, val);
+            }
+        });
+    }
+
+    runParam13(scenario) {
+        this.runSync(scenario, () => {
+            var blittable = {
+                a: 8, // UInt8
+                b: 16, // UInt16
+                c: 32, // UInt32
+                d: 64, // UInt64
+                e: -16, // Int16
+                f: -32, // Int32
+                g: -64, // Int64
+                h: 42.5, // Single
+                i: -42.5, // Double
+                j: '0A26AE10-CDFA-5690-993B-6150412DE4E9', // Guid
+            };
+            var { returnValue, c } = this.tests.param13(blittable, blittable);
+            assertEqual(returnValue, blittable);
+            assertEqual(c, blittable);
+
+            var threw = false;
+            try { this.tests.param13({}, {}) }
+            catch { threw = true; }
+            assert(threw);
+        });
+    }
+
+    runParam14(scenario) {
+        this.runSync(scenario, () => {
+            var nonBlittable = {
+                a: true, // Boolean
+                b: 'F', // Char16
+                c: 'test', // String
+                d: 42, // IReference<int>
+            };
+            var { returnValue, c } = this.tests.param14(nonBlittable, nonBlittable);
+            assertEqual(returnValue, nonBlittable);
+            assertEqual(c, nonBlittable);
+        });
+    }
+
+    runParam15(scenario) {
+        this.runSync(scenario, () => {
+            var nested = {
+                blittable: {
+                    a: 8, // UInt8
+                    b: 16, // UInt16
+                    c: 32, // UInt32
+                    d: 64, // UInt64
+                    e: -16, // Int16
+                    f: -32, // Int32
+                    g: -64, // Int64
+                    h: 42.5, // Single
+                    i: -42.5, // Double
+                    j: '0A26AE10-CDFA-5690-993B-6150412DE4E9', // Guid
+                },
+                nonBlittable: {
+                    a: true, // Boolean
+                    b: 'F', // Char16
+                    c: 'test', // String
+                    d: 42, // IReference<int>
+                }
+            };
+            var { returnValue, c } = this.tests.param15(nested, nested);
+            assertEqual(returnValue, nested);
+            assertEqual(c, nested);
+        });
+    }
+
+    /* TODO: Collections support
+    runCollection1(scenario) {
+        this.runSync(scenario, () => {
+            var vals = [
+                [],
+                ['foo'],
+                ['', 'foo', 'bar', 'foobar', 'foo\0bar'],
+            ];
+            for (var arr of vals) {
+                var { returnValue, c } = this.tests.collection1(arr);
+                assertEqual(returnValue.length, arr.length);
+                assertEqual(c.length, arr.length);
+            }
+        });
+    }
+    */
+
+    runEvent1(scenario) {
+        this.runSync(scenario, () => {
+            var eventVal; // Int32
+            var callback = (sender, val) => { eventVal = val; };
+            this.tests.addEventListener('event1', callback);
+
+            this.tests.event1Call(0);
+            assertEqual(eventVal, 0);
+
+            this.tests.event1Call(42);
+            assertEqual(eventVal, 42);
+
+            this.tests.removeEventListener('event1', callback);
+            this.tests.event1Call(8);
+            assertEqual(eventVal, 42);
+
+            // The event handler should ignore the error
+            callback = () => { throw new Error('Thrown from JS')};
+            this.tests.addEventListener('event1', callback);
+            this.tests.event1Call(8);
+            this.tests.removeEventListener('event1', callback);
+        });
+    }
+
+    runEvent2(scenario) {
+        this.runSync(scenario, () => {
+            var eventVal; // Int32
+            var callback = (sender, val) => { eventVal = val; };
+            this.tests.addEventListener('event2', callback);
+
+            this.tests.event2Call(0);
+            assertEqual(eventVal, 0);
+
+            this.tests.event2Call(42);
+            assertEqual(eventVal, 42);
+
+            this.tests.removeEventListener('event2', callback);
+            this.tests.event2Call(8);
+            assertEqual(eventVal, 42);
+
+            // The event handler should ignore the error
+            callback = () => { throw new Error('Thrown from JS')};
+            this.tests.addEventListener('event2', callback);
+            this.tests.event2Call(8);
+            this.tests.removeEventListener('event2', callback);
         });
     }
 
@@ -320,7 +532,7 @@ class App extends Component {
                     <Text style={{ fontSize: 22 }}>WinRT Projection Tests</Text>
                 </View>
                 <ScrollView style={styles.scrollView}>
-                    <View style={styles.listEntry}>
+                    <View style={[styles.listEntry, { alignSelf: 'center' }]}>
                         <Text style={[styles.rowItem]}>Pass Rate: {this.state.passCount * 100 / this.state.completedCount}%</Text>
                         <Text style={[styles.rowItem, this.textStyle()]}>{this.resultText()}</Text>
                     </View>

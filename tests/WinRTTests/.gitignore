@@ -33,6 +33,10 @@ local.properties
 #
 .vscode/
 
+# Visual Studio
+#
+*.binlog
+
 # node.js
 #
 node_modules/

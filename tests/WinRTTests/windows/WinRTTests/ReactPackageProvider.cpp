@@ -1,7 +1,7 @@
 #include "pch.h"
 
-#include "ReactPackageProvider.h"
 #include "NativeModules.h"
+#include "ReactPackageProvider.h"
 
 using namespace winrt::Microsoft::ReactNative;
 
