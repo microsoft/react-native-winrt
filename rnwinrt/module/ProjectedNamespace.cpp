@@ -5,17 +5,17 @@
 
 namespace WinRTTurboModule
 {
-    std::shared_ptr<IProjectedValueProvider> ProjectedNamespace::Create(const std::string_view& name,
-        const std::shared_ptr<ProjectionsContext>& context, InitializerFunction initializer)
+    std::shared_ptr<IProjectedValueProvider> ProjectedNamespace::Create(std::string_view name,
+        std::shared_ptr<ProjectionsContext> context, InitializerFunction initializer)
     {
         return std::make_shared<ProjectedHostObjectProvider>(
-            name, std::make_shared<ProjectedNamespace>(name, context, initializer));
+            name, std::make_shared<ProjectedNamespace>(name, std::move(context), initializer));
     }
 
-    ProjectedNamespace::ProjectedNamespace(const std::string_view& name,
-        const std::shared_ptr<ProjectionsContext>& context, InitializerFunction initializer) :
+    ProjectedNamespace::ProjectedNamespace(
+        std::string_view name, std::shared_ptr<ProjectionsContext> context, InitializerFunction initializer) :
         m_name(name),
-        m_context(context), m_initializer(initializer)
+        m_context(std::move(context)), m_initializer(initializer)
     {
     }
 
