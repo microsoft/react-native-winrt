@@ -2,7 +2,7 @@
 
 #include "WinRTTurboModule.h"
 #include "WinRTTurboModuleFactory.h"
-#include <rnwinrt\Projections.g.h>
+#include <rnwinrt/Projections.g.h>
 
 namespace WinRTTurboModule
 {

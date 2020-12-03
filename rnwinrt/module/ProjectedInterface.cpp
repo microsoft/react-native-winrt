@@ -2,7 +2,7 @@
 
 #include "ProjectedInterface.h"
 #include "ProjectedValueConverters.h"
-#include <rnwinrt\Projections.g.h>
+#include <rnwinrt/Projections.g.h>
 
 namespace WinRTTurboModule
 {
