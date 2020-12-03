@@ -6,7 +6,7 @@ namespace WinRTTurboModule
     struct ProjectedAsyncOperationBaseMethods final :
         public std::enable_shared_from_this<ProjectedAsyncOperationBaseMethods>
     {
-        ProjectedAsyncOperationBaseMethods(const std::shared_ptr<ProjectionsContext>& context);
+        ProjectedAsyncOperationBaseMethods(std::shared_ptr<ProjectionsContext> context);
         virtual ~ProjectedAsyncOperationBaseMethods() = default;
 
         std::optional<jsi::Value> TryGetMethod(const jsi::PropNameID& propName, const std::string& propNameUtf8);
@@ -41,12 +41,12 @@ namespace WinRTTurboModule
 
     struct ProjectedAsyncOperationBase : public jsi::HostObject
     {
-        ProjectedAsyncOperationBase(const std::shared_ptr<ProjectionsContext>& context);
+        ProjectedAsyncOperationBase(std::shared_ptr<ProjectionsContext> context);
         virtual ~ProjectedAsyncOperationBase() = default;
 
-        virtual jsi::Value get(jsi::Runtime& runtime, const jsi::PropNameID& propName) final;
-        virtual void set(jsi::Runtime& runtime, const jsi::PropNameID& propName, const jsi::Value& value) final;
-        virtual std::vector<jsi::PropNameID> getPropertyNames(jsi::Runtime& runtime) final;
+        virtual jsi::Value get(jsi::Runtime& runtime, const jsi::PropNameID& propName) override final;
+        virtual void set(jsi::Runtime& runtime, const jsi::PropNameID& propName, const jsi::Value& value) override final;
+        virtual std::vector<jsi::PropNameID> getPropertyNames(jsi::Runtime& runtime) override final;
 
         virtual winrt::Windows::Foundation::IInspectable Instance() = 0;
 
@@ -79,8 +79,7 @@ namespace WinRTTurboModule
                 // Progress(...) internally calls winrt::impl::make_agile_delegate so the lambda should be called on the
                 // original thread rather than on some arbitrary background thread.
                 m_instance.Progress(
-                    [progressConverter, methods{ m_methods }, context{ std::shared_ptr<ProjectionsContext>(context) }](
-                        const auto& sender, const auto& progress) {
+                    [progressConverter, methods{ m_methods }, context](const auto& sender, const auto& progress) {
                         methods->OnProgress(progressConverter(context, progress));
                     });
             }
@@ -94,7 +93,7 @@ namespace WinRTTurboModule
         }
 
     private:
-        static winrt::fire_and_forget AwaitCompletion(const std::shared_ptr<ProjectionsContext> context, T instance,
+        static winrt::fire_and_forget AwaitCompletion(std::shared_ptr<ProjectionsContext> context, T instance,
             NativeToValueConverter<R> converter, std::shared_ptr<ProjectedAsyncOperationBaseMethods> methods)
         {
             auto& runtime = context->Runtime;
