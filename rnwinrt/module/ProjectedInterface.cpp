@@ -27,21 +27,20 @@ namespace WinRTTurboModule
         return m_iid;
     }
 
-    std::shared_ptr<ProjectedFunction> ProjectedInterface::FindMethod(const std::string_view& name)
+    std::shared_ptr<ProjectedFunction> ProjectedInterface::FindMethod(std::string_view name)
     {
         const auto methods = Methods();
         const auto it = methods.find(name);
         return it == methods.end() ? nullptr : it->second;
     }
 
-    std::shared_ptr<ProjectedFunction> ProjectedInterface::FindMethod(
-        const std::string_view& name, const uint16_t numArgs)
+    std::shared_ptr<ProjectedFunction> ProjectedInterface::FindMethod(std::string_view name, uint16_t numArgs)
     {
         auto method = FindMethod(name);
         return method->CanInvoke(numArgs) ? method : nullptr;
     }
 
-    std::shared_ptr<ProjectedFunction> ProjectedInterface::FindMethod(const uint16_t numArgs)
+    std::shared_ptr<ProjectedFunction> ProjectedInterface::FindMethod(uint16_t numArgs)
     {
         for (const auto& method : Methods())
         {
@@ -59,7 +58,7 @@ namespace WinRTTurboModule
         return m_methodMap;
     }
 
-    std::shared_ptr<IProjectedPropertyBase> ProjectedInterface::FindProperty(const std::string_view& name)
+    std::shared_ptr<IProjectedPropertyBase> ProjectedInterface::FindProperty(std::string_view name)
     {
         const auto properties = Properties();
         const auto it = properties.find(name);
@@ -73,7 +72,7 @@ namespace WinRTTurboModule
         return m_propertyMap;
     }
 
-    std::shared_ptr<IProjectedEventBase> ProjectedInterface::FindEvent(const std::string_view& name)
+    std::shared_ptr<IProjectedEventBase> ProjectedInterface::FindEvent(std::string_view name)
     {
         const auto events = Events();
         const auto it = events.find(name);
@@ -87,9 +86,9 @@ namespace WinRTTurboModule
     }
 
     std::shared_ptr<IProjectedInterfaceInstance> ProjectedInterface::CreateInstance(
-        const std::shared_ptr<ProjectionsContext>& context, const winrt::Windows::Foundation::IInspectable& instance)
+        std::shared_ptr<ProjectionsContext> context, winrt::Windows::Foundation::IInspectable instance)
     {
-        return m_factory(context, instance, shared_from_this());
+        return m_factory(std::move(context), std::move(instance), shared_from_this());
     }
 
     void ProjectedInterface::EnsureInitialized()
