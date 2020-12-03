@@ -11,7 +11,7 @@ namespace WinRTTurboModule
     class ProjectedHostObjectProvider final : public IProjectedValueProvider
     {
     public:
-        ProjectedHostObjectProvider(const std::string_view& name, const std::shared_ptr<jsi::HostObject>& hostObject);
+        ProjectedHostObjectProvider(std::string_view name, std::shared_ptr<jsi::HostObject> hostObject);
         virtual ~ProjectedHostObjectProvider() = default;
 
         virtual std::string_view Name() const override;

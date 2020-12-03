@@ -5,9 +5,9 @@
 namespace WinRTTurboModule
 {
     ProjectedHostObjectProvider::ProjectedHostObjectProvider(
-        const std::string_view& name, const std::shared_ptr<jsi::HostObject>& hostObject) :
+        std::string_view name, std::shared_ptr<jsi::HostObject> hostObject) :
         m_name(name),
-        m_hostObject(hostObject)
+        m_hostObject(std::move(hostObject))
     {
     }
 
