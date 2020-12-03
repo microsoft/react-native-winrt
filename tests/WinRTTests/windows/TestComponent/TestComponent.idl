@@ -1,6 +1,158 @@
 
+// NOTE: The majority of this is derived from https://github.com/microsoft/TestWinRT. The implementation has diverged,
+// however because (1) these tests were added in the early phases of development, and (2) the TestWinRT project does not
+// cover several scenarios that are interesting to JavaScript.
+
 namespace TestComponent
 {
+    [contractversion(10)]
+    apicontract TestContract {};
+
+    [contract(TestContract, 1)]
+    enum TestEnum
+    {
+        First = 1,
+        Second = 2,
+        Third = 3,
+        Fourth = 4,
+    };
+
+    // All of these are represented as a 'number' in JavaScript
+    [contract(TestContract, 1)]
+    struct NumericTypes
+    {
+        UInt8 u8;
+        UInt16 u16;
+        UInt32 u32;
+        UInt64 u64;
+        Int16 s16;
+        Int32 s32;
+        Int64 s64;
+        Single f32;
+        Double f64;
+        TestEnum e;
+
+        // TODO: IReference here and elsewhere? Or as its own?
+    };
+
+    // All of these are represented as 'string' in JavaScript
+    [contract(TestContract, 1)]
+    struct StringTypes
+    {
+        Char ch;
+        String str;
+        Guid guid;
+    };
+
+    // All of these are represented as 'boolean' in JavaScript
+    [contract(TestContract, 1)]
+    struct BooleanTypes
+    {
+        Boolean b;
+    };
+
+    [contract(TestContract, 1)]
+    struct CompositeType
+    {
+        NumericTypes numerics;
+        StringTypes strings;
+        BooleanTypes bools;
+    };
+
+    [contract(TestContract, 1)]
+    runtimeclass Test
+    {
+        // Constructors
+        Test();
+
+        // Static properties
+        static Boolean StaticBoolProperty;
+
+        // Static array properties
+
+        // Static functions
+        static Boolean StaticOr(Boolean lhs, Boolean rhs);
+        static Int32 StaticAdd(Int32 lhs, Int32 rhs);
+        static String StaticAppend(String a, Char b, String c);
+
+        // Static out params
+        static void StaticBoolOutParam(Boolean lhs, Boolean rhs, out Boolean and);
+        static void StaticBoolOutParam2(Boolean lhs, Boolean rhs, out Boolean and, out Boolean or);
+        static Boolean StaticBoolOutParamWithReturn(Boolean lhs, Boolean rhs, out Boolean and, out Boolean or);
+        static void StaticCharOutParam(Char value, out Char next);
+        static void StaticCharOutParam2(Char value, out Char next, out Char prev);
+        static Char StaticCharOutParamWithReturn(Char value, out Char next, out Char prev);
+        static void StaticNumericOutParam(Int32 value, out Int32 doubledValue);
+        static void StaticNumericOutParam2(Int32 value, out Int32 doubledValue, out Int32 tripledValue);
+        static Int32 StaticNumericOutParamWithReturn(Int32 value, out Int32 doubledValue, out Int32 tripledValue);
+        static void StaticStringOutParam(String value, out String lower);
+        static void StaticStringOutParam2(String value, out String lower, out String upper);
+        static String StaticStringOutParamWithReturn(String value, out String lower, out String upper);
+
+        // NOTE: Conversion support should ideally be built in
+        static Windows.Foundation.Collections.IVector<Int32> MakeNumericVector(Int32[] values);
+
+        // Member properties
+        Boolean BoolProperty;
+        Char CharProperty;
+        UInt8 U8Property;
+        UInt16 U16Property;
+        UInt32 U32Property;
+        UInt64 U64Property;
+        Int16 S16Property;
+        Int32 S32Property;
+        Int64 S64Property;
+        Single F32Property;
+        Double F64Property;
+        String StringProperty;
+        Guid GuidProperty;
+        TestEnum EnumProperty;
+        NumericTypes NumericsStructProperty;
+        StringTypes StringsStructProperty;
+        BooleanTypes BooleansStructProperty;
+        CompositeType CompositeStructProperty;
+        Windows.Foundation.IReference<Boolean> RefBooleanProperty;
+        Windows.Foundation.IReference<Char> RefCharProperty;
+        Windows.Foundation.IReference<Int32> RefNumericProperty;
+        Windows.Foundation.IReference<TestEnum> RefEnumProperty;
+        Windows.Foundation.Collections.IVector<Int32> ObjectProperty;
+
+        // Member array properties
+        Boolean[] BooleanArrayProperty;
+        Char[] CharArrayProperty;
+        Int32[] NumericArrayProperty;
+        String[] StringArrayProperty;
+        Guid[] GuidArrayProperty;
+        TestEnum[] EnumArrayProperty;
+        CompositeType[] CompositeStructArrayProperty;
+        // TODO: Causes compilation errors in jswinrt: https://github.com/microsoft/jswinrt/issues/9
+        // Windows.Foundation.IReference<Int32>[] RefArrayProperty;
+        Windows.Foundation.Collections.IVector<Int32>[] ObjectArrayProperty;
+
+        // Member functions
+        Boolean Or(Boolean lhs, Boolean rhs);
+        Int32 Add(Int32 lhs, Int32 rhs);
+        String Append(String a, Char b, String c);
+
+        // Member out params
+        void BoolOutParam(Boolean lhs, Boolean rhs, out Boolean and);
+        void BoolOutParam2(Boolean lhs, Boolean rhs, out Boolean and, out Boolean or);
+        Boolean BoolOutParamWithReturn(Boolean lhs, Boolean rhs, out Boolean and, out Boolean or);
+        void CharOutParam(Char value, out Char next);
+        void CharOutParam2(Char value, out Char next, out Char prev);
+        Char CharOutParamWithReturn(Char value, out Char next, out Char prev);
+        void NumericOutParam(Int32 value, out Int32 doubledValue);
+        void NumericOutParam2(Int32 value, out Int32 doubledValue, out Int32 tripledValue);
+        Int32 NumericOutParamWithReturn(Int32 value, out Int32 doubledValue, out Int32 tripledValue);
+        void StringOutParam(String value, out String lower);
+        void StringOutParam2(String value, out String lower, out String upper);
+        String StringOutParamWithReturn(String value, out String lower, out String upper);
+    }
+
+
+
+
+
     // All language projections must deal with blittable vs. non-blittable structs somehow. In C++/WinRT, only structs
     // containing String or IReference<T> are non-blittable since they result in structs that are not trivially destructible.
     // In C#/WinRT, structs containing Boolean and Char are also non-blittable according to the following doc:
