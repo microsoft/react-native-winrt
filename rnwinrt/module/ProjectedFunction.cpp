@@ -5,31 +5,28 @@
 
 namespace WinRTTurboModule
 {
-    std::shared_ptr<ProjectedFunction> ProjectedFunction::Create(
-        const std::string_view& name, InitializerFunction initializer)
+    std::shared_ptr<ProjectedFunction> ProjectedFunction::Create(std::string_view name, InitializerFunction initializer)
     {
         return std::make_shared<ProjectedFunction>(name, initializer);
     }
 
     std::shared_ptr<ProjectedFunction> ProjectedFunction::Create(
-        const std::string_view& name, std::shared_ptr<IProjectedFunctionOverloadBase>&& implementation)
+        std::string_view name, std::shared_ptr<IProjectedFunctionOverloadBase> implementation)
     {
-        return std::make_shared<ProjectedFunction>(
-            name, std::forward<std::shared_ptr<IProjectedFunctionOverloadBase>>(implementation));
+        return std::make_shared<ProjectedFunction>(name, std::move(implementation));
     }
 
-    ProjectedFunction::ProjectedFunction(const std::string_view& name, InitializerFunction initializer) :
+    ProjectedFunction::ProjectedFunction(std::string_view name, InitializerFunction initializer) :
         m_name(name), m_initializer(initializer)
     {
     }
 
     ProjectedFunction::ProjectedFunction(
-        const std::string_view& name, std::shared_ptr<IProjectedFunctionOverloadBase>&& implementation) :
+        std::string_view name, std::shared_ptr<IProjectedFunctionOverloadBase> implementation) :
         m_name(name),
         m_initializer(nullptr), m_maxArity(implementation->Arity()), m_isInitialized(true)
     {
-        m_overloads.emplace(
-            implementation->Arity(), std::forward<std::shared_ptr<IProjectedFunctionOverloadBase>>(implementation));
+        m_overloads.emplace(implementation->Arity(), std::move(implementation));
     }
 
     std::string_view ProjectedFunction::Name() const noexcept
@@ -44,7 +41,7 @@ namespace WinRTTurboModule
     }
 
     std::shared_ptr<IProjectedFunctionOverloadBase>& ProjectedFunction::GetOverload(
-        jsi::Runtime& runtime, const uint16_t numArgs)
+        jsi::Runtime& runtime, uint16_t numArgs)
     {
         EnsureInitialized();
         const auto it = m_overloads.find(numArgs);
