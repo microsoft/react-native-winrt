@@ -10,8 +10,8 @@ namespace WinRTTurboModule
         static jsi::Value Get(const std::shared_ptr<ProjectionsContext>& context,
             const winrt::Windows::Foundation::IInspectable& instance);
 
-        ProjectedRuntimeClassInstance(const std::shared_ptr<ProjectionsContext>& context,
-            const winrt::Windows::Foundation::IInspectable& instance);
+        ProjectedRuntimeClassInstance(
+            std::shared_ptr<ProjectionsContext> context, winrt::Windows::Foundation::IInspectable instance);
         virtual ~ProjectedRuntimeClassInstance();
 
         virtual jsi::Value get(jsi::Runtime& runtime, const jsi::PropNameID& propName) override;
