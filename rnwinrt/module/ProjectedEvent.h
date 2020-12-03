@@ -13,14 +13,14 @@ namespace WinRTTurboModule
     {
         virtual winrt::event_token Add(
             I& instance, const std::shared_ptr<ProjectionsContext>& context, const jsi::Value& value) const = 0;
-        virtual void Remove(I& instance, const winrt::event_token& token) const = 0;
+        virtual void Remove(I& instance, winrt::event_token token) const = 0;
     };
 
     template <typename I, typename A, typename R, typename C>
     class ProjectedEventWrapper final : public IProjectedEvent<I>
     {
     public:
-        ProjectedEventWrapper(const std::string_view& name, A add, R remove, C convertValueToDelegate) :
+        ProjectedEventWrapper(std::string_view name, A add, R remove, C convertValueToDelegate) :
             m_name(name), m_add(add), m_remove(remove), m_convertValueToDelegate(convertValueToDelegate)
         {
         }
@@ -38,7 +38,7 @@ namespace WinRTTurboModule
             return (instance.*m_add)(m_convertValueToDelegate(context, value));
         }
 
-        virtual void Remove(I& instance, const winrt::event_token& token) const override
+        virtual void Remove(I& instance, winrt::event_token token) const override
         {
             (instance.*m_remove)(token);
         }
@@ -54,7 +54,7 @@ namespace WinRTTurboModule
     {
         // See comment for ProjectedProperty on why J is needed here.
         template <typename I, typename D, typename J>
-        static std::shared_ptr<IProjectedEventBase> Create(const std::string_view& name,
+        static std::shared_ptr<IProjectedEventBase> Create(std::string_view name,
             winrt::event_token (J::*add)(const D&) const, void (J::*remove)(const winrt::event_token&) const,
             ValueToNativeConverter<D> convertValueToDelegate)
         {
@@ -67,7 +67,7 @@ namespace WinRTTurboModule
     class ProjectedEventInstance final
     {
     public:
-        ProjectedEventInstance(const std::shared_ptr<IProjectedEventBase>& event);
+        ProjectedEventInstance(std::shared_ptr<IProjectedEventBase> event);
         virtual ~ProjectedEventInstance();
 
         const std::shared_ptr<IProjectedEventBase>& Event() const noexcept
