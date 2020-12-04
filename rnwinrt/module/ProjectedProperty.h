@@ -125,8 +125,8 @@ namespace WinRTTurboModule
         // is a workaround.
 
         template <typename I, typename T, typename J, typename U, typename GC, typename SC>
-        static std::shared_ptr<IProjectedPropertyBase> Create(std::string_view name, T (J::*get)() const,
-            GC convertToValue, void (J::*set)(U) const, SC convertFromValue)
+        static std::shared_ptr<IProjectedPropertyBase> Create(
+            std::string_view name, T (J::*get)() const, GC convertToValue, void (J::*set)(U) const, SC convertFromValue)
         {
             return std::shared_ptr<IProjectedPropertyBase>(
                 new ProjectedWriteableProperty<I, decltype(get), GC, decltype(set), SC>(

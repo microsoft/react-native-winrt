@@ -14,8 +14,7 @@ namespace WinRTTurboModule
     }
 
     WinRTTurboModule::WinRTTurboModule(std::shared_ptr<react::CallInvoker> invoker) :
-        TurboModule("WinRTTurboModule", invoker),
-        m_invoker(std::move(invoker))
+        TurboModule("WinRTTurboModule", invoker), m_invoker(std::move(invoker))
     {
         methodMap_["initialize"] = MethodMetadata{ 0, __hostFunction_WinRTTurboModuleSpecJSI_initialize };
 

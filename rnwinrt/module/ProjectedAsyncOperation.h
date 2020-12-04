@@ -45,7 +45,8 @@ namespace WinRTTurboModule
         virtual ~ProjectedAsyncOperationBase() = default;
 
         virtual jsi::Value get(jsi::Runtime& runtime, const jsi::PropNameID& propName) override final;
-        virtual void set(jsi::Runtime& runtime, const jsi::PropNameID& propName, const jsi::Value& value) override final;
+        virtual void set(
+            jsi::Runtime& runtime, const jsi::PropNameID& propName, const jsi::Value& value) override final;
         virtual std::vector<jsi::PropNameID> getPropertyNames(jsi::Runtime& runtime) override final;
 
         virtual winrt::Windows::Foundation::IInspectable Instance() = 0;

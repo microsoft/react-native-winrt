@@ -17,9 +17,9 @@ namespace WinRTTurboModule
         // as std::string constructed with a fill will actually allocated 'outputLength + 1' characters and asign the
         // last as the null terminator automatically.
 
-        const auto outputLength =
-            ::WideCharToMultiByte(CP_UTF8, WC_ERR_INVALID_CHARS, value.data(), static_cast<int32_t>(value.size()),
-                nullptr /*lpMultiByteStr*/, 0 /*cbMultiByte*/, nullptr /*lpDefaultChar*/, nullptr /*lpUsedDefaultChar*/);
+        const auto outputLength = ::WideCharToMultiByte(CP_UTF8, WC_ERR_INVALID_CHARS, value.data(),
+            static_cast<int32_t>(value.size()), nullptr /*lpMultiByteStr*/, 0 /*cbMultiByte*/,
+            nullptr /*lpDefaultChar*/, nullptr /*lpUsedDefaultChar*/);
         winrt::check_bool(outputLength);
 
         std::string multibyteString(outputLength, '\0');
