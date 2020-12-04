@@ -1,17 +1,44 @@
-**Description**
-React Native WinRT (RN/WinRT) is module for React Native Windows which provides access to WinRT APIs from JS. It uses components from [xlang](https://github.com/Microsoft/xlang) to [parse metadata](https://github.com/microsoft/winmd) for public or private WinRT COM APIs and generate JSI (JavaScript Interface) wrappers for [C++/WinRT](https://github.com/microsoft/cppwinrt) types at compile-time and the code generator was itself derived from cppwinrt.exe. 
+# The JS/WinRT language projection
 
-The intent is to project/reflect the WinRT APIs into JS similarly to EdgeHTML WebView1/WWAHost such that the usage semantics and capabilities (try to) match public MSDN documentation for public APIs and would allow easier porting of code from such projects. A key difference is that EdgeHTML will load metadata from winmd files included in the OS and with the AppX package at runrime and generate projections on the fly, whereas RN/WinRT will generate them at compile time, conceptually similarly to what [NodeRT](https://github.com/NodeRT/NodeRT) does for V8 with NodeJS and Electron (Other differences: NodeRT's projections are distributed as individual Nuget packages for subset of the public SDK, are implemented using C++/CX, and its reflections are different than EdgeHTML). 
+JavaScript WinRT (JS/WinRT) is a module for React Native Windows which provides access to WinRT APIs from JS. It uses components from [xlang](https://github.com/Microsoft/xlang) to [parse metadata](https://github.com/microsoft/winmd) for public or private WinRT COM APIs and generate JSI (JavaScript Interface) wrappers for [C++/WinRT](https://github.com/microsoft/cppwinrt) types at compile-time and the code generator was itself derived from cppwinrt.exe. 
 
-RN/WinRT generate projections for APIs specified such as the public Windows SDK, internal Windows SDKs like the UDK, or private WinRT components included in the UWP's package (One can use this as an alternative to writing one's own reflections with a RNW Native Module) by providing the relevant winmd files as input to rnwinrt.exe (and cppwinrt.exe) and filtering to the namespaces and types to include in the projection (It is likely infeasible to include the full public SDK due to code size in terms disk footprint and linker limits - this is a distinct limitation compared to generation of projections at runtime but could be improved through further template optimization work and filtering). For example, one could include the Windows.winmd corresponding to the public SDK and filter to specific namespace trees like Windows.ApplicationModel except unnecessary ones like Windows.ApplicationModel.Appointments, include all of WindowsUDK.winmd, and include MyAppComponents.winmd private to one's project.
+# Building JS/WinRT Sample
 
-The code generation works by reading the types in the metadata files, filtering and then emitting code to instantiate adapters between C++/WinRT types (emitted when C++/WinRT very similarly processes the winmd files) and the JSI, specializing template adapters. For example, adapters exist to define the members of a namespace, enums, activation factories (allowing JS to call them as constructors), runtime class instances / interfaces and their properties and methods, IAsyncOperations as promises, events, delegates, value type converters for struct-types, and so on. In targeting the JSI, which is a set of interfaces that React Native uses (introduced as part of Facebook's work on TurboModules) to normalize between different JS engines (e.g. ChakraCore, Hermes, V8, JavaScriptCore, etc.), this technique should allow use of WinRT projections with any of these engines. C++/WinRT is used rather than using ABI types directly because it greatly simplifies code generation (e.g. one might not even have the headers for ABI types).
+* Open a dev command prompt pointing at the root of the repo.
+* Run `npm install` under "\samples\RNWinRTTestApp\"
+* Open the `RNWinRTTestApp.sln` solution.
+* Build the x64 Release or DebugBundle configuration.
+* F5 deploy the sample app.
 
-The generated code is compiled into an imitation TurboModule, whereupon the JS merely needs to call "initialize()" on the module to have it load and inject the root namespaces. This actually happens automatically on importing "WinRTTurboModule.js". The implementation is such that as much as possible is delay-initialized. So for example, a namespace would not have its children populated until its properties are first queried by JS. This avoids unnecessary delay on first use of the reflections.
+# Adding the projection to your own solution
 
-In terms of integration of the module into RNW, it is intended to be compiled into it owns DLL. At present, TurboModules are not a fully complete concept as there is not yet a way to inject one without making changes to the TurboModuleManager.cpp in the Microsoft.ReactNative.dll and planned extension models based on TurboModules like Native Module 2.0 would not likely be sufficiently expressive comparatively to JSI or WinRT COM. Beyond this, there is a caveat that JSI is not truly ABI-safe, meaning that if Microsoft.ReactNative.dll and the DLL it loads for JS runtimes or externally compiled modules like WinRTTurboModule.dll were to use slightly different JSI versions or incompatible compilation configurations (e.g. different compiler or different STL version) things could break quite catastrophically (e.g. crashing). In this sense, a static library might be safer than using a DLL but would require always compiling RNW from source for a project. In the future, it might be possible or necessary to consume an ABI-safe wrappers, but those do not yet exist but are currently [tracked](https://github.com/microsoft/react-native-windows/issues/4553).
+* Add the `rnwinrt.vcxproj` and `WinRTTurboModule.vcxproj` to your solution.
+* Make sure your project depends on the WinRTTurboModule project.
+* Turn off deploy for the rnwinrt and WinRTTurboModule projects.
+* Add `import './WinRTTurboModule';` to your project's index.js.
+* Create `WinRTTurboModule.js` under your project (next to index.js).  Add the following code to it:
+```
+    import * as TurboModuleRegistry from 'react-native/Libraries/TurboModule/TurboModuleRegistry';
+    const module = TurboModuleRegistry.get('WinRTTurboModule');
+    if (module) {
+        module.initialize();
+    }
+    export default module;
+```
+* Add `-include [winrt namespaces]` inside <RnWinRTParamters> in WinRTTurboModule.vcxproj. Ex:
+```
+    <RnWinRTParameters>-include Windows.Globalization</RnWinRTParameters>
+```
+# Contributing
 
-Beyond being a prototype, in the longer term, we are looking to collaborate with others teams interested in using RN/WinRT in their projects to get it to a state to make it widely internally and hopefully OSS like RNW. We will need to move the code to a more permanent location (e.g. github) and setup the necessary internal ADO repos for building and publishing. So please [mailto:nichamp@microsoft.com](let us know) if you are interested in using it or helping us develop it.
+This project welcomes contributions and suggestions.  Most contributions require you to agree to a
+Contributor License Agreement (CLA) declaring that you have the right to, and actually do, grant us
+the rights to use your contribution. For details, visit https://cla.opensource.microsoft.com.
 
-**Usage**
-<TODO>
+When you submit a pull request, a CLA bot will automatically determine whether you need to provide
+a CLA and decorate the PR appropriately (e.g., status check, comment). Simply follow the instructions
+provided by the bot. You will only need to do this once across all repos using our CLA.
+
+This project has adopted the [Microsoft Open Source Code of Conduct](https://opensource.microsoft.com/codeofconduct/).
+For more information see the [Code of Conduct FAQ](https://opensource.microsoft.com/codeofconduct/faq/) or
+contact [opencode@microsoft.com](mailto:opencode@microsoft.com) with any additional questions or comments.
