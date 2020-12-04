@@ -10,10 +10,10 @@
 #undef GetCurrentTime
 #endif
 
-#include <wil\com.h>
-#include <wil\cppwinrt.h>
-#include <wil\win32_helpers.h>
-#include <wil\winrt.h>
+#include <wil/com.h>
+#include <wil/cppwinrt.h>
+#include <wil/win32_helpers.h>
+#include <wil/winrt.h>
 
 #include <functional>
 #include <limits>
@@ -28,11 +28,11 @@
 
 #include <inspectable.h>
 #include <unknwn.h>
-#include <winrt\Windows.Foundation.Collections.h>
-#include <winrt\Windows.Foundation.h>
+#include <winrt/Windows.Foundation.Collections.h>
+#include <winrt/Windows.Foundation.h>
 
-#include <TurboModule\Core\TurboModule.h>
-#include <jsi\jsi.h>
+#include <TurboModule/Core/TurboModule.h>
+#include <jsi/jsi.h>
 
 namespace jsi
 {

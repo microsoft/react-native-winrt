@@ -8,9 +8,9 @@
 namespace WinRTTurboModule
 {
     ProjectedAsyncOperationBaseMethods::ProjectedAsyncOperationBaseMethods(
-        const std::shared_ptr<ProjectionsContext>& context) :
+        std::shared_ptr<ProjectionsContext> context) :
         m_threadId(GetCurrentThreadId()),
-        m_context(context)
+        m_context(std::move(context))
     {
     }
 
@@ -198,8 +198,8 @@ namespace WinRTTurboModule
         }
     }
 
-    ProjectedAsyncOperationBase::ProjectedAsyncOperationBase(const std::shared_ptr<ProjectionsContext>& context) :
-        m_methods(std::make_shared<ProjectedAsyncOperationBaseMethods>(context))
+    ProjectedAsyncOperationBase::ProjectedAsyncOperationBase(std::shared_ptr<ProjectionsContext> context) :
+        m_methods(std::make_shared<ProjectedAsyncOperationBaseMethods>(std::move(context)))
     {
     }
 

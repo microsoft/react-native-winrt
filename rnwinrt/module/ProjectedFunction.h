@@ -125,7 +125,7 @@ namespace WinRTTurboModule
         }
 
         virtual jsi::Value Invoke(I& instance, const std::shared_ptr<ProjectionsContext>& context,
-            const jsi::Value* args, const uint16_t numArgs) const override
+            const jsi::Value* args, uint16_t numArgs) const override
         {
             if (numArgs != Arity())
             {
@@ -178,7 +178,7 @@ namespace WinRTTurboModule
         }
 
         virtual jsi::Value Invoke(I& instance, const std::shared_ptr<ProjectionsContext>& context,
-            const jsi::Value* args, const uint16_t numArgs) const override
+            const jsi::Value* args, uint16_t numArgs) const override
         {
             return InvokeInternal(instance, context, args, numArgs, std::index_sequence_for<P...>{});
         }
@@ -193,7 +193,7 @@ namespace WinRTTurboModule
     private:
         template <std::size_t... Is>
         jsi::Value InvokeInternal(I& instance, const std::shared_ptr<ProjectionsContext>& context,
-            const jsi::Value* args, const uint16_t numArgs, std::index_sequence<Is...>) const
+            const jsi::Value* args, uint16_t numArgs, std::index_sequence<Is...>) const
         {
             auto& runtime = context->Runtime;
             if (numArgs != Arity())
@@ -335,13 +335,12 @@ namespace WinRTTurboModule
     public:
         using InitializerFunction = std::vector<std::shared_ptr<IProjectedFunctionOverloadBase>> (*)();
 
-        static std::shared_ptr<ProjectedFunction> Create(const std::string_view& name, InitializerFunction initializer);
+        static std::shared_ptr<ProjectedFunction> Create(std::string_view name, InitializerFunction initializer);
         static std::shared_ptr<ProjectedFunction> Create(
-            const std::string_view& name, std::shared_ptr<IProjectedFunctionOverloadBase>&& implementation);
+            std::string_view name, std::shared_ptr<IProjectedFunctionOverloadBase> implementation);
 
-        ProjectedFunction(const std::string_view& name, InitializerFunction initializer);
-        ProjectedFunction(
-            const std::string_view& name, std::shared_ptr<IProjectedFunctionOverloadBase>&& implementation);
+        ProjectedFunction(std::string_view name, InitializerFunction initializer);
+        ProjectedFunction(std::string_view name, std::shared_ptr<IProjectedFunctionOverloadBase> implementation);
 
         std::string_view Name() const noexcept;
 
@@ -370,7 +369,7 @@ namespace WinRTTurboModule
         bool CanInvoke(uint16_t arity);
 
     private:
-        std::shared_ptr<IProjectedFunctionOverloadBase>& GetOverload(jsi::Runtime& runtime, const uint16_t numArgs);
+        std::shared_ptr<IProjectedFunctionOverloadBase>& GetOverload(jsi::Runtime& runtime, uint16_t numArgs);
         void EnsureInitialized();
 
         std::map<uint16_t, std::shared_ptr<IProjectedFunctionOverloadBase>> m_overloads;

@@ -4,22 +4,13 @@
 
 namespace WinRTTurboModule
 {
-    class JSI_EXPORT WinRTTurboModuleSpecJSI : public react::TurboModule
-    {
-    protected:
-        WinRTTurboModuleSpecJSI(const std::shared_ptr<react::CallInvoker>& invoker);
-
-    public:
-        virtual void initialize(jsi::Runtime& runtime) = 0;
-    };
-
-    class WinRTTurboModule final : public WinRTTurboModuleSpecJSI
+    class WinRTTurboModule final : public react::TurboModule
     {
     public:
-        WinRTTurboModule(const std::shared_ptr<react::CallInvoker>& invoker);
+        WinRTTurboModule(std::shared_ptr<react::CallInvoker> invoker);
 
         // Functions exposed to JS
-        void initialize(jsi::Runtime& runtime) override;
+        void initialize(jsi::Runtime& runtime);
 
     private:
         const std::shared_ptr<react::CallInvoker> m_invoker;

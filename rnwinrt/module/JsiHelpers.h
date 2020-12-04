@@ -3,19 +3,19 @@ namespace WinRTTurboModule
 {
     struct ProjectionsContext;
 
-    inline jsi::PropNameID CreatePropNameID(jsi::Runtime& runtime, const std::string_view& value)
+    inline jsi::PropNameID CreatePropNameID(jsi::Runtime& runtime, std::string_view value)
     {
         return jsi::PropNameID::forUtf8(runtime, reinterpret_cast<const uint8_t*>(value.data()), value.size());
     }
 
-    inline jsi::String CreateString(jsi::Runtime& runtime, const std::string_view& value)
+    inline jsi::String CreateString(jsi::Runtime& runtime, std::string_view value)
     {
         return jsi::String::createFromUtf8(runtime, reinterpret_cast<const uint8_t*>(value.data()), value.size());
     }
 
-    jsi::String CreateString(jsi::Runtime& runtime, const std::wstring_view& value);
+    jsi::String CreateString(jsi::Runtime& runtime, std::wstring_view value);
 
-    jsi::Value CreateError(jsi::Runtime& runtime, const std::string_view& message);
+    jsi::Value CreateError(jsi::Runtime& runtime, std::string_view message);
     jsi::Value CreateError(jsi::Runtime& runtime, const std::exception& exception);
     jsi::Value CreateError(jsi::Runtime& runtime, const winrt::hresult_error& error);
 
@@ -35,16 +35,16 @@ namespace WinRTTurboModule
 
     struct CallInvokerWrapper final
     {
-        CallInvokerWrapper(const std::shared_ptr<react::CallInvoker>& CallInvokerWrapper);
+        CallInvokerWrapper(std::shared_ptr<react::CallInvoker> callInvokerWrapper);
 
         // Run the function synchronously if on the JS thread or asynchronously if not.
-        void Call(std::function<void()>&& func);
+        void Call(std::function<void()> func);
 
         // Always queue the function to run asynchronously.
-        void CallAsync(std::function<void()>&& func);
+        void CallAsync(std::function<void()> func);
 
         // Run the function synchronously if on the JS thread or asynchronously and block until complete if not.
-        void CallSync(std::function<void()>&& func);
+        void CallSync(std::function<void()> func);
 
         const DWORD ThreadId;
 

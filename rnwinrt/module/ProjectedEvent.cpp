@@ -4,7 +4,8 @@
 
 namespace WinRTTurboModule
 {
-    ProjectedEventInstance::ProjectedEventInstance(const std::shared_ptr<IProjectedEventBase>& event) : m_event(event)
+    ProjectedEventInstance::ProjectedEventInstance(std::shared_ptr<IProjectedEventBase> event) :
+        m_event(std::move(event))
     {
     }
 

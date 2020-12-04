@@ -2,7 +2,7 @@
 
 #include "ProjectedRuntimeClassInstance.h"
 #include "ProjectedValueConverters.h"
-#include <rnwinrt\ProjectedValueConverters.g.h>
+#include <rnwinrt/ProjectedValueConverters.g.h>
 
 namespace WinRTTurboModule
 {

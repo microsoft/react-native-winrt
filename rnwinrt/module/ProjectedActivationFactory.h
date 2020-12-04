@@ -10,16 +10,16 @@ namespace WinRTTurboModule
         using GetActivationFactory = winrt::Windows::Foundation::IInspectable (*)();
 
         template <typename T>
-        static std::shared_ptr<IProjectedValueProvider> Create(const std::string_view& name,
-            const std::shared_ptr<ProjectionsContext>& context, std::set<winrt::guid>&& factoryInterfaceIds)
+        static std::shared_ptr<IProjectedValueProvider> Create(std::string_view name,
+            std::shared_ptr<ProjectionsContext> context, std::set<winrt::guid> factoryInterfaceIds)
         {
-            return std::make_shared<ProjectedActivationFactory>(name, context,
+            return std::make_shared<ProjectedActivationFactory>(name, std::move(context),
                 &winrt::get_activation_factory<T, winrt::Windows::Foundation::IInspectable>,
-                std::forward<std::set<winrt::guid>>(factoryInterfaceIds));
+                std::move(factoryInterfaceIds));
         }
 
-        ProjectedActivationFactory(const std::string_view& name, const std::shared_ptr<ProjectionsContext>& context,
-            GetActivationFactory getActivationFactory, std::set<winrt::guid>&& m_factoryInterfaceIds);
+        ProjectedActivationFactory(std::string_view name, std::shared_ptr<ProjectionsContext> context,
+            GetActivationFactory getActivationFactory, std::set<winrt::guid> m_factoryInterfaceIds);
         virtual ~ProjectedActivationFactory() = default;
 
         virtual std::string_view Name() const override;

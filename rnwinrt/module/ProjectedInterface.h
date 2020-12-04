@@ -14,7 +14,7 @@ namespace WinRTTurboModule
 
         virtual jsi::Value GetMethod(jsi::Runtime& runtime, const std::shared_ptr<ProjectedFunction>& method) = 0;
         virtual jsi::Value InvokeMethod(jsi::Runtime& runtime, const std::shared_ptr<ProjectedFunction>& method,
-            const jsi::Value* args, const uint16_t numArgs) = 0;
+            const jsi::Value* args, uint16_t numArgs) = 0;
 
         virtual jsi::Value GetProperty(
             jsi::Runtime& runtime, const std::shared_ptr<IProjectedPropertyBase>& property) = 0;
@@ -31,22 +31,19 @@ namespace WinRTTurboModule
     class ProjectedInterfaceInstance final : public IProjectedInterfaceInstance
     {
     public:
-        static std::shared_ptr<IProjectedInterfaceInstance> Create(const std::shared_ptr<ProjectionsContext>& context,
-            const winrt::Windows::Foundation::IInspectable& instance,
-            std::shared_ptr<ProjectedInterface>&& projectedInterface)
+        static std::shared_ptr<IProjectedInterfaceInstance> Create(std::shared_ptr<ProjectionsContext> context,
+            winrt::Windows::Foundation::IInspectable instance, std::shared_ptr<ProjectedInterface> projectedInterface)
         {
             // Use "new" instead of std::make_shared to avoid specializing
             // std::shared_ptr<ProjectedInterfaceInstance<I>> to reduce the sizes of object files.
             return std::shared_ptr<ProjectedInterfaceInstance>(new ProjectedInterfaceInstance<I>(
-                context, instance, std::forward<std::shared_ptr<ProjectedInterface>>(projectedInterface)));
+                std::move(context), std::move(instance), std::move(projectedInterface)));
         }
 
-        ProjectedInterfaceInstance(const std::shared_ptr<ProjectionsContext>& context,
-            const winrt::Windows::Foundation::IInspectable& instance,
-            std::shared_ptr<ProjectedInterface>&& projectedInterface) :
-            m_context(context),
-            m_inspectableInstance(instance),
-            m_projectedInterface(std::forward<std::shared_ptr<ProjectedInterface>>(projectedInterface))
+        ProjectedInterfaceInstance(std::shared_ptr<ProjectionsContext> context,
+            winrt::Windows::Foundation::IInspectable instance, std::shared_ptr<ProjectedInterface> projectedInterface) :
+            m_context(std::move(context)),
+            m_inspectableInstance(std::move(instance)), m_projectedInterface(std::move(projectedInterface))
         {
         }
 
@@ -62,7 +59,7 @@ namespace WinRTTurboModule
         }
 
         virtual jsi::Value InvokeMethod(jsi::Runtime& runtime, const std::shared_ptr<ProjectedFunction>& method,
-            const jsi::Value* args, const uint16_t numArgs) override
+            const jsi::Value* args, uint16_t numArgs) override
         {
             EnsureInitialized();
             return method->Invoke<I>(m_queriedInstance, m_context, args, numArgs);
@@ -127,9 +124,8 @@ namespace WinRTTurboModule
     {
     public:
         using InitializerFunction = ProjectedInterfaceData (*)();
-        using InstanceFactory = std::shared_ptr<IProjectedInterfaceInstance> (*)(
-            const std::shared_ptr<ProjectionsContext>&, const winrt::Windows::Foundation::IInspectable&,
-            std::shared_ptr<ProjectedInterface>&&);
+        using InstanceFactory = std::shared_ptr<IProjectedInterfaceInstance> (*)(std::shared_ptr<ProjectionsContext>,
+            winrt::Windows::Foundation::IInspectable, std::shared_ptr<ProjectedInterface>);
 
         static std::shared_ptr<ProjectedInterface> Get(const winrt::guid& iid);
 
@@ -145,19 +141,19 @@ namespace WinRTTurboModule
 
         const winrt::guid& InterfaceId() const noexcept;
 
-        std::shared_ptr<ProjectedFunction> FindMethod(const std::string_view& name);
-        std::shared_ptr<ProjectedFunction> FindMethod(const std::string_view& name, const uint16_t numArgs);
-        std::shared_ptr<ProjectedFunction> FindMethod(const uint16_t numArgs);
+        std::shared_ptr<ProjectedFunction> FindMethod(std::string_view name);
+        std::shared_ptr<ProjectedFunction> FindMethod(std::string_view name, uint16_t numArgs);
+        std::shared_ptr<ProjectedFunction> FindMethod(uint16_t numArgs);
         const std::unordered_map<std::string_view, std::shared_ptr<ProjectedFunction>>& Methods();
 
-        std::shared_ptr<IProjectedPropertyBase> FindProperty(const std::string_view& name);
+        std::shared_ptr<IProjectedPropertyBase> FindProperty(std::string_view name);
         const std::unordered_map<std::string_view, std::shared_ptr<IProjectedPropertyBase>>& Properties();
 
-        std::shared_ptr<IProjectedEventBase> FindEvent(const std::string_view& name);
+        std::shared_ptr<IProjectedEventBase> FindEvent(std::string_view name);
         const std::unordered_map<std::string_view, std::shared_ptr<IProjectedEventBase>>& Events();
 
-        std::shared_ptr<IProjectedInterfaceInstance> CreateInstance(const std::shared_ptr<ProjectionsContext>& context,
-            const winrt::Windows::Foundation::IInspectable& instance);
+        std::shared_ptr<IProjectedInterfaceInstance> CreateInstance(
+            std::shared_ptr<ProjectionsContext> context, winrt::Windows::Foundation::IInspectable instance);
 
     private:
         void EnsureInitialized();
