@@ -13,9 +13,9 @@ namespace WinRTTurboModule
     }
 
     ProjectedRuntimeClassInstance::ProjectedRuntimeClassInstance(
-        const std::shared_ptr<ProjectionsContext>& context, const winrt::Windows::Foundation::IInspectable& instance) :
-        m_context(context),
-        m_instance(instance)
+        std::shared_ptr<ProjectionsContext> context, winrt::Windows::Foundation::IInspectable instance) :
+        m_context(std::move(context)),
+        m_instance(std::move(instance))
     {
     }
 
@@ -224,7 +224,8 @@ namespace WinRTTurboModule
         //       length is set to 0. The name is probably better as the class name than the ABI factory method name
         //       which could vary, and length is possible to compute as the maximum of all "overloads" but it doesn't
         //       seem like it would be worthwhile.
-        return jsi::Function::createFromHostFunction(runtime, CreatePropNameID(runtime, className), 0 /*length*/,
+        auto id = CreatePropNameID(runtime, className);
+        return jsi::Function::createFromHostFunction(runtime, std::move(id), 0 /*length*/,
             [className{ std::move(className) }, factoryInterfaceInstances{ std::move(factoryInterfaceInstances) }](
                 jsi::Runtime& runtime, const jsi::Value& thisVal, const jsi::Value* args, size_t numArgs) {
                 // C++/WinRT generates factory interfaces so the constructor overloads actually have different names
@@ -260,8 +261,9 @@ namespace WinRTTurboModule
 
         // TODO: Does it matter if we don't bother determining the maximum arity for the sake of the length param on the
         // function?
+        auto id = CreatePropNameID(runtime, methodName);
         return jsi::Value(
-            runtime, jsi::Function::createFromHostFunction(runtime, CreatePropNameID(runtime, methodName), 0 /*length*/,
+            runtime, jsi::Function::createFromHostFunction(runtime, std::move(id), 0 /*length*/,
                          [methodName{ std::move(methodName) }, interfaceMethods{ std::move(interfaceMethods) }](
                              jsi::Runtime& runtime, const jsi::Value& thisVal, const jsi::Value* args, size_t numArgs) {
                              for (auto& interfaceMethod : interfaceMethods)

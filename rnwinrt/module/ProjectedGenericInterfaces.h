@@ -1,10 +1,10 @@
 #pragma once
 #include "ProjectedInterface.h"
 #include "ProjectedValueConverters.h"
-#include <rnwinrt\ProjectedValueConverters.g.h>
+#include <rnwinrt/ProjectedValueConverters.g.h>
 
-#include <winrt\Windows.Foundation.Collections.h>
-#include <winrt\Windows.Foundation.h>
+#include <winrt/Windows.Foundation.Collections.h>
+#include <winrt/Windows.Foundation.h>
 
 namespace WinRTTurboModule::Windows::Foundation::Collections
 {

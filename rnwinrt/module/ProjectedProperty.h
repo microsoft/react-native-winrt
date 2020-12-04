@@ -20,7 +20,7 @@ namespace WinRTTurboModule
     class ProjectedReadonlyProperty final : public IProjectedProperty<I>
     {
     public:
-        ProjectedReadonlyProperty(const std::string_view& name, G get, GC convertToValue) :
+        ProjectedReadonlyProperty(std::string_view name, G get, GC convertToValue) :
             m_name(name), m_get(get), m_convertToValue(convertToValue)
         {
         }
@@ -63,7 +63,7 @@ namespace WinRTTurboModule
     class ProjectedWriteableProperty final : public IProjectedProperty<I>
     {
     public:
-        ProjectedWriteableProperty(const std::string_view& name, G get, GC convertToValue, S set, SC convertFromValue) :
+        ProjectedWriteableProperty(std::string_view name, G get, GC convertToValue, S set, SC convertFromValue) :
             m_name(name), m_get(get), m_convertToValue(convertToValue), m_set(set), m_convertFromValue(convertFromValue)
         {
         }
@@ -112,7 +112,7 @@ namespace WinRTTurboModule
 
         template <typename I, typename T, typename J>
         static std::shared_ptr<IProjectedPropertyBase> Create(
-            const std::string_view& name, T (J::*get)() const, NativeToValueConverter<T> convertToValue)
+            std::string_view name, T (J::*get)() const, NativeToValueConverter<T> convertToValue)
         {
             return std::shared_ptr<IProjectedPropertyBase>(
                 new ProjectedReadonlyProperty<I, decltype(get), decltype(convertToValue)>(name, get, convertToValue));
@@ -125,8 +125,8 @@ namespace WinRTTurboModule
         // is a workaround.
 
         template <typename I, typename T, typename J, typename U, typename GC, typename SC>
-        static std::shared_ptr<IProjectedPropertyBase> Create(const std::string_view& name, T (J::*get)() const,
-            GC convertToValue, void (J::*set)(U) const, SC convertFromValue)
+        static std::shared_ptr<IProjectedPropertyBase> Create(
+            std::string_view name, T (J::*get)() const, GC convertToValue, void (J::*set)(U) const, SC convertFromValue)
         {
             return std::shared_ptr<IProjectedPropertyBase>(
                 new ProjectedWriteableProperty<I, decltype(get), GC, decltype(set), SC>(

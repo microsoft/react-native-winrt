@@ -6,12 +6,12 @@
 namespace WinRTTurboModule
 {
     std::shared_ptr<IProjectedValueProvider> ProjectedEnum::Create(
-        const std::string_view& name, InitializerFunction initializer)
+        std::string_view name, InitializerFunction initializer)
     {
         return std::make_shared<ProjectedHostObjectProvider>(name, std::make_shared<ProjectedEnum>(name, initializer));
     }
 
-    ProjectedEnum::ProjectedEnum(const std::string_view& name, InitializerFunction initializer) :
+    ProjectedEnum::ProjectedEnum(std::string_view name, InitializerFunction initializer) :
         m_name(name), m_initializer(initializer)
     {
     }

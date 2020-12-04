@@ -11,10 +11,10 @@ namespace WinRTTurboModule
     class ProjectedPropertyDefinition final : public jsi::HostObject
     {
     public:
-        ProjectedPropertyDefinition(const std::shared_ptr<IProjectedInterfaceInstance>& interfaceInstance,
-            const std::shared_ptr<IProjectedPropertyBase>& property) :
-            m_interfaceInstance(interfaceInstance),
-            m_property(property)
+        ProjectedPropertyDefinition(std::shared_ptr<IProjectedInterfaceInstance> interfaceInstance,
+            std::shared_ptr<IProjectedPropertyBase> property) :
+            m_interfaceInstance(std::move(interfaceInstance)),
+            m_property(std::move(property))
         {
         }
 
@@ -83,12 +83,12 @@ namespace WinRTTurboModule
         std::optional<jsi::Function> m_set;
     };
 
-    ProjectedActivationFactory::ProjectedActivationFactory(const std::string_view& name,
-        const std::shared_ptr<ProjectionsContext>& context, GetActivationFactory getActivationFactory,
-        std::set<winrt::guid>&& factoryInterfaceIds) :
+    ProjectedActivationFactory::ProjectedActivationFactory(std::string_view name,
+        std::shared_ptr<ProjectionsContext> context, GetActivationFactory getActivationFactory,
+        std::set<winrt::guid> factoryInterfaceIds) :
         m_name(name),
-        m_context(context), m_getActivationFactory(getActivationFactory),
-        m_factoryInterfaceIds(std::forward<std::set<winrt::guid>>(factoryInterfaceIds))
+        m_context(std::move(context)), m_getActivationFactory(getActivationFactory),
+        m_factoryInterfaceIds(std::move(factoryInterfaceIds))
     {
     }
 

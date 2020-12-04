@@ -6,7 +6,7 @@
 
 namespace WinRTTurboModule
 {
-    jsi::String CreateString(jsi::Runtime& runtime, const std::wstring_view& value)
+    jsi::String CreateString(jsi::Runtime& runtime, std::wstring_view value)
     {
         if (value.empty())
         {
@@ -17,20 +17,20 @@ namespace WinRTTurboModule
         // as std::string constructed with a fill will actually allocated 'outputLength + 1' characters and asign the
         // last as the null terminator automatically.
 
-        const auto outputLength =
-            ::WideCharToMultiByte(CP_UTF8, WC_ERR_INVALID_CHARS, value.data(), static_cast<int32_t>(value.size()),
-                nullptr /*lpMultiByteStr*/, 0 /*cbMultiByte*/, L'\0' /*lpDefaultChar*/, nullptr /*lpUsedDefaultChar*/);
+        const auto outputLength = ::WideCharToMultiByte(CP_UTF8, WC_ERR_INVALID_CHARS, value.data(),
+            static_cast<int32_t>(value.size()), nullptr /*lpMultiByteStr*/, 0 /*cbMultiByte*/,
+            nullptr /*lpDefaultChar*/, nullptr /*lpUsedDefaultChar*/);
         winrt::check_bool(outputLength);
 
         std::string multibyteString(outputLength, '\0');
         winrt::check_bool(
             ::WideCharToMultiByte(CP_UTF8, WC_ERR_INVALID_CHARS, value.data(), static_cast<int32_t>(value.size()),
-                &multibyteString[0], outputLength, L'\0' /*lpDefaultChar*/, nullptr /*lpUsedDefaultChar*/));
+                &multibyteString[0], outputLength, nullptr /*lpDefaultChar*/, nullptr /*lpUsedDefaultChar*/));
 
         return jsi::String::createFromUtf8(runtime, multibyteString);
     }
 
-    jsi::Value CreateError(jsi::Runtime& runtime, const std::string_view& message)
+    jsi::Value CreateError(jsi::Runtime& runtime, std::string_view message)
     {
         jsi::Object result(runtime);
         result.setProperty(runtime, "message", CreateString(runtime, message));
@@ -86,12 +86,12 @@ namespace WinRTTurboModule
         m_reject.call(runtime, result);
     }
 
-    CallInvokerWrapper::CallInvokerWrapper(const std::shared_ptr<react::CallInvoker>& CallInvokerWrapper) :
-        m_callInvokerWrapper(CallInvokerWrapper), ThreadId(GetCurrentThreadId())
+    CallInvokerWrapper::CallInvokerWrapper(std::shared_ptr<react::CallInvoker> callInvokerWrapper) :
+        m_callInvokerWrapper(std::move(callInvokerWrapper)), ThreadId(GetCurrentThreadId())
     {
     }
 
-    void CallInvokerWrapper::Call(std::function<void()>&& func)
+    void CallInvokerWrapper::Call(std::function<void()> func)
     {
         if (ThreadId == GetCurrentThreadId())
         {
@@ -99,16 +99,16 @@ namespace WinRTTurboModule
         }
         else
         {
-            m_callInvokerWrapper->invokeAsync(std::forward<std::function<void()>>(func));
+            m_callInvokerWrapper->invokeAsync(std::move(func));
         }
     }
 
-    void CallInvokerWrapper::CallAsync(std::function<void()>&& func)
+    void CallInvokerWrapper::CallAsync(std::function<void()> func)
     {
-        m_callInvokerWrapper->invokeAsync(std::forward<std::function<void()>>(func));
+        m_callInvokerWrapper->invokeAsync(std::move(func));
     }
 
-    void CallInvokerWrapper::CallSync(std::function<void()>&& func)
+    void CallInvokerWrapper::CallSync(std::function<void()> func)
     {
         if (ThreadId == GetCurrentThreadId())
         {
@@ -120,7 +120,7 @@ namespace WinRTTurboModule
             wil::shared_event event;
             event.create();
 
-            m_callInvokerWrapper->invokeAsync([event, func{ std::forward<std::function<void()>>(func) }]() {
+            m_callInvokerWrapper->invokeAsync([event, func{ std::move(func) }]() {
                 func();
                 event.SetEvent();
             });

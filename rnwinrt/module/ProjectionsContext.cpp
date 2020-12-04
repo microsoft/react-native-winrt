@@ -8,9 +8,9 @@ namespace WinRTTurboModule
     wil::srwlock ProjectionsContext::s_lock;
 
     std::shared_ptr<ProjectionsContext> ProjectionsContext::Create(
-        jsi::Runtime& runtime, const std::shared_ptr<react::CallInvoker>& invoker)
+        jsi::Runtime& runtime, std::shared_ptr<react::CallInvoker> invoker)
     {
-        auto context = std::make_shared<ProjectionsContext>(runtime, invoker);
+        auto context = std::make_shared<ProjectionsContext>(runtime, std::move(invoker));
 
         const auto lock = s_lock.lock_exclusive();
         s_instanceMap.emplace(::GetCurrentThreadId(), context);
@@ -31,8 +31,8 @@ namespace WinRTTurboModule
         return nullptr;
     }
 
-    ProjectionsContext::ProjectionsContext(jsi::Runtime& runtime, const std::shared_ptr<react::CallInvoker>& invoker) :
-        Runtime(runtime), Invoker(std::make_shared<CallInvokerWrapper>(invoker)), InstanceFactory(*this),
+    ProjectionsContext::ProjectionsContext(jsi::Runtime& runtime, std::shared_ptr<react::CallInvoker> invoker) :
+        Runtime(runtime), Invoker(std::make_shared<CallInvokerWrapper>(std::move(invoker))), InstanceFactory(*this),
         EventRegistrar(*this)
     {
     }

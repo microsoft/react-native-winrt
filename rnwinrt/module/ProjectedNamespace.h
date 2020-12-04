@@ -9,11 +9,11 @@ namespace WinRTTurboModule
     public:
         using InitializerFunction = std::vector<std::shared_ptr<IProjectedValueProvider>> (*)(
             const std::shared_ptr<ProjectionsContext>&);
-        static std::shared_ptr<IProjectedValueProvider> Create(const std::string_view& name,
-            const std::shared_ptr<ProjectionsContext>& context, InitializerFunction initializer);
+        static std::shared_ptr<IProjectedValueProvider> Create(
+            std::string_view name, std::shared_ptr<ProjectionsContext> context, InitializerFunction initializer);
 
-        ProjectedNamespace(const std::string_view& name, const std::shared_ptr<ProjectionsContext>& context,
-            InitializerFunction initializer);
+        ProjectedNamespace(
+            std::string_view name, std::shared_ptr<ProjectionsContext> context, InitializerFunction initializer);
         virtual ~ProjectedNamespace() = default;
 
         virtual jsi::Value get(jsi::Runtime& runtime, const jsi::PropNameID& propName) override;
