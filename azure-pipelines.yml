@@ -7,7 +7,7 @@ trigger:
 - main
 
 pool:
-  vmImage: 'ubuntu-latest'
+  vmImage: 'windows-2019'
 
 steps:
 - script: echo Hello, world!
@@ -17,3 +17,11 @@ steps:
     echo Add other tasks to build, test, and deploy your project.
     echo See https://aka.ms/yaml
   displayName: 'Run a multi-line script'
+
+- task: VSBuild@1
+  displayName: 'Build solution rnwinrt.sln'
+  inputs:
+    solution: rnwinrt.sln
+    vsVersion: 'latest'
+    platform: 'x64'
+    configuration: 'Release'
