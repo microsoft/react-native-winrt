@@ -21,7 +21,7 @@ steps:
 - task: VSBuild@1
   displayName: 'Build solution rnwinrt.sln'
   inputs:
-    solution: rnwinrt.sln
+    solution: rnwinrt\rnwinrt.sln
     vsVersion: 'latest'
     platform: 'x64'
     configuration: 'Release'
