@@ -21,6 +21,15 @@ steps:
     feedsToUse: 'config'
     nugetConfigPath: ''
 
+- task: NuGetToolInstaller@1
+
+- task: NuGetCommand@2
+  inputs:
+    command: 'restore'
+    restoreSolution: 'rnwinrt\rnwinrt.sln'
+    feedsToUse: config
+    nugetConfigPath: packages.config
+
 - task: VSBuild@1
   displayName: 'Build solution rnwinrt.sln'
   inputs:
