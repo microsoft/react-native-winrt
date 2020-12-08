@@ -1,4 +1,5 @@
 # Starter pipeline
+
 # Start with a minimal pipeline that you can customize to build and deploy your code.
 # Add steps that build, run tests, deploy, and more:
 # https://aka.ms/yaml
@@ -34,3 +35,13 @@ steps:
     vsVersion: 'latest'
     platform: 'x64'
     configuration: 'Release'
+
+- task: EsrpCodeSigning@1
+  inputs:
+    FolderPath: '$(Build.SourcesDirectory)'
+    Pattern: 'rnwinrt.exe'
+    UseMinimatch: true
+    signConfigType: 'inlineSignParams'
+    SessionTimeout: '60'
+    MaxConcurrency: '50'
+    MaxRetryAttempts: '5'
