@@ -25,7 +25,7 @@ steps:
     command: 'restore'
     restoreSolution: 'rnwinrt\rnwinrt.sln'
     feedsToUse: 'config'
-    nugetConfigPath: 'rnwinrt\packages.config'
+    nugetConfigPath: ''
 
 - task: VSBuild@1
   displayName: 'Build solution rnwinrt.sln'
