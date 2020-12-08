@@ -1029,8 +1029,8 @@ namespace WinRTTurboModule
                 if (!m_set)
                 {
                     m_set = jsi::Function::createFromHostFunction(runtime, propName, 1,
-                        [interfaceInstance{ m_interfaceInstance }, property{ m_property }](jsi::Runtime& runtime,
-                            const jsi::Value&, const jsi::Value* args, size_t count) mutable {
+                        [interfaceInstance{ m_interfaceInstance }, property{ m_property }](
+                            jsi::Runtime& runtime, const jsi::Value&, const jsi::Value* args, size_t count) mutable {
                             if (count != 1)
                             {
                                 throw jsi::JSError(runtime, "TypeError: Property setter expects 1 argument");
@@ -1785,16 +1785,15 @@ namespace WinRTTurboModule
         }
         else if (propNameUtf8 == "finally"sv)
         {
-            return jsi::Value(
-                runtime, jsi::Function::createFromHostFunction(runtime, propName, 2,
-                             [strongThis{ shared_from_this() }](jsi::Runtime&, const jsi::Value&,
-                                 const jsi::Value* args, size_t count) mutable {
-                                 // TODO: Technically "finally" callbacks should be invoked without args, but since it
-                                 // is JS, passing args probably doesn't matter.
-                                 const auto undefined = jsi::Value::undefined();
-                                 const auto& function = count >= 1 ? args[0] : undefined;
-                                 return strongThis->HandleThen(function, function, undefined);
-                             }));
+            return jsi::Value(runtime, jsi::Function::createFromHostFunction(runtime, propName, 2,
+                                           [strongThis{ shared_from_this() }](jsi::Runtime&, const jsi::Value&,
+                                               const jsi::Value* args, size_t count) mutable {
+                                               // TODO: Technically "finally" callbacks should be invoked without args,
+                                               // but since it is JS, passing args probably doesn't matter.
+                                               const auto undefined = jsi::Value::undefined();
+                                               const auto& function = count >= 1 ? args[0] : undefined;
+                                               return strongThis->HandleThen(function, function, undefined);
+                                           }));
         }
 
         return {};

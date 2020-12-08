@@ -6,11 +6,11 @@
 
 #include <inspectable.h>
 #include <unknwn.h>
-#include <winrt/Windows.Foundation.h>
 #include <winrt/Windows.Foundation.Collections.h>
+#include <winrt/Windows.Foundation.h>
 
-#include <jsi/jsi.h>
 #include <TurboModule/Core/TurboModule.h> // TODO: Move react-specific code to separate files
+#include <jsi/jsi.h>
 
 #include <Windows.h>
 
@@ -267,10 +267,12 @@ namespace WinRTTurboModule
     };
 
     template <typename T>
-    using NativeToValueConverter = jsi::Value (*)(const std::shared_ptr<WinRTTurboModule::ProjectionsContext>&, const T&);
+    using NativeToValueConverter = jsi::Value (*)(
+        const std::shared_ptr<WinRTTurboModule::ProjectionsContext>&, const T&);
 
     template <typename T>
-    using ValueToNativeConverter = T (*)(const std::shared_ptr<WinRTTurboModule::ProjectionsContext>&, const jsi::Value&);
+    using ValueToNativeConverter = T (*)(
+        const std::shared_ptr<WinRTTurboModule::ProjectionsContext>&, const jsi::Value&);
 }
 
 namespace WinRTTurboModule
