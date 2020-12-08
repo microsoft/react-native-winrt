@@ -179,8 +179,9 @@ int write_file_contents(FILE* outFile, const std::filesystem::path& inFilePath)
         return errno;
     }
 
-    // TODO: Figure out actual max string length
-    static constexpr std::size_t buffer_size = 2048;
+    // NOTE: MSVC has a max string literal length that seems to be on the order of ~16,000 bytes without string
+    // concatenation. Target something slightly less than that for some wiggle room
+    static constexpr std::size_t buffer_size = 16000;
     char buffer[buffer_size];
     std::size_t bufferLen = 0;
     bool hasData = true;
