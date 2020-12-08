@@ -33,7 +33,9 @@ steps:
   displayName: 'test'
 
 - task: EsrpCodeSigning@1
+  displayName: 'ESRP CodeSigning'
   inputs:
+    ConnectedServiceName: 'Xlang Code Signing'
     FolderPath: '$(Build.SourcesDirectory)\rnwinrt\x64\Release'
     Pattern: 'rnwinrt.exe'
     UseMinimatch: true
