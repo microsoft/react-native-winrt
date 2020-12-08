@@ -13,7 +13,7 @@ JavaScript WinRT (JS/WinRT) is a module for React Native Windows which provides 
 # Adding the projection to your own solution
 > **DISCLAIMER**: These steps are temporary and subject to change as the projection evolves.
 
-* Copy the [`rnwinrt`](./rnwinrt) and [`WinRTTurboModule`](./samples/RNWinRTTestApp/windows/WinRTTurboModule) (from the sample) source directories to your project.
+* Copy the [`strings`](./rnwinrt/strings), [`rnwinrt`](./rnwinrt/rnwinrt), and [`WinRTTurboModule`](./samples/RNWinRTTestApp/windows/WinRTTurboModule) (from the sample) source directories to your project.
 * Add the [`strings.vcxproj`](./rnwinrt/strings/strings.vcxproj), [`rnwinrt.vcxproj`](./rnwinrt/rnwinrt/rnwinrt.vcxproj), and [`WinRTTurboModule.vcxproj`](./samples/RNWinRTTestApp/windows/WinRTTurboModule/WinRTTurboModule.vcxproj) to your solution.
 * Make sure your project depends on the WinRTTurboModule project.
 * Turn off deploy for the strings, rnwinrt, and WinRTTurboModule projects.
