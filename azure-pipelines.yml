@@ -11,13 +11,6 @@ pool:
   vmImage: 'windows-2019'
 
 steps:
-- script: echo Hello, world!
-  displayName: 'Run a one-line script'
-
-- script: |
-    echo Add other tasks to build, test, and deploy your project.
-    echo See https://aka.ms/yaml
-  displayName: 'Run a multi-line script'
 
 - task: NuGetToolInstaller@1
 
@@ -38,7 +31,7 @@ steps:
 
 - task: EsrpCodeSigning@1
   inputs:
-    FolderPath: '$(Build.SourcesDirectory)'
+    FolderPath: '$(Build.BinariesDirectory)\rnwinrt\x64\Release'
     Pattern: 'rnwinrt.exe'
     UseMinimatch: true
     signConfigType: 'inlineSignParams'
