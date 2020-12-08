@@ -6,6 +6,9 @@
     <ProjectGuid>{249A6C52-D3DF-4B3C-BF7C-9DD62C267CB0}</ProjectGuid>
     <RootNamespace>rnwinrt</RootNamespace>
     <WindowsTargetPlatformVersion>10.0</WindowsTargetPlatformVersion>
+    <!-- TODO: This is to ensure that VS will re-run msbuild each time we "build". Otherwise changes to base.h/cpp might
+         not get recompiled... This slows compilation down slightly, but is net goodness -->
+    <DisableFastUpToDateCheck>true</DisableFastUpToDateCheck>
   </PropertyGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.Default.props" />
   <ItemGroup Label="ProjectConfigurations">
@@ -70,6 +73,11 @@
   </ItemGroup>
   <ItemGroup>
     <ResourceCompile Include="version.rc" />
+  </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\strings\strings.vcxproj">
+      <Project>{2a8a236d-1799-487a-a4c0-f1ac89db8a43}</Project>
+    </ProjectReference>
   </ItemGroup>
   <PropertyGroup Label="Configuration">
     <ConfigurationType>Application</ConfigurationType>
@@ -137,4 +145,10 @@
     <Error Condition="!Exists('$(SolutionDir)\packages\Microsoft.Windows.ImplementationLibrary.1.0.191107.2\build\native\Microsoft.Windows.ImplementationLibrary.targets')" Text="$([System.String]::Format('$(ErrorText)', '$(SolutionDir)\packages\Microsoft.Windows.ImplementationLibrary.1.0.191107.2\build\native\Microsoft.Windows.ImplementationLibrary.targets'))" />
   </Target>
   <Target Name="Deploy" />
+  <Target Name="BuildStrings"
+          AfterTargets="PrepareForBuild"
+          Inputs="./strings/base.h;./strings/base.cpp"
+          Outputs="$(OutputPath)/strings.h">
+    <Exec Command="$(OutputPath)strings.exe ./strings $(OutputPath)" />
+  </Target>
 </Project>

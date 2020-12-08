@@ -5,6 +5,8 @@
 #include "ValueConverters.h"
 #include "Writer.h"
 
+#include <strings.h>
+
 constexpr auto c_codegenNamespace = "WinRTTurboModule"sv;
 
 struct ValueConverters
@@ -1231,8 +1233,7 @@ void WriteProjectionsGeneratedH(
 {
     FileWriter writer(settings.OutputFolder / "Projections.g.h");
     writer.Write("#pragma once\n\n");
-    writer.WriteInclude("ProjectedInterface.h"sv);
-    writer.WriteInclude("ProjectedValueConverters.h"sv);
+    writer.WriteInclude("base.h"sv);
 
     writer.Write(R"(
 namespace %
@@ -1250,7 +1251,7 @@ std::map<std::string, ValueConverters> WriteProjectedValueConvertersGeneratedH(
     FileWriter writer(settings.OutputFolder / "ProjectedValueConverters.g.h");
 
     writer.Write("#pragma once\n\n");
-    writer.WriteInclude("ProjectedValueConverters.h"sv);
+    writer.WriteInclude("base.h"sv);
     writer.WriteNewLine();
 
     std::map<std::string, ValueConverters> valueConverters;
@@ -1284,14 +1285,10 @@ void WriteNamespaceGenerateCppH(const Settings& settings, const Namespace& node,
         writer.WriteNewLine();
         writer.WriteInclude(namespaceFileName + ".h");
         writer.WriteNewLine();
-        writer.WriteInclude("ProjectedNamespace.h"sv);
+        writer.WriteInclude("base.h"sv);
 
         if (includeCppWinRtHeader)
         {
-            writer.WriteInclude("ProjectedActivationFactory.h"sv);
-            writer.WriteInclude("ProjectedEnum.h"sv);
-            writer.WriteInclude("ProjectedFunction.h"sv);
-            writer.WriteInclude("ProjectedGenericInterfaces.h"sv);
             writer.WriteNewLine();
             writer.WriteInclude("ProjectedValueConverters.g.h"sv);
             writer.WriteNewLine();
@@ -1304,9 +1301,7 @@ void WriteNamespaceGenerateCppH(const Settings& settings, const Namespace& node,
     {
         FileWriter writer(settings.OutputFolder / (namespaceFileName + ".h"));
         writer.Write("#pragma once\n\n");
-
-        writer.WriteInclude("ProjectedInterface.h"sv);
-        writer.WriteInclude("ProjectedValueProvider.h"sv);
+        writer.WriteInclude("base.h"sv);
 
         for (const auto& childNode : node.Children())
         {
@@ -1352,10 +1347,8 @@ void WriteProjectionsGeneratedCpp(const Settings& settings,
     FileWriter writer(settings.OutputFolder / "Projections.g.cpp");
     writer.WriteInclude(settings.PchFileName);
     writer.WriteNewLine();
+    writer.WriteInclude("base.h"sv);
     writer.WriteInclude("Projections.g.h"sv);
-    writer.WriteInclude("ProjectedInterface.h"sv);
-    writer.WriteInclude("ProjectedNamespace.h"sv);
-    writer.WriteInclude("ProjectedValueProvider.h"sv);
     writer.WriteNewLine();
 
     // Write includes for all generated namespaces since we need access to namespace and interface initializer
@@ -1422,6 +1415,18 @@ namespace %
         c_codegenNamespace);
 }
 
+void WriteBaseFiles(const Settings& settings)
+{
+    for (auto& data : file_strings)
+    {
+        FileWriter writer(settings.OutputFolder / data.file_name);
+        for (auto& str : data.file_contents)
+        {
+            writer.Write("%", str);
+        }
+    }
+}
+
 void WriteFiles(const Settings& settings, const std::map<std::string_view, std::shared_ptr<Namespace>>& roots)
 {
     WriteProjectionsGeneratedH(settings, roots);
@@ -1431,4 +1436,6 @@ void WriteFiles(const Settings& settings, const std::map<std::string_view, std::
     WriteNamespacesGenerateCppH(settings, roots, valueConverters, namespaceInterfaceCounts);
 
     WriteProjectionsGeneratedCpp(settings, roots, namespaceInterfaceCounts);
+
+    WriteBaseFiles(settings);
 }
