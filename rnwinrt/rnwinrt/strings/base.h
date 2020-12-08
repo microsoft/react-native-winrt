@@ -1390,7 +1390,7 @@ namespace WinRTTurboModule
                 // Progress(...) internally calls winrt::impl::make_agile_delegate so the lambda should be called on the
                 // original thread rather than on some arbitrary background thread.
                 m_instance.Progress(
-                    [progressConverter, methods{ m_methods }, context](const auto& sender, const auto& progress) {
+                    [progressConverter, methods{ m_methods }, context](const auto&, const auto& progress) {
                         methods->OnProgress(progressConverter(context, progress));
                     });
             }
@@ -1741,14 +1741,14 @@ namespace WinRTTurboModule
     // by types that are not such as Windows.Web.UI.Interop.IWebViewControlAcceleratorKeyPressedEventArgs (which
     // probably should also be WebHostHidden).
     template <typename T>
-    jsi::Value ConvertStructToValue(const std::shared_ptr<ProjectionsContext>& context, const T& value)
+    jsi::Value ConvertStructToValue(const std::shared_ptr<ProjectionsContext>& context, const T&)
     {
         throw jsi::JSError(context->Runtime,
             std::string("TypeError: Conversion from native struct to JS not implemented for "sv) + typeid(T).name());
     }
 
     template <typename T>
-    T ConvertValueToStruct(const std::shared_ptr<ProjectionsContext>& context, const jsi::Value& value)
+    T ConvertValueToStruct(const std::shared_ptr<ProjectionsContext>& context, const jsi::Value&)
     {
         throw jsi::JSError(context->Runtime,
             std::string("TypeError: Conversion from JS to native struct not implemented for "sv) + typeid(T).name());
