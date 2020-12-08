@@ -95,7 +95,7 @@ int main(int argc, char** argv)
         return ERROR_FILE_NOT_FOUND;
     }
 
-// Far enough along to assume likely success; go ahead and create the output file
+    // Far enough along to assume likely success; go ahead and create the output file
     auto outFile = _wfopen(toPath.c_str(), L"w");
     if (!outFile)
     {
@@ -173,7 +173,8 @@ int write_file_contents(FILE* outFile, const std::filesystem::path& inFilePath)
     if (!print_file(outFile, R"^-^(    {
         "%ls",
         {
-)^-^", inFilePath.filename().c_str()))
+)^-^",
+            inFilePath.filename().c_str()))
     {
         std::fclose(inFile);
         return errno;
