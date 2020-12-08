@@ -29,6 +29,9 @@ steps:
     platform: 'x64'
     configuration: 'Release'
 
+- script: echo $(Build.BinariesDirectory)
+  displayName: 'test'
+
 - task: EsrpCodeSigning@1
   displayName: 'ESRP CodeSigning'
   inputs:
