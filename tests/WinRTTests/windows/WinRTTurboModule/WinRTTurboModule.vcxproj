@@ -126,7 +126,6 @@
   </ItemDefinitionGroup>
   <ItemGroup>
     <ClInclude Include="pch.h" />
-    <ClInclude Include="$(ModuleImplementationDir)*.h" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="pch.cpp">

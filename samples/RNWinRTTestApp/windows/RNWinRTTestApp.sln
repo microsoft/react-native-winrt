@@ -44,6 +44,8 @@ Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "WinRTTurboModule", "WinRTTu
 EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "rnwinrt", "..\..\..\rnwinrt\rnwinrt\rnwinrt.vcxproj", "{249A6C52-D3DF-4B3C-BF7C-9DD62C267CB0}"
 EndProject
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "strings", "..\..\..\rnwinrt\strings\strings.vcxproj", "{2A8A236D-1799-487A-A4C0-F1AC89DB8A43}"
+EndProject
 Global
 	GlobalSection(SharedMSBuildProjectFiles) = preSolution
 		..\node_modules\react-native-windows\JSI\Shared\JSI.Shared.vcxitems*{0cc28589-39e4-4288-b162-97b959f8b843}*SharedItemsImports = 9
@@ -297,6 +299,26 @@ Global
 		{249A6C52-D3DF-4B3C-BF7C-9DD62C267CB0}.Release|x64.Build.0 = Release|x64
 		{249A6C52-D3DF-4B3C-BF7C-9DD62C267CB0}.Release|x86.ActiveCfg = Release|x64
 		{249A6C52-D3DF-4B3C-BF7C-9DD62C267CB0}.Release|x86.Build.0 = Release|x64
+		{2A8A236D-1799-487A-A4C0-F1AC89DB8A43}.Debug|ARM.ActiveCfg = Release|x64
+		{2A8A236D-1799-487A-A4C0-F1AC89DB8A43}.Debug|ARM64.ActiveCfg = Release|x64
+		{2A8A236D-1799-487A-A4C0-F1AC89DB8A43}.Debug|x64.ActiveCfg = Release|x64
+		{2A8A236D-1799-487A-A4C0-F1AC89DB8A43}.Debug|x64.Build.0 = Release|x64
+		{2A8A236D-1799-487A-A4C0-F1AC89DB8A43}.Debug|x86.ActiveCfg = Release|x64
+		{2A8A236D-1799-487A-A4C0-F1AC89DB8A43}.Debug|x86.Build.0 = Release|x64
+		{2A8A236D-1799-487A-A4C0-F1AC89DB8A43}.DebugBundle|ARM.ActiveCfg = Release|x64
+		{2A8A236D-1799-487A-A4C0-F1AC89DB8A43}.DebugBundle|ARM.Build.0 = Release|x64
+		{2A8A236D-1799-487A-A4C0-F1AC89DB8A43}.DebugBundle|ARM64.ActiveCfg = Release|x64
+		{2A8A236D-1799-487A-A4C0-F1AC89DB8A43}.DebugBundle|ARM64.Build.0 = Release|x64
+		{2A8A236D-1799-487A-A4C0-F1AC89DB8A43}.DebugBundle|x64.ActiveCfg = Release|x64
+		{2A8A236D-1799-487A-A4C0-F1AC89DB8A43}.DebugBundle|x64.Build.0 = Release|x64
+		{2A8A236D-1799-487A-A4C0-F1AC89DB8A43}.DebugBundle|x86.ActiveCfg = Release|x64
+		{2A8A236D-1799-487A-A4C0-F1AC89DB8A43}.DebugBundle|x86.Build.0 = Release|x64
+		{2A8A236D-1799-487A-A4C0-F1AC89DB8A43}.Release|ARM.ActiveCfg = Release|x64
+		{2A8A236D-1799-487A-A4C0-F1AC89DB8A43}.Release|ARM64.ActiveCfg = Release|x64
+		{2A8A236D-1799-487A-A4C0-F1AC89DB8A43}.Release|x64.ActiveCfg = Release|x64
+		{2A8A236D-1799-487A-A4C0-F1AC89DB8A43}.Release|x64.Build.0 = Release|x64
+		{2A8A236D-1799-487A-A4C0-F1AC89DB8A43}.Release|x86.ActiveCfg = Release|x64
+		{2A8A236D-1799-487A-A4C0-F1AC89DB8A43}.Release|x86.Build.0 = Release|x64
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
