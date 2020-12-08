@@ -29,12 +29,12 @@ steps:
     platform: 'x64'
     configuration: 'Release'
 
-- script: echo $(Build.BinariesDirectory)
+- script: echo $(Build.SourcesDirectory)
   displayName: 'test'
 
 - task: EsrpCodeSigning@1
   inputs:
-    FolderPath: '$(Build.BinariesDirectory)\rnwinrt\x64\Release'
+    FolderPath: '$(Build.SourcesDirectory)\rnwinrt\x64\Release'
     Pattern: 'rnwinrt.exe'
     UseMinimatch: true
     signConfigType: 'inlineSignParams'
