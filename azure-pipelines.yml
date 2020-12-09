@@ -49,3 +49,32 @@ steps:
     packDestination: '$(Build.ArtifactStagingDirectory)'
     versioningScheme: 'off'
     buildProperties: 'jswinrt_nuget_version=$(Build.BuildNumber);rnwinrt_exe=$(Build.SourcesDirectory)\rnwinrt\x64\Release\rnwinrt.exe;'
+
+- task: EsrpCodeSigning@1
+  displayName: 'ESRP CodeSigning'
+  inputs:
+    ConnectedServiceName: 'Xlang Code Signing'
+    FolderPath: '$(Build.ArtifactStagingDirectory)'
+    Pattern: '*.nupkg'
+    UseMinimatch: true
+    signConfigType: 'inlineSignParams'
+    inlineOperation: |
+      [
+        {
+           "KeyCode" : "CP-401405",
+           "OperationCode" : "NuGetSign",
+           "Parameters" : {},
+           "ToolName" : "sign",
+           "ToolVersion" : "1.0"
+        },
+        {
+            "KeyCode" : "CP-401405",
+            "OperationCode" : "NuGetVerify",
+            "Parameters" : {},
+            "ToolName" : "sign",
+            "ToolVersion" : "1.0"
+        }
+      ]
+    SessionTimeout: '60'
+    MaxConcurrency: '50'
+    MaxRetryAttempts: '5'
