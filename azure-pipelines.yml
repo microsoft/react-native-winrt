@@ -29,9 +29,6 @@ steps:
     platform: 'x64'
     configuration: 'Release'
 
-- script: echo $(Build.SourcesDirectory)
-  displayName: 'test'
-
 - task: EsrpCodeSigning@1
   displayName: 'ESRP CodeSigning'
   inputs:
@@ -51,4 +48,4 @@ steps:
     configuration: 'Release'
     packDestination: '$(Build.BinariesDirectory)\rnwinrt\x64\Release'
     versioningScheme: 'off'
-    buildProperties: 'jswinrt_nuget_version=$(NugetVersion);rnwinrt_exe=$(Build.BinariesDirectory)\rnwinrt\x64\Release\rnwinrt.exe;'
+    buildProperties: 'jswinrt_nuget_version=$(Build.BuildNumber);rnwinrt_exe=$(Build.BinariesDirectory)\rnwinrt\x64\Release\rnwinrt.exe;'
