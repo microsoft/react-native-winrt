@@ -16,7 +16,7 @@
   </metadata>
   <files>
     <file src="LICENSE"/>
-    <file src="$rnwinrt_exe$"/>
+    <file src="$rnwinrt_exe$" target="content" />
     <file src="readme.txt"/>
   </files>
 </package>
