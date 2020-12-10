@@ -15,18 +15,20 @@ namespace winrt::TestComponent::implementation
         static int32_t StaticAdd(int32_t lhs, int32_t rhs);
         static hstring StaticAppend(hstring const& a, char16_t b, hstring const& c);
 
-        static void StaticBoolOutParam(bool lhs, bool rhs, bool& andResult);
-        static void StaticBoolOutParam2(bool lhs, bool rhs, bool& andResult, bool& or);
-        static bool StaticBoolOutParamWithReturn(bool lhs, bool rhs, bool& andResult, bool& or);
-        static void StaticCharOutParam(char16_t value, char16_t& next);
-        static void StaticCharOutParam2(char16_t value, char16_t& next, char16_t& prev);
-        static char16_t StaticCharOutParamWithReturn(char16_t value, char16_t& next, char16_t& prev);
-        static void StaticNumericOutParam(int32_t value, int32_t& doubledValue);
-        static void StaticNumericOutParam2(int32_t value, int32_t& doubledValue, int32_t& tripledValue);
-        static int32_t StaticNumericOutParamWithReturn(int32_t value, int32_t& doubledValue, int32_t& tripledValue);
-        static void StaticStringOutParam(hstring const& value, hstring& lower);
-        static void StaticStringOutParam2(hstring const& value, hstring& lower, hstring& upper);
-        static hstring StaticStringOutParamWithReturn(hstring const& value, hstring& lower, hstring& upper);
+        static bool StaticBoolOutParam(bool lhs, bool rhs, bool& andResult, bool& or);
+        static char16_t StaticCharOutParam(char16_t value, char16_t& next, char16_t& prev);
+        static int32_t StaticNumericOutParam(int32_t value, int32_t& doubledValue, int32_t& tripledValue);
+        static hstring StaticStringOutParam(hstring const& value, hstring& lower, hstring& upper);
+        static winrt::guid StaticGuidOutParam(winrt::guid const& value, winrt::guid& zero, winrt::guid& allSet);
+        static TestEnum StaticEnumOutParam(TestEnum const& value, TestEnum& plusOne, TestEnum& plusTwo);
+        static CompositeType StaticCompositeStructOutParam(
+            CompositeType const& input, CompositeType& first, CompositeType& second);
+        static Windows::Foundation::IReference<int32_t> StaticRefOutParam(
+            Windows::Foundation::IReference<int32_t> const& value,
+            Windows::Foundation::IReference<int32_t>& doubledValue,
+            Windows::Foundation::IReference<int32_t>& tripledValue);
+        static com_array<bool> StaticBoolArrayOutParam(
+            array_view<bool const> values, com_array<bool>& rot1, com_array<bool>& rot2);
 
         static Windows::Foundation::Collections::IVector<int32_t> MakeNumericVector(array_view<int32_t const> values);
 
@@ -100,18 +102,18 @@ namespace winrt::TestComponent::implementation
         int32_t Add(int32_t lhs, int32_t rhs);
         hstring Append(hstring const& a, char16_t b, hstring const& c);
 
-        void BoolOutParam(bool lhs, bool rhs, bool& andResult);
-        void BoolOutParam2(bool lhs, bool rhs, bool& andResult, bool& or);
-        bool BoolOutParamWithReturn(bool lhs, bool rhs, bool& andResult, bool& or);
-        void CharOutParam(char16_t value, char16_t& next);
-        void CharOutParam2(char16_t value, char16_t& next, char16_t& prev);
-        char16_t CharOutParamWithReturn(char16_t value, char16_t& next, char16_t& prev);
-        void NumericOutParam(int32_t value, int32_t& doubledValue);
-        void NumericOutParam2(int32_t value, int32_t& doubledValue, int32_t& tripledValue);
-        int32_t NumericOutParamWithReturn(int32_t value, int32_t& doubledValue, int32_t& tripledValue);
-        void StringOutParam(hstring const& value, hstring& lower);
-        void StringOutParam2(hstring const& value, hstring& lower, hstring& upper);
-        hstring StringOutParamWithReturn(hstring const& value, hstring& lower, hstring& upper);
+        bool BoolOutParam(bool lhs, bool rhs, bool& andResult, bool& or);
+        char16_t CharOutParam(char16_t value, char16_t& next, char16_t& prev);
+        int32_t NumericOutParam(int32_t value, int32_t& doubledValue, int32_t& tripledValue);
+        hstring StringOutParam(hstring const& value, hstring& lower, hstring& upper);
+        winrt::guid GuidOutParam(winrt::guid const& value, winrt::guid& zero, winrt::guid& allSet);
+        TestEnum EnumOutParam(TestEnum const& value, TestEnum& plusOne, TestEnum& plusTwo);
+        CompositeType CompositeStructOutParam(CompositeType const& input, CompositeType& first, CompositeType& second);
+        Windows::Foundation::IReference<int32_t> RefOutParam(Windows::Foundation::IReference<int32_t> const& value,
+            Windows::Foundation::IReference<int32_t>& doubledValue,
+            Windows::Foundation::IReference<int32_t>& tripledValue);
+        com_array<bool> BoolArrayOutParam(
+            array_view<bool const> values, com_array<bool>& rot1, com_array<bool>& rot2);
 
     private:
         // Static properties

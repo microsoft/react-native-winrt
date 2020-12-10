@@ -128,17 +128,15 @@ class App extends Component {
 
         // Static out params
         new TestScenario('Test::StaticBoolOutParam', this.runStaticBoolOutParam.bind(this)),
-        new TestScenario('Test::StaticBoolOutParam2', this.runStaticBoolOutParam2.bind(this)),
-        new TestScenario('Test::StaticBoolOutParamWithReturn', this.runStaticBoolOutParamWithReturn.bind(this)),
         new TestScenario('Test::StaticCharOutParam', this.runStaticCharOutParam.bind(this)),
-        new TestScenario('Test::StaticCharOutParam2', this.runStaticCharOutParam2.bind(this)),
-        new TestScenario('Test::StaticCharOutParamWithReturn', this.runStaticCharOutParamWithReturn.bind(this)),
         new TestScenario('Test::StaticNumericOutParam', this.runStaticNumericOutParam.bind(this)),
-        new TestScenario('Test::StaticNumericOutParam2', this.runStaticNumericOutParam2.bind(this)),
-        new TestScenario('Test::StaticNumericOutParamWithReturn', this.runStaticNumericOutParamWithReturn.bind(this)),
         new TestScenario('Test::StaticStringOutParam', this.runStaticStringOutParam.bind(this)),
-        new TestScenario('Test::StaticStringOutParam2', this.runStaticStringOutParam2.bind(this)),
-        new TestScenario('Test::StaticStringOutParamWithReturn', this.runStaticStringOutParamWithReturn.bind(this)),
+        new TestScenario('Test::StaticGuidOutParam', this.runStaticGuidOutParam.bind(this)),
+        new TestScenario('Test::StaticEnumOutParam', this.runStaticEnumOutParam.bind(this)),
+        new TestScenario('Test::StaticCompositeStructOutParam', this.runStaticCompositeStructOutParam.bind(this)),
+        new TestScenario('Test::StaticRefOutParam', this.runStaticRefOutParam.bind(this)),
+
+        new TestScenario('Test::StaticBoolArrayOutParam', this.runStaticBoolArrayOutParam.bind(this)),
 
         // Non-static properties
         new TestScenario('Test::BoolProperty', this.runBoolProperty.bind(this)),
@@ -184,17 +182,15 @@ class App extends Component {
 
         // Non-static out params
         new TestScenario('Test::BoolOutParam', this.runBoolOutParam.bind(this)),
-        new TestScenario('Test::BoolOutParam2', this.runBoolOutParam2.bind(this)),
-        new TestScenario('Test::BoolOutParamWithReturn', this.runBoolOutParamWithReturn.bind(this)),
         new TestScenario('Test::CharOutParam', this.runCharOutParam.bind(this)),
-        new TestScenario('Test::CharOutParam2', this.runCharOutParam2.bind(this)),
-        new TestScenario('Test::CharOutParamWithReturn', this.runCharOutParamWithReturn.bind(this)),
         new TestScenario('Test::NumericOutParam', this.runNumericOutParam.bind(this)),
-        new TestScenario('Test::NumericOutParam2', this.runNumericOutParam2.bind(this)),
-        new TestScenario('Test::NumericOutParamWithReturn', this.runNumericOutParamWithReturn.bind(this)),
         new TestScenario('Test::StringOutParam', this.runStringOutParam.bind(this)),
-        new TestScenario('Test::StringOutParam2', this.runStringOutParam2.bind(this)),
-        new TestScenario('Test::StringOutParamWithReturn', this.runStringOutParamWithReturn.bind(this)),
+        new TestScenario('Test::GuidOutParam', this.runGuidOutParam.bind(this)),
+        new TestScenario('Test::EnumOutParam', this.runEnumOutParam.bind(this)),
+        new TestScenario('Test::CompositeStructOutParam', this.runCompositeStructOutParam.bind(this)),
+        new TestScenario('Test::RefOutParam', this.runRefOutParam.bind(this)),
+
+        new TestScenario('Test::BoolArrayOutParam', this.runBoolArrayOutParam.bind(this)),
 
 
 
@@ -294,7 +290,9 @@ class App extends Component {
     stringArrayInvalidValues = ['foo', [true], [42]];
 
     // NOTE: Guids seem to always come back as uppercase. This assumption makes for easier comparisons, but is probably not guaranteed
-    guidTestValues = [ '00000000-0000-0000-0000-000000000000', 'FFFFFFFF-FFFF-FFFF-FFFF-FFFFFFFFFFFF', '01234567-89AB-CDEF-0123-456789ABCDEF' ];
+    zeroGuid = '00000000-0000-0000-0000-000000000000';
+    allSetGuid = 'FFFFFFFF-FFFF-FFFF-FFFF-FFFFFFFFFFFF';
+    guidTestValues = [ this.zeroGuid, this.allSetGuid, '01234567-89AB-CDEF-0123-456789ABCDEF' ];
     guidInvalidValues = [ '', '{00000000-0000-0000-0000-000000000000}', '00000000 0000 0000 0000 000000000000', '01234567-89AB-CDEF-GHIJ-KLMNOPQRSTUV' ];
     guidArrayTestValues = [[], [this.guidTestValues[0]], this.guidTestValues];
     guidArrayInvalidValues = [this.guidTestValues[0], [this.guidInvalidValues[0]], this.guidInvalidValues];
@@ -317,13 +315,13 @@ class App extends Component {
     ];
 
     stringTypesTestValues = [
-        { ch: '\0', str: '\0', guid: '00000000-0000-0000-0000-000000000000' },
+        { ch: '\0', str: '\0', guid: this.zeroGuid },
         { ch: 'F', str: 'Hello, world!', guid: '01234567-89AB-CDEF-0123-456789ABCDEF' }
     ];
     stringTypesInvalidValues = [
         {},
-        { ch: 65, str: 'Test', guid: '00000000-0000-0000-0000-000000000000' },
-        { ch: 'A', str: 'Test', guid: '00000000-0000-0000-0000-000000000000', extraProperty: 42 },
+        { ch: 65, str: 'Test', guid: this.zeroGuid },
+        { ch: 'A', str: 'Test', guid: this.zeroGuid, extraProperty: 42 },
         { ch: 'A', str: 'Test' }
     ];
 
@@ -333,7 +331,7 @@ class App extends Component {
     compositeTestValues = [
         {
             numerics: { u8: 8, u16: 16, u32: 32, u64: 64, s16: -16, s32: -32, s64: -64, f32: 3.141590118408203125, f64: 6.02e23, e: TestComponent.TestEnum.first },
-            strings: { ch: '\0', str: '\0', guid: '00000000-0000-0000-0000-000000000000' },
+            strings: { ch: '\0', str: '\0', guid: this.zeroGuid },
             bools: { b: true }
         },
         {
@@ -346,17 +344,17 @@ class App extends Component {
         {}, { numerics: {}, strings: {}, bools: {} },
         {
             numerics: { u8: 8, u16: 16, u32: 32, u64: 64, s16: -16, s32: -32, s64: -64, f32: 3.141590118408203125, f64: 6.02e23, e: TestComponent.TestEnum.first },
-            strings: { ch: '\0', str: '\0', guid: '00000000-0000-0000-0000-000000000000' }
+            strings: { ch: '\0', str: '\0', guid: this.zeroGuid }
         },
         {
             numerics: { u8: 8, u16: 16, u32: 32, u64: 64, s16: -16, s32: -32, s64: -64, f32: 3.141590118408203125, f64: 6.02e23, e: TestComponent.TestEnum.first },
-            strings: { ch: '\0', str: '\0', guid: '00000000-0000-0000-0000-000000000000' },
+            strings: { ch: '\0', str: '\0', guid: this.zeroGuid },
             bools: { b: true },
             extraProperty: 'This should not be here'
         },
         {
             numerics: { u8: 8, u16: 16, u32: 32, u64: 64, s16: -16, s32: -32, s64: -64, f32: 3.141590118408203125, f64: 6.02e23, e: TestComponent.TestEnum.first },
-            strings: { ch: '\0', str: '\0', guid: '00000000-0000-0000-0000-000000000000' },
+            strings: { ch: '\0', str: '\0', guid: this.zeroGuid },
             bools: { b: true, extraProperty: 'This should not be here' }
         }
     ];
@@ -421,33 +419,7 @@ class App extends Component {
     runStaticBoolOutParam(scenario) {
         this.runSync(scenario, () => {
             var run = (lhs, rhs) => {
-                assertEqual(TestComponent.Test.staticBoolOutParam(lhs, rhs).and, lhs && rhs);
-            };
-            run(false, false);
-            run(false, true);
-            run(true, false);
-            run(true, true);
-        });
-    }
-
-    runStaticBoolOutParam2(scenario) {
-        this.runSync(scenario, () => {
-            var run = (lhs, rhs) => {
-                var { and, or } = TestComponent.Test.staticBoolOutParam2(lhs, rhs);
-                assertEqual(and, lhs && rhs);
-                assertEqual(or, lhs || rhs);
-            };
-            run(false, false);
-            run(false, true);
-            run(true, false);
-            run(true, true);
-        });
-    }
-
-    runStaticBoolOutParamWithReturn(scenario) {
-        this.runSync(scenario, () => {
-            var run = (lhs, rhs) => {
-                var { returnValue, and, or } = TestComponent.Test.staticBoolOutParamWithReturn(lhs, rhs);
+                var { returnValue, and, or } = TestComponent.Test.staticBoolOutParam(lhs, rhs);
                 assertEqual(and, lhs && rhs);
                 assertEqual(or, lhs || rhs);
                 assertEqual(returnValue, lhs ^ rhs ? true : false);
@@ -462,112 +434,137 @@ class App extends Component {
     runStaticCharOutParam(scenario) {
         this.runSync(scenario, () => {
             var run = (ch) => {
-                var { next } = TestComponent.Test.staticCharOutParam(ch);
-                assertEqual(next, String.fromCharCode(ch.charCodeAt(0) + 1));
-            };
-            run('b');
-            run('y');
-        });
-    }
-
-    runStaticCharOutParam2(scenario) {
-        this.runSync(scenario, () => {
-            var run = (ch) => {
-                var { next, prev } = TestComponent.Test.staticCharOutParam2(ch);
-                assertEqual(next, String.fromCharCode(ch.charCodeAt(0) + 1));
-                assertEqual(prev, String.fromCharCode(ch.charCodeAt(0) - 1));
-            };
-            run('b');
-            run('y');
-        });
-    }
-
-    runStaticCharOutParamWithReturn(scenario) {
-        this.runSync(scenario, () => {
-            var run = (ch) => {
-                var { returnValue, next, prev } = TestComponent.Test.staticCharOutParamWithReturn(ch);
+                var { returnValue, next, prev } = TestComponent.Test.staticCharOutParam(ch);
                 assertEqual(next, String.fromCharCode(ch.charCodeAt(0) + 1));
                 assertEqual(prev, String.fromCharCode(ch.charCodeAt(0) - 1));
                 assertEqual(returnValue, ch.toUpperCase());
             };
-            run('b');
-            run('y');
+
+            for (var val of this.charTestValues) {
+                run(val);
+            }
         });
     }
 
     runStaticNumericOutParam(scenario) {
         this.runSync(scenario, () => {
             var run = (val) => {
-                assertEqual(TestComponent.Test.staticNumericOutParam(val).doubledValue, val * 2);
-            };
-            run(0);
-            run(42);
-        });
-    }
-
-    runStaticNumericOutParam2(scenario) {
-        this.runSync(scenario, () => {
-            var run = (val) => {
-                var { doubledValue, tripledValue } = TestComponent.Test.staticNumericOutParam2(val);
-                assertEqual(doubledValue, val * 2);
-                assertEqual(tripledValue, val * 3);
-            };
-            run(0);
-            run(42);
-        });
-    }
-
-    runStaticNumericOutParamWithReturn(scenario) {
-        this.runSync(scenario, () => {
-            var run = (val) => {
-                var { returnValue, doubledValue, tripledValue } = TestComponent.Test.staticNumericOutParamWithReturn(val);
+                var { returnValue, doubledValue, tripledValue } = TestComponent.Test.staticNumericOutParam(val);
                 assertEqual(doubledValue, val * 2);
                 assertEqual(tripledValue, val * 3);
                 assertEqual(returnValue, val * 4);
             };
             run(0);
             run(42);
+            run(-1);
         });
     }
 
     runStaticStringOutParam(scenario) {
         this.runSync(scenario, () => {
             var run = (val) => {
-                assertEqual(TestComponent.Test.staticStringOutParam(val).lower, val.toLowerCase());
-            };
-            run('');
-            run('\0');
-            run('Foo');
-            run('Foo\0Bar');
-        });
-    }
-
-    runStaticStringOutParam2(scenario) {
-        this.runSync(scenario, () => {
-            var run = (val) => {
-                var { lower, upper } = TestComponent.Test.staticStringOutParam2(val);
-                assertEqual(lower, val.toLowerCase());
-                assertEqual(upper, val.toUpperCase());
-            };
-            run('');
-            run('\0');
-            run('Foo');
-            run('Foo\0Bar');
-        });
-    }
-
-    runStaticStringOutParamWithReturn(scenario) {
-        this.runSync(scenario, () => {
-            var run = (val) => {
-                var { returnValue, lower, upper } = TestComponent.Test.staticStringOutParamWithReturn(val);
+                var { returnValue, lower, upper } = TestComponent.Test.staticStringOutParam(val);
                 assertEqual(lower, val.toLowerCase());
                 assertEqual(upper, val.toUpperCase());
                 assertEqual(returnValue, val.split('').reverse().join(''));
             };
-            run('');
-            run('\0');
-            run('Foo');
-            run('Foo\0Bar');
+
+            for (var val of this.stringTestValues) {
+                run(val);
+            }
+        });
+    }
+
+    runStaticGuidOutParam(scenario) {
+        this.runSync(scenario, () => {
+            var run = (val) => {
+                var { returnValue, zero, allSet } = TestComponent.Test.staticGuidOutParam(val);
+                assertEqual(zero, this.zeroGuid);
+                assertEqual(allSet, this.allSetGuid);
+                assertEqual(returnValue, val);
+            };
+
+            for (var val of this.guidTestValues) {
+                run(val);
+            }
+        });
+    }
+
+    runStaticEnumOutParam(scenario) {
+        this.runSync(scenario, () => {
+            var { returnValue, plusOne, plusTwo } = TestComponent.Test.staticEnumOutParam(TestComponent.TestEnum.first);
+            assertEqual(plusOne, TestComponent.TestEnum.second);
+            assertEqual(plusTwo, TestComponent.TestEnum.third);
+            assertEqual(returnValue, TestComponent.TestEnum.fourth);
+        });
+    }
+
+    runStaticCompositeStructOutParam(scenario) {
+        this.runSync(scenario, () => {
+            var testVal = {
+                numerics: { u8: 8, u16: 16, u32: 32, u64: 64, s16: -16, s32: -32, s64: -64, f32: 32.5, f64: 64.64, e: TestComponent.TestEnum.second },
+                strings: { ch: 'F', str: 'Hello, world!', guid: '01234567-89AB-CDEF-0123-456789ABCDEF' },
+                bools: { b: true }
+            };
+
+            var { returnValue, first, second } = TestComponent.Test.staticCompositeStructOutParam(testVal);
+            assertEqual(returnValue, testVal);
+            assertEqual(first, {
+                numerics: { u8: 9, u16: 17, u32: 33, u64: 65, s16: -15, s32: -31, s64: -63, f32: 33.5, f64: 65.64, e: TestComponent.TestEnum.third },
+                strings: { ch: 'G', str: 'hello, world!', guid: this.zeroGuid },
+                bools: { b: false }
+            });
+            assertEqual(second, {
+                numerics: { u8: 7, u16: 15, u32: 31, u64: 63, s16: -17, s32: -33, s64: -65, f32: 31.5, f64: 63.64, e: TestComponent.TestEnum.first },
+                strings: { ch: 'E', str: 'HELLO, WORLD!', guid: this.allSetGuid },
+                bools: { b: true }
+            });
+        });
+    }
+
+    runStaticRefOutParam(scenario) {
+        this.runSync(scenario, () => {
+            var run = (val) => {
+                var { returnValue, doubledValue, tripledValue } = TestComponent.Test.staticRefOutParam(val);
+                assertEqual(doubledValue, val * 2);
+                assertEqual(tripledValue, val * 3);
+                assertEqual(returnValue, val * 4);
+            };
+            run(0);
+            run(42);
+            run(-1);
+        });
+    }
+
+    validateRotatedArray(input, output, amt) {
+        assertEqual(input.length, output.length);
+        var i = 0, j = amt;
+        for (; j < input.length; ++i, ++j) {
+            assertEqual(input[i], output[j]);
+        }
+
+        j = 0;
+        for (; i < input.length; ++i, ++j) {
+            assertEqual(input[i], output[j]);
+        }
+    }
+
+    validateReversedArray(input, output) {
+        assertEqual(input.length, output.length);
+        for (var i = 0, j = input.length - 1; i < input.length; ++i, --j) {
+            assertEqual(input[i], output[j]);
+        }
+    }
+
+    runStaticBoolArrayOutParam(scenario) {
+        this.runSync(scenario, () => {
+            var run = (val) => {
+                var { returnValue, rot1, rot2 } = TestComponent.Test.staticBoolArrayOutParam(val);
+                this.validateRotatedArray(val, rot1, 1);
+                this.validateRotatedArray(val, rot2, 2);
+                validateReversedArray(val, returnValue);
+            };
+            run([ false, false, true, true, false ]);
         });
     }
 
@@ -826,33 +823,7 @@ class App extends Component {
     runBoolOutParam(scenario) {
         this.runSync(scenario, () => {
             var run = (lhs, rhs) => {
-                assertEqual(this.test.boolOutParam(lhs, rhs).and, lhs && rhs);
-            };
-            run(false, false);
-            run(false, true);
-            run(true, false);
-            run(true, true);
-        });
-    }
-
-    runBoolOutParam2(scenario) {
-        this.runSync(scenario, () => {
-            var run = (lhs, rhs) => {
-                var { and, or } = this.test.boolOutParam2(lhs, rhs);
-                assertEqual(and, lhs && rhs);
-                assertEqual(or, lhs || rhs);
-            };
-            run(false, false);
-            run(false, true);
-            run(true, false);
-            run(true, true);
-        });
-    }
-
-    runBoolOutParamWithReturn(scenario) {
-        this.runSync(scenario, () => {
-            var run = (lhs, rhs) => {
-                var { returnValue, and, or } = this.test.boolOutParamWithReturn(lhs, rhs);
+                var { returnValue, and, or } = this.test.boolOutParam(lhs, rhs);
                 assertEqual(and, lhs && rhs);
                 assertEqual(or, lhs || rhs);
                 assertEqual(returnValue, lhs ^ rhs ? true : false);
@@ -867,112 +838,117 @@ class App extends Component {
     runCharOutParam(scenario) {
         this.runSync(scenario, () => {
             var run = (ch) => {
-                var { next } = this.test.charOutParam(ch);
-                assertEqual(next, String.fromCharCode(ch.charCodeAt(0) + 1));
-            };
-            run('b');
-            run('y');
-        });
-    }
-
-    runCharOutParam2(scenario) {
-        this.runSync(scenario, () => {
-            var run = (ch) => {
-                var { next, prev } = this.test.charOutParam2(ch);
-                assertEqual(next, String.fromCharCode(ch.charCodeAt(0) + 1));
-                assertEqual(prev, String.fromCharCode(ch.charCodeAt(0) - 1));
-            };
-            run('b');
-            run('y');
-        });
-    }
-
-    runCharOutParamWithReturn(scenario) {
-        this.runSync(scenario, () => {
-            var run = (ch) => {
-                var { returnValue, next, prev } = this.test.charOutParamWithReturn(ch);
+                var { returnValue, next, prev } = this.test.charOutParam(ch);
                 assertEqual(next, String.fromCharCode(ch.charCodeAt(0) + 1));
                 assertEqual(prev, String.fromCharCode(ch.charCodeAt(0) - 1));
                 assertEqual(returnValue, ch.toUpperCase());
             };
-            run('b');
-            run('y');
+
+            for (var val of this.charTestValues) {
+                run(val);
+            }
         });
     }
 
     runNumericOutParam(scenario) {
         this.runSync(scenario, () => {
             var run = (val) => {
-                assertEqual(this.test.numericOutParam(val).doubledValue, val * 2);
-            };
-            run(0);
-            run(42);
-        });
-    }
-
-    runNumericOutParam2(scenario) {
-        this.runSync(scenario, () => {
-            var run = (val) => {
-                var { doubledValue, tripledValue } = this.test.numericOutParam2(val);
-                assertEqual(doubledValue, val * 2);
-                assertEqual(tripledValue, val * 3);
-            };
-            run(0);
-            run(42);
-        });
-    }
-
-    runNumericOutParamWithReturn(scenario) {
-        this.runSync(scenario, () => {
-            var run = (val) => {
-                var { returnValue, doubledValue, tripledValue } = this.test.numericOutParamWithReturn(val);
+                var { returnValue, doubledValue, tripledValue } = this.test.numericOutParam(val);
                 assertEqual(doubledValue, val * 2);
                 assertEqual(tripledValue, val * 3);
                 assertEqual(returnValue, val * 4);
             };
             run(0);
             run(42);
+            run(-1);
         });
     }
 
     runStringOutParam(scenario) {
         this.runSync(scenario, () => {
             var run = (val) => {
-                assertEqual(this.test.stringOutParam(val).lower, val.toLowerCase());
-            };
-            run('');
-            run('\0');
-            run('Foo');
-            run('Foo\0Bar');
-        });
-    }
-
-    runStringOutParam2(scenario) {
-        this.runSync(scenario, () => {
-            var run = (val) => {
-                var { lower, upper } = this.test.stringOutParam2(val);
-                assertEqual(lower, val.toLowerCase());
-                assertEqual(upper, val.toUpperCase());
-            };
-            run('');
-            run('\0');
-            run('Foo');
-            run('Foo\0Bar');
-        });
-    }
-
-    runStringOutParamWithReturn(scenario) {
-        this.runSync(scenario, () => {
-            var run = (val) => {
-                var { returnValue, lower, upper } = this.test.stringOutParamWithReturn(val);
+                var { returnValue, lower, upper } = this.test.stringOutParam(val);
                 assertEqual(lower, val.toLowerCase());
                 assertEqual(upper, val.toUpperCase());
                 assertEqual(returnValue, val.split('').reverse().join(''));
             };
-            run('');
-            run('\0');
-            run('Foo');
-            run('Foo\0Bar');
+
+            for (var val of this.stringTestValues) {
+                run(val);
+            }
+        });
+    }
+
+    runGuidOutParam(scenario) {
+        this.runSync(scenario, () => {
+            var run = (val) => {
+                var { returnValue, zero, allSet } = this.test.guidOutParam(val);
+                assertEqual(zero, this.zeroGuid);
+                assertEqual(allSet, this.allSetGuid);
+                assertEqual(returnValue, val);
+            };
+
+            for (var val of this.guidTestValues) {
+                run(val);
+            }
+        });
+    }
+
+    runEnumOutParam(scenario) {
+        this.runSync(scenario, () => {
+            var { returnValue, plusOne, plusTwo } = this.test.enumOutParam(TestComponent.TestEnum.first);
+            assertEqual(plusOne, TestComponent.TestEnum.second);
+            assertEqual(plusTwo, TestComponent.TestEnum.third);
+            assertEqual(returnValue, TestComponent.TestEnum.fourth);
+        });
+    }
+
+    runCompositeStructOutParam(scenario) {
+        this.runSync(scenario, () => {
+            var testVal = {
+                numerics: { u8: 8, u16: 16, u32: 32, u64: 64, s16: -16, s32: -32, s64: -64, f32: 32.5, f64: 64.64, e: TestComponent.TestEnum.second },
+                strings: { ch: 'F', str: 'Hello, world!', guid: '01234567-89AB-CDEF-0123-456789ABCDEF' },
+                bools: { b: true }
+            };
+
+            var { returnValue, first, second } = this.test.compositeStructOutParam(testVal);
+            assertEqual(returnValue, testVal);
+            assertEqual(first, {
+                numerics: { u8: 9, u16: 17, u32: 33, u64: 65, s16: -15, s32: -31, s64: -63, f32: 33.5, f64: 65.64, e: TestComponent.TestEnum.third },
+                strings: { ch: 'G', str: 'hello, world!', guid: this.zeroGuid },
+                bools: { b: false }
+            });
+            assertEqual(second, {
+                numerics: { u8: 7, u16: 15, u32: 31, u64: 63, s16: -17, s32: -33, s64: -65, f32: 31.5, f64: 63.64, e: TestComponent.TestEnum.first },
+                strings: { ch: 'E', str: 'HELLO, WORLD!', guid: this.allSetGuid },
+                bools: { b: true }
+            });
+        });
+    }
+
+    runRefOutParam(scenario) {
+        this.runSync(scenario, () => {
+            var run = (val) => {
+                var { returnValue, doubledValue, tripledValue } = this.test.refOutParam(val);
+                assertEqual(doubledValue, val * 2);
+                assertEqual(tripledValue, val * 3);
+                assertEqual(returnValue, val * 4);
+            };
+            run(0);
+            run(42);
+            run(-1);
+        });
+    }
+
+    runBoolArrayOutParam(scenario) {
+        this.runSync(scenario, () => {
+            var run = (val) => {
+                var { returnValue, rot1, rot2 } = this.test.boolArrayOutParam(val);
+                this.validateRotatedArray(val, rot1, 1);
+                this.validateRotatedArray(val, rot2, 2);
+                validateReversedArray(val, returnValue);
+            };
+            run([ false, false, true, true, false ]);
         });
     }
 

@@ -6,6 +6,41 @@
 
 #include "Test.g.cpp"
 
+winrt::hstring to_lower(const winrt::hstring& hstr)
+{
+    std::wstring str(hstr.data(), hstr.size());
+    for (auto& ch : str)
+    {
+        ch = std::towlower(ch);
+    }
+    return winrt::hstring(str);
+}
+
+winrt::hstring to_upper(const winrt::hstring& hstr)
+{
+    std::wstring str(hstr.data(), hstr.size());
+    for (auto& ch : str)
+    {
+        ch = std::towupper(ch);
+    }
+    return winrt::hstring(str);
+}
+
+template <typename T>
+winrt::com_array<T> rotate_array(const winrt::array_view<const T>& values, int amt)
+{
+    assert(values.size() > static_cast<std::size_t>(amt));
+    winrt::com_array<T> result(values.size());
+    std::rotate_copy(values.rbegin(), values.rbegin() + amt, values.rend(), result.begin());
+    return result;
+}
+
+template <typename T>
+winrt::com_array<T> reverse_array(const winrt::array_view<const T>& values)
+{
+    return winrt::com_array<T>(values.rbegin(), values.rend());
+}
+
 namespace winrt::TestComponent::implementation
 {
     bool Test::StaticBoolProperty()
@@ -33,89 +68,88 @@ namespace winrt::TestComponent::implementation
         return a + b + c;
     }
 
-    void Test::StaticBoolOutParam(bool lhs, bool rhs, bool& andResult)
-    {
-        andResult = lhs && rhs;
-    }
-
-    void Test::StaticBoolOutParam2(bool lhs, bool rhs, bool& andResult, bool& or)
-    {
-        andResult = lhs && rhs;
-        or = lhs || rhs;
-    }
-
-    bool Test::StaticBoolOutParamWithReturn(bool lhs, bool rhs, bool& andResult, bool& or)
+    bool Test::StaticBoolOutParam(bool lhs, bool rhs, bool& andResult, bool& or)
     {
         andResult = lhs && rhs;
         or = lhs || rhs;
         return lhs ^ rhs;
     }
 
-    void Test::StaticCharOutParam(char16_t value, char16_t& next)
-    {
-        next = value + 1;
-    }
-
-    void Test::StaticCharOutParam2(char16_t value, char16_t& next, char16_t& prev)
-    {
-        next = value + 1;
-        prev = value - 1;
-    }
-
-    char16_t Test::StaticCharOutParamWithReturn(char16_t value, char16_t& next, char16_t& prev)
+    char16_t Test::StaticCharOutParam(char16_t value, char16_t& next, char16_t& prev)
     {
         next = value + 1;
         prev = value - 1;
         return std::towupper(value);
     }
 
-    void Test::StaticNumericOutParam(int32_t value, int32_t& doubledValue)
-    {
-        doubledValue = value * 2;
-    }
-
-    void Test::StaticNumericOutParam2(int32_t value, int32_t& doubledValue, int32_t& tripledValue)
-    {
-        doubledValue = value * 2;
-        tripledValue = value * 3;
-    }
-
-    int32_t Test::StaticNumericOutParamWithReturn(int32_t value, int32_t& doubledValue, int32_t& tripledValue)
+    int32_t Test::StaticNumericOutParam(int32_t value, int32_t& doubledValue, int32_t& tripledValue)
     {
         doubledValue = value * 2;
         tripledValue = value * 3;
         return value * 4;
     }
 
-    template <typename Func>
-    std::wstring& TransformString(std::wstring& value, Func&& fn)
-    {
-        std::transform(value.begin(), value.end(), value.begin(), fn);
-        return value;
-    }
-
-    void Test::StaticStringOutParam(hstring const& value, hstring& lower)
+    hstring Test::StaticStringOutParam(hstring const& value, hstring& lower, hstring& upper)
     {
         std::wstring temp(value);
-        lower = TransformString(temp, [](wchar_t ch) { return std::towlower(ch); });
-    }
-
-    void Test::StaticStringOutParam2(hstring const& value, hstring& lower, hstring& upper)
-    {
-        std::wstring temp(value);
-        lower = TransformString(temp, [](wchar_t ch) { return std::towlower(ch); });
-        upper = TransformString(temp, [](wchar_t ch) { return std::towupper(ch); });
-    }
-
-    hstring Test::StaticStringOutParamWithReturn(hstring const& value, hstring& lower, hstring& upper)
-    {
-        std::wstring temp(value);
-        lower = TransformString(temp, [](wchar_t ch) { return std::towlower(ch); });
-        upper = TransformString(temp, [](wchar_t ch) { return std::towupper(ch); });
+        lower = to_lower(value);
+        upper = to_upper(value);
 
         temp.assign(value.c_str(), value.size());
         std::reverse(temp.begin(), temp.end());
         return hstring(temp);
+    }
+
+    winrt::guid Test::StaticGuidOutParam(winrt::guid const& value, winrt::guid& zero, winrt::guid& allSet)
+    {
+        zero = {};
+        allSet = { 0xFFFFFFFF, 0xFFFF, 0xFFFF, { 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF } };
+        return value;
+    }
+
+    TestEnum Test::StaticEnumOutParam(TestEnum const& value, TestEnum& plusOne, TestEnum& plusTwo)
+    {
+        plusOne = static_cast<TestEnum>(static_cast<int>(value) + 1);
+        plusTwo = static_cast<TestEnum>(static_cast<int>(value) + 2);
+        return static_cast<TestEnum>(static_cast<int>(value) + 3);
+    }
+
+    CompositeType Test::StaticCompositeStructOutParam(CompositeType const& input, CompositeType& first, CompositeType& second)
+    {
+        auto& num = input.numerics;
+        auto& str = input.strings;
+
+        first.numerics = { static_cast<uint8_t>(num.u8 + 1), static_cast<uint16_t>(num.u16 + 1), num.u32 + 1,
+            num.u64 + 1, num.s16 + 1, num.s32 + 1, num.s64 + 1, num.f32 + 1, num.f64 + 1,
+            static_cast<TestEnum>(static_cast<int>(num.e) + 1) };
+        first.strings = { static_cast<char16_t>(str.ch + 1), to_lower(str.str), {} };
+        first.bools = { !input.bools.b };
+
+        second.numerics = { static_cast<uint8_t>(num.u8 - 1), static_cast<uint16_t>(num.u16 - 1), num.u32 - 1,
+            num.u64 - 1, num.s16 - 1, num.s32 - 1, num.s64 - 1, num.f32 - 1, num.f64 - 1,
+            static_cast<TestEnum>(static_cast<int>(num.e) - 1) };
+        second.strings = { static_cast<char16_t>(str.ch - 1), to_upper(str.str),
+            { 0xFFFFFFFF, 0xFFFF, 0xFFFF, { 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF } } };
+        second.bools = { input.bools.b };
+
+        return input;
+    }
+
+    Windows::Foundation::IReference<int32_t> Test::StaticRefOutParam(
+        Windows::Foundation::IReference<int32_t> const& value, Windows::Foundation::IReference<int32_t>& doubledValue,
+        Windows::Foundation::IReference<int32_t>& tripledValue)
+    {
+        doubledValue = value.Value() * 2;
+        tripledValue = value.Value() * 3;
+        return value.Value() * 4;
+    }
+
+    com_array<bool> Test::StaticBoolArrayOutParam(
+        array_view<bool const> values, com_array<bool>& rot1, com_array<bool>& rot2)
+    {
+        rot1 = rotate_array(values, 1);
+        rot2 = rotate_array(values, 2);
+        return reverse_array(values);
     }
 
     Windows::Foundation::Collections::IVector<int32_t> Test::MakeNumericVector(array_view<int32_t const> values)
@@ -458,72 +492,64 @@ namespace winrt::TestComponent::implementation
         return a + b + c;
     }
 
-    void Test::BoolOutParam(bool lhs, bool rhs, bool& andResult)
-    {
-        andResult = lhs && rhs;
-    }
-
-    void Test::BoolOutParam2(bool lhs, bool rhs, bool& andResult, bool& or)
-    {
-        andResult = lhs && rhs;
-        or = lhs || rhs;
-    }
-
-    bool Test::BoolOutParamWithReturn(bool lhs, bool rhs, bool& andResult, bool& or)
+    bool Test::BoolOutParam(bool lhs, bool rhs, bool& andResult, bool& or)
     {
         andResult = lhs && rhs;
         or = lhs || rhs;
         return lhs ^ rhs;
     }
 
-    void Test::CharOutParam(char16_t value, char16_t& next)
-    {
-        next = value + 1;
-    }
-
-    void Test::CharOutParam2(char16_t value, char16_t& next, char16_t& prev)
-    {
-        next = value + 1;
-        prev = value - 1;
-    }
-
-    char16_t Test::CharOutParamWithReturn(char16_t value, char16_t& next, char16_t& prev)
+    char16_t Test::CharOutParam(char16_t value, char16_t& next, char16_t& prev)
     {
         next = value + 1;
         prev = value - 1;
         return std::towupper(value);
     }
 
-    void Test::NumericOutParam(int32_t value, int32_t& doubledValue)
-    {
-        doubledValue = value * 2;
-    }
-
-    void Test::NumericOutParam2(int32_t value, int32_t& doubledValue, int32_t& tripledValue)
-    {
-        doubledValue = value * 2;
-        tripledValue = value * 3;
-    }
-
-    int32_t Test::NumericOutParamWithReturn(int32_t value, int32_t& doubledValue, int32_t& tripledValue)
+    int32_t Test::NumericOutParam(int32_t value, int32_t& doubledValue, int32_t& tripledValue)
     {
         doubledValue = value * 2;
         tripledValue = value * 3;
         return value * 4;
     }
 
-    void Test::StringOutParam(hstring const& value, hstring& lower)
+    hstring Test::StringOutParam(hstring const& value, hstring& lower, hstring& upper)
     {
-        StaticStringOutParam(value, lower);
+        return StaticStringOutParam(value, lower, upper);
     }
 
-    void Test::StringOutParam2(hstring const& value, hstring& lower, hstring& upper)
+    winrt::guid Test::GuidOutParam(winrt::guid const& value, winrt::guid& zero, winrt::guid& allSet)
     {
-        StaticStringOutParam2(value, lower, upper);
+        zero = {};
+        allSet = { 0xFFFFFFFF, 0xFFFF, 0xFFFF, { 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF } };
+        return value;
     }
 
-    hstring Test::StringOutParamWithReturn(hstring const& value, hstring& lower, hstring& upper)
+    TestEnum Test::EnumOutParam(TestEnum const& value, TestEnum& plusOne, TestEnum& plusTwo)
     {
-        return StaticStringOutParamWithReturn(value, lower, upper);
+        plusOne = static_cast<TestEnum>(static_cast<int>(value) + 1);
+        plusTwo = static_cast<TestEnum>(static_cast<int>(value) + 2);
+        return static_cast<TestEnum>(static_cast<int>(value) + 3);
+    }
+
+    CompositeType Test::CompositeStructOutParam(CompositeType const& input, CompositeType& first, CompositeType& second)
+    {
+        return StaticCompositeStructOutParam(input, first, second);
+    }
+
+    Windows::Foundation::IReference<int32_t> Test::RefOutParam(Windows::Foundation::IReference<int32_t> const& value,
+        Windows::Foundation::IReference<int32_t>& doubledValue, Windows::Foundation::IReference<int32_t>& tripledValue)
+    {
+        doubledValue = value.Value() * 2;
+        tripledValue = value.Value() * 3;
+        return value.Value() * 4;
+    }
+
+    com_array<bool> Test::BoolArrayOutParam(
+        array_view<bool const> values, com_array<bool>& rot1, com_array<bool>& rot2)
+    {
+        rot1 = rotate_array(values, 1);
+        rot2 = rotate_array(values, 2);
+        return reverse_array(values);
     }
 }

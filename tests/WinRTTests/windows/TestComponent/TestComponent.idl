@@ -76,18 +76,19 @@ namespace TestComponent
         static String StaticAppend(String a, Char b, String c);
 
         // Static out params
-        static void StaticBoolOutParam(Boolean lhs, Boolean rhs, out Boolean and);
-        static void StaticBoolOutParam2(Boolean lhs, Boolean rhs, out Boolean and, out Boolean or);
-        static Boolean StaticBoolOutParamWithReturn(Boolean lhs, Boolean rhs, out Boolean and, out Boolean or);
-        static void StaticCharOutParam(Char value, out Char next);
-        static void StaticCharOutParam2(Char value, out Char next, out Char prev);
-        static Char StaticCharOutParamWithReturn(Char value, out Char next, out Char prev);
-        static void StaticNumericOutParam(Int32 value, out Int32 doubledValue);
-        static void StaticNumericOutParam2(Int32 value, out Int32 doubledValue, out Int32 tripledValue);
-        static Int32 StaticNumericOutParamWithReturn(Int32 value, out Int32 doubledValue, out Int32 tripledValue);
-        static void StaticStringOutParam(String value, out String lower);
-        static void StaticStringOutParam2(String value, out String lower, out String upper);
-        static String StaticStringOutParamWithReturn(String value, out String lower, out String upper);
+        static Boolean StaticBoolOutParam(Boolean lhs, Boolean rhs, out Boolean and, out Boolean or);
+        static Char StaticCharOutParam(Char value, out Char next, out Char prev);
+        static Int32 StaticNumericOutParam(Int32 value, out Int32 doubledValue, out Int32 tripledValue);
+        static String StaticStringOutParam(String value, out String lower, out String upper);
+        static Guid StaticGuidOutParam(Guid value, out Guid zero, out Guid allSet);
+        static TestEnum StaticEnumOutParam(TestEnum value, out TestEnum plusOne, out TestEnum plusTwo);
+        static CompositeType StaticCompositeStructOutParam(CompositeType input, out CompositeType first, out CompositeType second);
+        static Windows.Foundation.IReference<Int32> StaticRefOutParam(
+            Windows.Foundation.IReference<Int32> value,
+            out Windows.Foundation.IReference<Int32> doubledValue,
+            out Windows.Foundation.IReference<Int32> tripledValue);
+
+        static Boolean[] StaticBoolArrayOutParam(Boolean[] values, out Boolean[] rot1, out Boolean[] rot2);
 
         // NOTE: Conversion support should ideally be built in
         static Windows.Foundation.Collections.IVector<Int32> MakeNumericVector(Int32[] values);
@@ -135,18 +136,19 @@ namespace TestComponent
         String Append(String a, Char b, String c);
 
         // Member out params
-        void BoolOutParam(Boolean lhs, Boolean rhs, out Boolean and);
-        void BoolOutParam2(Boolean lhs, Boolean rhs, out Boolean and, out Boolean or);
-        Boolean BoolOutParamWithReturn(Boolean lhs, Boolean rhs, out Boolean and, out Boolean or);
-        void CharOutParam(Char value, out Char next);
-        void CharOutParam2(Char value, out Char next, out Char prev);
-        Char CharOutParamWithReturn(Char value, out Char next, out Char prev);
-        void NumericOutParam(Int32 value, out Int32 doubledValue);
-        void NumericOutParam2(Int32 value, out Int32 doubledValue, out Int32 tripledValue);
-        Int32 NumericOutParamWithReturn(Int32 value, out Int32 doubledValue, out Int32 tripledValue);
-        void StringOutParam(String value, out String lower);
-        void StringOutParam2(String value, out String lower, out String upper);
-        String StringOutParamWithReturn(String value, out String lower, out String upper);
+        Boolean BoolOutParam(Boolean lhs, Boolean rhs, out Boolean and, out Boolean or);
+        Char CharOutParam(Char value, out Char next, out Char prev);
+        Int32 NumericOutParam(Int32 value, out Int32 doubledValue, out Int32 tripledValue);
+        String StringOutParam(String value, out String lower, out String upper);
+        Guid GuidOutParam(Guid value, out Guid zero, out Guid allSet);
+        TestEnum EnumOutParam(TestEnum value, out TestEnum plusOne, out TestEnum plusTwo);
+        CompositeType CompositeStructOutParam(CompositeType input, out CompositeType first, out CompositeType second);
+        Windows.Foundation.IReference<Int32> RefOutParam(
+            Windows.Foundation.IReference<Int32> value,
+            out Windows.Foundation.IReference<Int32> doubledValue,
+            out Windows.Foundation.IReference<Int32> tripledValue);
+
+        Boolean[] BoolArrayOutParam(Boolean[] values, out Boolean[] rot1, out Boolean[] rot2);
     }
 
 
