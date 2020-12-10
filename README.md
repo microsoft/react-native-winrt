@@ -5,20 +5,20 @@ JavaScript WinRT (JS/WinRT) is a module for React Native Windows which provides 
 # Building JS/WinRT Sample
 
 * Open a dev command prompt pointing at the root of the repo.
-* Run `npm install` under "\samples\RNWinRTTestApp\"
-* Open the `RNWinRTTestApp.sln` solution.
+* Run `npm install` under ["\samples\RNWinRTTestApp\"](./samples/RNWinRTTestApp)
+* Open the [`RNWinRTTestApp.sln`](./samples/RNWinRTTestApp/windows/RNWinRTTestApp.sln) solution.
 * Build the x64 Release or DebugBundle configuration.
 * F5 deploy the sample app.
 
 # Adding the projection to your own solution
 > **DISCLAIMER**: These steps are temporary and subject to change as the projection evolves.
 
-* Copy the `rnwinrt` and `WinRTTurboModule` source directories to your project.
-* Add the `rnwinrt.vcxproj` and `WinRTTurboModule.vcxproj` to your solution.
+* Copy the [`strings`](./rnwinrt/strings), [`rnwinrt`](./rnwinrt/rnwinrt), and [`WinRTTurboModule`](./samples/RNWinRTTestApp/windows/WinRTTurboModule) (from the sample) source directories to your project.
+* Add the [`strings.vcxproj`](./rnwinrt/strings/strings.vcxproj), [`rnwinrt.vcxproj`](./rnwinrt/rnwinrt/rnwinrt.vcxproj), and [`WinRTTurboModule.vcxproj`](./samples/RNWinRTTestApp/windows/WinRTTurboModule/WinRTTurboModule.vcxproj) to your solution.
 * Make sure your project depends on the WinRTTurboModule project.
-* Turn off deploy for the rnwinrt and WinRTTurboModule projects.
+* Turn off deploy for the strings, rnwinrt, and WinRTTurboModule projects.
 * Add `import './WinRTTurboModule';` to your project's index.js.
-* Create `WinRTTurboModule.js` under your project (next to index.js).  Add the following code to it:
+* Create `WinRTTurboModule.js` under your project (next to index.js) and copy the contents of [rnwinrt/js/WinRTTurboModule.js](./rnwinrt/js/WinRTTurboModule.js) to it.  This should be something like the following:
 ```
     import * as TurboModuleRegistry from 'react-native/Libraries/TurboModule/TurboModuleRegistry';
     const module = TurboModuleRegistry.get('WinRTTurboModule');
@@ -27,7 +27,7 @@ JavaScript WinRT (JS/WinRT) is a module for React Native Windows which provides 
     }
     export default module;
 ```
-* Add `-include [winrt namespaces]` inside <RnWinRTParamters> in WinRTTurboModule.vcxproj. Ex:
+* Add `-include [winrt namespaces]` inside <RnWinRTParamters> in your WinRTTurboModule.vcxproj. Ex:
 ```
     <RnWinRTParameters>-include Windows.Globalization</RnWinRTParameters>
 ```
