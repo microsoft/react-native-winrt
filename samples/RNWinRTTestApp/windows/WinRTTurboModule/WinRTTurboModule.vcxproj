@@ -20,7 +20,7 @@
     <CppWinRTVerbosity>high</CppWinRTVerbosity>
     <CppWinRTParameters>-base</CppWinRTParameters>
     <RnWinRTParameters>-include Windows.Foundation -include Windows.UI.StartScreen -include Windows.UI.ViewManagement -include Windows.Storage -include Windows.Security.Cryptography.CryptographicBuffer -include Windows.Security.Cryptography.ICryptographicBufferStatics -include Windows.Security.Cryptography.BinaryStringEncoding</RnWinRTParameters>
-    <RnWinRTPath>$(SolutionDir)x64\Release\</RnWinRTPath>
+    <RnWinRTPath>rnwinrt\</RnWinRTPath>
     <RnWinRTVerbosity>high</RnWinRTVerbosity>
   </PropertyGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.Default.props" />
@@ -125,11 +125,7 @@
   </ItemGroup>
   <ItemGroup>
     <None Include="packages.config" />
-  </ItemGroup>
-  <ItemGroup>
-    <ProjectReference Include="..\..\..\..\rnwinrt\rnwinrt\rnwinrt.vcxproj">
-      <Project>{249A6C52-D3DF-4B3C-BF7C-9DD62C267CB0}</Project>
-    </ProjectReference>
+    <None Include="rnwinrt\rnwinrt.exe" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

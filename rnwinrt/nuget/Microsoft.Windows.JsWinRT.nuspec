@@ -16,7 +16,11 @@
   </metadata>
   <files>
     <file src="LICENSE"/>
-    <file src="$rnwinrt_exe$" target="content\rnwinrt" />
     <file src="readme.txt"/>
+    <file src="$rnwinrt_exe$" target="content\rnwinrt" />
+    <file src="..\dllmain.cpp" target="content\Generated Files\rnwinrt" />
+    <file src="..\WinRTTurboModule.cpp" target="content\Generated Files\rnwinrt" />
+    <file src="..\WinRTTurboModule.def" target="content\Generated Files\rnwinrt" />
+    <file src="..\WinRTTurboModule.targets" target="content\Generated Files\rnwinrt" />
   </files>
 </package>
