@@ -153,8 +153,7 @@ namespace winrt::TestComponent::implementation
             Windows::Foundation::Collections::IVector<int32_t>& doubledValues,
             Windows::Foundation::Collections::IVector<int32_t>& tripledValues);
 
-        com_array<bool> BoolArrayOutParam(
-            array_view<bool const> values, com_array<bool>& rot1, com_array<bool>& rot2);
+        com_array<bool> BoolArrayOutParam(array_view<bool const> values, com_array<bool>& rot1, com_array<bool>& rot2);
         com_array<char16_t> CharArrayOutParam(
             array_view<char16_t const> values, com_array<char16_t>& rot1, com_array<char16_t>& rot2);
         com_array<int32_t> NumericArrayOutParam(

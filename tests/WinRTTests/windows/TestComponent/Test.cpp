@@ -142,7 +142,8 @@ namespace winrt::TestComponent::implementation
         return static_cast<TestEnum>(static_cast<int>(value) + 3);
     }
 
-    CompositeType Test::StaticCompositeStructOutParam(CompositeType const& input, CompositeType& first, CompositeType& second)
+    CompositeType Test::StaticCompositeStructOutParam(
+        CompositeType const& input, CompositeType& first, CompositeType& second)
     {
         auto& num = input.numerics;
         auto& str = input.strings;
@@ -292,7 +293,8 @@ namespace winrt::TestComponent::implementation
             ++next.Data1;
             ++next.Data2;
             ++next.Data3;
-            for (auto& byte : next.Data4) ++byte;
+            for (auto& byte : next.Data4)
+                ++byte;
         }
     }
 
@@ -327,7 +329,8 @@ namespace winrt::TestComponent::implementation
             ++next.strings.guid.Data1;
             ++next.strings.guid.Data2;
             ++next.strings.guid.Data3;
-            for (auto& byte : next.strings.guid.Data4) ++byte;
+            for (auto& byte : next.strings.guid.Data4)
+                ++byte;
             next.bools.b = !next.bools.b;
         }
     }
@@ -779,8 +782,7 @@ namespace winrt::TestComponent::implementation
         return values;
     }
 
-    com_array<bool> Test::BoolArrayOutParam(
-        array_view<bool const> values, com_array<bool>& rot1, com_array<bool>& rot2)
+    com_array<bool> Test::BoolArrayOutParam(array_view<bool const> values, com_array<bool>& rot1, com_array<bool>& rot2)
     {
         rot1 = rotate_array(values, 1);
         rot2 = rotate_array(values, 2);
@@ -883,7 +885,8 @@ namespace winrt::TestComponent::implementation
             ++next.Data1;
             ++next.Data2;
             ++next.Data3;
-            for (auto& byte : next.Data4) ++byte;
+            for (auto& byte : next.Data4)
+                ++byte;
         }
     }
 
@@ -918,7 +921,8 @@ namespace winrt::TestComponent::implementation
             ++next.strings.guid.Data1;
             ++next.strings.guid.Data2;
             ++next.strings.guid.Data3;
-            for (auto& byte : next.strings.guid.Data4) ++byte;
+            for (auto& byte : next.strings.guid.Data4)
+                ++byte;
             next.bools.b = !next.bools.b;
         }
     }
