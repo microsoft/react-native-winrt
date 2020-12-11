@@ -48,7 +48,7 @@ steps:
     configuration: 'Release'
     packDestination: '$(Build.ArtifactStagingDirectory)'
     versioningScheme: 'off'
-    buildProperties: 'jswinrt_nuget_version=$(Build.BuildNumber);rnwinrt_exe=$(Build.SourcesDirectory)\rnwinrt\x64\Release\rnwinrt.exe;'
+    buildProperties: 'jswinrt_nuget_version=$(Build.BuildNumber);rnwinrt_exe=$(Build.SourcesDirectory)\rnwinrt\x64\Release\rnwinrt.exe;reactnative_files=$(Build.SourcesDirectory)\rnwinrt\module'
 
 - task: EsrpCodeSigning@1
   displayName: 'ESRP CodeSigning'
