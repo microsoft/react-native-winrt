@@ -1,6 +1,7 @@
 #include "pch.h"
 
 #include <cwctype>
+#include <numeric>
 
 #include "Test.h"
 
@@ -31,7 +32,7 @@ winrt::com_array<T> rotate_array(const winrt::array_view<const T>& values, int a
 {
     assert(values.size() > static_cast<std::size_t>(amt));
     winrt::com_array<T> result(values.size());
-    std::rotate_copy(values.rbegin(), values.rbegin() + amt, values.rend(), result.begin());
+    std::rotate_copy(values.rbegin(), values.rbegin() + amt, values.rend(), result.rbegin());
     return result;
 }
 
@@ -58,14 +59,41 @@ namespace winrt::TestComponent::implementation
         return lhs || rhs;
     }
 
+    bool Test::StaticOrAll(array_view<bool const> values)
+    {
+        bool result = false;
+        for (auto val : values)
+        {
+            result = result || val;
+        }
+
+        return result;
+    }
+
     int32_t Test::StaticAdd(int32_t lhs, int32_t rhs)
     {
         return lhs + rhs;
     }
 
+    int32_t Test::StaticAddAll(array_view<int32_t const> values)
+    {
+        return std::accumulate(values.begin(), values.end(), 0);
+    }
+
     hstring Test::StaticAppend(hstring const& a, char16_t b, hstring const& c)
     {
         return a + b + c;
+    }
+
+    hstring Test::StaticAppendAll(array_view<hstring const> values)
+    {
+        std::wstring result;
+        for (auto& val : values)
+        {
+            result.append(val.data(), val.size());
+        }
+
+        return hstring(result);
     }
 
     bool Test::StaticBoolOutParam(bool lhs, bool rhs, bool& andResult, bool& or)
@@ -144,12 +172,175 @@ namespace winrt::TestComponent::implementation
         return value.Value() * 4;
     }
 
+    Windows::Foundation::Collections::IVector<int32_t> Test::StaticObjectOutParam(
+        Windows::Foundation::Collections::IVector<int32_t> const& values,
+        Windows::Foundation::Collections::IVector<int32_t>& doubledValues,
+        Windows::Foundation::Collections::IVector<int32_t>& tripledValues)
+    {
+        doubledValues = single_threaded_vector<int32_t>();
+        tripledValues = single_threaded_vector<int32_t>();
+        for (auto val : values)
+        {
+            doubledValues.Append(val * 2);
+            tripledValues.Append(val * 3);
+        }
+
+        return values;
+    }
+
     com_array<bool> Test::StaticBoolArrayOutParam(
         array_view<bool const> values, com_array<bool>& rot1, com_array<bool>& rot2)
     {
         rot1 = rotate_array(values, 1);
         rot2 = rotate_array(values, 2);
         return reverse_array(values);
+    }
+
+    com_array<char16_t> Test::StaticCharArrayOutParam(
+        array_view<char16_t const> values, com_array<char16_t>& rot1, com_array<char16_t>& rot2)
+    {
+        rot1 = rotate_array(values, 1);
+        rot2 = rotate_array(values, 2);
+        return reverse_array(values);
+    }
+
+    com_array<int32_t> Test::StaticNumericArrayOutParam(
+        array_view<int32_t const> values, com_array<int32_t>& rot1, com_array<int32_t>& rot2)
+    {
+        rot1 = rotate_array(values, 1);
+        rot2 = rotate_array(values, 2);
+        return reverse_array(values);
+    }
+
+    com_array<hstring> Test::StaticStringArrayOutParam(
+        array_view<hstring const> values, com_array<hstring>& rot1, com_array<hstring>& rot2)
+    {
+        rot1 = rotate_array(values, 1);
+        rot2 = rotate_array(values, 2);
+        return reverse_array(values);
+    }
+
+    com_array<winrt::guid> Test::StaticGuidArrayOutParam(
+        array_view<winrt::guid const> values, com_array<winrt::guid>& rot1, com_array<winrt::guid>& rot2)
+    {
+        rot1 = rotate_array(values, 1);
+        rot2 = rotate_array(values, 2);
+        return reverse_array(values);
+    }
+
+    com_array<TestEnum> Test::StaticEnumArrayOutParam(
+        array_view<TestEnum const> values, com_array<TestEnum>& rot1, com_array<TestEnum>& rot2)
+    {
+        rot1 = rotate_array(values, 1);
+        rot2 = rotate_array(values, 2);
+        return reverse_array(values);
+    }
+
+    com_array<CompositeType> Test::StaticCompositeStructArrayOutParam(
+        array_view<CompositeType const> values, com_array<CompositeType>& rot1, com_array<CompositeType>& rot2)
+    {
+        rot1 = rotate_array(values, 1);
+        rot2 = rotate_array(values, 2);
+        return reverse_array(values);
+    }
+
+    com_array<Windows::Foundation::Collections::IVector<int32_t>> Test::StaticObjectArrayOutParam(
+        array_view<Windows::Foundation::Collections::IVector<int32_t> const> values,
+        com_array<Windows::Foundation::Collections::IVector<int32_t>>& rot1,
+        com_array<Windows::Foundation::Collections::IVector<int32_t>>& rot2)
+    {
+        rot1 = rotate_array(values, 1);
+        rot2 = rotate_array(values, 2);
+        return reverse_array(values);
+    }
+
+    void Test::StaticBoolFillParam(array_view<bool> values)
+    {
+        bool next = false;
+        for (auto& val : values)
+        {
+            val = next;
+            next = !next;
+        }
+    }
+
+    void Test::StaticCharFillParam(array_view<char16_t> values)
+    {
+        std::iota(values.begin(), values.end(), u'a');
+    }
+
+    void Test::StaticNumericFillParam(array_view<int32_t> values)
+    {
+        std::iota(values.begin(), values.end(), 0);
+    }
+
+    void Test::StaticStringFillParam(array_view<hstring> values)
+    {
+        std::size_t len = 0;
+        for (auto& val : values)
+        {
+            val = hstring(std::wstring(len++, L'a'));
+        }
+    }
+
+    void Test::StaticGuidFillParam(array_view<winrt::guid> values)
+    {
+        guid next = {};
+        for (auto& val : values)
+        {
+            val = next;
+            ++next.Data1;
+            ++next.Data2;
+            ++next.Data3;
+            for (auto& byte : next.Data4) ++byte;
+        }
+    }
+
+    void Test::StaticEnumFillParam(array_view<TestEnum> values)
+    {
+        auto next = TestEnum::First;
+        for (auto& val : values)
+        {
+            val = next;
+            next = static_cast<TestEnum>(static_cast<int>(next) + 1);
+        }
+    }
+
+    void Test::StaticCompositeStructFillParam(array_view<CompositeType> values)
+    {
+        CompositeType next = {};
+        for (auto& val : values)
+        {
+            val = next;
+            ++next.numerics.u8;
+            ++next.numerics.u16;
+            ++next.numerics.u32;
+            ++next.numerics.u64;
+            ++next.numerics.s16;
+            ++next.numerics.s32;
+            ++next.numerics.s64;
+            ++next.numerics.f32;
+            ++next.numerics.f64;
+            next.numerics.e = static_cast<TestEnum>(static_cast<int>(next.numerics.e) + 1);
+            ++next.strings.ch;
+            next.strings.str = std::wstring(next.strings.str.c_str(), next.strings.str.size()) + L"a";
+            ++next.strings.guid.Data1;
+            ++next.strings.guid.Data2;
+            ++next.strings.guid.Data3;
+            for (auto& byte : next.strings.guid.Data4) ++byte;
+            next.bools.b = !next.bools.b;
+        }
+    }
+
+    void Test::StaticObjectFillParam(array_view<Windows::Foundation::Collections::IVector<int32_t>> values)
+    {
+        int32_t next = 0;
+        std::vector<int32_t> v;
+        for (auto& val : values)
+        {
+            val = single_threaded_vector<int32_t>(std::vector{ v });
+            v.push_back(next++);
+        }
     }
 
     Windows::Foundation::Collections::IVector<int32_t> Test::MakeNumericVector(array_view<int32_t const> values)
@@ -482,14 +673,41 @@ namespace winrt::TestComponent::implementation
         return lhs || rhs;
     }
 
+    bool Test::OrAll(array_view<bool const> values)
+    {
+        bool result = false;
+        for (auto val : values)
+        {
+            result = result || val;
+        }
+
+        return result;
+    }
+
     int32_t Test::Add(int32_t lhs, int32_t rhs)
     {
         return lhs + rhs;
     }
 
+    int32_t Test::AddAll(array_view<int32_t const> values)
+    {
+        return std::accumulate(values.begin(), values.end(), 0);
+    }
+
     hstring Test::Append(hstring const& a, char16_t b, hstring const& c)
     {
         return a + b + c;
+    }
+
+    hstring Test::AppendAll(array_view<hstring const> values)
+    {
+        std::wstring result;
+        for (auto& val : values)
+        {
+            result.append(val.data(), val.size());
+        }
+
+        return hstring(result);
     }
 
     bool Test::BoolOutParam(bool lhs, bool rhs, bool& andResult, bool& or)
@@ -545,11 +763,174 @@ namespace winrt::TestComponent::implementation
         return value.Value() * 4;
     }
 
+    Windows::Foundation::Collections::IVector<int32_t> Test::ObjectOutParam(
+        Windows::Foundation::Collections::IVector<int32_t> const& values,
+        Windows::Foundation::Collections::IVector<int32_t>& doubledValues,
+        Windows::Foundation::Collections::IVector<int32_t>& tripledValues)
+    {
+        doubledValues = single_threaded_vector<int32_t>();
+        tripledValues = single_threaded_vector<int32_t>();
+        for (auto val : values)
+        {
+            doubledValues.Append(val * 2);
+            tripledValues.Append(val * 3);
+        }
+
+        return values;
+    }
+
     com_array<bool> Test::BoolArrayOutParam(
         array_view<bool const> values, com_array<bool>& rot1, com_array<bool>& rot2)
     {
         rot1 = rotate_array(values, 1);
         rot2 = rotate_array(values, 2);
         return reverse_array(values);
+    }
+
+    com_array<char16_t> Test::CharArrayOutParam(
+        array_view<char16_t const> values, com_array<char16_t>& rot1, com_array<char16_t>& rot2)
+    {
+        rot1 = rotate_array(values, 1);
+        rot2 = rotate_array(values, 2);
+        return reverse_array(values);
+    }
+
+    com_array<int32_t> Test::NumericArrayOutParam(
+        array_view<int32_t const> values, com_array<int32_t>& rot1, com_array<int32_t>& rot2)
+    {
+        rot1 = rotate_array(values, 1);
+        rot2 = rotate_array(values, 2);
+        return reverse_array(values);
+    }
+
+    com_array<hstring> Test::StringArrayOutParam(
+        array_view<hstring const> values, com_array<hstring>& rot1, com_array<hstring>& rot2)
+    {
+        rot1 = rotate_array(values, 1);
+        rot2 = rotate_array(values, 2);
+        return reverse_array(values);
+    }
+
+    com_array<winrt::guid> Test::GuidArrayOutParam(
+        array_view<winrt::guid const> values, com_array<winrt::guid>& rot1, com_array<winrt::guid>& rot2)
+    {
+        rot1 = rotate_array(values, 1);
+        rot2 = rotate_array(values, 2);
+        return reverse_array(values);
+    }
+
+    com_array<TestEnum> Test::EnumArrayOutParam(
+        array_view<TestEnum const> values, com_array<TestEnum>& rot1, com_array<TestEnum>& rot2)
+    {
+        rot1 = rotate_array(values, 1);
+        rot2 = rotate_array(values, 2);
+        return reverse_array(values);
+    }
+
+    com_array<CompositeType> Test::CompositeStructArrayOutParam(
+        array_view<CompositeType const> values, com_array<CompositeType>& rot1, com_array<CompositeType>& rot2)
+    {
+        rot1 = rotate_array(values, 1);
+        rot2 = rotate_array(values, 2);
+        return reverse_array(values);
+    }
+
+    com_array<Windows::Foundation::Collections::IVector<int32_t>> Test::ObjectArrayOutParam(
+        array_view<Windows::Foundation::Collections::IVector<int32_t> const> values,
+        com_array<Windows::Foundation::Collections::IVector<int32_t>>& rot1,
+        com_array<Windows::Foundation::Collections::IVector<int32_t>>& rot2)
+    {
+        rot1 = rotate_array(values, 1);
+        rot2 = rotate_array(values, 2);
+        return reverse_array(values);
+    }
+
+    void Test::BoolFillParam(array_view<bool> values)
+    {
+        bool next = false;
+        for (auto& val : values)
+        {
+            val = next;
+            next = !next;
+        }
+    }
+
+    void Test::CharFillParam(array_view<char16_t> values)
+    {
+        std::iota(values.begin(), values.end(), u'a');
+    }
+
+    void Test::NumericFillParam(array_view<int32_t> values)
+    {
+        std::iota(values.begin(), values.end(), 0);
+    }
+
+    void Test::StringFillParam(array_view<hstring> values)
+    {
+        std::size_t len = 0;
+        for (auto& val : values)
+        {
+            val = hstring(std::wstring(len++, L'a'));
+        }
+    }
+
+    void Test::GuidFillParam(array_view<winrt::guid> values)
+    {
+        guid next = {};
+        for (auto& val : values)
+        {
+            val = next;
+            ++next.Data1;
+            ++next.Data2;
+            ++next.Data3;
+            for (auto& byte : next.Data4) ++byte;
+        }
+    }
+
+    void Test::EnumFillParam(array_view<TestEnum> values)
+    {
+        auto next = TestEnum::First;
+        for (auto& val : values)
+        {
+            val = next;
+            next = static_cast<TestEnum>(static_cast<int>(next) + 1);
+        }
+    }
+
+    void Test::CompositeStructFillParam(array_view<CompositeType> values)
+    {
+        CompositeType next = {};
+        for (auto& val : values)
+        {
+            val = next;
+            ++next.numerics.u8;
+            ++next.numerics.u16;
+            ++next.numerics.u32;
+            ++next.numerics.u64;
+            ++next.numerics.s16;
+            ++next.numerics.s32;
+            ++next.numerics.s64;
+            ++next.numerics.f32;
+            ++next.numerics.f64;
+            next.numerics.e = static_cast<TestEnum>(static_cast<int>(next.numerics.e) + 1);
+            ++next.strings.ch;
+            next.strings.str = std::wstring(next.strings.str.c_str(), next.strings.str.size()) + L"a";
+            ++next.strings.guid.Data1;
+            ++next.strings.guid.Data2;
+            ++next.strings.guid.Data3;
+            for (auto& byte : next.strings.guid.Data4) ++byte;
+            next.bools.b = !next.bools.b;
+        }
+    }
+
+    void Test::ObjectFillParam(array_view<Windows::Foundation::Collections::IVector<int32_t>> values)
+    {
+        int32_t next = 0;
+        std::vector<int32_t> v;
+        for (auto& val : values)
+        {
+            val = single_threaded_vector<int32_t>(std::vector{ v });
+            v.push_back(next++);
+        }
     }
 }

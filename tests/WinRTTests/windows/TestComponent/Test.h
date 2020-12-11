@@ -12,8 +12,11 @@ namespace winrt::TestComponent::implementation
         static void StaticBoolProperty(bool value);
 
         static bool StaticOr(bool lhs, bool rhs);
+        static bool StaticOrAll(array_view<bool const> values);
         static int32_t StaticAdd(int32_t lhs, int32_t rhs);
+        static int32_t StaticAddAll(array_view<int32_t const> values);
         static hstring StaticAppend(hstring const& a, char16_t b, hstring const& c);
+        static hstring StaticAppendAll(array_view<hstring const> values);
 
         static bool StaticBoolOutParam(bool lhs, bool rhs, bool& andResult, bool& or);
         static char16_t StaticCharOutParam(char16_t value, char16_t& next, char16_t& prev);
@@ -27,8 +30,38 @@ namespace winrt::TestComponent::implementation
             Windows::Foundation::IReference<int32_t> const& value,
             Windows::Foundation::IReference<int32_t>& doubledValue,
             Windows::Foundation::IReference<int32_t>& tripledValue);
+        static Windows::Foundation::Collections::IVector<int32_t> StaticObjectOutParam(
+            Windows::Foundation::Collections::IVector<int32_t> const& values,
+            Windows::Foundation::Collections::IVector<int32_t>& doubledValues,
+            Windows::Foundation::Collections::IVector<int32_t>& tripledValues);
+
         static com_array<bool> StaticBoolArrayOutParam(
             array_view<bool const> values, com_array<bool>& rot1, com_array<bool>& rot2);
+        static com_array<char16_t> StaticCharArrayOutParam(
+            array_view<char16_t const> values, com_array<char16_t>& rot1, com_array<char16_t>& rot2);
+        static com_array<int32_t> StaticNumericArrayOutParam(
+            array_view<int32_t const> values, com_array<int32_t>& rot1, com_array<int32_t>& rot2);
+        static com_array<hstring> StaticStringArrayOutParam(
+            array_view<hstring const> values, com_array<hstring>& rot1, com_array<hstring>& rot2);
+        static com_array<winrt::guid> StaticGuidArrayOutParam(
+            array_view<winrt::guid const> values, com_array<winrt::guid>& rot1, com_array<winrt::guid>& rot2);
+        static com_array<TestEnum> StaticEnumArrayOutParam(
+            array_view<TestEnum const> values, com_array<TestEnum>& rot1, com_array<TestEnum>& rot2);
+        static com_array<CompositeType> StaticCompositeStructArrayOutParam(
+            array_view<CompositeType const> values, com_array<CompositeType>& rot1, com_array<CompositeType>& rot2);
+        static com_array<Windows::Foundation::Collections::IVector<int32_t>> StaticObjectArrayOutParam(
+            array_view<Windows::Foundation::Collections::IVector<int32_t> const> values,
+            com_array<Windows::Foundation::Collections::IVector<int32_t>>& rot1,
+            com_array<Windows::Foundation::Collections::IVector<int32_t>>& rot2);
+
+        static void StaticBoolFillParam(array_view<bool> values);
+        static void StaticCharFillParam(array_view<char16_t> values);
+        static void StaticNumericFillParam(array_view<int32_t> values);
+        static void StaticStringFillParam(array_view<hstring> values);
+        static void StaticGuidFillParam(array_view<winrt::guid> values);
+        static void StaticEnumFillParam(array_view<TestEnum> values);
+        static void StaticCompositeStructFillParam(array_view<CompositeType> values);
+        static void StaticObjectFillParam(array_view<Windows::Foundation::Collections::IVector<int32_t>> values);
 
         static Windows::Foundation::Collections::IVector<int32_t> MakeNumericVector(array_view<int32_t const> values);
 
@@ -99,8 +132,11 @@ namespace winrt::TestComponent::implementation
         void ObjectArrayProperty(array_view<Windows::Foundation::Collections::IVector<int32_t> const> value);
 
         bool Or(bool lhs, bool rhs);
+        bool OrAll(array_view<bool const> values);
         int32_t Add(int32_t lhs, int32_t rhs);
+        int32_t AddAll(array_view<int32_t const> values);
         hstring Append(hstring const& a, char16_t b, hstring const& c);
+        hstring AppendAll(array_view<hstring const> values);
 
         bool BoolOutParam(bool lhs, bool rhs, bool& andResult, bool& or);
         char16_t CharOutParam(char16_t value, char16_t& next, char16_t& prev);
@@ -112,8 +148,38 @@ namespace winrt::TestComponent::implementation
         Windows::Foundation::IReference<int32_t> RefOutParam(Windows::Foundation::IReference<int32_t> const& value,
             Windows::Foundation::IReference<int32_t>& doubledValue,
             Windows::Foundation::IReference<int32_t>& tripledValue);
+        Windows::Foundation::Collections::IVector<int32_t> ObjectOutParam(
+            Windows::Foundation::Collections::IVector<int32_t> const& values,
+            Windows::Foundation::Collections::IVector<int32_t>& doubledValues,
+            Windows::Foundation::Collections::IVector<int32_t>& tripledValues);
+
         com_array<bool> BoolArrayOutParam(
             array_view<bool const> values, com_array<bool>& rot1, com_array<bool>& rot2);
+        com_array<char16_t> CharArrayOutParam(
+            array_view<char16_t const> values, com_array<char16_t>& rot1, com_array<char16_t>& rot2);
+        com_array<int32_t> NumericArrayOutParam(
+            array_view<int32_t const> values, com_array<int32_t>& rot1, com_array<int32_t>& rot2);
+        com_array<hstring> StringArrayOutParam(
+            array_view<hstring const> values, com_array<hstring>& rot1, com_array<hstring>& rot2);
+        com_array<winrt::guid> GuidArrayOutParam(
+            array_view<winrt::guid const> values, com_array<winrt::guid>& rot1, com_array<winrt::guid>& rot2);
+        com_array<TestEnum> EnumArrayOutParam(
+            array_view<TestEnum const> values, com_array<TestEnum>& rot1, com_array<TestEnum>& rot2);
+        com_array<CompositeType> CompositeStructArrayOutParam(
+            array_view<CompositeType const> values, com_array<CompositeType>& rot1, com_array<CompositeType>& rot2);
+        com_array<Windows::Foundation::Collections::IVector<int32_t>> ObjectArrayOutParam(
+            array_view<Windows::Foundation::Collections::IVector<int32_t> const> values,
+            com_array<Windows::Foundation::Collections::IVector<int32_t>>& rot1,
+            com_array<Windows::Foundation::Collections::IVector<int32_t>>& rot2);
+
+        void BoolFillParam(array_view<bool> values);
+        void CharFillParam(array_view<char16_t> values);
+        void NumericFillParam(array_view<int32_t> values);
+        void StringFillParam(array_view<hstring> values);
+        void GuidFillParam(array_view<winrt::guid> values);
+        void EnumFillParam(array_view<TestEnum> values);
+        void CompositeStructFillParam(array_view<CompositeType> values);
+        void ObjectFillParam(array_view<Windows::Foundation::Collections::IVector<int32_t>> values);
 
     private:
         // Static properties

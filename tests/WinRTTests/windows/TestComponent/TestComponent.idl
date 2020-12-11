@@ -72,8 +72,11 @@ namespace TestComponent
 
         // Static functions
         static Boolean StaticOr(Boolean lhs, Boolean rhs);
+        static Boolean StaticOrAll(Boolean[] values);
         static Int32 StaticAdd(Int32 lhs, Int32 rhs);
+        static Int32 StaticAddAll(Int32[] values);
         static String StaticAppend(String a, Char b, String c);
+        static String StaticAppendAll(String[] values);
 
         // Static out params
         static Boolean StaticBoolOutParam(Boolean lhs, Boolean rhs, out Boolean and, out Boolean or);
@@ -87,8 +90,35 @@ namespace TestComponent
             Windows.Foundation.IReference<Int32> value,
             out Windows.Foundation.IReference<Int32> doubledValue,
             out Windows.Foundation.IReference<Int32> tripledValue);
+        static Windows.Foundation.Collections.IVector<Int32> StaticObjectOutParam(
+            Windows.Foundation.Collections.IVector<Int32> values,
+            out Windows.Foundation.Collections.IVector<Int32> doubledValues,
+            out Windows.Foundation.Collections.IVector<Int32> tripledValues);
 
+        // Static array out params
         static Boolean[] StaticBoolArrayOutParam(Boolean[] values, out Boolean[] rot1, out Boolean[] rot2);
+        static Char[] StaticCharArrayOutParam(Char[] values, out Char[] rot1, out Char[] rot2);
+        static Int32[] StaticNumericArrayOutParam(Int32[] values, out Int32[] rot1, out Int32[] rot2);
+        static String[] StaticStringArrayOutParam(String[] values, out String[] rot1, out String[] rot2);
+        static Guid[] StaticGuidArrayOutParam(Guid[] values, out Guid[] rot1, out Guid[] rot2);
+        static TestEnum[] StaticEnumArrayOutParam(TestEnum[] values, out TestEnum[] rot1, out TestEnum[] rot2);
+        static CompositeType[] StaticCompositeStructArrayOutParam(CompositeType[] values, out CompositeType[] rot1, out CompositeType[] rot2);
+        // TODO: Ref array
+        static Windows.Foundation.Collections.IVector<Int32>[] StaticObjectArrayOutParam(
+            Windows.Foundation.Collections.IVector<Int32>[] values,
+            out Windows.Foundation.Collections.IVector<Int32>[] rot1,
+            out Windows.Foundation.Collections.IVector<Int32>[] rot2);
+
+        // Static array fill params
+        static void StaticBoolFillParam(ref Boolean[] values);
+        static void StaticCharFillParam(ref Char[] values);
+        static void StaticNumericFillParam(ref Int32[] values);
+        static void StaticStringFillParam(ref String[] values);
+        static void StaticGuidFillParam(ref Guid[] values);
+        static void StaticEnumFillParam(ref TestEnum[] values);
+        static void StaticCompositeStructFillParam(ref CompositeType[] values);
+        // TODO: Ref
+        static void StaticObjectFillParam(ref Windows.Foundation.Collections.IVector<Int32>[] values);
 
         // NOTE: Conversion support should ideally be built in
         static Windows.Foundation.Collections.IVector<Int32> MakeNumericVector(Int32[] values);
@@ -132,8 +162,11 @@ namespace TestComponent
 
         // Member functions
         Boolean Or(Boolean lhs, Boolean rhs);
+        Boolean OrAll(Boolean[] values);
         Int32 Add(Int32 lhs, Int32 rhs);
+        Int32 AddAll(Int32[] values);
         String Append(String a, Char b, String c);
+        String AppendAll(String[] values);
 
         // Member out params
         Boolean BoolOutParam(Boolean lhs, Boolean rhs, out Boolean and, out Boolean or);
@@ -147,8 +180,34 @@ namespace TestComponent
             Windows.Foundation.IReference<Int32> value,
             out Windows.Foundation.IReference<Int32> doubledValue,
             out Windows.Foundation.IReference<Int32> tripledValue);
+        Windows.Foundation.Collections.IVector<Int32> ObjectOutParam(
+            Windows.Foundation.Collections.IVector<Int32> values,
+            out Windows.Foundation.Collections.IVector<Int32> doubledValues,
+            out Windows.Foundation.Collections.IVector<Int32> tripledValues);
 
+        // Member array out params
         Boolean[] BoolArrayOutParam(Boolean[] values, out Boolean[] rot1, out Boolean[] rot2);
+        Char[] CharArrayOutParam(Char[] values, out Char[] rot1, out Char[] rot2);
+        Int32[] NumericArrayOutParam(Int32[] values, out Int32[] rot1, out Int32[] rot2);
+        String[] StringArrayOutParam(String[] values, out String[] rot1, out String[] rot2);
+        Guid[] GuidArrayOutParam(Guid[] values, out Guid[] rot1, out Guid[] rot2);
+        TestEnum[] EnumArrayOutParam(TestEnum[] values, out TestEnum[] rot1, out TestEnum[] rot2);
+        CompositeType[] CompositeStructArrayOutParam(CompositeType[] values, out CompositeType[] rot1, out CompositeType[] rot2);
+        Windows.Foundation.Collections.IVector<Int32>[] ObjectArrayOutParam(
+            Windows.Foundation.Collections.IVector<Int32>[] values,
+            out Windows.Foundation.Collections.IVector<Int32>[] rot1,
+            out Windows.Foundation.Collections.IVector<Int32>[] rot2);
+
+        // Member array fill params
+        void BoolFillParam(ref Boolean[] values);
+        void CharFillParam(ref Char[] values);
+        void NumericFillParam(ref Int32[] values);
+        void StringFillParam(ref String[] values);
+        void GuidFillParam(ref Guid[] values);
+        void EnumFillParam(ref TestEnum[] values);
+        void CompositeStructFillParam(ref CompositeType[] values);
+        // TODO: Ref
+        void ObjectFillParam(ref Windows.Foundation.Collections.IVector<Int32>[] values);
     }
 
 

@@ -1824,11 +1824,6 @@ namespace WinRTTurboModule
             }
         }
 
-        ReadOnlyArrayWrapper(const ReadOnlyArrayWrapper&) = delete;
-        ReadOnlyArrayWrapper(ReadOnlyArrayWrapper&&) = default;
-
-        ~ReadOnlyArrayWrapper() = default;
-
         operator winrt::array_view<const T>()
         {
             return winrt::array_view<const T>(static_cast<const T*>(m_nativeArray.data()),
