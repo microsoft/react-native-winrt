@@ -111,21 +111,15 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
-    <ClInclude Include="Composable.h" />
-    <ClInclude Include="Derived.h" />
     <ClInclude Include="pch.h" />
     <ClInclude Include="Test.h" />
-    <ClInclude Include="TestRunner.h" />
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="Composable.cpp" />
-    <ClCompile Include="Derived.cpp" />
     <ClCompile Include="pch.cpp">
       <PrecompiledHeader>Create</PrecompiledHeader>
     </ClCompile>
     <ClCompile Include="$(GeneratedFilesDir)module.g.cpp" />
     <ClCompile Include="Test.cpp" />
-    <ClCompile Include="TestRunner.cpp" />
   </ItemGroup>
   <ItemGroup>
     <None Include="packages.config" />
