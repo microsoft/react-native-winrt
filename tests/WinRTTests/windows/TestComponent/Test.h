@@ -63,6 +63,35 @@ namespace winrt::TestComponent::implementation
         static void StaticCompositeStructFillParam(array_view<CompositeType> values);
         static void StaticObjectFillParam(array_view<Windows::Foundation::Collections::IVector<int32_t>> values);
 
+        static winrt::event_token StaticBoolEventHandler(Windows::Foundation::EventHandler<bool> const& handler);
+        static void StaticBoolEventHandler(winrt::event_token const& token) noexcept;
+        static winrt::event_token StaticCharEventHandler(Windows::Foundation::EventHandler<char16_t> const& handler);
+        static void StaticCharEventHandler(winrt::event_token const& token) noexcept;
+        static winrt::event_token StaticNumericEventHandler(Windows::Foundation::EventHandler<int32_t> const& handler);
+        static void StaticNumericEventHandler(winrt::event_token const& token) noexcept;
+        static winrt::event_token StaticStringEventHandler(Windows::Foundation::EventHandler<hstring> const& handler);
+        static void StaticStringEventHandler(winrt::event_token const& token) noexcept;
+        static winrt::event_token StaticGuidEventHandler(Windows::Foundation::EventHandler<winrt::guid> const& handler);
+        static void StaticGuidEventHandler(winrt::event_token const& token) noexcept;
+        static winrt::event_token StaticEnumEventHandler(Windows::Foundation::EventHandler<TestEnum> const& handler);
+        static void StaticEnumEventHandler(winrt::event_token const& token) noexcept;
+        static winrt::event_token StaticCompositeStructEventHandler(Windows::Foundation::EventHandler<CompositeType> const& handler);
+        static void StaticCompositeStructEventHandler(winrt::event_token const& token) noexcept;
+        static winrt::event_token StaticRefEventHandler(Windows::Foundation::EventHandler<Windows::Foundation::IReference<int32_t>> const& handler);
+        static void StaticRefEventHandler(winrt::event_token const& token) noexcept;
+        static winrt::event_token StaticObjectEventHandler(Windows::Foundation::EventHandler<Windows::Foundation::Collections::IVector<int32_t>> const& handler);
+        static void StaticObjectEventHandler(winrt::event_token const& token) noexcept;
+
+        static void RaiseStaticBoolEvent(bool value);
+        static void RaiseStaticCharEvent(char16_t value);
+        static void RaiseStaticNumericEvent(int32_t value);
+        static void RaiseStaticStringEvent(hstring const& value);
+        static void RaiseStaticGuidEvent(winrt::guid const& value);
+        static void RaiseStaticEnumEvent(TestEnum const& value);
+        static void RaiseStaticCompositeStructEvent(CompositeType const& value);
+        static void RaiseStaticRefEvent(Windows::Foundation::IReference<int32_t> const& value);
+        static void RaiseStaticObjectEvent(Windows::Foundation::Collections::IVector<int32_t> const& value);
+
         static Windows::Foundation::Collections::IVector<int32_t> MakeNumericVector(array_view<int32_t const> values);
 
         bool BoolProperty();
@@ -180,9 +209,49 @@ namespace winrt::TestComponent::implementation
         void CompositeStructFillParam(array_view<CompositeType> values);
         void ObjectFillParam(array_view<Windows::Foundation::Collections::IVector<int32_t>> values);
 
+        winrt::event_token BoolEventHandler(Windows::Foundation::EventHandler<bool> const& handler);
+        void BoolEventHandler(winrt::event_token const& token) noexcept;
+        winrt::event_token CharEventHandler(Windows::Foundation::EventHandler<char16_t> const& handler);
+        void CharEventHandler(winrt::event_token const& token) noexcept;
+        winrt::event_token NumericEventHandler(Windows::Foundation::EventHandler<int32_t> const& handler);
+        void NumericEventHandler(winrt::event_token const& token) noexcept;
+        winrt::event_token StringEventHandler(Windows::Foundation::EventHandler<hstring> const& handler);
+        void StringEventHandler(winrt::event_token const& token) noexcept;
+        winrt::event_token GuidEventHandler(Windows::Foundation::EventHandler<winrt::guid> const& handler);
+        void GuidEventHandler(winrt::event_token const& token) noexcept;
+        winrt::event_token EnumEventHandler(Windows::Foundation::EventHandler<TestEnum> const& handler);
+        void EnumEventHandler(winrt::event_token const& token) noexcept;
+        winrt::event_token CompositeStructEventHandler(Windows::Foundation::EventHandler<CompositeType> const& handler);
+        void CompositeStructEventHandler(winrt::event_token const& token) noexcept;
+        winrt::event_token RefEventHandler(Windows::Foundation::EventHandler<Windows::Foundation::IReference<int32_t>> const& handler);
+        void RefEventHandler(winrt::event_token const& token) noexcept;
+        winrt::event_token ObjectEventHandler(Windows::Foundation::EventHandler<Windows::Foundation::Collections::IVector<int32_t>> const& handler);
+        void ObjectEventHandler(winrt::event_token const& token) noexcept;
+
+        void RaiseBoolEvent(bool value);
+        void RaiseCharEvent(char16_t value);
+        void RaiseNumericEvent(int32_t value);
+        void RaiseStringEvent(hstring const& value);
+        void RaiseGuidEvent(winrt::guid const& value);
+        void RaiseEnumEvent(TestEnum const& value);
+        void RaiseCompositeStructEvent(CompositeType const& value);
+        void RaiseRefEvent(Windows::Foundation::IReference<int32_t> const& value);
+        void RaiseObjectEvent(Windows::Foundation::Collections::IVector<int32_t> const& value);
+
     private:
         // Static properties
         inline static bool s_boolProperty = false;
+
+        // Static event sources
+        inline static event<Windows::Foundation::EventHandler<bool>> s_boolEventSource;
+        inline static event<Windows::Foundation::EventHandler<char16_t>> s_charEventSource;
+        inline static event<Windows::Foundation::EventHandler<int32_t>> s_numericEventSource;
+        inline static event<Windows::Foundation::EventHandler<hstring>> s_stringEventSource;
+        inline static event<Windows::Foundation::EventHandler<winrt::guid>> s_guidEventSource;
+        inline static event<Windows::Foundation::EventHandler<TestEnum>> s_enumEventSource;
+        inline static event<Windows::Foundation::EventHandler<CompositeType>> s_compositeStructEventSource;
+        inline static event<Windows::Foundation::EventHandler<Windows::Foundation::IReference<int32_t>>> s_refEventSource;
+        inline static event<Windows::Foundation::EventHandler<Windows::Foundation::Collections::IVector<int32_t>>> s_objectEventSource;
 
         // Non-static properties
         bool m_boolProperty = false;
@@ -217,6 +286,17 @@ namespace winrt::TestComponent::implementation
         std::vector<CompositeType> m_compositeStructArrayProperty;
         std::vector<Windows::Foundation::IReference<int32_t>> m_refArrayProperty;
         std::vector<Windows::Foundation::Collections::IVector<int32_t>> m_objectArrayProperty;
+
+        // Non-static event sources
+        event<Windows::Foundation::EventHandler<bool>> m_boolEventSource;
+        event<Windows::Foundation::EventHandler<char16_t>> m_charEventSource;
+        event<Windows::Foundation::EventHandler<int32_t>> m_numericEventSource;
+        event<Windows::Foundation::EventHandler<hstring>> m_stringEventSource;
+        event<Windows::Foundation::EventHandler<winrt::guid>> m_guidEventSource;
+        event<Windows::Foundation::EventHandler<TestEnum>> m_enumEventSource;
+        event<Windows::Foundation::EventHandler<CompositeType>> m_compositeStructEventSource;
+        event<Windows::Foundation::EventHandler<Windows::Foundation::IReference<int32_t>>> m_refEventSource;
+        event<Windows::Foundation::EventHandler<Windows::Foundation::Collections::IVector<int32_t>>> m_objectEventSource;
     };
 }
 namespace winrt::TestComponent::factory_implementation

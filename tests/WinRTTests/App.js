@@ -215,6 +215,17 @@ class App extends Component {
         new TestScenario('Test::StaticCompositeStructFillParam', this.runStaticCompositeStructFillParam.bind(this)),
         new TestScenario('Test::StaticObjectFillParam', this.runStaticObjectFillParam.bind(this)),
 
+        // Static events
+        new TestScenario('Test::StaticBoolEventHandler', this.runStaticBoolEventHandler.bind(this)),
+        new TestScenario('Test::StaticCharEventHandler', this.runStaticCharEventHandler.bind(this)),
+        new TestScenario('Test::StaticNumericEventHandler', this.runStaticNumericEventHandler.bind(this)),
+        new TestScenario('Test::StaticStringEventHandler', this.runStaticStringEventHandler.bind(this)),
+        new TestScenario('Test::StaticGuidEventHandler', this.runStaticGuidEventHandler.bind(this)),
+        new TestScenario('Test::StaticEnumEventHandler', this.runStaticEnumEventHandler.bind(this)),
+        new TestScenario('Test::StaticCompositeStructEventHandler', this.runStaticCompositeStructEventHandler.bind(this)),
+        new TestScenario('Test::StaticRefEventHandler', this.runStaticRefEventHandler.bind(this)),
+        new TestScenario('Test::StaticObjectEventHandler', this.runStaticObjectEventHandler.bind(this)),
+
         // Non-static properties
         new TestScenario('Test::BoolProperty', this.runBoolProperty.bind(this)),
         new TestScenario('Test::CharProperty', this.runCharProperty.bind(this)),
@@ -290,6 +301,17 @@ class App extends Component {
         new TestScenario('Test::EnumFillParam', this.runEnumFillParam.bind(this)),
         new TestScenario('Test::CompositeStructFillParam', this.runCompositeStructFillParam.bind(this)),
         new TestScenario('Test::ObjectFillParam', this.runObjectFillParam.bind(this)),
+
+        // Non-static events
+        new TestScenario('Test::BoolEventHandler', this.runBoolEventHandler.bind(this)),
+        new TestScenario('Test::CharEventHandler', this.runCharEventHandler.bind(this)),
+        new TestScenario('Test::NumericEventHandler', this.runNumericEventHandler.bind(this)),
+        new TestScenario('Test::StringEventHandler', this.runStringEventHandler.bind(this)),
+        new TestScenario('Test::GuidEventHandler', this.runGuidEventHandler.bind(this)),
+        new TestScenario('Test::EnumEventHandler', this.runEnumEventHandler.bind(this)),
+        new TestScenario('Test::CompositeStructEventHandler', this.runCompositeStructEventHandler.bind(this)),
+        new TestScenario('Test::RefEventHandler', this.runRefEventHandler.bind(this)),
+        new TestScenario('Test::ObjectEventHandler', this.runObjectEventHandler.bind(this)),
 
 
 
@@ -946,6 +968,64 @@ class App extends Component {
         })
     }
 
+    // Static events
+    testStaticEventHandler(scenario, args, name, invoke) {
+        this.runSync(scenario, () => {
+            var i = 0;
+            var handler = (sender, arg) => {
+                assert(i < args.length);
+                assertEqual(sender, null);
+                assertEqual(arg, args[i]);
+            };
+
+            TestComponent.Test.addEventListener(name, handler);
+            for (var arg of args) {
+                invoke(arg);
+                ++i;
+            }
+
+            TestComponent.Test.removeEventListener(name, handler);
+            invoke(args[0]); // Should assert if handler is invoked
+        });
+    }
+
+    runStaticBoolEventHandler(scenario) {
+        this.testStaticEventHandler(scenario, this.boolTestValues, 'staticBoolEventHandler', (arg) => TestComponent.Test.raiseStaticBoolEvent(arg));
+    }
+
+    runStaticCharEventHandler(scenario) {
+        this.testStaticEventHandler(scenario, this.charTestValues, 'staticCharEventHandler', (arg) => TestComponent.Test.raiseStaticCharEvent(arg));
+    }
+
+    runStaticNumericEventHandler(scenario) {
+        this.testStaticEventHandler(scenario, this.s32TestValues, 'staticNumericEventHandler', (arg) => TestComponent.Test.raiseStaticNumericEvent(arg));
+    }
+
+    runStaticStringEventHandler(scenario) {
+        this.testStaticEventHandler(scenario, this.stringTestValues, 'staticStringEventHandler', (arg) => TestComponent.Test.raiseStaticStringEvent(arg));
+    }
+
+    runStaticGuidEventHandler(scenario) {
+        this.testStaticEventHandler(scenario, this.guidTestValues, 'staticGuidEventHandler', (arg) => TestComponent.Test.raiseStaticGuidEvent(arg));
+    }
+
+    runStaticEnumEventHandler(scenario) {
+        this.testStaticEventHandler(scenario, this.enumTestValues, 'staticEnumEventHandler', (arg) => TestComponent.Test.raiseStaticEnumEvent(arg));
+    }
+
+    runStaticCompositeStructEventHandler(scenario) {
+        this.testStaticEventHandler(scenario, this.compositeTestValues, 'staticCompositeStructEventHandler', (arg) => TestComponent.Test.raiseStaticCompositeStructEvent(arg));
+    }
+
+    runStaticRefEventHandler(scenario) {
+        this.testStaticEventHandler(scenario, this.s32TestValues, 'staticRefEventHandler', (arg) => TestComponent.Test.raiseStaticRefEvent(arg));
+    }
+
+    runStaticObjectEventHandler(scenario) {
+        var vals = [TestComponent.Test.makeNumericVector([]), TestComponent.Test.makeNumericVector([0]), TestComponent.Test.makeNumericVector([0, 1, 2, 3, 4])];
+        this.testStaticEventHandler(scenario, vals, 'staticObjectEventHandler', (arg) => TestComponent.Test.raiseStaticObjectEvent(arg));
+    }
+
     // Non-static properties
     runBoolProperty(scenario) {
         this.runSyncPropertyTest(scenario, 'boolean', this.boolTestValues, this.boolInvalidValues, () => this.test.boolProperty, (val) => this.test.boolProperty = val);
@@ -1595,6 +1675,64 @@ class App extends Component {
             run(2);
             run(100);
         })
+    }
+
+    // Non-static events
+    testEventHandler(scenario, args, name, invoke) {
+        this.runSync(scenario, () => {
+            var i = 0;
+            var handler = (sender, arg) => {
+                assert(i < args.length);
+                assert(sender == this.test);
+                assertEqual(arg, args[i]);
+            };
+
+            this.test.addEventListener(name, handler);
+            for (var arg of args) {
+                invoke(arg);
+                ++i;
+            }
+
+            this.test.removeEventListener(name, handler);
+            invoke(args[0]); // Should assert if handler is invoked
+        });
+    }
+
+    runBoolEventHandler(scenario) {
+        this.testEventHandler(scenario, this.boolTestValues, 'boolEventHandler', (arg) => this.test.raiseBoolEvent(arg));
+    }
+
+    runCharEventHandler(scenario) {
+        this.testEventHandler(scenario, this.charTestValues, 'charEventHandler', (arg) => this.test.raiseCharEvent(arg));
+    }
+
+    runNumericEventHandler(scenario) {
+        this.testEventHandler(scenario, this.s32TestValues, 'numericEventHandler', (arg) => this.test.raiseNumericEvent(arg));
+    }
+
+    runStringEventHandler(scenario) {
+        this.testEventHandler(scenario, this.stringTestValues, 'stringEventHandler', (arg) => this.test.raiseStringEvent(arg));
+    }
+
+    runGuidEventHandler(scenario) {
+        this.testEventHandler(scenario, this.guidTestValues, 'guidEventHandler', (arg) => this.test.raiseGuidEvent(arg));
+    }
+
+    runEnumEventHandler(scenario) {
+        this.testEventHandler(scenario, this.enumTestValues, 'enumEventHandler', (arg) => this.test.raiseEnumEvent(arg));
+    }
+
+    runCompositeStructEventHandler(scenario) {
+        this.testEventHandler(scenario, this.compositeTestValues, 'compositeStructEventHandler', (arg) => this.test.raiseCompositeStructEvent(arg));
+    }
+
+    runRefEventHandler(scenario) {
+        this.testEventHandler(scenario, this.s32TestValues, 'refEventHandler', (arg) => this.test.raiseRefEvent(arg));
+    }
+
+    runObjectEventHandler(scenario) {
+        var vals = [TestComponent.Test.makeNumericVector([]), TestComponent.Test.makeNumericVector([0]), TestComponent.Test.makeNumericVector([0, 1, 2, 3, 4])];
+        this.testEventHandler(scenario, vals, 'objectEventHandler', (arg) => this.test.raiseObjectEvent(arg));
     }
 
 

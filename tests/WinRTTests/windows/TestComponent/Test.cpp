@@ -346,6 +346,141 @@ namespace winrt::TestComponent::implementation
         }
     }
 
+    winrt::event_token Test::StaticBoolEventHandler(Windows::Foundation::EventHandler<bool> const& handler)
+    {
+        return s_boolEventSource.add(handler);
+    }
+
+    void Test::StaticBoolEventHandler(winrt::event_token const& token) noexcept
+    {
+        s_boolEventSource.remove(token);
+    }
+
+    winrt::event_token Test::StaticCharEventHandler(Windows::Foundation::EventHandler<char16_t> const& handler)
+    {
+        return s_charEventSource.add(handler);
+    }
+
+    void Test::StaticCharEventHandler(winrt::event_token const& token) noexcept
+    {
+        s_charEventSource.remove(token);
+    }
+
+    winrt::event_token Test::StaticNumericEventHandler(Windows::Foundation::EventHandler<int32_t> const& handler)
+    {
+        return s_numericEventSource.add(handler);
+    }
+
+    void Test::StaticNumericEventHandler(winrt::event_token const& token) noexcept
+    {
+        s_numericEventSource.remove(token);
+    }
+
+    winrt::event_token Test::StaticStringEventHandler(Windows::Foundation::EventHandler<hstring> const& handler)
+    {
+        return s_stringEventSource.add(handler);
+    }
+
+    void Test::StaticStringEventHandler(winrt::event_token const& token) noexcept
+    {
+        s_stringEventSource.remove(token);
+    }
+
+    winrt::event_token Test::StaticGuidEventHandler(Windows::Foundation::EventHandler<winrt::guid> const& handler)
+    {
+        return s_guidEventSource.add(handler);
+    }
+
+    void Test::StaticGuidEventHandler(winrt::event_token const& token) noexcept
+    {
+        s_guidEventSource.remove(token);
+    }
+
+    winrt::event_token Test::StaticEnumEventHandler(Windows::Foundation::EventHandler<TestEnum> const& handler)
+    {
+        return s_enumEventSource.add(handler);
+    }
+
+    void Test::StaticEnumEventHandler(winrt::event_token const& token) noexcept
+    {
+        s_enumEventSource.remove(token);
+    }
+
+    winrt::event_token Test::StaticCompositeStructEventHandler(Windows::Foundation::EventHandler<CompositeType> const& handler)
+    {
+        return s_compositeStructEventSource.add(handler);
+    }
+
+    void Test::StaticCompositeStructEventHandler(winrt::event_token const& token) noexcept
+    {
+        s_compositeStructEventSource.remove(token);
+    }
+
+    winrt::event_token Test::StaticRefEventHandler(Windows::Foundation::EventHandler<Windows::Foundation::IReference<int32_t>> const& handler)
+    {
+        return s_refEventSource.add(handler);
+    }
+
+    void Test::StaticRefEventHandler(winrt::event_token const& token) noexcept
+    {
+        s_refEventSource.remove(token);
+    }
+
+    winrt::event_token Test::StaticObjectEventHandler(Windows::Foundation::EventHandler<Windows::Foundation::Collections::IVector<int32_t>> const& handler)
+    {
+        return s_objectEventSource.add(handler);
+    }
+
+    void Test::StaticObjectEventHandler(winrt::event_token const& token) noexcept
+    {
+        s_objectEventSource.remove(token);
+    }
+
+    void Test::RaiseStaticBoolEvent(bool value)
+    {
+        s_boolEventSource(nullptr, value);
+    }
+
+    void Test::RaiseStaticCharEvent(char16_t value)
+    {
+        s_charEventSource(nullptr, value);
+    }
+
+    void Test::RaiseStaticNumericEvent(int32_t value)
+    {
+        s_numericEventSource(nullptr, value);
+    }
+
+    void Test::RaiseStaticStringEvent(hstring const& value)
+    {
+        s_stringEventSource(nullptr, value);
+    }
+
+    void Test::RaiseStaticGuidEvent(winrt::guid const& value)
+    {
+        s_guidEventSource(nullptr, value);
+    }
+
+    void Test::RaiseStaticEnumEvent(TestEnum const& value)
+    {
+        s_enumEventSource(nullptr, value);
+    }
+
+    void Test::RaiseStaticCompositeStructEvent(CompositeType const& value)
+    {
+        s_compositeStructEventSource(nullptr, value);
+    }
+
+    void Test::RaiseStaticRefEvent(Windows::Foundation::IReference<int32_t> const& value)
+    {
+        s_refEventSource(nullptr, value);
+    }
+
+    void Test::RaiseStaticObjectEvent(Windows::Foundation::Collections::IVector<int32_t> const& value)
+    {
+        s_objectEventSource(nullptr, value);
+    }
+
     Windows::Foundation::Collections::IVector<int32_t> Test::MakeNumericVector(array_view<int32_t const> values)
     {
         return single_threaded_vector(std::vector<int32_t>(values.begin(), values.end()));
@@ -936,5 +1071,140 @@ namespace winrt::TestComponent::implementation
             val = single_threaded_vector<int32_t>(std::vector{ v });
             v.push_back(next++);
         }
+    }
+
+    winrt::event_token Test::BoolEventHandler(Windows::Foundation::EventHandler<bool> const& handler)
+    {
+        return m_boolEventSource.add(handler);
+    }
+
+    void Test::BoolEventHandler(winrt::event_token const& token) noexcept
+    {
+        m_boolEventSource.remove(token);
+    }
+
+    winrt::event_token Test::CharEventHandler(Windows::Foundation::EventHandler<char16_t> const& handler)
+    {
+        return m_charEventSource.add(handler);
+    }
+
+    void Test::CharEventHandler(winrt::event_token const& token) noexcept
+    {
+        m_charEventSource.remove(token);
+    }
+
+    winrt::event_token Test::NumericEventHandler(Windows::Foundation::EventHandler<int32_t> const& handler)
+    {
+        return m_numericEventSource.add(handler);
+    }
+
+    void Test::NumericEventHandler(winrt::event_token const& token) noexcept
+    {
+        m_numericEventSource.remove(token);
+    }
+
+    winrt::event_token Test::StringEventHandler(Windows::Foundation::EventHandler<hstring> const& handler)
+    {
+        return m_stringEventSource.add(handler);
+    }
+
+    void Test::StringEventHandler(winrt::event_token const& token) noexcept
+    {
+        m_stringEventSource.remove(token);
+    }
+
+    winrt::event_token Test::GuidEventHandler(Windows::Foundation::EventHandler<winrt::guid> const& handler)
+    {
+        return m_guidEventSource.add(handler);
+    }
+
+    void Test::GuidEventHandler(winrt::event_token const& token) noexcept
+    {
+        m_guidEventSource.remove(token);
+    }
+
+    winrt::event_token Test::EnumEventHandler(Windows::Foundation::EventHandler<TestEnum> const& handler)
+    {
+        return m_enumEventSource.add(handler);
+    }
+
+    void Test::EnumEventHandler(winrt::event_token const& token) noexcept
+    {
+        m_enumEventSource.remove(token);
+    }
+
+    winrt::event_token Test::CompositeStructEventHandler(Windows::Foundation::EventHandler<CompositeType> const& handler)
+    {
+        return m_compositeStructEventSource.add(handler);
+    }
+
+    void Test::CompositeStructEventHandler(winrt::event_token const& token) noexcept
+    {
+        m_compositeStructEventSource.remove(token);
+    }
+
+    winrt::event_token Test::RefEventHandler(Windows::Foundation::EventHandler<Windows::Foundation::IReference<int32_t>> const& handler)
+    {
+        return m_refEventSource.add(handler);
+    }
+
+    void Test::RefEventHandler(winrt::event_token const& token) noexcept
+    {
+        m_refEventSource.remove(token);
+    }
+
+    winrt::event_token Test::ObjectEventHandler(Windows::Foundation::EventHandler<Windows::Foundation::Collections::IVector<int32_t>> const& handler)
+    {
+        return m_objectEventSource.add(handler);
+    }
+
+    void Test::ObjectEventHandler(winrt::event_token const& token) noexcept
+    {
+        m_objectEventSource.remove(token);
+    }
+
+    void Test::RaiseBoolEvent(bool value)
+    {
+        m_boolEventSource(*this, value);
+    }
+
+    void Test::RaiseCharEvent(char16_t value)
+    {
+        m_charEventSource(*this, value);
+    }
+
+    void Test::RaiseNumericEvent(int32_t value)
+    {
+        m_numericEventSource(*this, value);
+    }
+
+    void Test::RaiseStringEvent(hstring const& value)
+    {
+        m_stringEventSource(*this, value);
+    }
+
+    void Test::RaiseGuidEvent(winrt::guid const& value)
+    {
+        m_guidEventSource(*this, value);
+    }
+
+    void Test::RaiseEnumEvent(TestEnum const& value)
+    {
+        m_enumEventSource(*this, value);
+    }
+
+    void Test::RaiseCompositeStructEvent(CompositeType const& value)
+    {
+        m_compositeStructEventSource(*this, value);
+    }
+
+    void Test::RaiseRefEvent(Windows::Foundation::IReference<int32_t> const& value)
+    {
+        m_refEventSource(*this, value);
+    }
+
+    void Test::RaiseObjectEvent(Windows::Foundation::Collections::IVector<int32_t> const& value)
+    {
+        m_objectEventSource(*this, value);
     }
 }

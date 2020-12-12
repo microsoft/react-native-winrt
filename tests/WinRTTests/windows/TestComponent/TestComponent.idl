@@ -67,6 +67,7 @@ namespace TestComponent
 
         // Static properties
         static Boolean StaticBoolProperty;
+        // TODO: More, but static properties don't seem to work
 
         // Static array properties
 
@@ -119,6 +120,28 @@ namespace TestComponent
         static void StaticCompositeStructFillParam(ref CompositeType[] values);
         // TODO: Ref
         static void StaticObjectFillParam(ref Windows.Foundation.Collections.IVector<Int32>[] values);
+
+        // Static events
+        static event Windows.Foundation.EventHandler<Boolean> StaticBoolEventHandler;
+        static event Windows.Foundation.EventHandler<Char> StaticCharEventHandler;
+        static event Windows.Foundation.EventHandler<Int32> StaticNumericEventHandler;
+        static event Windows.Foundation.EventHandler<String> StaticStringEventHandler;
+        static event Windows.Foundation.EventHandler<Guid> StaticGuidEventHandler;
+        static event Windows.Foundation.EventHandler<TestEnum> StaticEnumEventHandler;
+        static event Windows.Foundation.EventHandler<CompositeType> StaticCompositeStructEventHandler;
+        static event Windows.Foundation.EventHandler<Windows.Foundation.IReference<Int32> > StaticRefEventHandler;
+        static event Windows.Foundation.EventHandler<Windows.Foundation.Collections.IVector<Int32> > StaticObjectEventHandler;
+
+        // Static event triggers
+        static void RaiseStaticBoolEvent(Boolean value);
+        static void RaiseStaticCharEvent(Char value);
+        static void RaiseStaticNumericEvent(Int32 value);
+        static void RaiseStaticStringEvent(String value);
+        static void RaiseStaticGuidEvent(Guid value);
+        static void RaiseStaticEnumEvent(TestEnum value);
+        static void RaiseStaticCompositeStructEvent(CompositeType value);
+        static void RaiseStaticRefEvent(Windows.Foundation.IReference<Int32> value);
+        static void RaiseStaticObjectEvent(Windows.Foundation.Collections.IVector<Int32> value);
 
         // NOTE: Conversion support should ideally be built in
         static Windows.Foundation.Collections.IVector<Int32> MakeNumericVector(Int32[] values);
@@ -208,6 +231,28 @@ namespace TestComponent
         void CompositeStructFillParam(ref CompositeType[] values);
         // TODO: Ref
         void ObjectFillParam(ref Windows.Foundation.Collections.IVector<Int32>[] values);
+
+        // Member events
+        event Windows.Foundation.EventHandler<Boolean> BoolEventHandler;
+        event Windows.Foundation.EventHandler<Char> CharEventHandler;
+        event Windows.Foundation.EventHandler<Int32> NumericEventHandler;
+        event Windows.Foundation.EventHandler<String> StringEventHandler;
+        event Windows.Foundation.EventHandler<Guid> GuidEventHandler;
+        event Windows.Foundation.EventHandler<TestEnum> EnumEventHandler;
+        event Windows.Foundation.EventHandler<CompositeType> CompositeStructEventHandler;
+        event Windows.Foundation.EventHandler<Windows.Foundation.IReference<Int32> > RefEventHandler;
+        event Windows.Foundation.EventHandler<Windows.Foundation.Collections.IVector<Int32> > ObjectEventHandler;
+
+        // Member event triggers
+        void RaiseBoolEvent(Boolean value);
+        void RaiseCharEvent(Char value);
+        void RaiseNumericEvent(Int32 value);
+        void RaiseStringEvent(String value);
+        void RaiseGuidEvent(Guid value);
+        void RaiseEnumEvent(TestEnum value);
+        void RaiseCompositeStructEvent(CompositeType value);
+        void RaiseRefEvent(Windows.Foundation.IReference<Int32> value);
+        void RaiseObjectEvent(Windows.Foundation.Collections.IVector<Int32> value);
     }
 
 
