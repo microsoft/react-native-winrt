@@ -122,18 +122,18 @@
       <PrecompiledHeader>Create</PrecompiledHeader>
     </ClCompile>
     <ClCompile Include="$(ModuleImplementationDir)*.cpp" />
-    <ClCompile Include="rnwinrt\dllmain.cpp" />
-    <ClCompile Include="rnwinrt\WinRTTurboModule.cpp" />
+    <ClCompile Include="$(ModuleImplementationDir)dllmain.cpp" />
+    <ClCompile Include="$(ModuleImplementationDir)WinRTTurboModule.cpp" />
   </ItemGroup>
   <ItemGroup>
     <None Include="packages.config" />
     <None Include="rnwinrt\rnwinrt.exe" />
-    <None Include="rnwinrt\WinRTTurboModule.def" />
-    <None Include="rnwinrt\WinRTTurboModule.targets" />
+    <None Include="$(ModuleImplementationDir)WinRTTurboModule.def" />
+    <None Include="$(ModuleImplementationDir)WinRTTurboModule.targets" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">
-    <Import Project="$(ModuleImplementationDir)\WinRTTurboModule.targets" />
+    <Import Project="$(ModuleImplementationDir)WinRTTurboModule.targets" />
     <Import Project="..\packages\Microsoft.Windows.ImplementationLibrary.1.0.191107.2\build\native\Microsoft.Windows.ImplementationLibrary.targets" Condition="Exists('..\packages\Microsoft.Windows.ImplementationLibrary.1.0.191107.2\build\native\Microsoft.Windows.ImplementationLibrary.targets')" />
   </ImportGroup>
   <Target Name="EnsureNuGetPackageBuildImports" BeforeTargets="PrepareForBuild">
