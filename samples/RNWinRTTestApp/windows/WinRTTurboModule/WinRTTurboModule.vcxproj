@@ -68,7 +68,7 @@
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.props" />
   <PropertyGroup>
     <JsiDir>..\..\node_modules\react-native\ReactCommon\jsi\</JsiDir>
-    <ModuleImplementationDir>..\..\..\..\rnwinrt\module\</ModuleImplementationDir>
+    <ModuleImplementationDir>rnwinrt\module\</ModuleImplementationDir>
     <ReactPlatform Condition="'$(Platform)'!='Win32'">$(Platform)</ReactPlatform>
     <ReactPlatform Condition="'$(Platform)'=='Win32'">x86</ReactPlatform>
     <ReactCommonDir>..\..\node_modules\react-native-windows\build\$(ReactPlatform)\$(Configuration)\ReactCommon\react-native-patched\</ReactCommonDir>
@@ -122,10 +122,14 @@
       <PrecompiledHeader>Create</PrecompiledHeader>
     </ClCompile>
     <ClCompile Include="$(ModuleImplementationDir)*.cpp" />
+    <ClCompile Include="rnwinrt\dllmain.cpp" />
+    <ClCompile Include="rnwinrt\WinRTTurboModule.cpp" />
   </ItemGroup>
   <ItemGroup>
     <None Include="packages.config" />
     <None Include="rnwinrt\rnwinrt.exe" />
+    <None Include="rnwinrt\WinRTTurboModule.def" />
+    <None Include="rnwinrt\WinRTTurboModule.targets" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">
