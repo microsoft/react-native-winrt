@@ -5,7 +5,7 @@ VisualStudioVersion = 16.0.29215.179
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "RNWinRTTestApp", "RNWinRTTestApp\RNWinRTTestApp.vcxproj", "{D17B5F90-8228-4866-BA40-0D95239E8695}"
 	ProjectSection(ProjectDependencies) = postProject
-		{F7D32BD0-2749-483E-9A0D-1635EF7E3136} = {F7D32BD0-2749-483E-9A0D-1635EF7E3136}
+		{E13C9C82-0013-422C-945E-848A258AC4DB} = {E13C9C82-0013-422C-945E-848A258AC4DB}
 	EndProjectSection
 EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "Folly", "..\node_modules\react-native-windows\Folly\Folly.vcxproj", "{A990658C-CE31-4BCC-976F-0FC6B1AF693D}"
@@ -41,10 +41,9 @@ EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "Mso", "..\node_modules\react-native-windows\Mso\Mso.vcxitems", "{84E05BFA-CBAF-4F0D-BFB6-4CE85742A57E}"
 EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "WinRTTurboModule", "WinRTTurboModule\WinRTTurboModule.vcxproj", "{E13C9C82-0013-422C-945E-848A258AC4DB}"
-EndProject
-Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "rnwinrt", "..\..\..\rnwinrt\rnwinrt\rnwinrt.vcxproj", "{249A6C52-D3DF-4B3C-BF7C-9DD62C267CB0}"
-EndProject
-Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "strings", "..\..\..\rnwinrt\strings\strings.vcxproj", "{2A8A236D-1799-487A-A4C0-F1AC89DB8A43}"
+	ProjectSection(ProjectDependencies) = postProject
+		{F7D32BD0-2749-483E-9A0D-1635EF7E3136} = {F7D32BD0-2749-483E-9A0D-1635EF7E3136}
+	EndProjectSection
 EndProject
 Global
 	GlobalSection(SharedMSBuildProjectFiles) = preSolution
@@ -277,48 +276,6 @@ Global
 		{E13C9C82-0013-422C-945E-848A258AC4DB}.Release|x64.Build.0 = Release|x64
 		{E13C9C82-0013-422C-945E-848A258AC4DB}.Release|x86.ActiveCfg = Release|Win32
 		{E13C9C82-0013-422C-945E-848A258AC4DB}.Release|x86.Build.0 = Release|Win32
-		{249A6C52-D3DF-4B3C-BF7C-9DD62C267CB0}.Debug|ARM.ActiveCfg = Release|x64
-		{249A6C52-D3DF-4B3C-BF7C-9DD62C267CB0}.Debug|ARM.Build.0 = Release|x64
-		{249A6C52-D3DF-4B3C-BF7C-9DD62C267CB0}.Debug|ARM64.ActiveCfg = Release|ARM64
-		{249A6C52-D3DF-4B3C-BF7C-9DD62C267CB0}.Debug|x64.ActiveCfg = Release|x64
-		{249A6C52-D3DF-4B3C-BF7C-9DD62C267CB0}.Debug|x64.Build.0 = Release|x64
-		{249A6C52-D3DF-4B3C-BF7C-9DD62C267CB0}.Debug|x86.ActiveCfg = Release|x64
-		{249A6C52-D3DF-4B3C-BF7C-9DD62C267CB0}.Debug|x86.Build.0 = Release|x64
-		{249A6C52-D3DF-4B3C-BF7C-9DD62C267CB0}.DebugBundle|ARM.ActiveCfg = Release|x64
-		{249A6C52-D3DF-4B3C-BF7C-9DD62C267CB0}.DebugBundle|ARM.Build.0 = Release|x64
-		{249A6C52-D3DF-4B3C-BF7C-9DD62C267CB0}.DebugBundle|ARM64.ActiveCfg = Release|ARM64
-		{249A6C52-D3DF-4B3C-BF7C-9DD62C267CB0}.DebugBundle|ARM64.Build.0 = Release|ARM64
-		{249A6C52-D3DF-4B3C-BF7C-9DD62C267CB0}.DebugBundle|x64.ActiveCfg = Release|x64
-		{249A6C52-D3DF-4B3C-BF7C-9DD62C267CB0}.DebugBundle|x64.Build.0 = Release|x64
-		{249A6C52-D3DF-4B3C-BF7C-9DD62C267CB0}.DebugBundle|x86.ActiveCfg = Release|x64
-		{249A6C52-D3DF-4B3C-BF7C-9DD62C267CB0}.DebugBundle|x86.Build.0 = Release|x64
-		{249A6C52-D3DF-4B3C-BF7C-9DD62C267CB0}.Release|ARM.ActiveCfg = Release|x64
-		{249A6C52-D3DF-4B3C-BF7C-9DD62C267CB0}.Release|ARM.Build.0 = Release|x64
-		{249A6C52-D3DF-4B3C-BF7C-9DD62C267CB0}.Release|ARM64.ActiveCfg = Release|ARM64
-		{249A6C52-D3DF-4B3C-BF7C-9DD62C267CB0}.Release|x64.ActiveCfg = Release|x64
-		{249A6C52-D3DF-4B3C-BF7C-9DD62C267CB0}.Release|x64.Build.0 = Release|x64
-		{249A6C52-D3DF-4B3C-BF7C-9DD62C267CB0}.Release|x86.ActiveCfg = Release|x64
-		{249A6C52-D3DF-4B3C-BF7C-9DD62C267CB0}.Release|x86.Build.0 = Release|x64
-		{2A8A236D-1799-487A-A4C0-F1AC89DB8A43}.Debug|ARM.ActiveCfg = Release|x64
-		{2A8A236D-1799-487A-A4C0-F1AC89DB8A43}.Debug|ARM64.ActiveCfg = Release|x64
-		{2A8A236D-1799-487A-A4C0-F1AC89DB8A43}.Debug|x64.ActiveCfg = Release|x64
-		{2A8A236D-1799-487A-A4C0-F1AC89DB8A43}.Debug|x64.Build.0 = Release|x64
-		{2A8A236D-1799-487A-A4C0-F1AC89DB8A43}.Debug|x86.ActiveCfg = Release|x64
-		{2A8A236D-1799-487A-A4C0-F1AC89DB8A43}.Debug|x86.Build.0 = Release|x64
-		{2A8A236D-1799-487A-A4C0-F1AC89DB8A43}.DebugBundle|ARM.ActiveCfg = Release|x64
-		{2A8A236D-1799-487A-A4C0-F1AC89DB8A43}.DebugBundle|ARM.Build.0 = Release|x64
-		{2A8A236D-1799-487A-A4C0-F1AC89DB8A43}.DebugBundle|ARM64.ActiveCfg = Release|x64
-		{2A8A236D-1799-487A-A4C0-F1AC89DB8A43}.DebugBundle|ARM64.Build.0 = Release|x64
-		{2A8A236D-1799-487A-A4C0-F1AC89DB8A43}.DebugBundle|x64.ActiveCfg = Release|x64
-		{2A8A236D-1799-487A-A4C0-F1AC89DB8A43}.DebugBundle|x64.Build.0 = Release|x64
-		{2A8A236D-1799-487A-A4C0-F1AC89DB8A43}.DebugBundle|x86.ActiveCfg = Release|x64
-		{2A8A236D-1799-487A-A4C0-F1AC89DB8A43}.DebugBundle|x86.Build.0 = Release|x64
-		{2A8A236D-1799-487A-A4C0-F1AC89DB8A43}.Release|ARM.ActiveCfg = Release|x64
-		{2A8A236D-1799-487A-A4C0-F1AC89DB8A43}.Release|ARM64.ActiveCfg = Release|x64
-		{2A8A236D-1799-487A-A4C0-F1AC89DB8A43}.Release|x64.ActiveCfg = Release|x64
-		{2A8A236D-1799-487A-A4C0-F1AC89DB8A43}.Release|x64.Build.0 = Release|x64
-		{2A8A236D-1799-487A-A4C0-F1AC89DB8A43}.Release|x86.ActiveCfg = Release|x64
-		{2A8A236D-1799-487A-A4C0-F1AC89DB8A43}.Release|x86.Build.0 = Release|x64
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
