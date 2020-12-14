@@ -132,7 +132,7 @@
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">
-    <Import Project="$(ModuleImplementationDir)WinRTTurboModule.targets" />
+    <Import Project="..\packages\Microsoft.Windows.JsWinRT.20201214.2.0\content\rnwinrt\module\WinRTTurboModule.targets" Condition="Exists('..\packages\Microsoft.Windows.JsWinRT.20201214.2.0\content\rnwinrt\module\WinRTTurboModule.targets')" />
     <Import Project="..\packages\Microsoft.Windows.ImplementationLibrary.1.0.191107.2\build\native\Microsoft.Windows.ImplementationLibrary.targets" Condition="Exists('..\packages\Microsoft.Windows.ImplementationLibrary.1.0.191107.2\build\native\Microsoft.Windows.ImplementationLibrary.targets')" />
   </ImportGroup>
   <Target Name="EnsureNuGetPackageBuildImports" BeforeTargets="PrepareForBuild">
