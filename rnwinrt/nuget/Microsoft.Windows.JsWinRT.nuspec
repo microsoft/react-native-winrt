@@ -17,10 +17,11 @@
   <files>
     <file src="LICENSE"/>
     <file src="readme.txt"/>
-    <file src="$rnwinrt_exe$" target="content\rnwinrt" />
-    <file src="$reactnative_files$\dllmain.cpp" target="content\rnwinrt\module" />
-    <file src="$reactnative_files$\WinRTTurboModule.cpp" target="content\rnwinrt\module" />
-    <file src="$reactnative_files$\WinRTTurboModule.def" target="content\rnwinrt\module" />
-    <file src="$reactnative_files$\WinRTTurboModule.targets" target="content\rnwinrt\module" />
+    <file src="$rnwinrt_exe$" target="rnwinrt" />
+    <file src="$reactnative_files$\dllmain.cpp" target="rnwinrt\module" />
+    <file src="$reactnative_files$\WinRTTurboModule.cpp" target="rnwinrt\module" />
+    <file src="$reactnative_files$\WinRTTurboModule.def" target="rnwinrt\module" />
+    <file src="$reactnative_files$\WinRTTurboModule.targets" target="rnwinrt\module" />
+    <file src="$reactnative_files$\WinRTTurboModule.props" target="build" />
   </files>
 </package>

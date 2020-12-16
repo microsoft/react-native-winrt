@@ -19,8 +19,7 @@
     <CppWinRTGenerateWindowsMetadata>true</CppWinRTGenerateWindowsMetadata>
     <CppWinRTVerbosity>high</CppWinRTVerbosity>
     <CppWinRTParameters>-base</CppWinRTParameters>
-    <RnWinRTParameters>-include Windows.Foundation -include Windows.UI.StartScreen -include Windows.UI.ViewManagement -include Windows.Storage -include Windows.Security.Cryptography.CryptographicBuffer -include Windows.Security.Cryptography.ICryptographicBufferStatics -include Windows.Security.Cryptography.BinaryStringEncoding</RnWinRTParameters>
-    <RnWinRTPath>rnwinrt\</RnWinRTPath>
+    <RnWinRTParameters>-include Windows.Globalization</RnWinRTParameters>
     <RnWinRTVerbosity>high</RnWinRTVerbosity>
   </PropertyGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.Default.props" />
