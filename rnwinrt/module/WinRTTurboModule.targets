@@ -184,12 +184,14 @@ Copyright (C) Microsoft Corporation. All rights reserved.
           Inputs="$(RnWinRTParameters);$(IntDir)cppwinrt_ref.rsp"
           Outputs="$(GeneratedFilesDir)rnwinrt\Projections.g.h';$(GeneratedFilesDir)rnwinrt\Projections.g.cpp;$(GeneratedFilesDir)rnwinrt\ProjectedValueConverters.g.h';">
         <PropertyGroup>
-            <RnWinRTPathCommand>$(RnWinRTPath)rnwinrt.exe $(RnWinRTCommandVerbosity) $(RnWinRTParameters) %40"$(IntDir)cppwinrt_ref.rsp"</RnWinRTPathCommand>
+            <RnWinRTPathCommand>$(RnWinRTExe) $(RnWinRTCommandVerbosity) $(RnWinRTParameters) %40"$(IntDir)cppwinrt_ref.rsp"</RnWinRTPathCommand>
         </PropertyGroup>
         <Message Text="$(RnWinRTPathCommand)" Importance="$(RnWinRTVerbosity)" />
         <Exec Command="$(RnWinRTPathCommand)" />
         <ItemGroup>
             <ClCompile Include="$(GeneratedFilesDir)\rnwinrt\*.g.cpp" />
+            <ClCompile Include="$(RnWinRTPath)module\dllmain.cpp" />
+            <ClCompile Include="$(RnWinRTPath)module\WinRTTurboModule.cpp" />
         </ItemGroup>
     </Target>
 

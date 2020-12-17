@@ -4,10 +4,27 @@ Copyright (C) Microsoft Corporation. All rights reserved.
 ***********************************************************************************************
 -->
 <Project xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
-
   <PropertyGroup>
     <RnWinRTPath Condition="'$(RnWinRTPath)'==''">$([MSBuild]::NormalizeDirectory('$(MSBuildThisFileDirectory)', '..'))</RnWinRTPath>
     <RnWinRTExe>$(RnWinRTPath)rnwinrt.exe</RnWinRTExe>
   </PropertyGroup>
-
+  <ItemDefinitionGroup>
+    <Link>
+      <ModuleDefinitionFile>$(RnWinRTPath)module\WinRTTurboModule.def</ModuleDefinitionFile>
+    </Link>
+  </ItemDefinitionGroup>
+  <ItemGroup>
+    <ClCompile>
+      <AdditionalIncludeDirectories>
+        $(RnWinRTPath)module;
+      </AdditionalIncludeDirectories>
+    </ClCompile>
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="$(RnWinRTPath)module\*.h" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="$(RnWinRTPath)module\WinRTTurboModule.def" />
+    <None Include="$(RnWinRTPath)module\WinRTTurboModule.targets" />
+  </ItemGroup>
 </Project>

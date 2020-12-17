@@ -19,7 +19,7 @@
     <CppWinRTGenerateWindowsMetadata>true</CppWinRTGenerateWindowsMetadata>
     <CppWinRTVerbosity>high</CppWinRTVerbosity>
     <CppWinRTParameters>-base</CppWinRTParameters>
-    <RnWinRTParameters>-include Windows.Globalization</RnWinRTParameters>
+    <RnWinRTParameters>-include Windows.Foundation -include Windows.UI.StartScreen -include Windows.UI.ViewManagement -include Windows.Storage -include Windows.Security.Cryptography.CryptographicBuffer -include Windows.Security.Cryptography.ICryptographicBufferStatics -include Windows.Security.Cryptography.BinaryStringEncoding</RnWinRTParameters>
     <RnWinRTVerbosity>high</RnWinRTVerbosity>
   </PropertyGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.Default.props" />
@@ -67,7 +67,6 @@
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.props" />
   <PropertyGroup>
     <JsiDir>..\..\node_modules\react-native\ReactCommon\jsi\</JsiDir>
-    <ModuleImplementationDir>rnwinrt\module\</ModuleImplementationDir>
     <ReactPlatform Condition="'$(Platform)'!='Win32'">$(Platform)</ReactPlatform>
     <ReactPlatform Condition="'$(Platform)'=='Win32'">x86</ReactPlatform>
     <ReactCommonDir>..\..\node_modules\react-native-windows\build\$(ReactPlatform)\$(Configuration)\ReactCommon\react-native-patched\</ReactCommonDir>
@@ -82,7 +81,6 @@
       <AdditionalOptions Condition="'$(CppWinRTHeapEnforcement)'==''">/DWINRT_NO_MAKE_DETECTION %(AdditionalOptions)</AdditionalOptions>
       <PreprocessorDefinitions>_WINRT_DLL;WIN32_LEAN_AND_MEAN;WINRT_LEAN_AND_MEAN;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <AdditionalIncludeDirectories>
-        $(ModuleImplementationDir);
         $(JsiDir);
         $(ReactCommonDir)\ReactCommon;
         $(ReactCommonDir)\ReactCommon\callinvoker;
@@ -99,7 +97,6 @@
     <Link>
       <SubSystem>Console</SubSystem>
       <GenerateWindowsMetadata>false</GenerateWindowsMetadata>
-      <ModuleDefinitionFile>$(ModuleImplementationDir)WinRTTurboModule.def</ModuleDefinitionFile>
     </Link>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)'=='Debug'">
@@ -114,24 +111,19 @@
   </ItemDefinitionGroup>
   <ItemGroup>
     <ClInclude Include="pch.h" />
-    <ClInclude Include="$(ModuleImplementationDir)*.h" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="pch.cpp">
       <PrecompiledHeader>Create</PrecompiledHeader>
     </ClCompile>
-    <ClCompile Include="$(ModuleImplementationDir)dllmain.cpp" />
-    <ClCompile Include="$(ModuleImplementationDir)WinRTTurboModule.cpp" />
   </ItemGroup>
   <ItemGroup>
     <None Include="packages.config" />
     <None Include="rnwinrt\rnwinrt.exe" />
-    <None Include="$(ModuleImplementationDir)WinRTTurboModule.def" />
-    <None Include="$(ModuleImplementationDir)WinRTTurboModule.targets" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">
-    <Import Project="..\packages\Microsoft.Windows.JsWinRT.20201214.3.0\content\rnwinrt\module\WinRTTurboModule.targets" Condition="Exists('..\packages\Microsoft.Windows.JsWinRT.20201214.3.0\content\rnwinrt\module\WinRTTurboModule.targets')" />
+    <Import Project="..\packages\Microsoft.Windows.JsWinRT.20201216.1.0\rnwinrt\module\WinRTTurboModule.targets" Condition="Exists('..\packages\Microsoft.Windows.JsWinRT.20201216.1.0\rnwinrt\module\WinRTTurboModule.targets')" />
     <Import Project="..\packages\Microsoft.Windows.ImplementationLibrary.1.0.191107.2\build\native\Microsoft.Windows.ImplementationLibrary.targets" Condition="Exists('..\packages\Microsoft.Windows.ImplementationLibrary.1.0.191107.2\build\native\Microsoft.Windows.ImplementationLibrary.targets')" />
   </ImportGroup>
   <Target Name="EnsureNuGetPackageBuildImports" BeforeTargets="PrepareForBuild">
@@ -140,7 +132,7 @@
     </PropertyGroup>
     <Error Condition="!Exists('..\packages\Microsoft.Windows.CppWinRT.2.0.200615.7\build\native\Microsoft.Windows.CppWinRT.props')" Text="$([System.String]::Format('$(ErrorText)', '..\packages\Microsoft.Windows.CppWinRT.2.0.200615.7\build\native\Microsoft.Windows.CppWinRT.props'))" />
     <Error Condition="!Exists('..\packages\Microsoft.Windows.ImplementationLibrary.1.0.191107.2\build\native\Microsoft.Windows.ImplementationLibrary.targets')" Text="$([System.String]::Format('$(ErrorText)', '..\packages\Microsoft.Windows.ImplementationLibrary.1.0.191107.2\build\native\Microsoft.Windows.ImplementationLibrary.targets'))" />
-    <Error Condition="!Exists('..\packages\Microsoft.Windows.JsWinRT.20201214.3.0\content\rnwinrt\module\WinRTTurboModule.targets')" Text="$([System.String]::Format('$(ErrorText)', '..\packages\Microsoft.Windows.JsWinRT.20201214.3.0\content\rnwinrt\module\WinRTTurboModule.targets'))" />
+    <Error Condition="!Exists('..\packages\Microsoft.Windows.JsWinRT.20201216.1.0\rnwinrt\module\WinRTTurboModule.targets')" Text="$([System.String]::Format('$(ErrorText)', '..\packages\Microsoft.Windows.JsWinRT.20201216.1.0\rnwinrt\module\WinRTTurboModule.targets'))" />
   </Target>
   <!-- TODO: TurboModuleManager has no extensibility mechanism yet, so we have to manually inject the call to add the WinRTTurboModule.
              Until a better solution exists replacing the file is the simplest option (though editing it with a script would be safer). -->
