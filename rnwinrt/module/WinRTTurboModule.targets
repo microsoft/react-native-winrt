@@ -188,11 +188,6 @@ Copyright (C) Microsoft Corporation. All rights reserved.
         </PropertyGroup>
         <Message Text="$(RnWinRTPathCommand)" Importance="$(RnWinRTVerbosity)" />
         <Exec Command="$(RnWinRTPathCommand)" />
-        <ItemGroup>
-            <ClCompile Include="$(GeneratedFilesDir)\rnwinrt\*.g.cpp" />
-            <ClCompile Include="$(RnWinRTPath)module\dllmain.cpp" />
-            <ClCompile Include="$(RnWinRTPath)module\WinRTTurboModule.cpp" />
-        </ItemGroup>
     </Target>
 
     <!-- Fast ABI component support -->

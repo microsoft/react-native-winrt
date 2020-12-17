@@ -21,7 +21,7 @@
     <file src="$reactnative_files$\dllmain.cpp" target="rnwinrt\module" />
     <file src="$reactnative_files$\WinRTTurboModule.cpp" target="rnwinrt\module" />
     <file src="$reactnative_files$\WinRTTurboModule.def" target="rnwinrt\module" />
-    <file src="$reactnative_files$\WinRTTurboModule.targets" target="rnwinrt\module" />
+    <file src="$reactnative_files$\WinRTTurboModule.targets" target="build" />
     <file src="$reactnative_files$\WinRTTurboModule.props" target="build" />
   </files>
 </package>

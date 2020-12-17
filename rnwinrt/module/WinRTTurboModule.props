@@ -13,18 +13,23 @@ Copyright (C) Microsoft Corporation. All rights reserved.
       <ModuleDefinitionFile>$(RnWinRTPath)module\WinRTTurboModule.def</ModuleDefinitionFile>
     </Link>
   </ItemDefinitionGroup>
-  <ItemGroup>
+  <ItemDefinitionGroup>
     <ClCompile>
       <AdditionalIncludeDirectories>
         $(RnWinRTPath)module;
       </AdditionalIncludeDirectories>
     </ClCompile>
-  </ItemGroup>
+  </ItemDefinitionGroup>
   <ItemGroup>
     <ClInclude Include="$(RnWinRTPath)module\*.h" />
   </ItemGroup>
   <ItemGroup>
     <None Include="$(RnWinRTPath)module\WinRTTurboModule.def" />
     <None Include="$(RnWinRTPath)module\WinRTTurboModule.targets" />
+  </ItemGroup>
+  <ItemGroup>
+    <ClCompile Include="$(GeneratedFilesDir)\rnwinrt\*.g.cpp" />
+    <ClCompile Include="$(RnWinRTPath)module\dllmain.cpp" />
+    <ClCompile Include="$(RnWinRTPath)module\WinRTTurboModule.cpp" />
   </ItemGroup>
 </Project>
