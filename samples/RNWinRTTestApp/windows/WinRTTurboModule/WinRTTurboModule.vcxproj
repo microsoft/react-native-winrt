@@ -131,7 +131,7 @@
     </PropertyGroup>
     <Error Condition="!Exists('..\packages\Microsoft.Windows.CppWinRT.2.0.200615.7\build\native\Microsoft.Windows.CppWinRT.props')" Text="$([System.String]::Format('$(ErrorText)', '..\packages\Microsoft.Windows.CppWinRT.2.0.200615.7\build\native\Microsoft.Windows.CppWinRT.props'))" />
     <Error Condition="!Exists('..\packages\Microsoft.Windows.ImplementationLibrary.1.0.191107.2\build\native\Microsoft.Windows.ImplementationLibrary.targets')" Text="$([System.String]::Format('$(ErrorText)', '..\packages\Microsoft.Windows.ImplementationLibrary.1.0.191107.2\build\native\Microsoft.Windows.ImplementationLibrary.targets'))" />
-    <Error Condition="!Exists('..\packages\Microsoft.Windows.JsWinRT.20201216.1.0\rnwinrt\module\WinRTTurboModule.targets')" Text="$([System.String]::Format('$(ErrorText)', '..\packages\Microsoft.Windows.JsWinRT.20201216.1.0\rnwinrt\module\WinRTTurboModule.targets'))" />
+    <Error Condition="!Exists('..\packages\Microsoft.Windows.JsWinRT.20201217.1.0\build\WinRTTurboModule.targets')" Text="$([System.String]::Format('$(ErrorText)', '..\packages\Microsoft.Windows.JsWinRT.20201217.1.0\build\WinRTTurboModule.targets'))" />
   </Target>
   <!-- TODO: TurboModuleManager has no extensibility mechanism yet, so we have to manually inject the call to add the WinRTTurboModule.
              Until a better solution exists replacing the file is the simplest option (though editing it with a script would be safer). -->
