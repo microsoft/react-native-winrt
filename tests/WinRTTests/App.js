@@ -226,6 +226,17 @@ class App extends Component {
         // new TestScenario('Test::StaticRefEventHandler', this.runStaticRefEventHandler.bind(this)),
         // new TestScenario('Test::StaticObjectEventHandler', this.runStaticObjectEventHandler.bind(this)),
 
+        // Static Delegates
+        new TestScenario('Test::StaticBoolDelegate', this.runStaticBoolDelegate.bind(this)),
+        new TestScenario('Test::StaticCharDelegate', this.runStaticCharDelegate.bind(this)),
+        new TestScenario('Test::StaticNumericDelegate', this.runStaticNumericDelegate.bind(this)),
+        new TestScenario('Test::StaticStringDelegate', this.runStaticStringDelegate.bind(this)),
+        new TestScenario('Test::StaticGuidDelegate', this.runStaticGuidDelegate.bind(this)),
+        new TestScenario('Test::StaticEnumDelegate', this.runStaticEnumDelegate.bind(this)),
+        new TestScenario('Test::StaticCompositeStructDelegate', this.runStaticCompositeStructDelegate.bind(this)),
+        new TestScenario('Test::StaticRefDelegate', this.runStaticRefDelegate.bind(this)),
+        new TestScenario('Test::StaticObjectDelegate', this.runStaticObjectDelegate.bind(this)),
+
         // Non-static properties
         new TestScenario('Test::BoolProperty', this.runBoolProperty.bind(this)),
         new TestScenario('Test::CharProperty', this.runCharProperty.bind(this)),
@@ -312,6 +323,17 @@ class App extends Component {
         new TestScenario('Test::CompositeStructEventHandler', this.runCompositeStructEventHandler.bind(this)),
         new TestScenario('Test::RefEventHandler', this.runRefEventHandler.bind(this)),
         new TestScenario('Test::ObjectEventHandler', this.runObjectEventHandler.bind(this)),
+
+        // Non-static Delegates
+        new TestScenario('Test::BoolDelegate', this.runBoolDelegate.bind(this)),
+        new TestScenario('Test::CharDelegate', this.runCharDelegate.bind(this)),
+        new TestScenario('Test::NumericDelegate', this.runNumericDelegate.bind(this)),
+        new TestScenario('Test::StringDelegate', this.runStringDelegate.bind(this)),
+        new TestScenario('Test::GuidDelegate', this.runGuidDelegate.bind(this)),
+        new TestScenario('Test::EnumDelegate', this.runEnumDelegate.bind(this)),
+        new TestScenario('Test::CompositeStructDelegate', this.runCompositeStructDelegate.bind(this)),
+        new TestScenario('Test::RefDelegate', this.runRefDelegate.bind(this)),
+        new TestScenario('Test::ObjectDelegate', this.runObjectDelegate.bind(this)),
     ];
 
     runSync(scenario, fn) {
@@ -1011,6 +1033,65 @@ class App extends Component {
     runStaticObjectEventHandler(scenario) {
         var vals = [TestComponent.Test.makeNumericVector([]), TestComponent.Test.makeNumericVector([0]), TestComponent.Test.makeNumericVector([0, 1, 2, 3, 4])];
         this.testStaticEventHandler(scenario, vals, 'staticobjecteventhandler', (arg) => TestComponent.Test.raiseStaticObjectEvent(arg));
+    }
+
+    // Static delegates
+    runDelegateTest(scenario, values, invoke) {
+        this.runSync(scenario, () => {
+            for (var val of values) {
+                assertEqual(val, invoke(val, (value) => value));
+            }
+
+            var threw = false;
+            try {
+                // TODO: Exception message not preserved through propagation; should it?
+                invoke(values[0], (value) => { throw new Error() });
+            } catch (e) {
+                threw = true;
+            }
+            assert(threw);
+        });
+    }
+
+    runStaticBoolDelegate(scenario) {
+        this.runDelegateTest(scenario, this.boolTestValues, (val, fn) => TestComponent.Test.staticInvokeBoolDelegate(val, fn));
+    }
+
+    runStaticCharDelegate(scenario) {
+        this.runDelegateTest(scenario, this.charTestValues, (val, fn) => TestComponent.Test.staticInvokeCharDelegate(val, fn));
+    }
+
+    runStaticNumericDelegate(scenario) {
+        this.runDelegateTest(scenario, this.s32TestValues, (val, fn) => TestComponent.Test.staticInvokeNumericDelegate(val, fn));
+    }
+
+    runStaticStringDelegate(scenario) {
+        this.runDelegateTest(scenario, this.stringTestValues, (val, fn) => TestComponent.Test.staticInvokeStringDelegate(val, fn));
+    }
+
+    runStaticGuidDelegate(scenario) {
+        this.runDelegateTest(scenario, this.guidTestValues, (val, fn) => TestComponent.Test.staticInvokeGuidDelegate(val, fn));
+    }
+
+    runStaticEnumDelegate(scenario) {
+        this.runDelegateTest(scenario, this.enumTestValues, (val, fn) => TestComponent.Test.staticInvokeEnumDelegate(val, fn));
+    }
+
+    runStaticCompositeStructDelegate(scenario) {
+        this.runDelegateTest(scenario, this.compositeTestValues, (val, fn) => TestComponent.Test.staticInvokeCompositeStructDelegate(val, fn));
+    }
+
+    runStaticRefDelegate(scenario) {
+        this.runDelegateTest(scenario, this.s32TestValues, (val, fn) => TestComponent.Test.staticInvokeRefDelegate(val, fn));
+    }
+
+    runStaticObjectDelegate(scenario) {
+        var values = [];
+        for (var val of this.numericArrayTestValues) {
+            values.push(TestComponent.Test.makeNumericVector(val));
+        }
+
+        this.runDelegateTest(scenario, values, (val, fn) => TestComponent.Test.staticInvokeObjectDelegate(val, fn));
     }
 
     // Non-static properties
@@ -1733,6 +1814,48 @@ class App extends Component {
     runObjectEventHandler(scenario) {
         var vals = [TestComponent.Test.makeNumericVector([]), TestComponent.Test.makeNumericVector([0]), TestComponent.Test.makeNumericVector([0, 1, 2, 3, 4])];
         this.testEventHandler(scenario, vals, 'objecteventhandler', (arg) => this.test.raiseObjectEvent(arg));
+    }
+
+    // Non-static delegates
+    runBoolDelegate(scenario) {
+        this.runDelegateTest(scenario, this.boolTestValues, (val, fn) => this.test.invokeBoolDelegate(val, fn));
+    }
+
+    runCharDelegate(scenario) {
+        this.runDelegateTest(scenario, this.charTestValues, (val, fn) => this.test.invokeCharDelegate(val, fn));
+    }
+
+    runNumericDelegate(scenario) {
+        this.runDelegateTest(scenario, this.s32TestValues, (val, fn) => this.test.invokeNumericDelegate(val, fn));
+    }
+
+    runStringDelegate(scenario) {
+        this.runDelegateTest(scenario, this.stringTestValues, (val, fn) => this.test.invokeStringDelegate(val, fn));
+    }
+
+    runGuidDelegate(scenario) {
+        this.runDelegateTest(scenario, this.guidTestValues, (val, fn) => this.test.invokeGuidDelegate(val, fn));
+    }
+
+    runEnumDelegate(scenario) {
+        this.runDelegateTest(scenario, this.enumTestValues, (val, fn) => this.test.invokeEnumDelegate(val, fn));
+    }
+
+    runCompositeStructDelegate(scenario) {
+        this.runDelegateTest(scenario, this.compositeTestValues, (val, fn) => this.test.invokeCompositeStructDelegate(val, fn));
+    }
+
+    runRefDelegate(scenario) {
+        this.runDelegateTest(scenario, this.s32TestValues, (val, fn) => this.test.invokeRefDelegate(val, fn));
+    }
+
+    runObjectDelegate(scenario) {
+        var values = [];
+        for (var val of this.numericArrayTestValues) {
+            values.push(TestComponent.Test.makeNumericVector(val));
+        }
+
+        this.runDelegateTest(scenario, values, (val, fn) => this.test.invokeObjectDelegate(val, fn));
     }
 
     inProgress() {

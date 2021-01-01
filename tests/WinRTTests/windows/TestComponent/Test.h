@@ -92,6 +92,19 @@ namespace winrt::TestComponent::implementation
         static void RaiseStaticRefEvent(Windows::Foundation::IReference<int32_t> const& value);
         static void RaiseStaticObjectEvent(Windows::Foundation::Collections::IVector<int32_t> const& value);
 
+        static bool StaticInvokeBoolDelegate(bool inputValue, BoolDelegate const& targetFn);
+        static char16_t StaticInvokeCharDelegate(char16_t inputValue, CharDelegate const& targetFn);
+        static int32_t StaticInvokeNumericDelegate(int32_t inputValue, NumericDelegate const& targetFn);
+        static hstring StaticInvokeStringDelegate(hstring const& inputValue, StringDelegate const& targetFn);
+        static winrt::guid StaticInvokeGuidDelegate(winrt::guid const& inputValue, GuidDelegate const& targetFn);
+        static TestEnum StaticInvokeEnumDelegate(TestEnum const& inputValue, EnumDelegate const& targetFn);
+        static CompositeType StaticInvokeCompositeStructDelegate(
+            CompositeType const& inputValue, CompositeStructDelegate const& targetFn);
+        static Windows::Foundation::IReference<int32_t> StaticInvokeRefDelegate(
+            Windows::Foundation::IReference<int32_t> const& inputValue, RefDelegate const& targetFn);
+        static Windows::Foundation::Collections::IVector<int32_t> StaticInvokeObjectDelegate(
+            Windows::Foundation::Collections::IVector<int32_t> const& inputValue, ObjectDelegate const& targetFn);
+
         static Windows::Foundation::Collections::IVector<int32_t> MakeNumericVector(array_view<int32_t const> values);
 
         bool BoolProperty();
@@ -237,6 +250,19 @@ namespace winrt::TestComponent::implementation
         void RaiseCompositeStructEvent(CompositeType const& value);
         void RaiseRefEvent(Windows::Foundation::IReference<int32_t> const& value);
         void RaiseObjectEvent(Windows::Foundation::Collections::IVector<int32_t> const& value);
+
+        bool InvokeBoolDelegate(bool inputValue, BoolDelegate const& targetFn);
+        char16_t InvokeCharDelegate(char16_t inputValue, CharDelegate const& targetFn);
+        int32_t InvokeNumericDelegate(int32_t inputValue, NumericDelegate const& targetFn);
+        hstring InvokeStringDelegate(hstring const& inputValue, StringDelegate const& targetFn);
+        winrt::guid InvokeGuidDelegate(winrt::guid const& inputValue, GuidDelegate const& targetFn);
+        TestEnum InvokeEnumDelegate(TestEnum const& inputValue, EnumDelegate const& targetFn);
+        CompositeType InvokeCompositeStructDelegate(
+            CompositeType const& inputValue, CompositeStructDelegate const& targetFn);
+        Windows::Foundation::IReference<int32_t> InvokeRefDelegate(
+            Windows::Foundation::IReference<int32_t> const& inputValue, RefDelegate const& targetFn);
+        Windows::Foundation::Collections::IVector<int32_t> InvokeObjectDelegate(
+            Windows::Foundation::Collections::IVector<int32_t> const& inputValue, ObjectDelegate const& targetFn);
 
     private:
         // Static properties

@@ -481,6 +481,51 @@ namespace winrt::TestComponent::implementation
         s_objectEventSource(nullptr, value);
     }
 
+    bool Test::StaticInvokeBoolDelegate(bool inputValue, BoolDelegate const& targetFn)
+    {
+        return targetFn(inputValue);
+    }
+
+    char16_t Test::StaticInvokeCharDelegate(char16_t inputValue, CharDelegate const& targetFn)
+    {
+        return targetFn(inputValue);
+    }
+
+    int32_t Test::StaticInvokeNumericDelegate(int32_t inputValue, NumericDelegate const& targetFn)
+    {
+        return targetFn(inputValue);
+    }
+
+    hstring Test::StaticInvokeStringDelegate(hstring const& inputValue, StringDelegate const& targetFn)
+    {
+        return targetFn(inputValue);
+    }
+
+    winrt::guid Test::StaticInvokeGuidDelegate(winrt::guid const& inputValue, GuidDelegate const& targetFn)
+    {
+        return targetFn(inputValue);
+    }
+
+    TestEnum Test::StaticInvokeEnumDelegate(TestEnum const& inputValue, EnumDelegate const& targetFn)
+    {
+        return targetFn(inputValue);
+    }
+
+    CompositeType Test::StaticInvokeCompositeStructDelegate(CompositeType const& inputValue, CompositeStructDelegate const& targetFn)
+    {
+        return targetFn(inputValue);
+    }
+
+    Windows::Foundation::IReference<int32_t> Test::StaticInvokeRefDelegate(Windows::Foundation::IReference<int32_t> const& inputValue, RefDelegate const& targetFn)
+    {
+        return targetFn(inputValue);
+    }
+
+    Windows::Foundation::Collections::IVector<int32_t> Test::StaticInvokeObjectDelegate(Windows::Foundation::Collections::IVector<int32_t> const& inputValue, ObjectDelegate const& targetFn)
+    {
+        return targetFn(inputValue);
+    }
+
     Windows::Foundation::Collections::IVector<int32_t> Test::MakeNumericVector(array_view<int32_t const> values)
     {
         return single_threaded_vector(std::vector<int32_t>(values.begin(), values.end()));
@@ -1206,5 +1251,50 @@ namespace winrt::TestComponent::implementation
     void Test::RaiseObjectEvent(Windows::Foundation::Collections::IVector<int32_t> const& value)
     {
         m_objectEventSource(*this, value);
+    }
+
+    bool Test::InvokeBoolDelegate(bool inputValue, BoolDelegate const& targetFn)
+    {
+        return targetFn(inputValue);
+    }
+
+    char16_t Test::InvokeCharDelegate(char16_t inputValue, CharDelegate const& targetFn)
+    {
+        return targetFn(inputValue);
+    }
+
+    int32_t Test::InvokeNumericDelegate(int32_t inputValue, NumericDelegate const& targetFn)
+    {
+        return targetFn(inputValue);
+    }
+
+    hstring Test::InvokeStringDelegate(hstring const& inputValue, StringDelegate const& targetFn)
+    {
+        return targetFn(inputValue);
+    }
+
+    winrt::guid Test::InvokeGuidDelegate(winrt::guid const& inputValue, GuidDelegate const& targetFn)
+    {
+        return targetFn(inputValue);
+    }
+
+    TestEnum Test::InvokeEnumDelegate(TestEnum const& inputValue, EnumDelegate const& targetFn)
+    {
+        return targetFn(inputValue);
+    }
+
+    CompositeType Test::InvokeCompositeStructDelegate(CompositeType const& inputValue, CompositeStructDelegate const& targetFn)
+    {
+        return targetFn(inputValue);
+    }
+
+    Windows::Foundation::IReference<int32_t> Test::InvokeRefDelegate(Windows::Foundation::IReference<int32_t> const& inputValue, RefDelegate const& targetFn)
+    {
+        return targetFn(inputValue);
+    }
+
+    Windows::Foundation::Collections::IVector<int32_t> Test::InvokeObjectDelegate(Windows::Foundation::Collections::IVector<int32_t> const& inputValue, ObjectDelegate const& targetFn)
+    {
+        return targetFn(inputValue);
     }
 }

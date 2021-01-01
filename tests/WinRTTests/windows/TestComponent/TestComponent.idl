@@ -59,6 +59,17 @@ namespace TestComponent
         BooleanTypes bools;
     };
 
+    // TODO: Error if argument is named 'value' & has a return value
+    delegate Boolean BoolDelegate(Boolean inputValue);
+    delegate Char CharDelegate(Char inputValue);
+    delegate Int32 NumericDelegate(Int32 inputValue);
+    delegate String StringDelegate(String inputValue);
+    delegate Guid GuidDelegate(Guid inputValue);
+    delegate TestEnum EnumDelegate(TestEnum inputValue);
+    delegate CompositeType CompositeStructDelegate(CompositeType inputValue);
+    delegate Windows.Foundation.IReference<Int32> RefDelegate(Windows.Foundation.IReference<Int32> inputValue);
+    delegate Windows.Foundation.Collections.IVector<Int32> ObjectDelegate(Windows.Foundation.Collections.IVector<Int32> inputValue);
+
     [contract(TestContract, 1)]
     runtimeclass Test
     {
@@ -143,7 +154,20 @@ namespace TestComponent
         static void RaiseStaticRefEvent(Windows.Foundation.IReference<Int32> value);
         static void RaiseStaticObjectEvent(Windows.Foundation.Collections.IVector<Int32> value);
 
-        // NOTE: Conversion support should ideally be built in
+        // Static delegate invocation
+        static Boolean StaticInvokeBoolDelegate(Boolean inputValue, BoolDelegate targetFn);
+        static Char StaticInvokeCharDelegate(Char inputValue, CharDelegate targetFn);
+        static Int32 StaticInvokeNumericDelegate(Int32 inputValue, NumericDelegate targetFn);
+        static String StaticInvokeStringDelegate(String inputValue, StringDelegate targetFn);
+        static Guid StaticInvokeGuidDelegate(Guid inputValue, GuidDelegate targetFn);
+        static TestEnum StaticInvokeEnumDelegate(TestEnum inputValue, EnumDelegate targetFn);
+        static CompositeType StaticInvokeCompositeStructDelegate(CompositeType inputValue, CompositeStructDelegate targetFn);
+        static Windows.Foundation.IReference<Int32> StaticInvokeRefDelegate(Windows.Foundation.IReference<Int32> inputValue, RefDelegate targetFn);
+        static Windows.Foundation.Collections.IVector<Int32> StaticInvokeObjectDelegate(
+            Windows.Foundation.Collections.IVector<Int32> inputValue,
+            ObjectDelegate targetFn);
+
+        // NOTE: Just a helper. Conversion support should ideally be built in
         static Windows.Foundation.Collections.IVector<Int32> MakeNumericVector(Int32[] values);
 
         // Member properties
@@ -253,6 +277,19 @@ namespace TestComponent
         void RaiseCompositeStructEvent(CompositeType value);
         void RaiseRefEvent(Windows.Foundation.IReference<Int32> value);
         void RaiseObjectEvent(Windows.Foundation.Collections.IVector<Int32> value);
+
+        // Member delegate invocation
+        Boolean InvokeBoolDelegate(Boolean inputValue, BoolDelegate targetFn);
+        Char InvokeCharDelegate(Char inputValue, CharDelegate targetFn);
+        Int32 InvokeNumericDelegate(Int32 inputValue, NumericDelegate targetFn);
+        String InvokeStringDelegate(String inputValue, StringDelegate targetFn);
+        Guid InvokeGuidDelegate(Guid inputValue, GuidDelegate targetFn);
+        TestEnum InvokeEnumDelegate(TestEnum inputValue, EnumDelegate targetFn);
+        CompositeType InvokeCompositeStructDelegate(CompositeType inputValue, CompositeStructDelegate targetFn);
+        Windows.Foundation.IReference<Int32> InvokeRefDelegate(Windows.Foundation.IReference<Int32> inputValue, RefDelegate targetFn);
+        Windows.Foundation.Collections.IVector<Int32> InvokeObjectDelegate(
+            Windows.Foundation.Collections.IVector<Int32> inputValue,
+            ObjectDelegate targetFn);
     }
 
 
