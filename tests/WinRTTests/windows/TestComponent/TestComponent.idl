@@ -59,7 +59,8 @@ namespace TestComponent
         BooleanTypes bools;
     };
 
-    // TODO: Error if argument is named 'value' & has a return value
+    // Delegates
+    // TODO: Error if argument is named 'value' & has a return value - https://github.com/microsoft/jswinrt/issues/15
     delegate Boolean BoolDelegate(Boolean inputValue);
     delegate Char CharDelegate(Char inputValue);
     delegate Int32 NumericDelegate(Int32 inputValue);
@@ -69,6 +70,17 @@ namespace TestComponent
     delegate CompositeType CompositeStructDelegate(CompositeType inputValue);
     delegate Windows.Foundation.IReference<Int32> RefDelegate(Windows.Foundation.IReference<Int32> inputValue);
     delegate Windows.Foundation.Collections.IVector<Int32> ObjectDelegate(Windows.Foundation.Collections.IVector<Int32> inputValue);
+
+    // Delegates with out params
+    delegate void BoolDelegateWithOutParam(Boolean inputValue, out Boolean outValue);
+    delegate void CharDelegateWithOutParam(Char inputValue, out Char outValue);
+    delegate void NumericDelegateWithOutParam(Int32 inputValue, out Int32 outValue);
+    delegate void StringDelegateWithOutParam(String inputValue, out String outValue);
+    delegate void GuidDelegateWithOutParam(Guid inputValue, out Guid outValue);
+    delegate void EnumDelegateWithOutParam(TestEnum inputValue, out TestEnum outValue);
+    delegate void CompositeStructDelegateWithOutParam(CompositeType inputValue, out CompositeType outValue);
+    delegate void RefDelegateWithOutParam(Windows.Foundation.IReference<Int32> inputValue, out Windows.Foundation.IReference<Int32> outValue);
+    delegate void ObjectDelegateWithOutParam(Windows.Foundation.Collections.IVector<Int32> inputValue, out Windows.Foundation.Collections.IVector<Int32> outValue);
 
     [contract(TestContract, 1)]
     runtimeclass Test
@@ -166,6 +178,22 @@ namespace TestComponent
         static Windows.Foundation.Collections.IVector<Int32> StaticInvokeObjectDelegate(
             Windows.Foundation.Collections.IVector<Int32> inputValue,
             ObjectDelegate targetFn);
+
+        /* TODO: Delegates with out params currently cause compilation errors - https://github.com/microsoft/jswinrt/issues/16
+        static Boolean StaticInvokeBoolDelegateWithOutParam(Boolean inputValue, BoolDelegateWithOutParam targetFn);
+        static Char StaticInvokeCharDelegateWithOutParam(Char inputValue, CharDelegateWithOutParam targetFn);
+        static Int32 StaticInvokeNumericDelegateWithOutParam(Int32 inputValue, NumericDelegateWithOutParam targetFn);
+        static String StaticInvokeStringDelegateWithOutParam(String inputValue, StringDelegateWithOutParam targetFn);
+        static Guid StaticInvokeGuidDelegateWithOutParam(Guid inputValue, GuidDelegateWithOutParam targetFn);
+        static TestEnum StaticInvokeEnumDelegateWithOutParam(TestEnum inputValue, EnumDelegateWithOutParam targetFn);
+        static CompositeType StaticInvokeCompositeStructDelegateWithOutParam(CompositeType inputValue, CompositeStructDelegateWithOutParam targetFn);
+        static Windows.Foundation.IReference<Int32> StaticInvokeRefDelegateWithOutParam(
+            Windows.Foundation.IReference<Int32> inputValue,
+            RefDelegateWithOutParam targetFn);
+        static Windows.Foundation.Collections.IVector<Int32> StaticInvokeObjectDelegateWithOutParam(
+            Windows.Foundation.Collections.IVector<Int32> inputValue,
+            ObjectDelegateWithOutParam targetFn);
+        */
 
         // NOTE: Just a helper. Conversion support should ideally be built in
         static Windows.Foundation.Collections.IVector<Int32> MakeNumericVector(Int32[] values);

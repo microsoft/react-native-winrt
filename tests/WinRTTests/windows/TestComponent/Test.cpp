@@ -526,6 +526,79 @@ namespace winrt::TestComponent::implementation
         return targetFn(inputValue);
     }
 
+    /* TODO: Delegates with out params currently cause compilation errors
+    bool Test::StaticInvokeBoolDelegateWithOutParam(bool inputValue, BoolDelegateWithOutParam const& targetFn)
+    {
+        bool result = false;
+        targetFn(inputValue, result);
+        return result;
+    }
+
+    char16_t Test::StaticInvokeCharDelegateWithOutParam(char16_t inputValue, CharDelegateWithOutParam const& targetFn)
+    {
+        char16_t result = 0;
+        targetFn(inputValue, result);
+        return result;
+    }
+
+    int32_t Test::StaticInvokeNumericDelegateWithOutParam(
+        int32_t inputValue, NumericDelegateWithOutParam const& targetFn)
+    {
+        int32_t result = 0;
+        targetFn(inputValue, result);
+        return result;
+    }
+
+    hstring Test::StaticInvokeStringDelegateWithOutParam(
+        hstring const& inputValue, StringDelegateWithOutParam const& targetFn)
+    {
+        hstring result;
+        targetFn(inputValue, result);
+        return result;
+    }
+
+    winrt::guid Test::StaticInvokeGuidDelegateWithOutParam(
+        winrt::guid const& inputValue, GuidDelegateWithOutParam const& targetFn)
+    {
+        winrt::guid result;
+        targetFn(inputValue, result);
+        return result;
+    }
+
+    TestEnum Test::StaticInvokeEnumDelegateWithOutParam(
+        TestEnum const& inputValue, EnumDelegateWithOutParam const& targetFn)
+    {
+        TestEnum result = {};
+        targetFn(inputValue, result);
+        return result;
+    }
+
+    CompositeType Test::StaticInvokeCompositeStructDelegateWithOutParam(
+        CompositeType const& inputValue, CompositeStructDelegateWithOutParam const& targetFn)
+    {
+        CompositeType result = {};
+        targetFn(inputValue, result);
+        return result;
+    }
+
+    Windows::Foundation::IReference<int32_t> Test::StaticInvokeRefDelegateWithOutParam(
+        Windows::Foundation::IReference<int32_t> const& inputValue, RefDelegateWithOutParam const& targetFn)
+    {
+        Windows::Foundation::IReference<int32_t> result;
+        targetFn(inputValue, result);
+        return result;
+    }
+
+    Windows::Foundation::Collections::IVector<int32_t> Test::StaticInvokeObjectDelegateWithOutParam(
+        Windows::Foundation::Collections::IVector<int32_t> const& inputValue,
+        ObjectDelegateWithOutParam const& targetFn)
+    {
+        Windows::Foundation::Collections::IVector<int32_t> result;
+        targetFn(inputValue, result);
+        return result;
+    }
+    */
+
     Windows::Foundation::Collections::IVector<int32_t> Test::MakeNumericVector(array_view<int32_t const> values)
     {
         return single_threaded_vector(std::vector<int32_t>(values.begin(), values.end()));

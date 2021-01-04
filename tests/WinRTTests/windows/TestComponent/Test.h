@@ -105,6 +105,27 @@ namespace winrt::TestComponent::implementation
         static Windows::Foundation::Collections::IVector<int32_t> StaticInvokeObjectDelegate(
             Windows::Foundation::Collections::IVector<int32_t> const& inputValue, ObjectDelegate const& targetFn);
 
+        /* TODO: Delegates with out params currently cause compilation errors
+        static bool StaticInvokeBoolDelegateWithOutParam(bool inputValue, BoolDelegateWithOutParam const& targetFn);
+        static char16_t StaticInvokeCharDelegateWithOutParam(
+            char16_t inputValue, CharDelegateWithOutParam const& targetFn);
+        static int32_t StaticInvokeNumericDelegateWithOutParam(
+            int32_t inputValue, NumericDelegateWithOutParam const& targetFn);
+        static hstring StaticInvokeStringDelegateWithOutParam(
+            hstring const& inputValue, StringDelegateWithOutParam const& targetFn);
+        static winrt::guid StaticInvokeGuidDelegateWithOutParam(
+            winrt::guid const& inputValue, GuidDelegateWithOutParam const& targetFn);
+        static TestEnum StaticInvokeEnumDelegateWithOutParam(
+            TestEnum const& inputValue, EnumDelegateWithOutParam const& targetFn);
+        static CompositeType StaticInvokeCompositeStructDelegateWithOutParam(
+            CompositeType const& inputValue, CompositeStructDelegateWithOutParam const& targetFn);
+        static Windows::Foundation::IReference<int32_t> StaticInvokeRefDelegateWithOutParam(
+            Windows::Foundation::IReference<int32_t> const& inputValue, RefDelegateWithOutParam const& targetFn);
+        static Windows::Foundation::Collections::IVector<int32_t> StaticInvokeObjectDelegateWithOutParam(
+            Windows::Foundation::Collections::IVector<int32_t> const& inputValue,
+            ObjectDelegateWithOutParam const& targetFn);
+        */
+
         static Windows::Foundation::Collections::IVector<int32_t> MakeNumericVector(array_view<int32_t const> values);
 
         bool BoolProperty();
