@@ -42,6 +42,10 @@ Copyright (C) Microsoft Corporation. All rights reserved.
         <CleanDependsOn>
             $(CleanDependsOn);CppWinRTClean
         </CleanDependsOn>
+        <BuildDependsOn>
+            RnWinRTAddGeneratedCppFiles;
+            $(BuildDependsOn)
+        </BuildDependsOn>
     </PropertyGroup>
 
     <ItemDefinitionGroup>
@@ -188,6 +192,21 @@ Copyright (C) Microsoft Corporation. All rights reserved.
         </PropertyGroup>
         <Message Text="$(RnWinRTPathCommand)" Importance="$(RnWinRTVerbosity)" />
         <Exec Command="$(RnWinRTPathCommand)" />
+    </Target>
+
+    <!-- Generated files cannot be referenced for compile using $(GeneratedFilesDir)\rnwinrt\*.g.cpp because the list would not be
+         reevaluated after code generation. This would cause clean builds to fail and incremental builds to use a potentially stale list. -->
+    <Target Name="RnWinRTAddGeneratedCppFiles"
+            DependsOnTargets="RnWinRTMakeProjections">
+        <ItemGroup>
+            <_FilesToBuild Remove="@(_FilesToBuild)"/>
+            <_FilesToBuild Include="$(GeneratedFilesDir)rnwinrt\*.g.cpp"/>
+        </ItemGroup>
+        <ItemGroup>
+            <ClCompile Include="@(_FilesToBuild)" />
+            <FileWrites Include="@(_FilesToBuild)" />
+        </ItemGroup>
+        <Message Text="GeneratedCppFiles: @(_FilesToBuild)" Importance="$(RnWinRTVerbosity)" />
     </Target>
 
     <!-- Fast ABI component support -->
