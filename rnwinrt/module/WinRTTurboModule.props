@@ -30,8 +30,8 @@ Copyright (C) Microsoft Corporation. All rights reserved.
     <None Include="$(RnWinRTPath)module\WinRTTurboModule.targets" />
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="$(GeneratedFilesDir)\rnwinrt\*.g.cpp" />
     <ClCompile Include="$(RnWinRTPath)module\dllmain.cpp" />
     <ClCompile Include="$(RnWinRTPath)module\WinRTTurboModule.cpp" />
+    <!-- $(GeneratedFilesDir)\rnwinrt\*.g.cpp are added in RnWinRTAddGeneratedCppFiles -->
   </ItemGroup>
 </Project>
