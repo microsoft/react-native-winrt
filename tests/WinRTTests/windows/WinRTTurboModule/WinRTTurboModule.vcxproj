@@ -21,6 +21,7 @@
     <CppWinRTParameters>-base</CppWinRTParameters>
     <RnWinRTParameters>-include Windows.Foundation -include TestComponent</RnWinRTParameters>
     <RnWinRTPath>$(SolutionDir)x64\Release\</RnWinRTPath>
+    <RnWinRTExe>$(RnWinRTPath)rnwinrt.exe</RnWinRTExe>
     <RnWinRTVerbosity>high</RnWinRTVerbosity>
   </PropertyGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.Default.props" />
@@ -132,6 +133,7 @@
       <PrecompiledHeader>Create</PrecompiledHeader>
     </ClCompile>
     <ClCompile Include="$(ModuleImplementationDir)*.cpp" />
+    <ClCompile Include="$(GeneratedFilesDir)\rnwinrt\*.g.cpp" />
   </ItemGroup>
   <ItemGroup>
     <None Include="packages.config" />

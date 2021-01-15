@@ -5,7 +5,7 @@
 
 import React, { Component } from "react";
 import { Button, Text, View } from "react-native";
-import { TestResult } from "./App";
+import { TestResult } from "./TestCommon";
 import { styles } from './Styles'
 
 export class Scenario extends Component {
