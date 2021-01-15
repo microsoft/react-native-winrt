@@ -4,6 +4,7 @@
 
 import {
     TestScenario,
+    TestValues,
     assert
 } from './TestCommon'
 
@@ -76,80 +77,80 @@ function runSyncPropertyTest(scenario, type, vals, invalidVals, get, set) {
 
 // Static properties
 function runStaticBoolProperty(scenario) {
-    runSyncPropertyTest.call(this, scenario, 'boolean', this.boolTestValues, [], () => TestComponent.Test.staticBoolProperty, (val) => TestComponent.Test.staticBoolProperty = val);
+    runSyncPropertyTest.call(this, scenario, 'boolean', TestValues.bools.valid, TestValues.bools.invalid, [], () => TestComponent.Test.staticBoolProperty, (val) => TestComponent.Test.staticBoolProperty = val);
 }
 
 // Non-static properties
 function runBoolProperty(scenario) {
-    runSyncPropertyTest.call(this, scenario, 'boolean', this.boolTestValues, this.boolInvalidValues, () => this.test.boolProperty, (val) => this.test.boolProperty = val);
+    runSyncPropertyTest.call(this, scenario, 'boolean', TestValues.bools.valid, TestValues.bools.invalid, () => this.test.boolProperty, (val) => this.test.boolProperty = val);
 }
 
 function runCharProperty(scenario) {
-    runSyncPropertyTest.call(this, scenario, 'string', this.charTestValues, this.charInvalidValues, () => this.test.charProperty, (val) => this.test.charProperty = val);
+    runSyncPropertyTest.call(this, scenario, 'string', TestValues.chars.valid, TestValues.chars.invalid, () => this.test.charProperty, (val) => this.test.charProperty = val);
 }
 
 function runU8Property(scenario) {
-    runSyncPropertyTest.call(this, scenario, 'number', this.u8TestValues, this.u8InvalidValues, () => this.test.u8Property, (val) => this.test.u8Property = val);
+    runSyncPropertyTest.call(this, scenario, 'number', TestValues.u8.valid, TestValues.u8.invalid, () => this.test.u8Property, (val) => this.test.u8Property = val);
 }
 
 function runU16Property(scenario) {
-    runSyncPropertyTest.call(this, scenario, 'number', this.u16TestValues, this.u16InvalidValues, () => this.test.u16Property, (val) => this.test.u16Property = val);
+    runSyncPropertyTest.call(this, scenario, 'number', TestValues.u16.valid, TestValues.u16.invalid, () => this.test.u16Property, (val) => this.test.u16Property = val);
 }
 
 function runU32Property(scenario) {
-    runSyncPropertyTest.call(this, scenario, 'number', this.u32TestValues, this.u32InvalidValues, () => this.test.u32Property, (val) => this.test.u32Property = val);
+    runSyncPropertyTest.call(this, scenario, 'number', TestValues.u32.valid, TestValues.u32.invalid, () => this.test.u32Property, (val) => this.test.u32Property = val);
 }
 
 function runU64Property(scenario) {
-    runSyncPropertyTest.call(this, scenario, 'number', this.u64TestValues, this.u64InvalidValues, () => this.test.u64Property, (val) => this.test.u64Property = val);
+    runSyncPropertyTest.call(this, scenario, 'number', TestValues.u64.valid, TestValues.u64.invalid, () => this.test.u64Property, (val) => this.test.u64Property = val);
 }
 
 function runS16Property(scenario) {
-    runSyncPropertyTest.call(this, scenario, 'number', this.s16TestValues, this.s16InvalidValues, () => this.test.s16Property, (val) => this.test.s16Property = val);
+    runSyncPropertyTest.call(this, scenario, 'number', TestValues.s16.valid, TestValues.s16.invalid, () => this.test.s16Property, (val) => this.test.s16Property = val);
 }
 
 function runS32Property(scenario) {
-    runSyncPropertyTest.call(this, scenario, 'number', this.s32TestValues, this.s32InvalidValues, () => this.test.s32Property, (val) => this.test.s32Property = val);
+    runSyncPropertyTest.call(this, scenario, 'number', TestValues.s32.valid, TestValues.s32.invalid, () => this.test.s32Property, (val) => this.test.s32Property = val);
 }
 
 function runS64Property(scenario) {
-    runSyncPropertyTest.call(this, scenario, 'number', this.s64TestValues, this.s64InvalidValues, () => this.test.s64Property, (val) => this.test.s64Property = val);
+    runSyncPropertyTest.call(this, scenario, 'number', TestValues.s64.valid, TestValues.s64.invalid, () => this.test.s64Property, (val) => this.test.s64Property = val);
 }
 
 function runF32Property(scenario) {
-    runSyncPropertyTest.call(this, scenario, 'number', this.f32TestValues, this.f32InvalidValues, () => this.test.f32Property, (val) => this.test.f32Property = val);
+    runSyncPropertyTest.call(this, scenario, 'number', TestValues.f32.valid, TestValues.f32.invalid, () => this.test.f32Property, (val) => this.test.f32Property = val);
 }
 
 function runF64Property(scenario) {
-    runSyncPropertyTest.call(this, scenario, 'number', this.f64TestValues, [], () => this.test.f64Property, (val) => this.test.f64Property = val);
+    runSyncPropertyTest.call(this, scenario, 'number', TestValues.f64.valid, [], () => this.test.f64Property, (val) => this.test.f64Property = val);
 }
 
 function runStringProperty(scenario) {
-    runSyncPropertyTest.call(this, scenario, 'string', this.stringTestValues, [], () => this.test.stringProperty, (val) => this.test.stringProperty = val);
+    runSyncPropertyTest.call(this, scenario, 'string', TestValues.strings.valid, [], () => this.test.stringProperty, (val) => this.test.stringProperty = val);
 }
 
 function runGuidProperty(scenario) {
-    runSyncPropertyTest.call(this, scenario, 'string', this.guidTestValues, this.guidInvalidValues, () => this.test.guidProperty, (val) => this.test.guidProperty = val);
+    runSyncPropertyTest.call(this, scenario, 'string', TestValues.guids.valid, TestValues.guids.invalid, () => this.test.guidProperty, (val) => this.test.guidProperty = val);
 }
 
 function runEnumProperty(scenario) {
-    runSyncPropertyTest.call(this, scenario, 'number', this.enumTestValues, this.enumInvalidValues, () => this.test.enumProperty, (val) => this.test.enumProperty = val);
+    runSyncPropertyTest.call(this, scenario, 'number', TestValues.enums.valid, TestValues.enums.invalid, () => this.test.enumProperty, (val) => this.test.enumProperty = val);
 }
 
 function runNumericsStructProperty(scenario) {
-    runSyncPropertyTest.call(this, scenario, 'object', this.numericTypesTestValues, this.numericTypesInvalidValues, () => this.test.numericsStructProperty, (val) => this.test.numericsStructProperty = val);
+    runSyncPropertyTest.call(this, scenario, 'object', TestValues.numericTypes.valid, TestValues.numericTypes.invalid, () => this.test.numericsStructProperty, (val) => this.test.numericsStructProperty = val);
 }
 
 function runStringsStructProperty(scenario) {
-    runSyncPropertyTest.call(this, scenario, 'object', this.stringTypesTestValues, this.stringTypesInvalidValues, () => this.test.stringsStructProperty, (val) => this.test.stringsStructProperty = val);
+    runSyncPropertyTest.call(this, scenario, 'object', TestValues.stringTypes.valid, TestValues.stringTypes.invalid, () => this.test.stringsStructProperty, (val) => this.test.stringsStructProperty = val);
 }
 
 function runBooleansStructProperty(scenario) {
-    runSyncPropertyTest.call(this, scenario, 'object', this.boolTypesTestValues, this.boolTypesInvalidValues, () => this.test.booleansStructProperty, (val) => this.test.booleansStructProperty = val);
+    runSyncPropertyTest.call(this, scenario, 'object', TestValues.boolTypes.valid, TestValues.boolTypes.invalid, () => this.test.booleansStructProperty, (val) => this.test.booleansStructProperty = val);
 }
 
 function runCompositeStructProperty(scenario) {
-    runSyncPropertyTest.call(this, scenario, 'object', this.compositeTestValues, this.compositeInvalidValues, () => this.test.compositeStructProperty, (val) => this.test.compositeStructProperty = val);
+    runSyncPropertyTest.call(this, scenario, 'object', TestValues.composite.valid, TestValues.composite.invalid, () => this.test.compositeStructProperty, (val) => this.test.compositeStructProperty = val);
 }
 
 function runRefBooleanProperty(scenario) {
@@ -159,7 +160,7 @@ function runRefBooleanProperty(scenario) {
             assert.equal(typeof(initial), 'object'); // Should start as null, which is an object
             assert.equal(initial, null);
 
-            for (var val of this.boolTestValues) {
+            for (var val of TestValues.bools.valid) {
                 var assignedVal;
                 assignedVal = this.test.refBooleanProperty = val;
                 assert.equal(this.test.refBooleanProperty, val);
@@ -178,7 +179,7 @@ function runRefCharProperty(scenario) {
             assert.equal(typeof(initial), 'object'); // Should start as null, which is an object
             assert.equal(initial, null);
 
-            for (var val of this.charTestValues) {
+            for (var val of TestValues.chars.valid) {
                 var assignedVal;
                 assignedVal = this.test.refCharProperty = val;
                 assert.equal(this.test.refCharProperty, val);
@@ -197,7 +198,7 @@ function runRefNumericProperty(scenario) {
             assert.equal(typeof(initial), 'object'); // Should start as null, which is an object
             assert.equal(initial, null);
 
-            for (var val of this.s32TestValues) {
+            for (var val of TestValues.s32.valid) {
                 var assignedVal;
                 assignedVal = this.test.refNumericProperty = val;
                 assert.equal(this.test.refNumericProperty, val);
@@ -216,7 +217,7 @@ function runRefEnumProperty(scenario) {
             assert.equal(typeof(initial), 'object'); // Should start as null, which is an object
             assert.equal(initial, null);
 
-            for (var val of this.enumTestValues) {
+            for (var val of TestValues.enums.valid) {
                 var assignedVal;
                 assignedVal = this.test.refEnumProperty = val;
                 assert.equal(this.test.refEnumProperty, val);
@@ -235,7 +236,7 @@ function runObjectProperty(scenario) {
             assert.equal(typeof(prev), 'object'); // Should start as null, which is also an object
             assert.equal(prev, null);
 
-            for (var val of this.numericArrayTestValues) {
+            for (var val of TestValues.s32.validArrays) {
                 var vector = TestComponent.Test.makeNumericVector(val);
                 var assignedVal;
                 assignedVal = this.test.objectProperty = vector;
@@ -253,44 +254,44 @@ function runObjectProperty(scenario) {
 
 // Non-static array properties
 function runBooleanArrayProperty(scenario) {
-    runSyncPropertyTest.call(this, scenario, 'object', this.boolArrayTestValues, this.boolArrayInvalidValues, () => this.test.booleanArrayProperty, (val) => this.test.booleanArrayProperty = val);
+    runSyncPropertyTest.call(this, scenario, 'object', TestValues.bools.validArrays, TestValues.bools.invalidArrays, () => this.test.booleanArrayProperty, (val) => this.test.booleanArrayProperty = val);
 }
 
 function runCharArrayProperty(scenario) {
-    runSyncPropertyTest.call(this, scenario, 'object', this.charArrayTestValues, this.charArrayInvalidValues, () => this.test.charArrayProperty, (val) => this.test.charArrayProperty = val);
+    runSyncPropertyTest.call(this, scenario, 'object', TestValues.chars.validArrays, TestValues.chars.invalidArrays, () => this.test.charArrayProperty, (val) => this.test.charArrayProperty = val);
 }
 
 function runNumericArrayProperty(scenario) {
-    runSyncPropertyTest.call(this, scenario, 'object', this.numericArrayTestValues, this.numericArrayInvalidValues, () => this.test.numericArrayProperty, (val) => this.test.numericArrayProperty = val);
+    runSyncPropertyTest.call(this, scenario, 'object', TestValues.s32.validArrays, TestValues.s32.invalidArrays, () => this.test.numericArrayProperty, (val) => this.test.numericArrayProperty = val);
 }
 
 function runStringArrayProperty(scenario) {
-    runSyncPropertyTest.call(this, scenario, 'object', this.stringArrayTestValues, this.stringArrayInvalidValues, () => this.test.stringArrayProperty, (val) => this.test.stringArrayProperty = val);
+    runSyncPropertyTest.call(this, scenario, 'object', TestValues.strings.validArrays, TestValues.strings.invalidArrays, () => this.test.stringArrayProperty, (val) => this.test.stringArrayProperty = val);
 }
 
 function runGuidArrayProperty(scenario) {
-    runSyncPropertyTest.call(this, scenario, 'object', this.guidArrayTestValues, this.guidArrayInvalidValues, () => this.test.guidArrayProperty, (val) => this.test.guidArrayProperty = val);
+    runSyncPropertyTest.call(this, scenario, 'object', TestValues.guids.validArrays, TestValues.guids.invalidArrays, () => this.test.guidArrayProperty, (val) => this.test.guidArrayProperty = val);
 }
 
 function runEnumArrayProperty(scenario) {
-    runSyncPropertyTest.call(this, scenario, 'object', this.enumArrayTestValues, this.enumArrayInvalidValues, () => this.test.enumArrayProperty, (val) => this.test.enumArrayProperty = val);
+    runSyncPropertyTest.call(this, scenario, 'object', TestValues.enums.validArrays, TestValues.enums.invalidArrays, () => this.test.enumArrayProperty, (val) => this.test.enumArrayProperty = val);
 }
 
 function runCompositeStructArrayProperty(scenario) {
-    runSyncPropertyTest.call(this, scenario, 'object', this.compositeArrayTestValues, this.compositeArrayInvalidValues, () => this.test.compositeStructArrayProperty, (val) => this.test.compositeStructArrayProperty = val);
+    runSyncPropertyTest.call(this, scenario, 'object', TestValues.composite.validArrays, TestValues.composite.invalidArrays, () => this.test.compositeStructArrayProperty, (val) => this.test.compositeStructArrayProperty = val);
 }
 
 function runRefArrayPropertyArrayProperty(scenario) {
     runSyncPropertyTest.call(this, scenario, 'object',
-        [[], [42], [0, 1, 2, 3, 4, 5, 6, 7, 8, 9], this.s32TestValues],
-        [42, ['A'], [true], ['42'], this.s32InvalidValues],
+        [[], [42], [0, 1, 2, 3, 4, 5, 6, 7, 8, 9], TestValues.s32.valid],
+        [42, ['A'], [true], ['42'], TestValues.s32.invalid],
         () => this.test.refArrayProperty, (val) => this.test.refArrayProperty = val);
 }
 
 function runObjectArrayProperty(scenario) {
     this.runSync(scenario, () => {
         var array = [];
-        for (var val of this.numericArrayTestValues) {
+        for (var val of TestValues.s32.validArrays) {
             array.push(TestComponent.Test.makeNumericVector(val));
         }
 

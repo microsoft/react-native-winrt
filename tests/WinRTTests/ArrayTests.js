@@ -4,6 +4,7 @@
 
 import {
     TestScenario,
+    TestValues,
     assert,
     guidFromString,
     makeGuid
@@ -112,21 +113,21 @@ function runStaticStringArrayOutParam(scenario) {
 function runStaticGuidArrayOutParam(scenario) {
     this.runSync(scenario, () => {
         var fn = (val) => TestComponent.Test.staticGuidArrayOutParam(val);
-        validateArrayOutParam(this.guidTestValues, fn);
+        validateArrayOutParam(TestValues.guids.valid, fn);
     });
 }
 
 function runStaticEnumArrayOutParam(scenario) {
     this.runSync(scenario, () => {
         var fn = (val) => TestComponent.Test.staticEnumArrayOutParam(val);
-        validateArrayOutParam(this.enumTestValues, fn);
+        validateArrayOutParam(TestValues.enums.valid, fn);
     });
 }
 
 function runStaticCompositeStructArrayOutParam(scenario) {
     this.runSync(scenario, () => {
         var fn = (val) => TestComponent.Test.staticCompositeStructArrayOutParam(val);
-        validateArrayOutParam(this.compositeTestValues, fn);
+        validateArrayOutParam(TestValues.composite.valid, fn);
     });
 }
 
@@ -340,21 +341,21 @@ function runStringArrayOutParam(scenario) {
 function runGuidArrayOutParam(scenario) {
     this.runSync(scenario, () => {
         var fn = (val) => this.test.guidArrayOutParam(val);
-        validateArrayOutParam(this.guidTestValues, fn);
+        validateArrayOutParam(TestValues.guids.valid, fn);
     });
 }
 
 function runEnumArrayOutParam(scenario) {
     this.runSync(scenario, () => {
         var fn = (val) => this.test.enumArrayOutParam(val);
-        validateArrayOutParam(this.enumTestValues, fn);
+        validateArrayOutParam(TestValues.enums.valid, fn);
     });
 }
 
 function runCompositeStructArrayOutParam(scenario) {
     this.runSync(scenario, () => {
         var fn = (val) => this.test.compositeStructArrayOutParam(val);
-        validateArrayOutParam(this.compositeTestValues, fn);
+        validateArrayOutParam(TestValues.composite.valid, fn);
     });
 }
 

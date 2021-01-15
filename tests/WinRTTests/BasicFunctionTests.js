@@ -4,7 +4,10 @@
 
 import {
     TestScenario,
-    assert
+    TestValues,
+    assert,
+    allSetGuid,
+    zeroGuid
 } from './TestCommon'
 
 export function makeBasicFunctionTestScenarios(pThis) {
@@ -140,7 +143,7 @@ function runStaticCharOutParam(scenario) {
             assert.equal(returnValue, ch.toUpperCase());
         };
 
-        for (var val of this.charTestValues) {
+        for (var val of TestValues.chars.valid) {
             run(val);
         }
     });
@@ -169,7 +172,7 @@ function runStaticStringOutParam(scenario) {
             assert.equal(returnValue, val.split('').reverse().join(''));
         };
 
-        for (var val of this.stringTestValues) {
+        for (var val of TestValues.strings.valid) {
             run(val);
         }
     });
@@ -179,12 +182,12 @@ function runStaticGuidOutParam(scenario) {
     this.runSync(scenario, () => {
         var run = (val) => {
             var { returnValue, zero, allSet } = TestComponent.Test.staticGuidOutParam(val);
-            assert.equal(zero, this.zeroGuid);
-            assert.equal(allSet, this.allSetGuid);
+            assert.equal(zero, zeroGuid);
+            assert.equal(allSet, allSetGuid);
             assert.equal(returnValue, val);
         };
 
-        for (var val of this.guidTestValues) {
+        for (var val of TestValues.guids.valid) {
             run(val);
         }
     });
@@ -211,12 +214,12 @@ function runStaticCompositeStructOutParam(scenario) {
         assert.equal(returnValue, testVal);
         assert.equal(first, {
             numerics: { u8: 9, u16: 17, u32: 33, u64: 65, s16: -15, s32: -31, s64: -63, f32: 33.5, f64: 65.64, e: TestComponent.TestEnum.third },
-            strings: { ch: 'G', str: 'hello, world!', guid: this.zeroGuid },
+            strings: { ch: 'G', str: 'hello, world!', guid: zeroGuid },
             bools: { b: false }
         });
         assert.equal(second, {
             numerics: { u8: 7, u16: 15, u32: 31, u64: 63, s16: -17, s32: -33, s64: -65, f32: 31.5, f64: 63.64, e: TestComponent.TestEnum.first },
-            strings: { ch: 'E', str: 'HELLO, WORLD!', guid: this.allSetGuid },
+            strings: { ch: 'E', str: 'HELLO, WORLD!', guid: allSetGuid },
             bools: { b: true }
         });
     });
@@ -340,7 +343,7 @@ function runCharOutParam(scenario) {
             assert.equal(returnValue, ch.toUpperCase());
         };
 
-        for (var val of this.charTestValues) {
+        for (var val of TestValues.chars.valid) {
             run(val);
         }
     });
@@ -369,7 +372,7 @@ function runStringOutParam(scenario) {
             assert.equal(returnValue, val.split('').reverse().join(''));
         };
 
-        for (var val of this.stringTestValues) {
+        for (var val of TestValues.strings.valid) {
             run(val);
         }
     });
@@ -379,12 +382,12 @@ function runGuidOutParam(scenario) {
     this.runSync(scenario, () => {
         var run = (val) => {
             var { returnValue, zero, allSet } = this.test.guidOutParam(val);
-            assert.equal(zero, this.zeroGuid);
-            assert.equal(allSet, this.allSetGuid);
+            assert.equal(zero, zeroGuid);
+            assert.equal(allSet, allSetGuid);
             assert.equal(returnValue, val);
         };
 
-        for (var val of this.guidTestValues) {
+        for (var val of TestValues.guids.valid) {
             run(val);
         }
     });
@@ -411,12 +414,12 @@ function runCompositeStructOutParam(scenario) {
         assert.equal(returnValue, testVal);
         assert.equal(first, {
             numerics: { u8: 9, u16: 17, u32: 33, u64: 65, s16: -15, s32: -31, s64: -63, f32: 33.5, f64: 65.64, e: TestComponent.TestEnum.third },
-            strings: { ch: 'G', str: 'hello, world!', guid: this.zeroGuid },
+            strings: { ch: 'G', str: 'hello, world!', guid: zeroGuid },
             bools: { b: false }
         });
         assert.equal(second, {
             numerics: { u8: 7, u16: 15, u32: 31, u64: 63, s16: -17, s32: -33, s64: -65, f32: 31.5, f64: 63.64, e: TestComponent.TestEnum.first },
-            strings: { ch: 'E', str: 'HELLO, WORLD!', guid: this.allSetGuid },
+            strings: { ch: 'E', str: 'HELLO, WORLD!', guid: allSetGuid },
             bools: { b: true }
         });
     });

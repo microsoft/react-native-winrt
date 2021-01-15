@@ -4,6 +4,7 @@
 
 import {
     TestScenario,
+    TestValues,
     assert
 } from './TestCommon'
 
@@ -90,35 +91,35 @@ function testStaticEventHandler(scenario, args, name, invoke) {
 }
 
 function runStaticBoolEventHandler(scenario) {
-    testStaticEventHandler.call(this, scenario, this.boolTestValues, 'staticbooleventhandler', (arg) => TestComponent.Test.raiseStaticBoolEvent(arg));
+    testStaticEventHandler.call(this, scenario, TestValues.bools.valid, 'staticbooleventhandler', (arg) => TestComponent.Test.raiseStaticBoolEvent(arg));
 }
 
 function runStaticCharEventHandler(scenario) {
-    testStaticEventHandler.call(this, scenario, this.charTestValues, 'staticchareventhandler', (arg) => TestComponent.Test.raiseStaticCharEvent(arg));
+    testStaticEventHandler.call(this, scenario, TestValues.chars.valid, 'staticchareventhandler', (arg) => TestComponent.Test.raiseStaticCharEvent(arg));
 }
 
 function runStaticNumericEventHandler(scenario) {
-    testStaticEventHandler.call(this, scenario, this.s32TestValues, 'staticnumericeventhandler', (arg) => TestComponent.Test.raiseStaticNumericEvent(arg));
+    testStaticEventHandler.call(this, scenario, TestValues.s32.valid, 'staticnumericeventhandler', (arg) => TestComponent.Test.raiseStaticNumericEvent(arg));
 }
 
 function runStaticStringEventHandler(scenario) {
-    testStaticEventHandler.call(this, scenario, this.stringTestValues, 'staticstringeventhandler', (arg) => TestComponent.Test.raiseStaticStringEvent(arg));
+    testStaticEventHandler.call(this, scenario, TestValues.strings.valid, 'staticstringeventhandler', (arg) => TestComponent.Test.raiseStaticStringEvent(arg));
 }
 
 function runStaticGuidEventHandler(scenario) {
-    testStaticEventHandler.call(this, scenario, this.guidTestValues, 'staticguideventhandler', (arg) => TestComponent.Test.raiseStaticGuidEvent(arg));
+    testStaticEventHandler.call(this, scenario, TestValues.guids.valid, 'staticguideventhandler', (arg) => TestComponent.Test.raiseStaticGuidEvent(arg));
 }
 
 function runStaticEnumEventHandler(scenario) {
-    testStaticEventHandler.call(this, scenario, this.enumTestValues, 'staticenumeventhandler', (arg) => TestComponent.Test.raiseStaticEnumEvent(arg));
+    testStaticEventHandler.call(this, scenario, TestValues.enums.valid, 'staticenumeventhandler', (arg) => TestComponent.Test.raiseStaticEnumEvent(arg));
 }
 
 function runStaticCompositeStructEventHandler(scenario) {
-    testStaticEventHandler.call(this, scenario, this.compositeTestValues, 'staticcompositeStructeventhandler', (arg) => TestComponent.Test.raiseStaticCompositeStructEvent(arg));
+    testStaticEventHandler.call(this, scenario, TestValues.composite.valid, 'staticcompositeStructeventhandler', (arg) => TestComponent.Test.raiseStaticCompositeStructEvent(arg));
 }
 
 function runStaticRefEventHandler(scenario) {
-    testStaticEventHandler.call(this, scenario, this.s32TestValues, 'staticrefeventhandler', (arg) => TestComponent.Test.raiseStaticRefEvent(arg));
+    testStaticEventHandler.call(this, scenario, TestValues.s32.valid, 'staticrefeventhandler', (arg) => TestComponent.Test.raiseStaticRefEvent(arg));
 }
 
 function runStaticObjectEventHandler(scenario) {
@@ -145,40 +146,40 @@ function runDelegateTest(scenario, values, invoke) {
 }
 
 function runStaticBoolDelegate(scenario) {
-    runDelegateTest.call(this, scenario, this.boolTestValues, (val, fn) => TestComponent.Test.staticInvokeBoolDelegate(val, fn));
+    runDelegateTest.call(this, scenario, TestValues.bools.valid, (val, fn) => TestComponent.Test.staticInvokeBoolDelegate(val, fn));
 }
 
 function runStaticCharDelegate(scenario) {
-    runDelegateTest.call(this, scenario, this.charTestValues, (val, fn) => TestComponent.Test.staticInvokeCharDelegate(val, fn));
+    runDelegateTest.call(this, scenario, TestValues.chars.valid, (val, fn) => TestComponent.Test.staticInvokeCharDelegate(val, fn));
 }
 
 function runStaticNumericDelegate(scenario) {
-    runDelegateTest.call(this, scenario, this.s32TestValues, (val, fn) => TestComponent.Test.staticInvokeNumericDelegate(val, fn));
+    runDelegateTest.call(this, scenario, TestValues.s32.valid, (val, fn) => TestComponent.Test.staticInvokeNumericDelegate(val, fn));
 }
 
 function runStaticStringDelegate(scenario) {
-    runDelegateTest.call(this, scenario, this.stringTestValues, (val, fn) => TestComponent.Test.staticInvokeStringDelegate(val, fn));
+    runDelegateTest.call(this, scenario, TestValues.strings.valid, (val, fn) => TestComponent.Test.staticInvokeStringDelegate(val, fn));
 }
 
 function runStaticGuidDelegate(scenario) {
-    runDelegateTest.call(this, scenario, this.guidTestValues, (val, fn) => TestComponent.Test.staticInvokeGuidDelegate(val, fn));
+    runDelegateTest.call(this, scenario, TestValues.guids.valid, (val, fn) => TestComponent.Test.staticInvokeGuidDelegate(val, fn));
 }
 
 function runStaticEnumDelegate(scenario) {
-    runDelegateTest.call(this, scenario, this.enumTestValues, (val, fn) => TestComponent.Test.staticInvokeEnumDelegate(val, fn));
+    runDelegateTest.call(this, scenario, TestValues.enums.valid, (val, fn) => TestComponent.Test.staticInvokeEnumDelegate(val, fn));
 }
 
 function runStaticCompositeStructDelegate(scenario) {
-    runDelegateTest.call(this, scenario, this.compositeTestValues, (val, fn) => TestComponent.Test.staticInvokeCompositeStructDelegate(val, fn));
+    runDelegateTest.call(this, scenario, TestValues.composite.valid, (val, fn) => TestComponent.Test.staticInvokeCompositeStructDelegate(val, fn));
 }
 
 function runStaticRefDelegate(scenario) {
-    runDelegateTest.call(this, scenario, this.s32TestValues, (val, fn) => TestComponent.Test.staticInvokeRefDelegate(val, fn));
+    runDelegateTest.call(this, scenario, TestValues.s32.valid, (val, fn) => TestComponent.Test.staticInvokeRefDelegate(val, fn));
 }
 
 function runStaticObjectDelegate(scenario) {
     var values = [];
-    for (var val of this.numericArrayTestValues) {
+    for (var val of TestValues.s32.validArrays) {
         values.push(TestComponent.Test.makeNumericVector(val));
     }
 
@@ -220,35 +221,35 @@ function testEventHandler(scenario, args, name, invoke) {
 }
 
 function runBoolEventHandler(scenario) {
-    testEventHandler.call(this, scenario, this.boolTestValues, 'booleventhandler', (arg) => this.test.raiseBoolEvent(arg));
+    testEventHandler.call(this, scenario, TestValues.bools.valid, 'booleventhandler', (arg) => this.test.raiseBoolEvent(arg));
 }
 
 function runCharEventHandler(scenario) {
-    testEventHandler.call(this, scenario, this.charTestValues, 'chareventhandler', (arg) => this.test.raiseCharEvent(arg));
+    testEventHandler.call(this, scenario, TestValues.chars.valid, 'chareventhandler', (arg) => this.test.raiseCharEvent(arg));
 }
 
 function runNumericEventHandler(scenario) {
-    testEventHandler.call(this, scenario, this.s32TestValues, 'numericeventhandler', (arg) => this.test.raiseNumericEvent(arg));
+    testEventHandler.call(this, scenario, TestValues.s32.valid, 'numericeventhandler', (arg) => this.test.raiseNumericEvent(arg));
 }
 
 function runStringEventHandler(scenario) {
-    testEventHandler.call(this, scenario, this.stringTestValues, 'stringeventhandler', (arg) => this.test.raiseStringEvent(arg));
+    testEventHandler.call(this, scenario, TestValues.strings.valid, 'stringeventhandler', (arg) => this.test.raiseStringEvent(arg));
 }
 
 function runGuidEventHandler(scenario) {
-    testEventHandler.call(this, scenario, this.guidTestValues, 'guideventhandler', (arg) => this.test.raiseGuidEvent(arg));
+    testEventHandler.call(this, scenario, TestValues.guids.valid, 'guideventhandler', (arg) => this.test.raiseGuidEvent(arg));
 }
 
 function runEnumEventHandler(scenario) {
-    testEventHandler.call(this, scenario, this.enumTestValues, 'enumeventhandler', (arg) => this.test.raiseEnumEvent(arg));
+    testEventHandler.call(this, scenario, TestValues.enums.valid, 'enumeventhandler', (arg) => this.test.raiseEnumEvent(arg));
 }
 
 function runCompositeStructEventHandler(scenario) {
-    testEventHandler.call(this, scenario, this.compositeTestValues, 'compositestructeventhandler', (arg) => this.test.raiseCompositeStructEvent(arg));
+    testEventHandler.call(this, scenario, TestValues.composite.valid, 'compositestructeventhandler', (arg) => this.test.raiseCompositeStructEvent(arg));
 }
 
 function runRefEventHandler(scenario) {
-    testEventHandler.call(this, scenario, this.s32TestValues, 'refeventhandler', (arg) => this.test.raiseRefEvent(arg));
+    testEventHandler.call(this, scenario, TestValues.s32.valid, 'refeventhandler', (arg) => this.test.raiseRefEvent(arg));
 }
 
 function runObjectEventHandler(scenario) {
@@ -258,40 +259,40 @@ function runObjectEventHandler(scenario) {
 
 // Non-static delegates
 function runBoolDelegate(scenario) {
-    runDelegateTest.call(this, scenario, this.boolTestValues, (val, fn) => this.test.invokeBoolDelegate(val, fn));
+    runDelegateTest.call(this, scenario, TestValues.bools.valid, (val, fn) => this.test.invokeBoolDelegate(val, fn));
 }
 
 function runCharDelegate(scenario) {
-    runDelegateTest.call(this, scenario, this.charTestValues, (val, fn) => this.test.invokeCharDelegate(val, fn));
+    runDelegateTest.call(this, scenario, TestValues.chars.valid, (val, fn) => this.test.invokeCharDelegate(val, fn));
 }
 
 function runNumericDelegate(scenario) {
-    runDelegateTest.call(this, scenario, this.s32TestValues, (val, fn) => this.test.invokeNumericDelegate(val, fn));
+    runDelegateTest.call(this, scenario, TestValues.s32.valid, (val, fn) => this.test.invokeNumericDelegate(val, fn));
 }
 
 function runStringDelegate(scenario) {
-    runDelegateTest.call(this, scenario, this.stringTestValues, (val, fn) => this.test.invokeStringDelegate(val, fn));
+    runDelegateTest.call(this, scenario, TestValues.strings.valid, (val, fn) => this.test.invokeStringDelegate(val, fn));
 }
 
 function runGuidDelegate(scenario) {
-    runDelegateTest.call(this, scenario, this.guidTestValues, (val, fn) => this.test.invokeGuidDelegate(val, fn));
+    runDelegateTest.call(this, scenario, TestValues.guids.valid, (val, fn) => this.test.invokeGuidDelegate(val, fn));
 }
 
 function runEnumDelegate(scenario) {
-    runDelegateTest.call(this, scenario, this.enumTestValues, (val, fn) => this.test.invokeEnumDelegate(val, fn));
+    runDelegateTest.call(this, scenario, TestValues.enums.valid, (val, fn) => this.test.invokeEnumDelegate(val, fn));
 }
 
 function runCompositeStructDelegate(scenario) {
-    runDelegateTest.call(this, scenario, this.compositeTestValues, (val, fn) => this.test.invokeCompositeStructDelegate(val, fn));
+    runDelegateTest.call(this, scenario, TestValues.composite.valid, (val, fn) => this.test.invokeCompositeStructDelegate(val, fn));
 }
 
 function runRefDelegate(scenario) {
-    runDelegateTest.call(this, scenario, this.s32TestValues, (val, fn) => this.test.invokeRefDelegate(val, fn));
+    runDelegateTest.call(this, scenario, TestValues.s32.valid, (val, fn) => this.test.invokeRefDelegate(val, fn));
 }
 
 function runObjectDelegate(scenario) {
     var values = [];
-    for (var val of this.numericArrayTestValues) {
+    for (var val of TestValues.s32.validArrays) {
         values.push(TestComponent.Test.makeNumericVector(val));
     }
 
