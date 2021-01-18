@@ -17,7 +17,7 @@
     <CppWinRTOptimized>true</CppWinRTOptimized>
     <CppWinRTPackageDir>..\packages\Microsoft.Windows.CppWinRT.2.0.200615.7\</CppWinRTPackageDir>
     <CppWinRTRootNamespaceAutoMerge>true</CppWinRTRootNamespaceAutoMerge>
-    <CppWinRTGenerateWindowsMetadata>true</CppWinRTGenerateWindowsMetadata>
+    <CppWinRTGenerateWindowsMetadata>false</CppWinRTGenerateWindowsMetadata>
     <CppWinRTVerbosity>high</CppWinRTVerbosity>
     <CppWinRTParameters>-base</CppWinRTParameters>
     <RnWinRTParameters>-include Windows.Foundation -include Windows.UI.StartScreen -include Windows.UI.ViewManagement -include Windows.Storage -include Windows.Security.Cryptography.CryptographicBuffer -include Windows.Security.Cryptography.ICryptographicBufferStatics -include Windows.Security.Cryptography.BinaryStringEncoding</RnWinRTParameters>
@@ -118,11 +118,9 @@
       <PrecompiledHeader>Create</PrecompiledHeader>
     </ClCompile>
   </ItemGroup>
-  <ItemGroup>
-    <None Include="packages.config" />
-  </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">
+    <Import Project="..\packages\Microsoft.Windows.CppWinRT.2.0.200615.7\build\native\Microsoft.Windows.CppWinRT.targets" Condition="Exists('..\packages\Microsoft.Windows.CppWinRT.2.0.200615.7\build\native\Microsoft.Windows.CppWinRT.targets')" />
     <Import Project="..\packages\Microsoft.Windows.JsWinRT.20201217.3.0\build\native\WinRTTurboModule.targets" Condition="Exists('..\packages\Microsoft.Windows.JsWinRT.20201217.3.0\build\native\WinRTTurboModule.targets')" />
     <Import Project="..\packages\Microsoft.Windows.ImplementationLibrary.1.0.191107.2\build\native\Microsoft.Windows.ImplementationLibrary.targets" Condition="Exists('..\packages\Microsoft.Windows.ImplementationLibrary.1.0.191107.2\build\native\Microsoft.Windows.ImplementationLibrary.targets')" />
   </ImportGroup>
