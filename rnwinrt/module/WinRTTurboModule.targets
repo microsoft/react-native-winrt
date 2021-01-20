@@ -13,18 +13,11 @@ Copyright (C) Microsoft Corporation. All rights reserved.
     </PropertyGroup>
 
     <PropertyGroup>
-        <Error Condition="'$(CppWinRTPackageDir)' == ''">CppWinRTPackageDir not specified!</Error>
-        <CppWinRTPath Condition="'$(CppWinRTPackage)' == 'true' and '$(CppWinRTPath)'==''">$(CppWinRTPackageDir)bin\</CppWinRTPath>
-
         <RnWinRTVerbosity Condition="'$(RnWinRTVerbosity)' == ''">normal</RnWinRTVerbosity>
         <RnWinRTCommandVerbosity Condition="'$(RnWinRTVerbosity)' == 'high'">-verbose</RnWinRTCommandVerbosity>
         <Error Condition="'$(RnWinRTPath)' == ''">RnWinRTPath not specified!</Error>
 
         <GeneratedFilesDir Condition="'$(GeneratedFilesDir)' == ''">$(IntDir)Generated Files\</GeneratedFilesDir>
-        <!--TEMP: Override NuGet SDK's erroneous setting in uap.props -->
-        <WindowsSDK_MetadataFoundationPath Condition="('$(WindowsSDK_MetadataFoundationPath)'!='') And !Exists($(WindowsSDK_MetadataFoundationPath))">$(WindowsSDK_MetadataPathVersioned)</WindowsSDK_MetadataFoundationPath>
-        <!-- CAExcludePath is used to set an environment variable, so make sure this is defined on a single line. -->
-        <CAExcludePath>$(GeneratedFilesDir);$(CAExcludePath)</CAExcludePath>
 
         <!-- Note: Before* targets run before Compute* targets. -->
         <BeforeClCompileTargets>
