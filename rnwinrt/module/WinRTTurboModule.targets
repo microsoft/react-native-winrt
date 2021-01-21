@@ -29,7 +29,7 @@ Copyright (C) Microsoft Corporation. All rights reserved.
         </BuildDependsOn>
     </PropertyGroup>
 
-    <Target Name="GetRnWinRTWinMDInputs"
+    <Target Name="GetRnWinRTPlatformWinMDInputs"
             DependsOnTargets="ResolveAssemblyReferences"
             Returns="@(RnWinRTWinMDInputs)">
         <ItemGroup>
@@ -42,13 +42,82 @@ Copyright (C) Microsoft Corporation. All rights reserved.
         <Message Text="RnWinRTWinMDInputs: @(RnWinRTWinMDInputs->'%(WinMDPath)')" Importance="$(RnWinRTVerbosity)"/>
     </Target>
 
+    <!--Define platform WinMD references for modern IDL compilation-->
+    <Target Name="GetRnWinRTPlatformWinMDReferences"
+            DependsOnTargets="ResolveAssemblyReferences;$(GetRnWinRTPlatformWinMDReferencesDependsOn)"
+            Returns="@(RnWinRTPlatformWinMDReferences)">
+        <ItemGroup>
+            <_RnWinRTPlatformWinMDReferences Remove="@(_RnWinRTPlatformWinMDReferences)" />
+            <_RnWinRTPlatformWinMDReferences Include="@(ReferencePath)" Condition="'%(ReferencePath.IsSystemReference)' == 'true' and '%(ReferencePath.WinMDFile)' == 'true' and '%(ReferencePath.ReferenceSourceTarget)' == 'ResolveAssemblyReference'" />
+            <_RnWinRTPlatformWinMDReferences Condition="'$(RnWinRTOverrideSDKReferences)' != 'true'" Include="$(WindowsSDK_MetadataPathVersioned)\**\Windows.Foundation.FoundationContract.winmd" />
+            <_RnWinRTPlatformWinMDReferences Condition="'$(RnWinRTOverrideSDKReferences)' != 'true'" Include="$(WindowsSDK_MetadataPathVersioned)\**\Windows.Foundation.UniversalApiContract.winmd" />
+            <_RnWinRTPlatformWinMDReferences Condition="'$(RnWinRTOverrideSDKReferences)' != 'true'" Include="$(WindowsSDK_MetadataPathVersioned)\**\Windows.Networking.Connectivity.WwanContract.winmd" />
+            <_RnWinRTPlatformWinMDReferences Include="$(RnWinRTSDKReferences)" />
+            <RnWinRTPlatformWinMDReferences Remove="@(RnWinRTPlatformWinMDReferences)"/>
+            <RnWinRTPlatformWinMDReferences Include="@(_RnWinRTPlatformWinMDReferences->'%(FullPath)'->Distinct())">
+                <WinMDPath>%(FullPath)</WinMDPath>
+            </RnWinRTPlatformWinMDReferences>
+        </ItemGroup>
+        <Message Text="RnWinRTPlatformWinMDReferences: @(RnWinRTPlatformWinMDReferences->'%(WinMDPath)')" Importance="$(RnWinRTVerbosity)"/>
+    </Target>
+
+    <!--Get direct WinMD references (including Nuget packages) for projections, IDL processing, and AppX packaging-->
+    <Target Name="GetRnWinRTDirectWinMDReferences"
+            DependsOnTargets="ResolveAssemblyReferences;$(GetRnWinRTDirectWinMDReferencesDependsOn)"
+            Returns="@(RnWinRTDirectWinMDReferences)">
+        <ItemGroup>
+            <_RnWinRTDirectWinMDReferences Remove="@(_RnWinRTDirectWinMDReferences)" />
+            <_RnWinRTDirectWinMDReferences Include="@(ReferencePath)" Condition="'%(ReferencePath.IsSystemReference)' != 'true' and '%(ReferencePath.WinMDFile)' == 'true' and '%(ReferencePath.ReferenceSourceTarget)' == 'ResolveAssemblyReference'" />
+            <RnWinRTDirectWinMDReferences Remove="@(RnWinRTDirectWinMDReferences)"/>
+            <RnWinRTDirectWinMDReferences Include="@(_RnWinRTDirectWinMDReferences)">
+                <WinMDPath>%(FullPath)</WinMDPath>
+            </RnWinRTDirectWinMDReferences>
+        </ItemGroup>
+        <Message Text="RnWinRTDirectWinMDReferences: @(RnWinRTDirectWinMDReferences->'%(WinMDPath)')" Importance="$(RnWinRTVerbosity)"/>
+    </Target>
+
+    <!--Get direct WinMD project references for projections, IDL processing, and AppX packaging-->
+    <Target Name="GetRnWinRTProjectWinMDReferences"
+            DependsOnTargets="ResolveProjectReferences;$(GetRnWinRTProjectWinMDReferencesDependsOn)"
+            Returns="@(RnWinRTStaticProjectWinMDReferences);@(RnWinRTDynamicProjectWinMDReferences)">
+        <ItemGroup>
+            <!-- Get static library project references -->
+            <_RnWinRTStaticProjectReferences Remove="@(_RnWinRTStaticProjectReferences)"/>
+            <_RnWinRTStaticProjectReferences Include="@(_ResolvedProjectReferencePaths)"
+                Condition= "'%(_ResolvedProjectReferencePaths.ProjectType)'=='StaticLibrary' AND 
+                    '%(_ResolvedProjectReferencePaths.WinMDFile)' == 'true'"/>
+            <!--Get dynamic library project references-->
+            <_RnWinRTDynamicProjectReferences Remove="@(_RnWinRTDynamicProjectReferences)"/>
+            <_RnWinRTDynamicProjectReferences Include="@(_ResolvedProjectReferencePaths)"
+                Condition= "'%(_ResolvedProjectReferencePaths.ProjectType)'!='StaticLibrary' AND 
+                ('%(_ResolvedProjectReferencePaths.WinMDFile)' == 'true' OR
+                    ('%(_ResolvedProjectReferencePaths.WinMDFile)' == '' AND '%(_ResolvedProjectReferencePaths.Extension)' == '.winmd'))"/>
+        </ItemGroup>
+        <ItemGroup>
+            <RnWinRTStaticProjectWinMDReferences Remove="@(RnWinRTStaticProjectWinMDReferences)" />
+            <RnWinRTStaticProjectWinMDReferences Include="@(_RnWinRTStaticProjectReferences)">
+                <WinMDPath>%(FullPath)</WinMDPath>
+            </RnWinRTStaticProjectWinMDReferences>
+            <RnWinRTDynamicProjectWinMDReferences Remove="@(RnWinRTDynamicProjectWinMDReferences)" />
+            <RnWinRTDynamicProjectWinMDReferences Include="@(_RnWinRTDynamicProjectReferences)">
+                <WinMDPath>%(FullPath)</WinMDPath>
+            </RnWinRTDynamicProjectWinMDReferences>
+        </ItemGroup>
+        <Message Text="RnWinRTStaticProjectWinMDReferences: @(RnWinRTStaticProjectWinMDReferences->'%(WinMDPath)')" Importance="$(RnWinRTVerbosity)"/>
+        <Message Text="RnWinRTDynamicProjectWinMDReferences: @(RnWinRTDynamicProjectWinMDReferences->'%(WinMDPath)')" Importance="$(RnWinRTVerbosity)"/>
+    </Target>
+
     <Target Name="RnWinRTMakeRsp"
-            DependsOnTargets="GetRnWinRTWinMDInputs"
+            DependsOnTargets="GetRnWinRTPlatformWinMDInputs;GetRnWinRTPlatformWinMDReferences;GetRnWinRTDirectWinMDReferences;GetRnWinRTProjectWinMDReferences;$(GetRnWinRTProjectWinMDReferences);$(RnWinRTMakePlatformProjectionDependsOn)"
             Inputs="$(RnWinRTParameters);@(RnWinRTWinMDInputs)"
             Outputs="$(IntDir)rnwinrt.rsp">
         <ItemGroup>
             <_RnwinrtInputs Remove="@(_RnwinrtInputs)"/>
             <_RnwinrtInputs Include="@(RnWinRTWinMDInputs)"/>
+            <_RnwinrtCompRefs Include="@(RnWinRTPlatformWinMDReferences)"/>
+            <_RnwinrtCompRefs Include="@(RnWinRTDirectWinMDReferences)"/>
+            <_RnwinrtCompRefs Include="@(RnWinRTStaticProjectWinMDReferences)"/>
+            <_RnwinrtCompRefs Include="@(RnWinRTDynamicProjectWinMDReferences)"/>
         </ItemGroup>
         <PropertyGroup>
             <_RnwinrtParameters>$(RnWinRTCommandVerbosity) $(RnWinRTParameters)</_RnwinrtParameters>
