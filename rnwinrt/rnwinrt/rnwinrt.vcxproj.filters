@@ -10,6 +10,8 @@
     <ClCompile Include="FileGenerator.cpp" />
     <ClCompile Include="ValueConverters.cpp" />
     <ClCompile Include="TypeFilter.cpp" />
+    <ClCompile Include="TextWriter.cpp" />
+    <ClCompile Include="TypescriptWriter.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="pch.h" />
@@ -20,6 +22,8 @@
     <ClInclude Include="FileGenerator.h" />
     <ClInclude Include="ValueConverters.h" />
     <ClInclude Include="TypeFilter.h" />
+    <ClInclude Include="TextWriter.h" />
+    <ClInclude Include="TypescriptWriter.h" />
   </ItemGroup>
   <ItemGroup>
     <None Include="packages.config" />

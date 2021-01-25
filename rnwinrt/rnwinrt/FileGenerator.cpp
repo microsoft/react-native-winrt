@@ -6,6 +6,7 @@
 #include "Writer.h"
 
 #include <strings.h>
+#include "TextWriter.h"
 
 constexpr auto c_codegenNamespace = "WinRTTurboModule"sv;
 
@@ -1245,6 +1246,51 @@ namespace %
         c_codegenNamespace, c_codegenNamespace);
 }
 
+void WriteTypes(
+    const Settings& settings, const std::map<std::string_view, std::shared_ptr<Namespace>>& roots)
+{
+    Namespace::EnumerateAll(roots, [&](const Namespace& node) {
+        TextWriter tsWriter;
+        tsWriter.Write("declare namespace % {\n%\n}"sv, node.FullName(), [&](TextWriter writer) 
+            {
+                for (auto&& [name, type] : node.Members().types)
+                {
+                    switch (get_category(type))
+                    {
+                    case winmd::reader::category::interface_type:
+
+                        continue;
+                    case winmd::reader::category::class_type:
+
+                        continue;
+                    case winmd::reader::category::enum_type:
+                        if (node.FullName() == "Windows.ApplicationModel.Activation")
+                        {
+                            writer.Write("Hello"sv);
+                            std::cout << type.TypeName() << std::endl;
+                            for (auto field : type.FieldList())
+                            {
+                                std::cout << "-" << field.Name() << std::endl;
+                            }
+                            // auto x = type.get_enum_definition().m_typedef.FieldList();
+                        }
+                        continue;
+                    case winmd::reader::category::struct_type:
+
+                        continue;
+                    case winmd::reader::category::delegate_type:
+
+                        continue;
+                    }
+                } 
+            }
+        );
+        tsWriter.FlushToFile(settings.OutputFolder / (node.FullName() + ".d.ts"));
+        //std::cout << tsWriter.Buffer() << std::endl;
+        return true;
+    });
+}
+
 std::map<std::string, ValueConverters> WriteProjectedValueConvertersGeneratedH(
     const Settings& settings, const std::map<std::string_view, std::shared_ptr<Namespace>>& roots)
 {
@@ -1430,6 +1476,8 @@ void WriteBaseFiles(const Settings& settings)
 void WriteFiles(const Settings& settings, const std::map<std::string_view, std::shared_ptr<Namespace>>& roots)
 {
     WriteProjectionsGeneratedH(settings, roots);
+    WriteTypes(settings, roots);
+
     const auto valueConverters = WriteProjectedValueConvertersGeneratedH(settings, roots);
 
     std::map<std::string, uint32_t> namespaceInterfaceCounts;
