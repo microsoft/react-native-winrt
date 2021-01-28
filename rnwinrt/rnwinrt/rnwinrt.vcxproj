@@ -48,6 +48,7 @@
   <ItemGroup>
     <ClInclude Include="CommandReader.h" />
     <ClInclude Include="MetadataHelpers.h" />
+    <ClInclude Include="Parser.h" />
     <ClInclude Include="TypeFilter.h" />
     <ClInclude Include="TextWriter.h" />
     <ClInclude Include="TypescriptWriter.h" />
@@ -62,6 +63,7 @@
     <ClCompile Include="FileGenerator.cpp" />
     <ClCompile Include="MetadataHelpers.cpp" />
     <ClCompile Include="main.cpp" />
+    <ClCompile Include="Parser.cpp" />
     <ClCompile Include="pch.cpp">
       <PrecompiledHeader>Create</PrecompiledHeader>
     </ClCompile>

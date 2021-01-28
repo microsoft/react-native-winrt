@@ -12,6 +12,7 @@
     <ClCompile Include="TypeFilter.cpp" />
     <ClCompile Include="TextWriter.cpp" />
     <ClCompile Include="TypescriptWriter.cpp" />
+    <ClCompile Include="Parser.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="pch.h" />
@@ -24,6 +25,7 @@
     <ClInclude Include="TypeFilter.h" />
     <ClInclude Include="TextWriter.h" />
     <ClInclude Include="TypescriptWriter.h" />
+    <ClInclude Include="Parser.h" />
   </ItemGroup>
   <ItemGroup>
     <None Include="packages.config" />
