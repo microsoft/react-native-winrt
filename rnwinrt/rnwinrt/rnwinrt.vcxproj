@@ -63,14 +63,12 @@
     <ClCompile Include="FileGenerator.cpp" />
     <ClCompile Include="MetadataHelpers.cpp" />
     <ClCompile Include="main.cpp" />
-    <ClCompile Include="Parser.cpp" />
     <ClCompile Include="pch.cpp">
       <PrecompiledHeader>Create</PrecompiledHeader>
     </ClCompile>
     <ClCompile Include="Settings.cpp" />
     <ClCompile Include="TypeFilter.cpp" />
     <ClCompile Include="TextWriter.cpp" />
-    <ClCompile Include="TypescriptWriter.cpp" />
     <ClCompile Include="ValueConverters.cpp" />
     <ClCompile Include="Writer.cpp" />
   </ItemGroup>

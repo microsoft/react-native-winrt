@@ -159,7 +159,7 @@ public:
         }
     }
 
-    static std::string_view ToLowerCamelCase(const std::string_view& value)
+    static std::string ToLowerCamelCase(const std::string_view& value)
     {
         std::string converted(value);
         if (!converted.empty())

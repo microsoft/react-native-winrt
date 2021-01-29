@@ -11,8 +11,6 @@
     <ClCompile Include="ValueConverters.cpp" />
     <ClCompile Include="TypeFilter.cpp" />
     <ClCompile Include="TextWriter.cpp" />
-    <ClCompile Include="TypescriptWriter.cpp" />
-    <ClCompile Include="Parser.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="pch.h" />

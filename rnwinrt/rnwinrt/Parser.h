@@ -922,6 +922,3 @@ namespace jswinrt::typeparser
 }
 
 
-class Parser
-{
-};
