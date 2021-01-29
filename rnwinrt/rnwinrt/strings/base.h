@@ -1048,7 +1048,6 @@ namespace WinRTTurboModule
     struct ProjectedEventInstance final
     {
         ProjectedEventInstance(std::shared_ptr<IProjectedEventBase> event);
-        virtual ~ProjectedEventInstance();
 
         const std::shared_ptr<IProjectedEventBase>& Event() const noexcept
         {
