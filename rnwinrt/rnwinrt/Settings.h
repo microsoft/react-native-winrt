@@ -7,6 +7,7 @@ struct Settings
     Settings(const CommandReader& commandReader);
 
     const std::filesystem::path OutputFolder;
+    const std::filesystem::path TypescriptOutputFolder;
     winmd::reader::cache Cache;
     const TypeFilter Filter;
     const std::string PchFileName;

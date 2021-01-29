@@ -11,6 +11,7 @@ namespace
         { "input", Option::NoMinArgs, Option::NoMaxArgs, "<spec>", "Windows metadata to include in projection" },
         { "reference" }, // Has the same effect as "input" with RN/WinRT and is include here to match C++/WinRT.
         { "output", Option::NoMinArgs, 1, "<path>", "Location of generated code" },
+        { "typeoutput", Option::NoMinArgs, 1, "<path>", "Location of generated typescript type files" },
         { "include", Option::NoMinArgs, Option::NoMaxArgs, "<prefix>",
             "One or more prefixes to include in input. Essential Inclusions: Windows.Foundation" },
         { "filter" }, // Legacy name for "include" to match C++/WinRT.
