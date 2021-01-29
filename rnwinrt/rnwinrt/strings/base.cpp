@@ -1274,11 +1274,6 @@ namespace WinRTTurboModule
     {
     }
 
-    ProjectedEventInstance::~ProjectedEventInstance()
-    {
-        FAIL_FAST_IF(!m_listeners.empty());
-    }
-
     std::vector<std::pair<jsi::Object, winrt::event_token>>::iterator ProjectedEventInstance::FindEntry(
         jsi::Runtime& runtime, const jsi::Object& object)
     {
