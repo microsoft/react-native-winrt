@@ -4,7 +4,7 @@ class TextWriter
 {
 private:
     std::vector<char> m_buffer;
-    uint16_t indent;
+    uint16_t indent = 0;
 
     void WriteSegment(const std::string_view& value)
     {
@@ -95,9 +95,6 @@ private:
     }
 
 public:
-    TextWriter() : indent{ 0 } {};
-
-    virtual ~TextWriter() = default;
 
     void Write(const std::string_view& value)
     {
@@ -135,14 +132,14 @@ public:
 
     void FlushToFile(const std::string_view& fileName)
     {
-        std::ofstream file{ fileName, std::ios::out | std::ios::binary };
-        file.write(m_buffer.data(), m_buffer.size());
-        m_buffer.clear();
+        FlushToFile(fileName);
     }
 
     void FlushToFile(const std::filesystem::path& fileName)
     {
-        FlushToFile(static_cast<std::string_view>(fileName.string()));
+        std::ofstream file{ fileName, std::ios::out | std::ios::binary };
+        file.write(m_buffer.data(), m_buffer.size());
+        m_buffer.clear();
     }
 
     void AddIndent()
@@ -159,13 +156,23 @@ public:
         }
     }
 
-    static std::string ToLowerCamelCase(const std::string_view& value)
+    static std::string ToLowerCamelCase(std::string value)
     {
-        std::string converted(value);
-        if (!converted.empty())
+        //std::string converted(value);
+        if (!value.empty())
         {
-            converted[0] = static_cast<char>(tolower(converted[0]));
+            value[0] = static_cast<char>(tolower(value[0]));
         }
-        return converted;
+        return value;
+    }
+
+    static std::string ToLowerAllCase(std::string value)
+    {
+        //std::string converted(value);
+        for (int i = 0; i < value.size(); i++)
+        {
+            value[i] = static_cast<char>(tolower(value[i]));   
+        }
+        return value;
     }
 };

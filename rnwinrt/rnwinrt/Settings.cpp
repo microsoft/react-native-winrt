@@ -47,7 +47,7 @@ namespace
 
 Settings::Settings(const CommandReader& commandReader) :
     OutputFolder(std::filesystem::path(commandReader.Value("output"sv)) / "rnwinrt"sv),
-    TypescriptOutputFolder(std::filesystem::path(commandReader.Value("typeoutput"sv))),
+    TypescriptOutputFolder(std::filesystem::path(commandReader.Value("tsoutput"sv))),
     Cache(GetInput(commandReader)),
     Filter(GetInclude(commandReader), GetExclude(commandReader)), PchFileName(commandReader.Value("pch"sv, "pch.h"sv)),
     FilterToAllowForWeb(commandReader.Exists("allowforwebexclusively"sv)),

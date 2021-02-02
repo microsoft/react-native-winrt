@@ -1,16 +1,13 @@
-
-#pragma once
-
 #include "pch.h"
 
 #include "FileGenerator.h"
 #include "MetadataHelpers.h"
 #include "ValueConverters.h"
 #include "Writer.h"
-
-#include <strings.h>
 #include "TextWriter.h"
 #include "TypescriptWriter.h"
+
+#include <strings.h>
 
 constexpr auto c_codegenNamespace = "WinRTTurboModule"sv;
 
@@ -1250,11 +1247,18 @@ namespace %
         c_codegenNamespace, c_codegenNamespace);
 }
 
-void WriteTypes(const Settings& settings, const std::map<std::string_view, std::shared_ptr<Namespace>>& roots)
+void WriteTypescriptDefinitions(const Settings& settings, const std::map<std::string_view, std::shared_ptr<Namespace>>& roots)
 {
+    if (settings.TypescriptOutputFolder.empty())
+    {
+        return;        
+    }
+    std::filesystem::remove_all(settings.TypescriptOutputFolder);
+    std::filesystem::create_directory(settings.TypescriptOutputFolder);
     Namespace::EnumerateAll(roots, [&](const Namespace& node) {
         TextWriter textWriter;
-        TypescriptWriter::Write(node, textWriter);
+        TypescriptWriter typescriptWriter(settings);
+        typescriptWriter.Write(node, textWriter);
         textWriter.FlushToFile(settings.TypescriptOutputFolder / (node.FullName() + ".d.ts"));
         return true;
     });
@@ -1445,7 +1449,7 @@ void WriteBaseFiles(const Settings& settings)
 void WriteFiles(const Settings& settings, const std::map<std::string_view, std::shared_ptr<Namespace>>& roots)
 {
     WriteProjectionsGeneratedH(settings, roots);
-    WriteTypes(settings, roots);
+    WriteTypescriptDefinitions(settings, roots);
 
     const auto valueConverters = WriteProjectedValueConvertersGeneratedH(settings, roots);
 
