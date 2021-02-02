@@ -84,12 +84,12 @@ Copyright (C) Microsoft Corporation. All rights reserved.
             <!-- Get static library project references -->
             <_RnWinRTStaticProjectReferences Remove="@(_RnWinRTStaticProjectReferences)"/>
             <_RnWinRTStaticProjectReferences Include="@(_ResolvedProjectReferencePaths)"
-                Condition= "'%(_ResolvedProjectReferencePaths.ProjectType)'=='StaticLibrary' AND 
+                Condition= "'%(_ResolvedProjectReferencePaths.ProjectType)'=='StaticLibrary' AND
                     '%(_ResolvedProjectReferencePaths.WinMDFile)' == 'true'"/>
             <!--Get dynamic library project references-->
             <_RnWinRTDynamicProjectReferences Remove="@(_RnWinRTDynamicProjectReferences)"/>
             <_RnWinRTDynamicProjectReferences Include="@(_ResolvedProjectReferencePaths)"
-                Condition= "'%(_ResolvedProjectReferencePaths.ProjectType)'!='StaticLibrary' AND 
+                Condition= "'%(_ResolvedProjectReferencePaths.ProjectType)'!='StaticLibrary' AND
                 ('%(_ResolvedProjectReferencePaths.WinMDFile)' == 'true' OR
                     ('%(_ResolvedProjectReferencePaths.WinMDFile)' == '' AND '%(_ResolvedProjectReferencePaths.Extension)' == '.winmd'))"/>
         </ItemGroup>
@@ -121,7 +121,7 @@ Copyright (C) Microsoft Corporation. All rights reserved.
         </ItemGroup>
         <PropertyGroup>
             <_RnwinrtParameters>$(RnWinRTCommandVerbosity) $(RnWinRTParameters)</_RnwinrtParameters>
-            <_RnwinrtParameters>$(_RnwinrtParameters) @(_RnwinrtInputs->'-in &quot;%(WinMDPath)&quot;', '&#x0d;&#x0a;')</_RnwinrtParameters>
+            <_RnwinrtParameters>$(_RnwinrtParameters) @(_RnwinrtCompRefs->'-in &quot;%(WinMDPath)&quot;', '&#x0d;&#x0a;')</_RnwinrtParameters>
             <_RnwinrtParameters>$(_RnwinrtParameters) -out &quot;$(GeneratedFilesDir).&quot;</_RnwinrtParameters>
         </PropertyGroup>
         <!-- Always write the rnwinrt.rsp file when the target runs, because the file is used as the output of this target. -->
