@@ -114,14 +114,14 @@ Copyright (C) Microsoft Corporation. All rights reserved.
         <ItemGroup>
             <_RnwinrtInputs Remove="@(_RnwinrtInputs)"/>
             <_RnwinrtInputs Include="@(RnWinRTWinMDInputs)"/>
-            <_RnwinrtCompRefs Include="@(RnWinRTPlatformWinMDReferences)"/>
-            <_RnwinrtCompRefs Include="@(RnWinRTDirectWinMDReferences)"/>
-            <_RnwinrtCompRefs Include="@(RnWinRTStaticProjectWinMDReferences)"/>
-            <_RnwinrtCompRefs Include="@(RnWinRTDynamicProjectWinMDReferences)"/>
+            <_RnwinrtInputs Include="@(RnWinRTPlatformWinMDReferences)"/>
+            <_RnwinrtInputs Include="@(RnWinRTDirectWinMDReferences)"/>
+            <_RnwinrtInputs Include="@(RnWinRTStaticProjectWinMDReferences)"/>
+            <_RnwinrtInputs Include="@(RnWinRTDynamicProjectWinMDReferences)"/>
         </ItemGroup>
         <PropertyGroup>
             <_RnwinrtParameters>$(RnWinRTCommandVerbosity) $(RnWinRTParameters)</_RnwinrtParameters>
-            <_RnwinrtParameters>$(_RnwinrtParameters) @(_RnwinrtCompRefs->'-in &quot;%(WinMDPath)&quot;', '&#x0d;&#x0a;')</_RnwinrtParameters>
+            <_RnwinrtParameters>$(_RnwinrtParameters) @(_RnwinrtInputs->'-in &quot;%(WinMDPath)&quot;', '&#x0d;&#x0a;')</_RnwinrtParameters>
             <_RnwinrtParameters>$(_RnwinrtParameters) -out &quot;$(GeneratedFilesDir).&quot;</_RnwinrtParameters>
         </PropertyGroup>
         <!-- Always write the rnwinrt.rsp file when the target runs, because the file is used as the output of this target. -->
