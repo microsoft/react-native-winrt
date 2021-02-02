@@ -84,12 +84,12 @@ Copyright (C) Microsoft Corporation. All rights reserved.
             <!-- Get static library project references -->
             <_RnWinRTStaticProjectReferences Remove="@(_RnWinRTStaticProjectReferences)"/>
             <_RnWinRTStaticProjectReferences Include="@(_ResolvedProjectReferencePaths)"
-                Condition= "'%(_ResolvedProjectReferencePaths.ProjectType)'=='StaticLibrary' AND 
+                Condition= "'%(_ResolvedProjectReferencePaths.ProjectType)'=='StaticLibrary' AND
                     '%(_ResolvedProjectReferencePaths.WinMDFile)' == 'true'"/>
             <!--Get dynamic library project references-->
             <_RnWinRTDynamicProjectReferences Remove="@(_RnWinRTDynamicProjectReferences)"/>
             <_RnWinRTDynamicProjectReferences Include="@(_ResolvedProjectReferencePaths)"
-                Condition= "'%(_ResolvedProjectReferencePaths.ProjectType)'!='StaticLibrary' AND 
+                Condition= "'%(_ResolvedProjectReferencePaths.ProjectType)'!='StaticLibrary' AND
                 ('%(_ResolvedProjectReferencePaths.WinMDFile)' == 'true' OR
                     ('%(_ResolvedProjectReferencePaths.WinMDFile)' == '' AND '%(_ResolvedProjectReferencePaths.Extension)' == '.winmd'))"/>
         </ItemGroup>
@@ -114,10 +114,10 @@ Copyright (C) Microsoft Corporation. All rights reserved.
         <ItemGroup>
             <_RnwinrtInputs Remove="@(_RnwinrtInputs)"/>
             <_RnwinrtInputs Include="@(RnWinRTWinMDInputs)"/>
-            <_RnwinrtCompRefs Include="@(RnWinRTPlatformWinMDReferences)"/>
-            <_RnwinrtCompRefs Include="@(RnWinRTDirectWinMDReferences)"/>
-            <_RnwinrtCompRefs Include="@(RnWinRTStaticProjectWinMDReferences)"/>
-            <_RnwinrtCompRefs Include="@(RnWinRTDynamicProjectWinMDReferences)"/>
+            <_RnwinrtInputs Include="@(RnWinRTPlatformWinMDReferences)"/>
+            <_RnwinrtInputs Include="@(RnWinRTDirectWinMDReferences)"/>
+            <_RnwinrtInputs Include="@(RnWinRTStaticProjectWinMDReferences)"/>
+            <_RnwinrtInputs Include="@(RnWinRTDynamicProjectWinMDReferences)"/>
         </ItemGroup>
         <PropertyGroup>
             <_RnwinrtParameters>$(RnWinRTCommandVerbosity) $(RnWinRTParameters)</_RnwinrtParameters>
