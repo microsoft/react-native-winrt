@@ -28,7 +28,7 @@ jobs:
           Write-Host "##vso[task.setvariable variable=BuildLogDirectory]$(Build.BinariesDirectory)\$(BuildPlatform)\BuildLogs"
         displayName: Set BuildLogDirectory
 
-      - template: ../prepare-env.yml
+      - template: prepare-env.yml
 
       - task: CmdLine@2
         displayName: Set LocalDumps
