@@ -1,0 +1,105 @@
+#
+jobs:
+  - job: E2ETest
+    displayName: E2E Test
+    strategy:
+      matrix:
+        Arm:
+          BuildPlatform: ARM
+        Arm64:
+          BuildPlatform: ARM64
+        x64:
+          BuildPlatform: x64
+        x86:
+          BuildPlatform: x86
+
+    pool:
+      vmImage: 'windows-2019'
+
+    timeoutInMinutes: 60 # how long to run the job before automatically cancelling
+    cancelTimeoutInMinutes: 5 # how much time to give 'run always even if cancelled tasks' before killing them
+
+    steps:
+      - checkout: self
+        clean: true
+        submodules: false
+            
+      - powershell: |
+          Write-Host "##vso[task.setvariable variable=BuildLogDirectory]$(Build.BinariesDirectory)\$(BuildPlatform)\BuildLogs"
+        displayName: Set BuildLogDirectory
+
+      - template: ../prepare-env.yml
+
+      - task: CmdLine@2
+        displayName: Set LocalDumps
+        inputs:
+          script: $(Build.SourcesDirectory)\.ado\scripts\SetupLocalDumps.cmd ReactUWPTestApp
+          workingDirectory: $(Build.SourcesDirectory)
+
+      - task: CmdLine@2
+        displayName: run-windows
+        inputs:
+          script: yarn windows --no-launch --no-packager --arch $(BuildPlatform) --release --logging --buildLogDirectory $(BuildLogDirectory) --msbuildprops BaseIntDir=$(BaseIntDir)
+          workingDirectory: packages/E2ETest
+
+      - task: CmdLine@2
+        displayName: run e2etest
+        inputs:
+          script: yarn run e2etest
+          workingDirectory: packages/E2ETest
+
+      - task: CopyFiles@2
+        displayName: Copy tree dump output files
+        inputs:
+          sourceFolder: $(UserProfile)\Documents\ReactUWPTestApp_cezq6h4ygq1hw!App
+          targetFolder: $(Build.StagingDirectory)/ReactUWPTestAppTreeDump
+          contents: TreeDump\**
+        condition: succeededOrFailed()
+
+      - task: CopyFiles@2
+        displayName: Copy tree dump screenshots
+        inputs:
+          sourceFolder: $(Build.SourcesDirectory)\packages\E2ETest\errorShots
+          targetFolder: $(Build.StagingDirectory)/ReactUWPTestAppTreeDump
+        condition: succeededOrFailed()
+
+      - task: PowerShell@2
+        displayName: "MSInfo32"
+        inputs:
+          targetType: "inline"
+          script: "Start-Process msinfo32 -ArgumentList '/report $(Build.StagingDirectory)\\ReactUWPTestAppTreeDump\\msinfo32.txt' -Wait"
+        condition: failed()
+
+      - task: PowerShell@2
+        displayName: "Get-ShellScaling"
+        inputs:
+          targetType: "inline"
+          script: ". $(Build.SourcesDirectory)\\.ado\\scripts\\Get-ShellScaling.ps1 > $(Build.StagingDirectory)\\ReactUWPTestAppTreeDump\\scaleFactor.txt"
+        condition: failed()
+
+      - task: CopyFiles@2
+        displayName: Copy ReactUWPTestApp artifacts
+        inputs:
+          sourceFolder: $(Build.SourcesDirectory)/packages/E2ETest/windows/ReactUWPTestApp
+          targetFolder: $(Build.StagingDirectory)/ReactUWPTestApp
+          contents: AppPackages\**
+        condition: failed()
+
+      - task: PublishPipelineArtifact@1
+        displayName: "Publish Artifact:ReactUWPTestApp"
+        inputs:
+          artifactName: ReactUWPTestApp-$(System.JobAttempt)
+          targetPath: $(Build.StagingDirectory)/ReactUWPTestApp
+        condition: failed()
+
+      - task: PublishPipelineArtifact@1
+        displayName: "Publish Artifact:ReactUWPTestAppTreeDump"
+        inputs:
+          artifactName: ReactUWPTestAppTreeDump-$(System.JobAttempt)
+          targetPath: $(Build.StagingDirectory)/ReactUWPTestAppTreeDump
+        condition: succeededOrFailed()
+
+      - template: ../templates/upload-build-logs.yml
+        parameters:
+          buildLogDirectory: '$(BuildLogDirectory)'
+          condition: succeededOrFailed()
