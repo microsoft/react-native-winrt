@@ -28,7 +28,7 @@ jobs:
           Write-Host "##vso[task.setvariable variable=BuildLogDirectory]$(Build.BinariesDirectory)\$(BuildPlatform)\BuildLogs"
         displayName: Set BuildLogDirectory
 
-      - template: prepare-env.yml
+      - template: templates\prepare-env.yml
 
       - task: CmdLine@2
         displayName: Set LocalDumps
@@ -99,7 +99,7 @@ jobs:
           targetPath: $(Build.StagingDirectory)/ReactUWPTestAppTreeDump
         condition: succeededOrFailed()
 
-      - template: ../templates/upload-build-logs.yml
+      - template: templates/upload-build-logs.yml
         parameters:
           buildLogDirectory: '$(BuildLogDirectory)'
           condition: succeededOrFailed()
