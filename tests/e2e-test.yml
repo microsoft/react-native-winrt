@@ -40,9 +40,9 @@ jobs:
           workingDirectory: tests/WinRTTests
 
       - task: CmdLine@2
-        displayName: run e2etest
+        displayName: run WinRTTests
         inputs:
-          script: yarn run e2etest
+          script: yarn run WinRTTests
           workingDirectory: tests/WinRTTests
 
       - task: CopyFiles@2

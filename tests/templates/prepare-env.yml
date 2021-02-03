@@ -33,16 +33,11 @@ steps:
       versionSpec: '14.x' 
 
   - task: CmdLine@2
-    displayName: Installing Yarm
+    displayName: Installing Yarn
     inputs:
       script: npm install -g yarn
 
   - template: yarn-install.yml
-
-  - task: CmdLine@2
-    displayName: yarn build
-    inputs:
-      script: yarn build
 
   - task: PowerShell@2
     displayName: List Visual Studio Components
