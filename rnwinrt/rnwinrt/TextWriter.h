@@ -111,6 +111,12 @@ public:
         m_buffer.pop_back();
     }
 
+    void DeleteLast(int n)
+    {
+        for (int i = 0; i < n; i++)
+            m_buffer.pop_back();
+    }
+
     template <typename... Args>
     void Write(const std::string_view& format, Args const&... args)
     {
@@ -128,6 +134,16 @@ public:
             Write(' '); 
         }
         WriteSegment(format, args...);    
+    }
+
+    void WriteIndentedLine()
+    {
+        WriteIndentedLine(""sv);
+    }
+
+    void WriteBlankLine()
+    {
+        Write("\n");
     }
 
     void FlushToFile(const std::string_view& fileName)
@@ -156,9 +172,8 @@ public:
         }
     }
 
-    static std::string ToLowerCamelCase(std::string value)
+    static std::string ToCamelCase(std::string value)
     {
-        //std::string converted(value);
         if (!value.empty())
         {
             value[0] = static_cast<char>(tolower(value[0]));
@@ -168,11 +183,7 @@ public:
 
     static std::string ToLowerAllCase(std::string value)
     {
-        //std::string converted(value);
-        for (int i = 0; i < value.size(); i++)
-        {
-            value[i] = static_cast<char>(tolower(value[i]));   
-        }
+        std::transform(value.begin(), value.end(), value.begin(), [](char ch) { return static_cast<char>(tolower(ch)); });
         return value;
     }
 };

@@ -15,7 +15,7 @@ public:
     void Write(Namespace const& node, TextWriter& textWriter)
     {
         textWriter.Write("%"sv, "//tslint:disable"sv);
-        textWriter.WriteIndentedLine(""sv);
+        textWriter.WriteBlankLine();
         textWriter.WriteIndentedLine("declare namespace % {%}"sv, node.FullName(), [&]() 
             {
                 textWriter.AddIndent();
@@ -24,7 +24,7 @@ public:
                     WriteTypeDefiniton(type.second, textWriter);
                 }
                 textWriter.ReduceIndent();
-                textWriter.WriteIndentedLine("");
+                textWriter.WriteIndentedLine();
             }
         );
     }
@@ -59,7 +59,7 @@ public:
                     WriteMethod(method, type, textWriter, true);
                 }
             }
-            textWriter.WriteIndentedLine(""sv);
+            textWriter.WriteIndentedLine();
         });
     }
 
@@ -74,12 +74,12 @@ public:
                     continue;
                 }
                 ;
-                textWriter.WriteIndentedLine("%,"sv, TextWriter::ToLowerCamelCase(std::string(field.Name())));
+                textWriter.WriteIndentedLine("%,"sv, TextWriter::ToCamelCase(std::string(field.Name())));
             }
             textWriter.ReduceIndent();
-            textWriter.WriteIndentedLine(""sv);
+            textWriter.WriteIndentedLine();
         });
-        textWriter.WriteIndentedLine(""sv); //blank line
+        textWriter.WriteBlankLine();
     }
 
     void WriteClassOrInterface(winmd::reader::TypeDef const& type, TextWriter& textWriter)
@@ -111,6 +111,21 @@ public:
             },
             [&]() 
             {
+                if (type.TypeNamespace() == "Windows.Foundation" && type.TypeName() == "IAsyncAction")
+                {
+                    textWriter.Write(" extends Promise<any>");
+                    return;
+                }
+                if (type.TypeNamespace() == "Windows.Foundation" && type.TypeName() == "IAsyncActionWithProgress`1")
+                {
+                    textWriter.Write(" extends Promise<TProgress>");
+                    return;
+                }
+                if (type.TypeNamespace() == "Windows.Foundation" && (type.TypeName() == "IAsyncOperationWithProgress`2" || type.TypeName() == "IAsyncOperation`1"))
+                {
+                    textWriter.Write(" extends Promise<TResult>");
+                    return;
+                }
                 if (!type.Extends())
                 {
                     return;
@@ -139,8 +154,7 @@ public:
                     WriteTypeSemantics(implementsTypeSem, type, textWriter, false, false);
                     textWriter.Write(", ");
                 }
-                textWriter.DeleteLastCharacter();
-                textWriter.DeleteLastCharacter();
+                textWriter.DeleteLast(2);
             },
             [&]() 
             {
@@ -149,7 +163,7 @@ public:
                 for (auto&& field: type.FieldList())
                 {
                     textWriter.WriteIndentedLine(
-                        "% %: ", [&]() { WriteAccess(field.Flags().Access(), textWriter); }, TextWriter::ToLowerCamelCase(std::string(field.Name())));
+                        "% %: ", [&]() { WriteAccess(field.Flags().Access(), textWriter); }, TextWriter::ToCamelCase(std::string(field.Name())));
                     WriteTypeSemantics(jswinrt::typeparser::get_type_semantics(field.Signature().Type()), type, textWriter,
                         field.Signature().Type().is_szarray(), true);
                     textWriter.Write(";");
@@ -157,12 +171,12 @@ public:
                 //Properties:
                 for (auto&& prop : type.PropertyList())
                 {
-                    textWriter.WriteIndentedLine("");
+                    textWriter.WriteIndentedLine();
                     if (HasGetterWithName(type, prop.Name()) && !HasSetterWithName(type, prop.Name()))
                     {
                         textWriter.Write("readonly ");
                     }
-                    textWriter.Write("%: ", TextWriter::ToLowerCamelCase(std::string(prop.Name())));
+                    textWriter.Write("%: ", TextWriter::ToCamelCase(std::string(prop.Name())));
                     WriteTypeSemantics(
                         jswinrt::typeparser::get_type_semantics(prop.Type().Type()), type, textWriter, prop.Type().Type().is_szarray(), true);
                     textWriter.Write(";");
@@ -171,6 +185,8 @@ public:
                 std::map<std::string_view, winmd::reader::MethodDef> eventListeners;
                 for (auto&& method : type.MethodList())
                 {
+                    if (!IsMethodAllowed(settings, method))
+                        continue;
                     if (method.SpecialName() && (StartsWith(method.Name(), "get_") || StartsWith(method.Name(), "put_")))
                         continue;
                     if (method.SpecialName() && (StartsWith(method.Name(), "add_") || StartsWith(method.Name(), "remove_")))
@@ -179,14 +195,16 @@ public:
                     }
                     else
                     {
-                        textWriter.WriteIndentedLine("");
+                        textWriter.WriteIndentedLine();
                         WriteMethod(method, type, textWriter);   
                     }
                 }
                 //Event Listeners:
                 for (auto const& [name, method]: eventListeners)
                 {
-                    textWriter.WriteIndentedLine("");
+                    if (!IsMethodAllowed(settings, method))
+                        continue;
+                    textWriter.WriteIndentedLine();
                     if (name._Starts_with("add_"))
                     {
                         WriteEventListener(method, type, textWriter, true);
@@ -199,10 +217,10 @@ public:
                 }
 
                 textWriter.ReduceIndent();
-                textWriter.WriteIndentedLine("");
+                textWriter.WriteIndentedLine();
             }
         );
-        textWriter.WriteIndentedLine(""); //blank line
+        textWriter.WriteBlankLine();
     }
 
     static bool HasGetterWithName(winmd::reader::TypeDef const& type, std::string_view const& name)
@@ -229,13 +247,11 @@ public:
     {
         textWriter.Write("%EventListener(type: \"%\", listener: %): void",
             shouldCreateAddListener ? "add" : "remove",
-            TextWriter::ToLowerCamelCase(TextWriter::ToLowerAllCase(std::string(addEventListener.Name().substr(4)))), 
+            TextWriter::ToCamelCase(TextWriter::ToLowerAllCase(std::string(addEventListener.Name().substr(4)))), 
             [&]() {
                 jswinrt::typeparser::method_signature methodSignature(addEventListener);
                 for (auto&& [param, paramSignature] : methodSignature.params())
                 {
-                    if (param.Name() != "handler")
-                        continue;
                     WriteTypeSemantics(jswinrt::typeparser::get_type_semantics(paramSignature->Type()), containerType, textWriter,
                         paramSignature->Type().is_szarray(), false);
                 }
@@ -272,7 +288,7 @@ public:
                 }
                 else
                 {
-                    textWriter.Write("%", TextWriter::ToLowerCamelCase(std::string(method.Name())));
+                    textWriter.Write("%", TextWriter::ToCamelCase(std::string(method.Name())));
                 }
             }, 
             [&]() {
@@ -420,9 +436,9 @@ public:
             textWriter.Write("<"sv);
             for (auto&& param : type.GenericParam())
             {
-                textWriter.Write("%,"sv, param.Name());
+                textWriter.Write("%, "sv, param.Name());
             }
-            textWriter.DeleteLastCharacter();
+            textWriter.DeleteLast(2);
             textWriter.Write(">"sv);
         }
         else
