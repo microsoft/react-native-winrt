@@ -67,19 +67,19 @@ steps:
   - task: CmdLine@2
     displayName: Set LocalDumps for cl.exe
     inputs:
-      script: $(Build.SourcesDirectory)\.ado\scripts\SetupLocalDumps.cmd cl
+      script: $(Build.SourcesDirectory)\tests\scripts\SetupLocalDumps.cmd cl
       workingDirectory: $(Build.SourcesDirectory)
 
   - task: CmdLine@2
     displayName: Set LocalDumps for link.exe
     inputs:
-      script: $(Build.SourcesDirectory)\.ado\scripts\SetupLocalDumps.cmd link
+      script: $(Build.SourcesDirectory)\tests\scripts\SetupLocalDumps.cmd link
       workingDirectory: $(Build.SourcesDirectory)
 
   - task: CmdLine@2
     displayName: Set LocalDumps for msbuild.exe
     inputs:
-      script: $(Build.SourcesDirectory)\.ado\scripts\SetupLocalDumps.cmd msbuild
+      script: $(Build.SourcesDirectory)\tests\scripts\SetupLocalDumps.cmd msbuild
       workingDirectory: $(Build.SourcesDirectory)
 
   - powershell: |
