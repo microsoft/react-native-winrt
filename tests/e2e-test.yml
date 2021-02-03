@@ -30,7 +30,7 @@ jobs:
       - task: CmdLine@2
         displayName: Set LocalDumps
         inputs:
-          script: $(Build.SourcesDirectory)\.ado\scripts\SetupLocalDumps.cmd ReactUWPTestApp
+          script: $(Build.SourcesDirectory)\.ado\scripts\SetupLocalDumps.cmd WinRTTests
           workingDirectory: $(Build.SourcesDirectory)
 
       - task: CmdLine@2
@@ -48,8 +48,8 @@ jobs:
       - task: CopyFiles@2
         displayName: Copy tree dump output files
         inputs:
-          sourceFolder: $(UserProfile)\Documents\ReactUWPTestApp_cezq6h4ygq1hw!App
-          targetFolder: $(Build.StagingDirectory)/ReactUWPTestAppTreeDump
+          sourceFolder: $(UserProfile)\Documents\WinRTTests_cezq6h4ygq1hw!App
+          targetFolder: $(Build.StagingDirectory)/WinRTTestsTreeDump
           contents: TreeDump\**
         condition: succeededOrFailed()
 
@@ -57,43 +57,43 @@ jobs:
         displayName: Copy tree dump screenshots
         inputs:
           sourceFolder: $(Build.SourcesDirectory)\tests\WinRTTests\errorShots
-          targetFolder: $(Build.StagingDirectory)/ReactUWPTestAppTreeDump
+          targetFolder: $(Build.StagingDirectory)/WinRTTestsTreeDump
         condition: succeededOrFailed()
 
       - task: PowerShell@2
         displayName: "MSInfo32"
         inputs:
           targetType: "inline"
-          script: "Start-Process msinfo32 -ArgumentList '/report $(Build.StagingDirectory)\\ReactUWPTestAppTreeDump\\msinfo32.txt' -Wait"
+          script: "Start-Process msinfo32 -ArgumentList '/report $(Build.StagingDirectory)\\WinRTTestsTreeDump\\msinfo32.txt' -Wait"
         condition: failed()
 
       - task: PowerShell@2
         displayName: "Get-ShellScaling"
         inputs:
           targetType: "inline"
-          script: ". $(Build.SourcesDirectory)\\.ado\\scripts\\Get-ShellScaling.ps1 > $(Build.StagingDirectory)\\ReactUWPTestAppTreeDump\\scaleFactor.txt"
+          script: ". $(Build.SourcesDirectory)\\.ado\\scripts\\Get-ShellScaling.ps1 > $(Build.StagingDirectory)\\WinRTTestsTreeDump\\scaleFactor.txt"
         condition: failed()
 
       - task: CopyFiles@2
-        displayName: Copy ReactUWPTestApp artifacts
+        displayName: Copy WinRTTests artifacts
         inputs:
-          sourceFolder: $(Build.SourcesDirectory)/tests/WinRTTests/windows/ReactUWPTestApp
-          targetFolder: $(Build.StagingDirectory)/ReactUWPTestApp
+          sourceFolder: $(Build.SourcesDirectory)/tests/WinRTTests/windows/WinRTTests
+          targetFolder: $(Build.StagingDirectory)/WinRTTests
           contents: AppPackages\**
         condition: failed()
 
       - task: PublishPipelineArtifact@1
-        displayName: "Publish Artifact:ReactUWPTestApp"
+        displayName: "Publish Artifact:WinRTTests"
         inputs:
-          artifactName: ReactUWPTestApp-$(System.JobAttempt)
-          targetPath: $(Build.StagingDirectory)/ReactUWPTestApp
+          artifactName: WinRTTests-$(System.JobAttempt)
+          targetPath: $(Build.StagingDirectory)/WinRTTests
         condition: failed()
 
       - task: PublishPipelineArtifact@1
-        displayName: "Publish Artifact:ReactUWPTestAppTreeDump"
+        displayName: "Publish Artifact:WinRTTestsTreeDump"
         inputs:
-          artifactName: ReactUWPTestAppTreeDump-$(System.JobAttempt)
-          targetPath: $(Build.StagingDirectory)/ReactUWPTestAppTreeDump
+          artifactName: WinRTTestsTreeDump-$(System.JobAttempt)
+          targetPath: $(Build.StagingDirectory)/WinRTTestsTreeDump
         condition: succeededOrFailed()
 
       - template: templates/upload-build-logs.yml
