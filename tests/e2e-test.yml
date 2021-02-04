@@ -36,7 +36,7 @@ jobs:
       - task: CmdLine@2
         displayName: run-windows
         inputs:
-          script: yarn windows --no-launch --no-packager --arch $(BuildPlatform) --release --logging --buildLogDirectory $(BuildLogDirectory) --msbuildprops BaseIntDir=$(BaseIntDir)
+          script: yarn run windows --no-launch --no-packager --arch $(BuildPlatform) --release --logging --buildLogDirectory $(BuildLogDirectory) --msbuildprops BaseIntDir=$(BaseIntDir)
           workingDirectory: tests/WinRTTests
 
       - task: CmdLine@2
