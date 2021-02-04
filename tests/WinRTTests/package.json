@@ -8,7 +8,7 @@
     "start": "react-native start",
     "test": "jest",
     "lint": "eslint . --ext .js,.jsx,.ts,.tsx",
-    "windows": "react-native run-windows"
+    "windows": "run-windows"
   },
   "dependencies": {
     "react": "16.13.1",
