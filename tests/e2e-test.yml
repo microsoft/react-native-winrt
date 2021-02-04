@@ -30,7 +30,7 @@ jobs:
       - task: CmdLine@2
         displayName: Set LocalDumps
         inputs:
-          script: $(Build.SourcesDirectory)\.ado\scripts\SetupLocalDumps.cmd WinRTTests
+          script: $(Build.SourcesDirectory)\tests\scripts\SetupLocalDumps.cmd WinRTTests
           workingDirectory: $(Build.SourcesDirectory)
 
       - task: CmdLine@2
@@ -71,7 +71,7 @@ jobs:
         displayName: "Get-ShellScaling"
         inputs:
           targetType: "inline"
-          script: ". $(Build.SourcesDirectory)\\.ado\\scripts\\Get-ShellScaling.ps1 > $(Build.StagingDirectory)\\WinRTTestsTreeDump\\scaleFactor.txt"
+          script: ". $(Build.SourcesDirectory)\\tests\\scripts\\Get-ShellScaling.ps1 > $(Build.StagingDirectory)\\WinRTTestsTreeDump\\scaleFactor.txt"
         condition: failed()
 
       - task: CopyFiles@2
