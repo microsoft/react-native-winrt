@@ -33,11 +33,18 @@ jobs:
           script: $(Build.SourcesDirectory)\tests\scripts\SetupLocalDumps.cmd WinRTTests
           workingDirectory: $(Build.SourcesDirectory)
 
+      - task: PowerShell@2
+        displayName: "Install WinRTTests App"
+        inputs:
+          targetType: "inline"
+          script: "Add-AppxPackage $(Build.SourcesDirectory)\\tests\\WinRTTests\\windows\\AppPackages\\WinRTTests\\WinRTTests_1.0.0.0_x64_Test\\WinRTTests_1.0.0.0_x64.appx"
+
       - task: CmdLine@2
         displayName: run WinRTTests
         inputs:
           script: yarn run WinRTTests
           workingDirectory: tests/WinRTTests
+        condition: succeeded()
 
       - task: CopyFiles@2
         displayName: Copy tree dump output files
