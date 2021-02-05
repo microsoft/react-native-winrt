@@ -56,6 +56,15 @@ jobs:
           platform: 'x64'
           configuration: 'Release'
 
+      - task: VSBuild@1
+        displayName: 'Build solution WinRTTests.sln'
+        inputs:
+          solution: tests\WinRTTests\windows\WinRTTests.sln
+          vsVersion: 'latest'
+          platform: 'x64'
+          configuration: 'Release'
+        condition: failed()
+
       - task: PowerShell@2
         displayName: "Install WinRTTests App"
         inputs:
