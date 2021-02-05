@@ -33,11 +33,20 @@ jobs:
           script: $(Build.SourcesDirectory)\tests\scripts\SetupLocalDumps.cmd WinRTTests
           workingDirectory: $(Build.SourcesDirectory)
 
+      - task: VSBuild@1
+        displayName: 'Build solution WinRTTests.sln'
+        inputs:
+          solution: tests\WinRTTests\windows\WinRTTests.sln
+          vsVersion: 'latest'
+          platform: 'x64'
+          configuration: 'Release'
+
       - task: PowerShell@2
         displayName: "Install WinRTTests App"
         inputs:
           targetType: "inline"
           script: "Add-AppxPackage $(Build.SourcesDirectory)\\tests\\WinRTTests\\windows\\AppPackages\\WinRTTests\\WinRTTests_1.0.0.0_x64_Test\\WinRTTests_1.0.0.0_x64.appx"
+        condition: succeeded()
 
       - task: CmdLine@2
         displayName: run WinRTTests
