@@ -93,17 +93,17 @@ jobs:
           script: "Add-AppxPackage $(Build.SourcesDirectory)\\tests\\WinRTTests\\windows\\AppPackages\\WinRTTests\\WinRTTests_1.0.0.0_x64_Test\\WinRTTests_1.0.0.0_x64.appx"
         condition: succeededOrFailed()
 
-      - task: CmdLine@2
-        displayName: run WinRTTests
+      - task: PowerShell@2
+        displayName: "Run WinRTTests"
         inputs:
-          script: yarn run WinRTTests
-          workingDirectory: tests/WinRTTests
+          targetType: "inline"
+          script: "Start-Process -FilePath explorer.exe shell:appsFolder\\ade66fbb-2cb8-4ba7-b8e3-f0afcf0f7f3d_m393c780kgv6r!App"
         condition: succeededOrFailed()
 
       - task: CopyFiles@2
         displayName: Copy tree dump output files
         inputs:
-          sourceFolder: $(UserProfile)\Documents\WinRTTests_cezq6h4ygq1hw!App
+          sourceFolder: $(UserProfile)\Documents\ade66fbb-2cb8-4ba7-b8e3-f0afcf0f7f3d_m393c780kgv6r!App
           targetFolder: $(Build.StagingDirectory)/WinRTTestsTreeDump
           contents: TreeDump\**
         condition: succeededOrFailed()
