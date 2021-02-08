@@ -111,21 +111,6 @@ public:
             },
             [&]() 
             {
-                if (type.TypeNamespace() == "Windows.Foundation" && type.TypeName() == "IAsyncAction")
-                {
-                    textWriter.Write(" extends Promise<any>");
-                    return;
-                }
-                if (type.TypeNamespace() == "Windows.Foundation" && type.TypeName() == "IAsyncActionWithProgress`1")
-                {
-                    textWriter.Write(" extends Promise<TProgress>");
-                    return;
-                }
-                if (type.TypeNamespace() == "Windows.Foundation" && (type.TypeName() == "IAsyncOperationWithProgress`2" || type.TypeName() == "IAsyncOperation`1"))
-                {
-                    textWriter.Write(" extends Promise<TResult>");
-                    return;
-                }
                 if (!type.Extends())
                 {
                     return;
@@ -143,11 +128,11 @@ public:
                 catch (std::invalid_argument e){}
             },
             [&]() {
-                if (get_category(type) == winmd::reader::category::interface_type || type.InterfaceImpl().first == type.InterfaceImpl().second)
+                if (type.InterfaceImpl().first == type.InterfaceImpl().second)
                 {
                     return;
                 }
-                textWriter.Write(" implements ");
+                textWriter.Write(get_category(type) == winmd::reader::category::interface_type ? " extends " : " implements "); 
                 for (auto&& interfaceimpl : type.InterfaceImpl())
                 {
                     auto const& implementsTypeSem = jswinrt::typeparser::get_type_semantics(interfaceimpl.Interface());
@@ -155,6 +140,19 @@ public:
                     textWriter.Write(", ");
                 }
                 textWriter.DeleteLast(2);
+                if (type.TypeNamespace() == "Windows.Foundation" && type.TypeName() == "IAsyncInfo")
+                {
+                    textWriter.Write(", Promise<any>");
+                }
+                else if (type.TypeNamespace() == "Windows.Foundation" && type.TypeName() == "IAsyncActionWithProgress`1")
+                {
+                    textWriter.Write(", Promise<TProgress>");
+                }
+                else if (type.TypeNamespace() == "Windows.Foundation" &&
+                    (type.TypeName() == "IAsyncOperationWithProgress`2" || type.TypeName() == "IAsyncOperation`1"))
+                {
+                    textWriter.Write(", Promise<TResult>");
+                }
             },
             [&]() 
             {
@@ -165,20 +163,25 @@ public:
                     textWriter.WriteIndentedLine(
                         "% %: ", [&]() { WriteAccess(field.Flags().Access(), textWriter); }, TextWriter::ToCamelCase(std::string(field.Name())));
                     WriteTypeSemantics(jswinrt::typeparser::get_type_semantics(field.Signature().Type()), type, textWriter,
-                        field.Signature().Type().is_szarray(), true);
+                        field.Signature().Type().is_szarray(), false);
                     textWriter.Write(";");
                 }
                 //Properties:
                 for (auto&& prop : type.PropertyList())
                 {
                     textWriter.WriteIndentedLine();
+                    if (prop.MethodSemantic().first.Method().Flags().Static())
+                    {
+                        textWriter.Write("static ");
+                    }
                     if (HasGetterWithName(type, prop.Name()) && !HasSetterWithName(type, prop.Name()))
                     {
                         textWriter.Write("readonly ");
                     }
                     textWriter.Write("%: ", TextWriter::ToCamelCase(std::string(prop.Name())));
                     WriteTypeSemantics(
-                        jswinrt::typeparser::get_type_semantics(prop.Type().Type()), type, textWriter, prop.Type().Type().is_szarray(), true);
+                        jswinrt::typeparser::get_type_semantics(prop.Type().Type()), type, textWriter, prop.Type().Type().is_szarray(), false);
+
                     textWriter.Write(";");
                 }
                 //Methods:
@@ -297,7 +300,7 @@ public:
                 {
                     textWriter.Write("%: ", param.Name());
                     WriteTypeSemantics(jswinrt::typeparser::get_type_semantics(paramSignature->Type()), containerType, textWriter,
-                        paramSignature->Type().is_szarray(), true);
+                        paramSignature->Type().is_szarray(), false);
                     if (idx < methodSignature.params().size() - 1)
                     {
                         textWriter.Write("%", ", ");
@@ -317,7 +320,7 @@ public:
                     return;
                 }
                 WriteTypeSemantics(jswinrt::typeparser::get_type_semantics(methodSignature.return_signature().Type()), containerType,
-                    textWriter, methodSignature.return_signature().Type().is_szarray(), true);
+                    textWriter, methodSignature.return_signature().Type().is_szarray(), false);
             }
         );
     }
