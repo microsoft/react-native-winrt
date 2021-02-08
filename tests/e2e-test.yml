@@ -73,6 +73,13 @@ jobs:
         condition: succeededOrFailed()
 
       - task: PowerShell@2
+        displayName: "Install dependency - Microsoft.UI.Xaml.2.3"
+        inputs:
+          targetType: "inline"
+          script: "Add-AppxPackage $(Build.SourcesDirectory)\\tests\\WinRTTests\\windows\\AppPackages\\WinRTTests\\WinRTTests_1.0.0.0_x64_Test\\Dependencies\\x64\\Microsoft.UI.Xaml.2.3.appx"
+        condition: succeededOrFailed()
+
+      - task: PowerShell@2
         displayName: "Install WinRTTests App"
         inputs:
           targetType: "inline"
