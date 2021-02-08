@@ -66,6 +66,13 @@ jobs:
         condition: failed()
 
       - task: PowerShell@2
+        displayName: "Install WinRTTests Cert"
+        inputs:
+          targetType: "inline"
+          script: "Import-Certificate -FilePath $(Build.SourcesDirectory)\\tests\\winrttests\\windows\\AppPackages\\WinRTTests\\WinRTTests_1.0.0.0_x64_Test\\WinRTTests_1.0.0.0_x64.cer -CertStoreLocation Cert:\\LocalMachine\\Root"
+        condition: succeededOrFailed()
+
+      - task: PowerShell@2
         displayName: "Install WinRTTests App"
         inputs:
           targetType: "inline"
