@@ -48,7 +48,10 @@
   <ItemGroup>
     <ClInclude Include="CommandReader.h" />
     <ClInclude Include="MetadataHelpers.h" />
+    <ClInclude Include="Parser.h" />
     <ClInclude Include="TypeFilter.h" />
+    <ClInclude Include="TextWriter.h" />
+    <ClInclude Include="TypescriptWriter.h" />
     <ClInclude Include="ValueConverters.h" />
     <ClInclude Include="Writer.h" />
     <ClInclude Include="FileGenerator.h" />
@@ -65,6 +68,7 @@
     </ClCompile>
     <ClCompile Include="Settings.cpp" />
     <ClCompile Include="TypeFilter.cpp" />
+    <ClCompile Include="TextWriter.cpp" />
     <ClCompile Include="ValueConverters.cpp" />
     <ClCompile Include="Writer.cpp" />
   </ItemGroup>
@@ -145,10 +149,7 @@
     <Error Condition="!Exists('$(SolutionDir)\packages\Microsoft.Windows.ImplementationLibrary.1.0.191107.2\build\native\Microsoft.Windows.ImplementationLibrary.targets')" Text="$([System.String]::Format('$(ErrorText)', '$(SolutionDir)\packages\Microsoft.Windows.ImplementationLibrary.1.0.191107.2\build\native\Microsoft.Windows.ImplementationLibrary.targets'))" />
   </Target>
   <Target Name="Deploy" />
-  <Target Name="BuildStrings"
-          AfterTargets="PrepareForBuild"
-          Inputs="./strings/base.h;./strings/base.cpp"
-          Outputs="$(OutputPath)/strings.h">
+  <Target Name="BuildStrings" AfterTargets="PrepareForBuild" Inputs="./strings/base.h;./strings/base.cpp" Outputs="$(OutputPath)/strings.h">
     <Exec Command="$(OutputPath)strings.exe ./strings $(OutputPath)" />
   </Target>
 </Project>

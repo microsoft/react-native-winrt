@@ -2,6 +2,8 @@
 
 #include "FileGenerator.h"
 #include "MetadataHelpers.h"
+#include "TextWriter.h"
+#include "TypescriptWriter.h"
 #include "ValueConverters.h"
 #include "Writer.h"
 
@@ -1245,6 +1247,24 @@ namespace %
         c_codegenNamespace, c_codegenNamespace);
 }
 
+void WriteTypescriptDefinitions(
+    const Settings& settings, const std::map<std::string_view, std::shared_ptr<Namespace>>& roots)
+{
+    if (settings.TypescriptOutputFolder.empty())
+    {
+        return;
+    }
+    std::filesystem::remove_all(settings.TypescriptOutputFolder);
+    std::filesystem::create_directory(settings.TypescriptOutputFolder);
+    Namespace::EnumerateAll(roots, [&](const Namespace& node) {
+        TextWriter textWriter;
+        TypescriptWriter typescriptWriter(settings);
+        typescriptWriter.Write(node, textWriter);
+        textWriter.FlushToFile(settings.TypescriptOutputFolder / (node.FullName() + ".d.ts"));
+        return true;
+    });
+}
+
 std::map<std::string, ValueConverters> WriteProjectedValueConvertersGeneratedH(
     const Settings& settings, const std::map<std::string_view, std::shared_ptr<Namespace>>& roots)
 {
@@ -1430,6 +1450,8 @@ void WriteBaseFiles(const Settings& settings)
 void WriteFiles(const Settings& settings, const std::map<std::string_view, std::shared_ptr<Namespace>>& roots)
 {
     WriteProjectionsGeneratedH(settings, roots);
+    WriteTypescriptDefinitions(settings, roots);
+
     const auto valueConverters = WriteProjectedValueConvertersGeneratedH(settings, roots);
 
     std::map<std::string, uint32_t> namespaceInterfaceCounts;
