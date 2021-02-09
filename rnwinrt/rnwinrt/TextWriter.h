@@ -95,7 +95,6 @@ private:
     }
 
 public:
-
     void Write(const std::string_view& value)
     {
         m_buffer.insert(m_buffer.end(), value.begin(), value.end());
@@ -129,11 +128,11 @@ public:
     {
         FAIL_FAST_IF(CountSegmentPlaceholders(format) != sizeof...(Args));
         Write('\n');
-        for (int i = 0; i < indent*4; i++)
+        for (int i = 0; i < indent * 4; i++)
         {
-            Write(' '); 
+            Write(' ');
         }
-        WriteSegment(format, args...);    
+        WriteSegment(format, args...);
     }
 
     void WriteIndentedLine()
@@ -183,7 +182,8 @@ public:
 
     static std::string ToLowerAllCase(std::string value)
     {
-        std::transform(value.begin(), value.end(), value.begin(), [](char ch) { return static_cast<char>(tolower(ch)); });
+        std::transform(
+            value.begin(), value.end(), value.begin(), [](char ch) { return static_cast<char>(tolower(ch)); });
         return value;
     }
 };

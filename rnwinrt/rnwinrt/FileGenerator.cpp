@@ -2,10 +2,10 @@
 
 #include "FileGenerator.h"
 #include "MetadataHelpers.h"
-#include "ValueConverters.h"
-#include "Writer.h"
 #include "TextWriter.h"
 #include "TypescriptWriter.h"
+#include "ValueConverters.h"
+#include "Writer.h"
 
 #include <strings.h>
 
@@ -1247,11 +1247,12 @@ namespace %
         c_codegenNamespace, c_codegenNamespace);
 }
 
-void WriteTypescriptDefinitions(const Settings& settings, const std::map<std::string_view, std::shared_ptr<Namespace>>& roots)
+void WriteTypescriptDefinitions(
+    const Settings& settings, const std::map<std::string_view, std::shared_ptr<Namespace>>& roots)
 {
     if (settings.TypescriptOutputFolder.empty())
     {
-        return;        
+        return;
     }
     std::filesystem::remove_all(settings.TypescriptOutputFolder);
     std::filesystem::create_directory(settings.TypescriptOutputFolder);
