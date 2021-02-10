@@ -2,6 +2,9 @@
 
 #include <cwctype>
 #include <numeric>
+#include <iostream>
+#include <fstream>
+#include <winrt/Windows.Storage.h>
 
 #include "Test.h"
 
@@ -44,6 +47,14 @@ winrt::com_array<T> reverse_array(const winrt::array_view<const T>& values)
 
 namespace winrt::TestComponent::implementation
 {
+    void Test::LogFailures(hstring const& failures)
+    {
+        auto storageFolder = winrt::Windows::Storage::ApplicationData::Current().LocalFolder();
+        auto storageFile = storageFolder.CreateFileAsync(winrt::hstring(L"FailureLog.txt"), winrt::Windows::Storage::CreationCollisionOption::ReplaceExisting).get();
+
+        winrt::Windows::Storage::FileIO::WriteTextAsync(storageFile, failures).get();
+    }
+
     bool Test::StaticBoolProperty()
     {
         return s_boolProperty;
