@@ -7,7 +7,7 @@ steps:
     inputs:
       script: dir $(Build.StagingDirectory)\FailureLog.txt /s
 
-  - task: PublishFailureLog@1
+  - task: PublishBuildArtifacts@1
     displayName: Upload failure log
     condition:  succeededOrFailed()
     inputs:
