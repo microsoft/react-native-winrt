@@ -3,13 +3,14 @@ parameters:
 
 steps:
   - task: CmdLine@2
-    displayName: dir CrashDumps
+    displayName: Check for failure
     inputs:
-      script: dir $(Build.StagingDirectory)\FailureLog.txt /s
+      script: dir $(parameters.failureLog) /s
+      failOnStderr: true
 
   - task: PublishBuildArtifacts@1
     displayName: Upload failure log
-    condition:  succeededOrFailed()
+    condition:  failed()
     inputs:
-      pathtoPublish: '${{ parameters.buildLogDirectory }}'
-      artifactName: 'Failure logs - $(Agent.JobName)-$(System.JobAttempt)'
+      pathtoPublish: '${{ parameters.failureLog }}'
+      artifactName: 'Failure log - $(Agent.JobName)-$(System.JobAttempt)'
