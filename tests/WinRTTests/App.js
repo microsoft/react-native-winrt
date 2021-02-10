@@ -80,7 +80,7 @@ class App extends Component {
     }
 
     resultText() {
-        if (!this.inProgress() && this.passed())
+        if (!this.inProgress() && !this.passed())
         {
             TestComponent.Test.logFailures(this.failures);
         }
