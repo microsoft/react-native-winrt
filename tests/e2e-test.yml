@@ -50,20 +50,27 @@ jobs:
 
       - task: VSBuild@1
         displayName: 'Build solution WinRTTests.sln'
+        continueOnError: true
         inputs:
           solution: tests\WinRTTests\windows\WinRTTests.sln
           vsVersion: 'latest'
           platform: 'x64'
           configuration: 'Release'
-        max_retry: 1
-        condition: failed()
+
+      - task: VSBuild@1
+        displayName: 'Build solution WinRTTests.sln'
+        inputs:
+          solution: tests\WinRTTests\windows\WinRTTests.sln
+          vsVersion: 'latest'
+          platform: 'x64'
+          configuration: 'Release'
 
       - task: PowerShell@2
         displayName: "Install WinRTTests Cert"
         inputs:
           targetType: "inline"
           script: "Import-Certificate -FilePath $(Build.SourcesDirectory)\\tests\\winrttests\\windows\\AppPackages\\WinRTTests\\WinRTTests_1.0.0.0_x64_Test\\WinRTTests_1.0.0.0_x64.cer -CertStoreLocation Cert:\\LocalMachine\\Root"
-        condition: succeededOrFailed()
+        condition: succeeded()
 
       - task: PowerShell@2
         displayName: "Install dependency - Microsoft.UI.Xaml.2.3"
