@@ -279,6 +279,194 @@ namespace jswinrt
     };
 }
 
+// Collections wrappers
+namespace jswinrt
+{
+    // Implementations for passing arrays as various iterable types
+    template <typename D, typename T>
+    struct array_iterator :
+        winrt::implements<array_iterator<D, T>, winrt::Windows::Foundation::Collections::IIterator<T>>
+    {
+        array_iterator(D* target) : target(target)
+        {
+        }
+
+        T Current()
+        {
+            target->CheckThread();
+            throw winrt::hresult_not_implemented(); // TODO
+        }
+
+        bool HasCurrent()
+        {
+            return index < target->Size();
+        }
+
+        std::uint32_t GetMany(winrt::array_view<T> const& items)
+        {
+            auto count = target->GetMany(index, items);
+            index += count;
+            return count;
+        }
+
+        bool MoveNext()
+        {
+            auto size = target->Size();
+            if (index < size)
+            {
+                ++index;
+            }
+
+            return index < size;
+        }
+
+        winrt::com_ptr<D> target;
+        std::uint32_t index = 0;
+    };
+
+    template <typename D, typename T>
+    struct array_vector_base
+    {
+        array_vector_base(std::shared_ptr<ProjectionsContext> context, jsi::Array array) :
+            context(std::move(context)),
+            array(std::move(array)),
+            thread_id(::GetCurrentThreadId())
+        {
+        }
+
+        void CheckThread()
+        {
+            if (thread_id != ::GetCurrentThreadId())
+            {
+                throw winrt::hresult_wrong_thread{};
+            }
+        }
+
+        // IIterator functions
+        winrt::Windows::Foundation::Collections::IIterator<T> First()
+        {
+            return winrt::make<array_iterator<D, T>>(static_cast<D*>(this));
+        }
+
+        // IVectorView functions
+        std::uint32_t Size()
+        {
+            CheckThread();
+            return static_cast<std::uint32_t>(array.size(context->Runtime));
+        }
+
+        T GetAt(std::uint32_t index)
+        {
+            CheckThread();
+            // TODO
+            throw winrt::hresult_not_implemented{};
+        }
+
+        std::uint32_t GetMany(std::uint32_t startIndex, winrt::array_view<T> const& items)
+        {
+            CheckThread();
+            // TODO
+            throw winrt::hresult_not_implemented{};
+        }
+
+        bool IndexOf(T const& value, std::uint32_t& index)
+        {
+            CheckThread();
+            // TODO
+            throw winrt::hresult_not_implemented{};
+        }
+
+        // IVector functions, with the exception of 'GetView'
+        void Append(T const& value)
+        {
+            CheckThread();
+            // TODO: Currently, jsi::Array does not allow modification of size. We might be able to get around this by
+            // invoking javascript methods directly? E.g. call 'push'
+            throw winrt::hresult_not_implemented{};
+        }
+
+        void Clear()
+        {
+            CheckThread();
+            // TODO: Currently, jsi::Array does not allow modification of size. We might be able to get around this by
+            // invoking javascript methods directly?
+            throw winrt::hresult_not_implemented{};
+        }
+
+        void InsertAt(std::uint32_t index, T const& value)
+        {
+            CheckThread();
+            // TODO: Currently, jsi::Array does not allow modification of size. We might be able to get around this by
+            // invoking javascript methods directly? E.g. call 'splice'
+            throw winrt::hresult_not_implemented{};
+        }
+
+        void RemoveAt(std::uint32_t index)
+        {
+            CheckThread();
+            // TODO: Currently, jsi::Array does not allow modification of size. We might be able to get around this by
+            // invoking javascript methods directly? E.g. call 'splice'
+            throw winrt::hresult_not_implemented{};
+        }
+
+        void RemoveAtEnd()
+        {
+            CheckThread();
+            // TODO: Currently, jsi::Array does not allow modification of size. We might be able to get around this by
+            // invoking javascript methods directly? E.g. call 'splice'
+            throw winrt::hresult_not_implemented{};
+        }
+
+        void ReplaceAll(winrt::array_view<const T> const& items)
+        {
+            CheckThread();
+            // TODO: Currently, jsi::Array does not allow modification of size. We might be able to get around this by
+            // invoking javascript methods directly?
+            throw winrt::hresult_not_implemented{};
+        }
+
+        void SetAt(std::uint32_t index, T const& value)
+        {
+            CheckThread();
+            // TODO
+        }
+
+        std::shared_ptr<ProjectionsContext> context;
+        jsi::Array array;
+        DWORD thread_id;
+    };
+
+    template <typename T>
+    struct array_iterable :
+        winrt::implements<array_iterable<T>, winrt::Windows::Foundation::Collections::IIterable<T>>,
+        array_vector_base<array_iterable<T>, T>
+    {
+        using array_vector_base::array_vector_base;
+    };
+
+    template <typename T>
+    struct array_vector_view :
+        winrt::implements<array_vector_view<T>, winrt::Windows::Foundation::Collections::IVectorView<T>>,
+        array_vector_base<array_vector_view<T>, T>
+    {
+        using array_vector_base::array_vector_base;
+    };
+
+    template <typename T>
+    struct array_vector :
+        winrt::implements<array_vector<T>, winrt::Windows::Foundation::Collections::IVector<T>>,
+        array_vector_base<array_vector<T>, T>
+    {
+        using array_vector_base::array_vector_base;
+
+        winrt::Windows::Foundation::Collections::IVectorView<T> GetView()
+        {
+            // TODO: Is there a better way to "copy" the array reference?
+            return winrt::make<array_vector_view<T>>(context, array.getArray(context->Runtime));
+        }
+    };
+}
+
 // Value converters
 namespace jswinrt
 {
