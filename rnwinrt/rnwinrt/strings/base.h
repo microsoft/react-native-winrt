@@ -1,4 +1,477 @@
 #pragma once
+
+#if 1
+
+#include <jsi/jsi.h>
+#include <string_view>
+#include <unordered_map>
+#include <winrt/Windows.Foundation.h>
+
+// Common helpers/types
+namespace jswinrt
+{
+    // TODO: Switch to std::span when available. For now, this is just a subset that we need
+    template <typename T>
+    struct span
+    {
+        constexpr span() = default;
+
+        constexpr span(T* data, std::size_t size) noexcept : m_data(data), m_size(size)
+        {
+        }
+
+        template <std::size_t Size>
+        constexpr span(T (&arr)[Size]) noexcept : m_data(arr), m_size(Size)
+        {
+        }
+
+        constexpr T* data() const noexcept
+        {
+            return m_data;
+        }
+
+        constexpr std::size_t size() const noexcept
+        {
+            return m_size;
+        }
+
+        constexpr bool empty() const noexcept
+        {
+            return m_size == 0;
+        }
+
+        constexpr T& operator[](std::size_t index) const noexcept
+        {
+            assert(index < m_size);
+            return m_data[index];
+        }
+
+        constexpr T* begin() const noexcept
+        {
+            return m_data;
+        }
+
+        constexpr T* end() const noexcept
+        {
+            return m_data + m_size;
+        }
+
+    private:
+        T* m_data = nullptr;
+        std::size_t m_size = 0;
+    };
+
+    template <typename T, typename U, typename Return, typename... Args>
+    auto bind_this(Return (U::*fn)(Args...), T* pThis)
+    {
+        return [fn, pThis](Args... args) { return (pThis->*fn)(std::forward<Args>(args)...); };
+    }
+
+    template <typename T, typename U, typename Return, typename... Args>
+    auto bind_this(Return (U::*fn)(Args...) const, const T* pThis)
+    {
+        return [fn, pThis](Args... args) { return (pThis->*fn)(std::forward<Args>(args)...); };
+    }
+}
+
+// JSI helpers
+namespace jswinrt
+{
+    namespace jsi = facebook::jsi;
+    using namespace std::string_literals;
+
+    using get_property_t = jsi::Value (*)(jsi::Runtime&);
+    using set_property_t = void (*)(jsi::Runtime&, const jsi::Value&);
+    using add_event_t = void (*)(jsi::Runtime&, std::string_view, const jsi::Value&);
+    using remove_event_t = void (*)(jsi::Runtime&, std::string_view, const jsi::Value&);
+    using call_fn_t = jsi::Value (*)(jsi::Runtime&, const jsi::Value&, const jsi::Value*, size_t);
+
+    inline constexpr std::string_view add_event_name = "addEventListener"sv;
+    inline constexpr std::string_view remove_event_name = "removeEventListener"sv;
+
+    inline jsi::String make_string(jsi::Runtime& runtime, std::string_view str)
+    {
+        return jsi::String::createFromUtf8(runtime, reinterpret_cast<const uint8_t*>(str.data()), str.size());
+    }
+
+    jsi::String make_string(jsi::Runtime& runtime, std::wstring_view str);
+
+    inline jsi::PropNameID make_propid(jsi::Runtime& runtime, std::string_view str)
+    {
+        return jsi::PropNameID::forUtf8(runtime, reinterpret_cast<const uint8_t*>(str.data()), str.size());
+    }
+
+    template <typename T, typename Enable = void>
+    struct projected_value_traits;
+
+    template <typename T>
+    jsi::Value convert_native_to_value(jsi::Runtime& runtime, T&& value)
+    {
+        return projected_value_traits<T>::as_value(runtime, std::forward<T>(value));
+    }
+
+    template <typename T>
+    T convert_value_to_native(jsi::Runtime& runtime, const jsi::Value& value)
+    {
+        return projected_value_traits<T>::as_native(runtime, value);
+    }
+}
+
+// Types used to store static data
+namespace jswinrt
+{
+    // NOTE: All of these instances are intended to go into the .text section and hold no state that needs to be free'd,
+    // hence the lack of a virtual destructor
+    struct static_projection_data
+    {
+        constexpr static_projection_data(std::string_view name) : name(name)
+        {
+        }
+
+        virtual jsi::Value create(jsi::Runtime& runtime) const = 0;
+
+        std::string_view name; // E.g. 'Baz' for the type/namespace/etc. 'Foo.Bar.Baz'
+    };
+
+    struct static_namespace_data final : static_projection_data
+    {
+        constexpr static_namespace_data(std::string_view name, span<const static_projection_data* const> children) :
+            static_projection_data(name), children(children)
+        {
+        }
+
+        virtual jsi::Value create(jsi::Runtime& runtime) const override;
+
+        span<const static_projection_data* const> children;
+    };
+
+    struct static_enum_data final : static_projection_data
+    {
+        // Enums are either signed or unsigned 32-bit values in Windows metadata. All of which are representable as
+        // 64-bit floating point values (i.e. "number")
+        struct value_mapping
+        {
+            std::string_view name;
+            double value;
+        };
+
+        constexpr static_enum_data(std::string_view name, span<const value_mapping> values) :
+            static_projection_data(name), values(values)
+        {
+        }
+
+        virtual jsi::Value create(jsi::Runtime& runtime) const override;
+
+        jsi::Value get_value(std::string_view valueName) const;
+
+        span<const value_mapping> values;
+    };
+
+    struct static_class_data : static_projection_data
+    {
+        struct property_mapping
+        {
+            std::string_view name;
+            get_property_t getter;
+            set_property_t setter;
+        };
+
+        struct event_mapping
+        {
+            std::string_view name;
+            add_event_t add;
+            remove_event_t remove;
+        };
+
+        struct function_mapping
+        {
+            std::string_view name;
+            call_fn_t function;
+        };
+
+        constexpr static_class_data(std::string_view name, span<const property_mapping> properties,
+            span<const event_mapping> events, span<const function_mapping> functions) :
+            static_projection_data(name),
+            properties(properties), events(events), functions(functions)
+        {
+        }
+
+        virtual jsi::Value create(jsi::Runtime& runtime) const override;
+
+        jsi::Value add_event_listener(
+            jsi::Runtime& runtime, const jsi::Value&, const jsi::Value* args, size_t count) const;
+        jsi::Value remove_event_listener(
+            jsi::Runtime& runtime, const jsi::Value&, const jsi::Value* args, size_t count) const;
+
+        span<const property_mapping> properties;
+        span<const event_mapping> events;
+        span<const function_mapping> functions;
+    };
+
+    struct static_activatable_class_data final : static_class_data
+    {
+        constexpr static_activatable_class_data(std::string_view name, call_fn_t constructor,
+            span<const property_mapping> properties, span<const event_mapping> events,
+            span<const function_mapping> functions) :
+            static_class_data(name, properties, events, functions),
+            constructor(constructor)
+        {
+        }
+
+        virtual jsi::Value create(jsi::Runtime& runtime) const override;
+
+        call_fn_t constructor;
+    };
+}
+
+// Types used for object instances, etc.
+namespace jswinrt
+{
+    struct projected_namespace final : public jsi::HostObject
+    {
+        projected_namespace(const static_namespace_data* data) : m_data(data)
+        {
+            m_children.resize(data->children.size());
+        }
+
+        // HostObject functions
+        virtual jsi::Value get(jsi::Runtime& runtime, const jsi::PropNameID& name) override;
+        virtual void set(jsi::Runtime& runtime, const jsi::PropNameID& name, const jsi::Value& value) override;
+        virtual std::vector<jsi::PropNameID> getPropertyNames(jsi::Runtime& runtime) override;
+
+    private:
+
+        const static_namespace_data* m_data;
+        std::vector<jsi::Value> m_children;
+    };
+
+    struct projected_enum final : public jsi::HostObject
+    {
+        projected_enum(const static_enum_data* data) : m_data(data)
+        {
+        }
+
+        // HostObject functions
+        virtual jsi::Value get(jsi::Runtime& runtime, const jsi::PropNameID& name) override;
+        virtual void set(jsi::Runtime& runtime, const jsi::PropNameID& name, const jsi::Value& value) override;
+        virtual std::vector<jsi::PropNameID> getPropertyNames(jsi::Runtime& runtime) override;
+
+    private:
+
+        const static_enum_data* m_data;
+    };
+
+    struct projected_statics_class final : public jsi::HostObject
+    {
+        projected_statics_class(const static_class_data* data) : m_data(data)
+        {
+        }
+
+        // HostObject functions
+        virtual jsi::Value get(jsi::Runtime& runtime, const jsi::PropNameID& name) override;
+        virtual void set(jsi::Runtime& runtime, const jsi::PropNameID& name, const jsi::Value& value) override;
+        virtual std::vector<jsi::PropNameID> getPropertyNames(jsi::Runtime& runtime) override;
+
+    private:
+
+        const static_class_data* m_data;
+        std::unordered_map<std::string_view, jsi::Value> m_functions;
+    };
+}
+
+// Value converters
+namespace jswinrt
+{
+    template <>
+    struct projected_value_traits<bool>
+    {
+        static jsi::Value as_value(jsi::Runtime&, bool value) noexcept
+        {
+            return jsi::Value(value);
+        }
+
+        static bool as_native(jsi::Runtime&, const jsi::Value& value) noexcept;
+    };
+
+    template <typename T>
+    struct projected_value_traits<T, std::enable_if_t<std::is_arithmetic_v<T>>>
+    {
+        static jsi::Value as_value(jsi::Runtime&, T value) noexcept
+        {
+            return jsi::Value(static_cast<double>(value));
+        }
+
+        static T as_native(jsi::Runtime&, const jsi::Value& value)
+        {
+            return static_cast<T>(value.asNumber());
+        }
+    };
+
+    template <typename T>
+    struct projected_value_traits<T, std::enable_if_t<std::is_enum_v<T>>>
+    {
+        static jsi::Value as_value(jsi::Runtime&, T value) noexcept
+        {
+            return jsi::Value(static_cast<double>(static_cast<std::underlying_type_t<T>>(value)));
+        }
+
+        static T as_native(jsi::Runtime&, const jsi::Value& value)
+        {
+            return static_cast<T>(static_cast<std::underlying_type_t<T>>(value.asNumber()));
+        }
+    };
+
+    template <>
+    struct projected_value_traits<char16_t>
+    {
+        static jsi::Value as_value(jsi::Runtime& runtime, char16_t value);
+        static char16_t as_native(jsi::Runtime& runtime, const jsi::Value& value);
+    };
+
+    template <>
+    struct projected_value_traits<winrt::hstring>
+    {
+        static jsi::Value as_value(jsi::Runtime& runtime, const winrt::hstring& value)
+        {
+            return make_string(runtime, static_cast<std::wstring_view>(value));
+        }
+
+        static winrt::hstring as_native(jsi::Runtime& runtime, const jsi::Value& value);
+    };
+
+    template <>
+    struct projected_value_traits<winrt::guid>
+    {
+        static jsi::Value as_value(jsi::Runtime& runtime, const winrt::guid& value);
+        static winrt::guid as_native(jsi::Runtime& runtime, const jsi::Value& value);
+    };
+
+    // TODO: Structs? Current behavior is to throw on unspecialized. Should we just default that for everything?
+
+    template <>
+    struct projected_value_traits<winrt::hresult>
+    {
+        static jsi::Value as_value(jsi::Runtime& runtime, winrt::hresult value)
+        {
+            return projected_value_traits<int32_t>::as_value(runtime, static_cast<int32_t>(value));
+        }
+
+        static winrt::hresult as_native(jsi::Runtime& runtime, const jsi::Value& value)
+        {
+            return winrt::hresult(projected_value_traits<int32_t>::as_native(runtime, value));
+        }
+    };
+
+    template <>
+    struct projected_value_traits<winrt::Windows::Foundation::DateTime>
+    {
+        static jsi::Value as_value(jsi::Runtime& runtime, winrt::Windows::Foundation::DateTime value);
+        static winrt::Windows::Foundation::DateTime as_native(jsi::Runtime& runtime, const jsi::Value& value);
+    };
+
+    template <>
+    struct projected_value_traits<winrt::Windows::Foundation::TimeSpan>
+    {
+        static jsi::Value as_value(jsi::Runtime& runtime, winrt::Windows::Foundation::TimeSpan value);
+        static winrt::Windows::Foundation::TimeSpan as_native(jsi::Runtime& runtime, const jsi::Value& value);
+    };
+
+    // TODO: Arrays
+
+    template <typename T>
+    struct projected_value_traits<T, std::enable_if_t<std::is_base_of_v<winrt::Windows::Foundation::IInspectable, T>>>
+    {
+        static jsi::Value as_value(jsi::Runtime& runtime, const T& value)
+        {
+            if (!value)
+            {
+                return jsi::Value::null();
+            }
+
+            if constexpr (std::is_same_v<T, winrt::Windows::Foundation::IPropertyValue>)
+            {
+                // TODO
+            }
+            else if constexpr (std::is_same_v<T, winrt::Windows::Foundation::IInspectable>)
+            {
+                if (auto propVal = value.try_as<winrt::Windows::Foundation::IPropertyValue>())
+                {
+                    // TODO
+                }
+            }
+
+            // TODO
+            return jsi::Value::null();
+        }
+
+        static T as_native(jsi::Runtime& runtime, const jsi::Value& value)
+        {
+            return T{ nullptr }; // TODO
+        }
+    };
+
+    template <typename T>
+    struct projected_value_traits<winrt::Windows::Foundation::IReference<T>>
+    {
+        static jsi::Value as_value(jsi::Runtime& runtime, const winrt::Windows::Foundation::IReference<T>& value)
+        {
+            if (!value)
+            {
+                return jsi::Value::null();
+            }
+
+            return convert_native_to_value(runtime, value.Value());
+        }
+
+        static winrt::Windows::Foundation::IReference<T> as_native(jsi::Runtime& runtime, const jsi::Value& value)
+        {
+            if (value.isNull() || value.isUndefined())
+            {
+                return nullptr;
+            }
+
+            return winrt::box_value(convert_value_to_native<T>(runtime, value))
+                .as<winrt::Windows::Foundation::IReference<T>>();
+        }
+    };
+
+    template <typename T>
+    struct projected_value_traits<winrt::Windows::Foundation::IReferenceArray<T>>
+    {
+        static jsi::Value as_value(jsi::Runtime&, const winrt::Windows::Foundation::IReferenceArray<T>& value)
+        {
+            if (!value)
+            {
+                return jsi::Value(nullptr);
+            }
+
+            // TODO: Array return
+            // return ConvertComArrayToValue<decltype(std::declval(I).Value()), CTV>(context, value.Value());
+            throw winrt::hresult_not_implemented();
+        }
+
+        static winrt::Windows::Foundation::IReferenceArray<T> from_value(jsi::Runtime&, const jsi::Value& value)
+        {
+            if (value.isNull() || value.isUndefined)
+            {
+                return nullptr;
+            }
+
+            // It doesn't seem like C++/WinRT actually provides an implementation of IReferenceArray<T> like it does for
+            // IReference<T> nor does it even map the basic array types supported by Windows::Foundation::PropertyValue.
+            // It can be done but since the public SDK doesn't actually make use of it, perhaps it it is not necessary
+            // to implement.
+            throw jsi::JSError(context->Runtime,
+                "TypeError: Conversion to native reference array to JS not implemented for "s + typeid(T).name());
+        }
+    };
+
+    // TODO: Async
+    // TODO: Delegates
+}
+
+#else
+
 #define NOMINMAX
 
 #include <set>
@@ -1685,56 +2158,6 @@ namespace WinRTTurboModule::Windows::Foundation::Collections
 
 namespace WinRTTurboModule
 {
-    // Boolean
-    inline jsi::Value ConvertBooleanToValue(const std::shared_ptr<ProjectionsContext>&, const bool& value)
-    {
-        return jsi::Value(value);
-    }
-
-    bool ConvertValueToBoolean(const std::shared_ptr<ProjectionsContext>& context, const jsi::Value& value);
-
-    // Integer/Float
-    template <typename T>
-    inline jsi::Value ConvertNumberToValue(const std::shared_ptr<ProjectionsContext>&, const T& value)
-    {
-        return jsi::Value(static_cast<double>(value));
-    }
-
-    template <typename T>
-    inline T ConvertValueToNumber(const std::shared_ptr<ProjectionsContext>&, const jsi::Value& value)
-    {
-        return static_cast<T>(value.asNumber());
-    }
-
-    // Enum
-    template <typename T>
-    inline jsi::Value ConvertEnumToValue(const std::shared_ptr<ProjectionsContext>&, const T& value)
-    {
-        return jsi::Value(static_cast<double>(static_cast<int64_t>(value)));
-    }
-
-    template <typename T>
-    inline T ConvertValueToEnum(const std::shared_ptr<ProjectionsContext>&, const jsi::Value& value)
-    {
-        return static_cast<T>(static_cast<int64_t>(value.asNumber()));
-    }
-
-    // char16_t
-    jsi::Value ConvertCharToValue(const std::shared_ptr<ProjectionsContext>& context, const char16_t& value);
-    char16_t ConvertValueToChar(const std::shared_ptr<ProjectionsContext>& context, const jsi::Value& value);
-
-    // winrt::hstring
-    inline jsi::Value ConvertStringToValue(
-        const std::shared_ptr<ProjectionsContext>& context, const winrt::hstring& value)
-    {
-        return CreateString(context->Runtime, static_cast<std::wstring_view>(value));
-    }
-    winrt::hstring ConvertValueToString(const std::shared_ptr<ProjectionsContext>& context, const jsi::Value& value);
-
-    // winrt::guid
-    jsi::Value ConvertGuidToValue(const std::shared_ptr<ProjectionsContext>& context, const winrt::guid& value);
-    winrt::guid ConvertValueToGuid(const std::shared_ptr<ProjectionsContext>& context, const jsi::Value& value);
-
     // Structs: Converters should generally by code-gen'd aside from a few special types but it is possible that some
     // are missing. For example, there are IDL issues like Windows.UI.Core.CorePhysicalKeyStatus being WebHostHidden but
     // by types that are not such as Windows.Web.UI.Interop.IWebViewControlAcceleratorKeyPressedEventArgs (which
@@ -1752,37 +2175,6 @@ namespace WinRTTurboModule
         throw jsi::JSError(context->Runtime,
             std::string("TypeError: Conversion from JS to native struct not implemented for "sv) + typeid(T).name());
     }
-
-    // winrt::hresult
-    template <>
-    inline jsi::Value ConvertStructToValue<winrt::hresult>(
-        const std::shared_ptr<ProjectionsContext>& context, const winrt::hresult& value)
-    {
-        return ConvertNumberToValue<int32_t>(context, static_cast<int32_t>(value));
-    }
-
-    template <>
-    inline winrt::hresult ConvertValueToStruct<winrt::hresult>(
-        const std::shared_ptr<ProjectionsContext>& context, const jsi::Value& value)
-    {
-        return winrt::hresult(ConvertValueToNumber<int32_t>(context, value));
-    }
-
-    // winrt::Windows::Foundation::DateTime <=> std::chrono::time_point<clock, TimeSpan>;
-    template <>
-    jsi::Value ConvertStructToValue<winrt::Windows::Foundation::DateTime>(
-        const std::shared_ptr<ProjectionsContext>& context, const winrt::Windows::Foundation::DateTime& value);
-    template <>
-    winrt::Windows::Foundation::DateTime ConvertValueToStruct<winrt::Windows::Foundation::DateTime>(
-        const std::shared_ptr<ProjectionsContext>& context, const jsi::Value& value);
-
-    // winrt::Windows::Foundation::TimeSpan <=> std::chrono::duration<int64_t, impl::filetime_period>;
-    template <>
-    jsi::Value ConvertStructToValue<winrt::Windows::Foundation::TimeSpan>(
-        const std::shared_ptr<ProjectionsContext>& context, const winrt::Windows::Foundation::TimeSpan& value);
-    template <>
-    winrt::Windows::Foundation::TimeSpan ConvertValueToStruct<winrt::Windows::Foundation::TimeSpan>(
-        const std::shared_ptr<ProjectionsContext>& context, const jsi::Value& value);
 
     template <typename T, auto CTV>
     jsi::Value ConvertComArrayToValue(
@@ -2019,53 +2411,6 @@ namespace WinRTTurboModule
                 std::shared_ptr<jsi::HostObject>(new ProjectedAsyncOperation(context, value, &CTV, &CPV))));
     }
 
-    template <typename I, auto CTV>
-    jsi::Value ConvertReferenceToValue(const std::shared_ptr<ProjectionsContext>& context, const I& value)
-    {
-        if (value)
-        {
-            return CTV(context, value.Value());
-        }
-        return jsi::Value(nullptr);
-    }
-
-    template <typename I, auto CVT>
-    I ConvertValueToReference(const std::shared_ptr<ProjectionsContext>& context, const jsi::Value& value)
-    {
-        if (value.isNull() || value.isUndefined())
-        {
-            return nullptr;
-        }
-        return winrt::box_value(CVT(context, value)).as<I>();
-    }
-
-    template <typename I, auto CTV>
-    jsi::Value ConvertReferenceArrayToValue(const std::shared_ptr<ProjectionsContext>& context, const I& value)
-    {
-        if (value)
-        {
-            return ConvertComArrayToValue<decltype(std::declval(I).Value()), CTV>(context, value.Value());
-        }
-        return jsi::Value(nullptr);
-    }
-
-    template <typename I, auto CVT>
-    I ConvertValueToReferenceArray(const std::shared_ptr<ProjectionsContext>& context, const jsi::Value& value)
-    {
-        if (value.isNull() || value.isUndefined())
-        {
-            return nullptr;
-        }
-
-        // It doesn't seem like C++/WinRT actually provides an implementation of IReferenceArray<T> like it does for
-        // IReference<T> nor does it even map the basic array types supported by Windows::Foundation::PropertyValue. It
-        // can be done but since the public SDK doesn't actually make use of it, perhaps it it is not necessary to
-        // implement.
-        throw jsi::JSError(context->Runtime,
-            std::string("TypeError: Conversion to native reference array to JS not implemented for "sv) +
-                typeid(I).name());
-    }
-
     // Delegates
     template <typename T>
     jsi::Value ConvertDelegateToValue(const std::shared_ptr<ProjectionsContext>& context, const T& value)
@@ -2190,3 +2535,5 @@ namespace WinRTTurboModule
             });
     }
 }
+
+#endif

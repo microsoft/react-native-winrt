@@ -1,5 +1,514 @@
 
+#if 1
+
+#define NOMINMAX
+#define WIN32_LEAN_AND_MEAN
+
 #include "base.h"
+
+#include <Windows.h>
+
+#include <combaseapi.h>
+#include <winstring.h>
+
+using namespace jswinrt;
+using namespace std::literals;
+
+using namespace winrt::Windows::Foundation;
+
+jsi::String make_string(jsi::Runtime& runtime, std::wstring_view str)
+{
+    if (str.empty())
+    {
+        return jsi::String::createFromAscii(runtime, "");
+    }
+
+    auto bytes = ::WideCharToMultiByte(CP_UTF8, WC_ERR_INVALID_CHARS, str.data(), static_cast<int32_t>(str.size()),
+        nullptr /*lpMultiByteStr*/, 0 /*cbMultiByte*/, nullptr /*lpDefaultChar*/, nullptr /*lpUsedDefaultChar*/);
+    winrt::check_bool(bytes);
+
+    auto buffer = std::make_unique<char[]>(bytes);
+    winrt::check_bool(::WideCharToMultiByte(CP_UTF8, WC_ERR_INVALID_CHARS, str.data(), static_cast<int32_t>(str.size()),
+        buffer.get(), bytes, nullptr /*lpDefaultChar*/, nullptr /*lpUsedDefaultChar*/));
+
+    return jsi::String::createFromUtf8(runtime, reinterpret_cast<const uint8_t*>(buffer.get()), bytes);
+}
+
+template <typename ThingWithName>
+static auto find_by_name(span<const ThingWithName* const> list, std::string_view name) noexcept
+{
+    return std::find_if(list.begin(), list.end(), [&](const ThingWithName* ptr) { return ptr->name == name; });
+}
+
+template <typename ThingWithName>
+static auto find_by_name(span<const ThingWithName> list, std::string_view name) noexcept
+{
+    return std::find_if(list.begin(), list.end(), [&](const ThingWithName& thing) { return thing.name == name; });
+}
+
+jsi::Value static_namespace_data::create(jsi::Runtime& runtime) const
+{
+    return jsi::Value(runtime, jsi::Object::createFromHostObject(runtime, std::make_shared<projected_namespace>(this)));
+}
+
+jsi::Value projected_namespace::get(jsi::Runtime& runtime, const jsi::PropNameID& name)
+{
+    if (auto itr = find_by_name(m_data->children, name.utf8(runtime)); itr != m_data->children.end())
+    {
+        auto& item = m_children[itr - m_data->children.begin()];
+        if (item.isUndefined())
+        {
+            item = (*itr)->create(runtime);
+        }
+
+        return jsi::Value(runtime, item);
+    }
+
+    return jsi::Value::undefined();
+}
+
+void projected_namespace::set(jsi::Runtime& runtime, const jsi::PropNameID& name, const jsi::Value&)
+{
+    throw jsi::JSError(runtime,
+        "TypeError: Cannot assign to property '" + name.utf8(runtime) + "' of a projected WinRT namespace");
+}
+
+std::vector<jsi::PropNameID> projected_namespace::getPropertyNames(jsi::Runtime& runtime)
+{
+    std::vector<jsi::PropNameID> result;
+    result.reserve(m_children.size());
+    for (auto ptr : m_data->children)
+    {
+        result.push_back(make_propid(runtime, ptr->name));
+    }
+
+    return result;
+}
+
+jsi::Value static_enum_data::create(jsi::Runtime& runtime) const
+{
+    return jsi::Value(runtime, jsi::Object::createFromHostObject(runtime, std::make_shared<projected_enum>(this)));
+}
+
+jsi::Value static_enum_data::get_value(std::string_view valueName) const
+{
+    // TODO: It would also be rather simple to ensure that the array is sorted and do a binary search, however the
+    // number of enum elements is typically pretty small, so that may actually be harmful
+    auto itr = std::find_if(values.begin(), values.end(), [&](auto& mapping) { return mapping.name == valueName; });
+    if (itr == values.end())
+    {
+        return jsi::Value::undefined();
+    }
+
+    return jsi::Value(itr->value);
+}
+
+jsi::Value projected_enum::get(jsi::Runtime& runtime, const jsi::PropNameID& name)
+{
+    return m_data->get_value(name.utf8(runtime));
+}
+
+void projected_enum::set(jsi::Runtime& runtime, const jsi::PropNameID& name, const jsi::Value&)
+{
+    throw jsi::JSError(
+        runtime, "TypeError: Cannot assign to property '" + name.utf8(runtime) + "' of a projected WinRT enum");
+}
+
+std::vector<jsi::PropNameID> projected_enum::getPropertyNames(jsi::Runtime& runtime)
+{
+    std::vector<jsi::PropNameID> result;
+    result.reserve(m_data->values.size());
+    for (auto& mapping : m_data->values)
+    {
+        result.push_back(make_propid(runtime, mapping.name));
+    }
+
+    return result;
+}
+
+jsi::Value static_class_data::create(jsi::Runtime& runtime) const
+{
+    return jsi::Value(
+        runtime, jsi::Object::createFromHostObject(runtime, std::make_shared<projected_statics_class>(this)));
+}
+
+jsi::Value static_class_data::add_event_listener(
+    jsi::Runtime& runtime, const jsi::Value&, const jsi::Value* args, size_t count) const
+{
+    if (count < 2)
+    {
+        throw jsi::JSError(runtime, "TypeError: addEventListener expects (at least) 2 arguments");
+    }
+
+    auto name = args[0].asString(runtime).utf8(runtime);
+    if (auto itr = find_by_name(events, name); itr != events.end())
+    {
+        itr->add(runtime, name, args[1]);
+    }
+
+    return jsi::Value::undefined();
+}
+
+jsi::Value static_class_data::remove_event_listener(
+    jsi::Runtime& runtime, const jsi::Value&, const jsi::Value* args, size_t count) const
+{
+    if (count < 2)
+    {
+        throw jsi::JSError(runtime, "TypeError: removeEventListener expects (at least) 2 arguments");
+    }
+
+    auto name = args[0].asString(runtime).utf8(runtime);
+    if (auto itr = find_by_name(events, name); itr != events.end())
+    {
+        itr->remove(runtime, name, args[1]);
+    }
+
+    return jsi::Value::undefined();
+}
+
+jsi::Value projected_statics_class::get(jsi::Runtime& runtime, const jsi::PropNameID& id)
+{
+    auto name = id.utf8(runtime);
+
+    if (auto itr = find_by_name(m_data->properties, name); itr != m_data->properties.end())
+    {
+        return itr->getter(runtime);
+    }
+
+    auto itr = m_functions.find(name);
+    if (itr == m_functions.end())
+    {
+        auto dataItr = find_by_name(m_data->functions, name);
+        if (dataItr != m_data->functions.end())
+        {
+            auto fn = jsi::Function::createFromHostFunction(runtime, id, 0, dataItr->function);
+            itr = m_functions.emplace(dataItr->name, jsi::Value(runtime, std::move(fn))).first;
+        }
+        else if (name == add_event_name)
+        {
+            auto fn = jsi::Function::createFromHostFunction(
+                runtime, id, 0, bind_this(&static_class_data::add_event_listener, m_data));
+            itr = m_functions.emplace(add_event_name, jsi::Value(runtime, std::move(fn))).first;
+        }
+        else if (name == remove_event_name)
+        {
+            auto fn = jsi::Function::createFromHostFunction(
+                runtime, id, 0, bind_this(&static_class_data::remove_event_listener, m_data));
+            itr = m_functions.emplace(remove_event_name, jsi::Value(runtime, std::move(fn))).first;
+        }
+    }
+
+    if (itr == m_functions.end())
+    {
+        return jsi::Value::undefined();
+    }
+
+    return jsi::Value(runtime, itr->second);
+}
+
+void projected_statics_class::set(jsi::Runtime& runtime, const jsi::PropNameID& id, const jsi::Value& value)
+{
+    auto name = id.utf8(runtime);
+    if (auto itr = find_by_name(m_data->properties, name); itr != m_data->properties.end())
+    {
+        // Unlike getters, setters can be null
+        if (itr->setter)
+        {
+            (*itr->setter)(runtime, value);
+        }
+    }
+
+    // If no property exists with the given name, then ignore the call rather than throwing. This is more-or-less
+    // consistent with EdgeHTML WebView.
+}
+
+std::vector<jsi::PropNameID> projected_statics_class::getPropertyNames(jsi::Runtime& runtime)
+{
+    std::vector<jsi::PropNameID> result;
+    result.reserve(m_data->properties.size() + m_data->functions.size() + (m_data->events.empty() ? 0 : 2));
+
+    for (auto&& data : m_data->properties)
+    {
+        result.push_back(make_propid(runtime, data.name));
+    }
+
+    for (auto&& data : m_data->functions)
+    {
+        result.push_back(make_propid(runtime, data.name));
+    }
+
+    if (!m_data->events.empty())
+    {
+        result.push_back(make_propid(runtime, add_event_name));
+        result.push_back(make_propid(runtime, remove_event_name));
+    }
+
+    return result;
+}
+
+struct projected_property final : public jsi::HostObject
+{
+    projected_property(get_property_t getter, set_property_t setter) : m_getter(getter), m_setter(setter)
+    {
+    }
+
+    // HostObject functions
+    virtual jsi::Value get(jsi::Runtime& runtime, const jsi::PropNameID& id) override
+    {
+        auto name = id.utf8(runtime);
+        if (name == "get")
+        {
+            if (m_getFn.isUndefined())
+            {
+                m_getFn = jsi::Function::createFromHostFunction(runtime, make_propid(runtime, "get"), 0,
+                    [getter = m_getter](jsi::Runtime& runtime, const jsi::Value&, const jsi::Value*, size_t count) {
+                        if (count != 0)
+                        {
+                            throw jsi::JSError(runtime, "TypeError: Property getter expects 0 arguments");
+                        }
+
+                        return getter(runtime);
+                    });
+            }
+
+            return jsi::Value(runtime, m_getFn);
+        }
+        else if (name == "set")
+        {
+            if (m_setFn.isUndefined() && m_setter)
+            {
+                m_setFn = jsi::Function::createFromHostFunction(runtime, make_propid(runtime, "set"), 1,
+                    [setter = m_setter](
+                        jsi::Runtime& runtime, const jsi::Value&, const jsi::Value* args, size_t count) {
+                        if (count != 1)
+                        {
+                            throw jsi::JSError(runtime, "TypeError: Property setter expects 1 argument");
+                        }
+
+                        setter(runtime, args[0]);
+                        return jsi::Value::undefined();
+                    });
+            }
+
+            return jsi::Value(runtime, m_setFn);
+        }
+
+        return jsi::Value::undefined();
+    }
+
+    virtual void set(jsi::Runtime& runtime, const jsi::PropNameID& name, const jsi::Value&) override
+    {
+        throw jsi::JSError(runtime, std::string("TypeError: Cannot assign to property '") + name.utf8(runtime) +
+                                        "' of a projected property definition");
+    }
+
+    virtual std::vector<jsi::PropNameID> getPropertyNames(jsi::Runtime& runtime) override
+    {
+        std::vector<jsi::PropNameID> result;
+        if (m_setter)
+        {
+            result.reserve(2);
+            result.push_back(make_propid(runtime, "set"));
+        }
+
+        result.push_back(make_propid(runtime, "get"));
+        return result;
+    }
+
+private:
+    get_property_t m_getter;
+    jsi::Value m_getFn;
+    set_property_t m_setter;
+    jsi::Value m_setFn;
+};
+
+jsi::Value static_activatable_class_data::create(jsi::Runtime& runtime) const
+{
+    // TODO: param count? Seems to not matter?
+    auto result = jsi::Function::createFromHostFunction(runtime, make_propid(runtime, name), 0, constructor);
+
+    // JSI does not allow us to create a 'Function' that is also a 'HostObject' and therefore cannot provide virtual
+    // get/set functions and instead must attach them to the function object
+    auto defineProperty =
+        runtime.global().getPropertyAsFunction(runtime, "Object").getPropertyAsFunction(runtime, "defineProperty");
+    for (auto&& prop : properties)
+    {
+        defineProperty.call(runtime, result, make_string(runtime, prop.name),
+            jsi::Value(runtime, jsi::Object::createFromHostObject(runtime,
+                                    std::make_shared<projected_property>(prop.getter, prop.setter))));
+    }
+
+    for (auto&& fn : functions)
+    {
+        auto name = make_propid(runtime, fn.name);
+        result.setProperty(runtime, name, jsi::Function::createFromHostFunction(runtime, name, 0, fn.function));
+    }
+
+    if (!events.empty())
+    {
+        auto name = make_propid(runtime, add_event_name);
+        result.setProperty(runtime, name,
+            jsi::Function::createFromHostFunction(runtime, name, 0, bind_this(&add_event_listener, this)));
+
+        name = make_propid(runtime, remove_event_name);
+        result.setProperty(runtime, name,
+            jsi::Function::createFromHostFunction(runtime, name, 0, bind_this(&remove_event_listener, this)));
+    }
+
+    return result;
+}
+
+bool projected_value_traits<bool>::as_native(jsi::Runtime&, const jsi::Value& value) noexcept
+{
+    if (value.isBool())
+    {
+        return value.getBool();
+    }
+    else if (value.isNumber())
+    {
+        return value.getNumber() != 0;
+    }
+
+    return !value.isNull() && !value.isUndefined();
+}
+
+jsi::Value projected_value_traits<char16_t>::as_value(jsi::Runtime& runtime, char16_t value)
+{
+    char buffer[8];
+    auto bytes = ::WideCharToMultiByte(CP_UTF8, WC_ERR_INVALID_CHARS, reinterpret_cast<PCWSTR>(&value), 1, buffer,
+        static_cast<int>(std::size(buffer)), nullptr, nullptr);
+    winrt::check_bool(bytes);
+    return jsi::String::createFromUtf8(runtime, reinterpret_cast<uint8_t*>(buffer), bytes);
+}
+
+char16_t projected_value_traits<char16_t>::as_native(jsi::Runtime& runtime, const jsi::Value& value)
+{
+    auto str = convert_value_to_native<winrt::hstring>(runtime, value);
+    return str.empty() ? 0 : str[0];
+}
+
+winrt::hstring projected_value_traits<winrt::hstring>::as_native(jsi::Runtime& runtime, const jsi::Value& value)
+{
+    auto str = value.asString(runtime).utf8(runtime);
+    if (str.empty())
+    {
+        return {};
+    }
+
+    // MultiByteToWideChar is requesting the size in wide characters required for 'stringUtf8' without null
+    // termination as WindowsPreallocateStringBuffer will actually allocated 'outputLength + 1' characters and asign
+    // the last as the null terminator automatically.
+
+    auto len = ::MultiByteToWideChar(CP_UTF8, MB_ERR_INVALID_CHARS, str.c_str(), static_cast<int32_t>(str.size()),
+        nullptr /*lpWideCharStr*/, 0 /*cchWideChar*/);
+    winrt::check_bool(len);
+
+    PWSTR stringBuffer;
+    HSTRING_BUFFER buffer;
+    winrt::check_hresult(
+        ::WindowsPreallocateStringBuffer(static_cast<uint32_t>(len), &stringBuffer, &buffer));
+
+    winrt::hstring result;
+    try
+    {
+        winrt::check_bool(::MultiByteToWideChar(
+            CP_UTF8, MB_ERR_INVALID_CHARS, str.c_str(), static_cast<int32_t>(str.size()), stringBuffer, len));
+        winrt::check_hresult(::WindowsPromoteStringBuffer(buffer, reinterpret_cast<HSTRING*>(winrt::put_abi(result))));
+    }
+    catch (...)
+    {
+        ::WindowsDeleteStringBuffer(buffer);
+        throw;
+    }
+
+    return result;
+}
+
+// Lengths are not null-terminated.
+static constexpr uint32_t uuid_length = 8 + 1 + 4 + 1 + 4 + 1 + 4 + 1 + 12;
+static constexpr uint32_t guid_length = 2 + uuid_length;
+
+jsi::Value projected_value_traits<winrt::guid>::as_value(jsi::Runtime& runtime, const winrt::guid& value)
+{
+    // NOTE: 'StringFromGUID2' formats in '{...}' form, but we don't want the curly braces
+    wchar_t wideBuffer[guid_length + 1];
+    winrt::check_hresult(::StringFromGUID2(reinterpret_cast<const GUID&>(value), wideBuffer, ARRAYSIZE(wideBuffer)));
+
+    // GUIDS are always ANSI, so there's no need to call 'WideCharToMultiByte' or anything
+    char buffer[uuid_length];
+    std::transform(
+        wideBuffer + 1, wideBuffer + 1 + uuid_length, buffer, [](wchar_t ch) { return static_cast<char>(ch); });
+
+    return jsi::Value(runtime, jsi::String::createFromAscii(runtime, buffer, uuid_length));
+}
+
+winrt::guid projected_value_traits<winrt::guid>::as_native(jsi::Runtime& runtime, const jsi::Value& value)
+{
+    auto str = value.asString(runtime).utf8(runtime);
+    auto strBuffer = str.data();
+    if (str.size() == guid_length)
+    {
+        ++strBuffer; // Move past the '{'
+    }
+    else if (str.size() != uuid_length)
+    {
+        throw jsi::JSError(runtime, "TypeError: Invalid GUID length");
+    }
+
+    winrt::guid result;
+    if (::UuidFromStringA(reinterpret_cast<RPC_CSTR>(strBuffer), reinterpret_cast<UUID*>(winrt::put_abi(result))) !=
+        RPC_S_OK)
+    {
+        throw jsi::JSError(runtime, "TypeError: GUID contains unexpected characters");
+    }
+
+    return result;
+}
+
+// NOTE: 'DateTime' is a 'FILETIME' value which represents the number of 100 ns "units" since 01/01/1601, whereas the
+// Javascript 'Date' class represents the number of milliseconds since 01/01/1970. The delta between the two is
+// 11644473600 seconds
+static constexpr auto windows_to_unix_epoch_delta = 11644473600s;
+
+jsi::Value projected_value_traits<DateTime>::as_value(jsi::Runtime& runtime, DateTime value)
+{
+    auto unixTime =
+        std::chrono::duration_cast<std::chrono::milliseconds>(value.time_since_epoch() - windows_to_unix_epoch_delta);
+    return runtime.global()
+        .getPropertyAsFunction(runtime, "Date")
+        .callAsConstructor(runtime, static_cast<double>(unixTime.count()));
+}
+
+DateTime projected_value_traits<DateTime>::as_native(jsi::Runtime& runtime, const jsi::Value& value)
+{
+    double number;
+    if (value.isNumber())
+    {
+        number = value.getNumber();
+    }
+    else
+    {
+        auto object = value.asObject(runtime);
+        number = object.getPropertyAsFunction(runtime, "valueOf").callWithThis(runtime, object).asNumber();
+    }
+
+    std::chrono::milliseconds unixTime(static_cast<int64_t>(number));
+    return DateTime(unixTime + windows_to_unix_epoch_delta);
+}
+
+jsi::Value projected_value_traits<TimeSpan>::as_value(jsi::Runtime& runtime, TimeSpan value)
+{
+    auto ms = std::chrono::duration_cast<std::chrono::milliseconds>(value);
+    return convert_native_to_value<int64_t>(runtime, value.count());
+}
+
+TimeSpan projected_value_traits<TimeSpan>::as_native(jsi::Runtime& runtime, const jsi::Value& value)
+{
+    std::chrono::milliseconds ms(convert_value_to_native<int64_t>(runtime, value));
+    return std::chrono::duration_cast<TimeSpan>(ms);
+}
+
+#else
 
 #include <rnwinrt/ProjectedValueConverters.g.h>
 #include <rnwinrt/Projections.g.h>
@@ -132,194 +641,6 @@ namespace WinRTTurboModule
 
 namespace WinRTTurboModule
 {
-    bool ConvertValueToBoolean(const std::shared_ptr<ProjectionsContext>&, const jsi::Value& value)
-    {
-        if (value.isBool())
-        {
-            return value.getBool();
-        }
-
-        if (value.isNumber())
-        {
-            return value.getNumber() != 0;
-        }
-
-        return !value.isNull() && !value.isUndefined();
-    }
-
-    jsi::Value ConvertCharToValue(const std::shared_ptr<ProjectionsContext>& context, const char16_t& value)
-    {
-        char buffer[8];
-        auto bytes = ::WideCharToMultiByte(CP_UTF8, WC_ERR_INVALID_CHARS, reinterpret_cast<PCWSTR>(&value), 1, buffer,
-            static_cast<int>(std::size(buffer)), nullptr, nullptr);
-        winrt::check_bool(bytes);
-        return jsi::String::createFromUtf8(context->Runtime, reinterpret_cast<uint8_t*>(buffer), bytes);
-    }
-
-    char16_t ConvertValueToChar(const std::shared_ptr<ProjectionsContext>& context, const jsi::Value& value)
-    {
-        const auto stringWide = ConvertValueToString(context, value);
-        return stringWide.empty() ? 0 : stringWide[0];
-    }
-
-    winrt::hstring ConvertValueToString(const std::shared_ptr<ProjectionsContext>& context, const jsi::Value& value)
-    {
-        const auto stringUtf8 = value.asString(context->Runtime).utf8(context->Runtime);
-        if (stringUtf8.empty())
-        {
-            return {};
-        }
-
-        // MultiByteToWideChar is requesting the size in wide characters required for 'stringUtf8' without null
-        // termination as WindowsPreallocateStringBuffer will actually allocated 'outputLength + 1' characters and asign
-        // the last as the null terminator automatically.
-
-        const auto outputLength =
-            ::MultiByteToWideChar(CP_UTF8, MB_ERR_INVALID_CHARS, reinterpret_cast<LPCSTR>(stringUtf8.data()),
-                static_cast<int32_t>(stringUtf8.size()), nullptr /*lpWideCharStr*/, 0 /*cchWideChar*/);
-        winrt::check_bool(outputLength);
-
-        PWSTR stringRawWide;
-        HSTRING_BUFFER stringBuffer;
-        winrt::check_hresult(
-            ::WindowsPreallocateStringBuffer(static_cast<uint32_t>(outputLength), &stringRawWide, &stringBuffer));
-
-        const auto freeBufferOnError = wil::scope_exit([&]() {
-            if (stringRawWide)
-            {
-                WindowsDeleteStringBuffer(stringBuffer);
-            }
-        });
-
-        winrt::check_bool(
-            ::MultiByteToWideChar(CP_UTF8, MB_ERR_INVALID_CHARS, reinterpret_cast<LPCSTR>(stringUtf8.data()),
-                static_cast<int32_t>(stringUtf8.size()), stringRawWide, outputLength));
-
-        winrt::hstring result;
-        winrt::check_hresult(::WindowsPromoteStringBuffer(stringBuffer, wil::put_abi(result)));
-        stringRawWide = nullptr;
-
-        return result;
-    }
-
-    // Lengths are not null-terminated.
-    constexpr uint32_t c_uuidLength = (8 + 1 + 4 + 1 + 4 + 1 + 4 + 1 + 12);
-    constexpr uint32_t c_guidLength = 2 + c_uuidLength;
-
-    jsi::Value ConvertGuidToValue(const std::shared_ptr<ProjectionsContext>& context, const winrt::guid& value)
-    {
-        // StringFromGUID2 formats the output as a GUID rather than a UUID but EdgeHTML would represent a GUID
-        // from a WinRT API as a UUID as string without the braces. For consistency, we will do the same here.
-        wchar_t guidWide[c_guidLength + 1]{};
-        winrt::check_hresult(StringFromGUID2(value, guidWide, ARRAYSIZE(guidWide)));
-
-        // Skip the '{' to extract the UUID.
-        const PWSTR uuidStartWide = guidWide + 1;
-
-        char guidUtf8[c_uuidLength + 1]{};
-        const auto outputLength = ::WideCharToMultiByte(CP_UTF8, WC_ERR_INVALID_CHARS, uuidStartWide, c_uuidLength,
-            guidUtf8, c_uuidLength, L'\0' /*lpDefaultChar*/, nullptr /*lpUsedDefaultChar*/);
-        winrt::check_bool(outputLength);
-        if (outputLength != c_uuidLength)
-        {
-            throw winrt::hresult_error(E_UNEXPECTED);
-        }
-
-        // The 'guidUtf8' was zero-init'd so it is already null-terminated; It is technically UTF-8 but equivalent to
-        // ASCII in this case.
-        return jsi::Value(context->Runtime, jsi::String::createFromAscii(context->Runtime, guidUtf8));
-    }
-
-    winrt::guid ConvertValueToGuid(const std::shared_ptr<ProjectionsContext>& context, const jsi::Value& value)
-    {
-        // IIDFromString calls wIIDFromString which calls wGUIDFromString. It accepts only GUIDs with the braces
-        // rather than UUIDs without, but based on how EdgeHTML supported projections, it would convert a guid to
-        // string as a UUID. So we need to be able to parse either here.
-
-        auto& runtime = context->Runtime;
-        const auto stringUtf8 = value.asString(runtime).utf8(runtime);
-        const auto stringLength = stringUtf8.length();
-        if ((stringLength != c_uuidLength) && (stringLength != c_guidLength))
-        {
-            throw jsi::JSError(runtime, "TypeError: Invalid GUID length");
-        }
-
-        const PCSTR uuidStartUtf8 = (stringLength == c_uuidLength) ? stringUtf8.data() : stringUtf8.data() + 1;
-
-        wchar_t guidWide[c_guidLength + 1]{};
-        const PWSTR uuidStartWide = guidWide + 1;
-
-        const auto outputLength = ::MultiByteToWideChar(
-            CP_UTF8, MB_ERR_INVALID_CHARS, uuidStartUtf8, c_uuidLength, uuidStartWide, c_uuidLength);
-        winrt::check_bool(outputLength);
-        if (outputLength != c_uuidLength)
-        {
-            throw jsi::JSError(runtime, "TypeError: GUID contains unexpected characters");
-        }
-
-        // The 'guidWide' was zero-init'd so it is already null-terminated;
-        guidWide[0] = L'{';
-        guidWide[ARRAYSIZE(guidWide) - 2] = L'}';
-
-        winrt::guid guid;
-        winrt::check_hresult(IIDFromString(guidWide, reinterpret_cast<IID*>(&guid)));
-
-        return guid;
-    }
-
-    // TODO: Use std::chrono for conversions rather than using magic numbers directly.
-    constexpr int64_t c_jsFileTimeEpochDelta = 116444736 * wil::filetime_duration::one_millisecond;
-
-    template <>
-    jsi::Value ConvertStructToValue<winrt::Windows::Foundation::DateTime>(
-        const std::shared_ptr<ProjectionsContext>& context, const winrt::Windows::Foundation::DateTime& value)
-    {
-        auto& runtime = context->Runtime;
-        return runtime.global()
-            .getPropertyAsFunction(runtime, "Date")
-            .callAsConstructor(runtime,
-                static_cast<double>(std::min(0ll, static_cast<int64_t>(winrt::clock::to_file_time(value).value) -
-                                                      c_jsFileTimeEpochDelta) /
-                                    wil::filetime_duration::one_millisecond));
-    }
-
-    winrt::Windows::Foundation::DateTime ConvertNumberToDateTime(const jsi::Value& value)
-    {
-        return winrt::clock::from_file_time(winrt::file_time(static_cast<uint64_t>(
-            (static_cast<int64_t>(static_cast<int64_t>(value.asNumber())) * wil::filetime_duration::one_millisecond) +
-            c_jsFileTimeEpochDelta)));
-    }
-
-    template <>
-    winrt::Windows::Foundation::DateTime ConvertValueToStruct<winrt::Windows::Foundation::DateTime>(
-        const std::shared_ptr<ProjectionsContext>& context, const jsi::Value& value)
-    {
-        if (value.isNumber())
-        {
-            return ConvertNumberToDateTime(value);
-        }
-
-        auto& runtime = context->Runtime;
-        const auto object = value.asObject(runtime);
-        return ConvertNumberToDateTime(object.getPropertyAsFunction(runtime, "valueOf").callWithThis(runtime, object));
-    }
-
-    template <>
-    jsi::Value ConvertStructToValue<winrt::Windows::Foundation::TimeSpan>(
-        const std::shared_ptr<ProjectionsContext>& context, const winrt::Windows::Foundation::TimeSpan& value)
-    {
-        return ConvertNumberToValue<int64_t>(
-            context, std::chrono::duration_cast<std::chrono::duration<int64_t, std::milli>>(value).count());
-    }
-
-    template <>
-    winrt::Windows::Foundation::TimeSpan ConvertValueToStruct<winrt::Windows::Foundation::TimeSpan>(
-        const std::shared_ptr<ProjectionsContext>& context, const jsi::Value& value)
-    {
-        return std::chrono::duration_cast<winrt::Windows::Foundation::TimeSpan>(
-            std::chrono::duration<int64_t, std::milli>(ConvertValueToNumber<int64_t>(context, value)));
-    }
-
     jsi::Value ConvertAsyncActionToValue(
         const std::shared_ptr<ProjectionsContext>& context, const winrt::Windows::Foundation::IAsyncAction& value)
     {
@@ -1982,3 +2303,5 @@ namespace WinRTTurboModule
         return propNames;
     }
 }
+
+#endif
