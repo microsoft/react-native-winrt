@@ -41,7 +41,7 @@ stages:
         parameters:
           buildEnvironment: PullRequest
 
-  - stage: Sign and Publish
+  - stage: Sign_and_Publish
     displayName: Publish
     dependsOn: Tests
     jobs:
