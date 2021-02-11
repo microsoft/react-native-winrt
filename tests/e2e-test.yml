@@ -32,12 +32,20 @@ jobs:
 
       - task: VSBuild@1
         displayName: 'Build solution WinRTTests.sln'
+        continueOnError: true
         inputs:
           solution: tests\WinRTTests\windows\WinRTTests.sln
           vsVersion: 'latest'
           platform: 'x64'
           configuration: 'Release'
-          MaxRetryAttempts: '1'
+
+      - task: VSBuild@1
+        displayName: 'Build solution WinRTTests.sln'
+        inputs:
+          solution: tests\WinRTTests\windows\WinRTTests.sln
+          vsVersion: 'latest'
+          platform: 'x64'
+          configuration: 'Release'
 
       - task: PowerShell@2
         displayName: "Install WinRTTests Cert"
