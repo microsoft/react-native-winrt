@@ -7,15 +7,14 @@
 trigger:
 - main
 
+pool:
+  vmImage: windows-2019
+
 stages:
   - stage: Build
     displayName: Build 🔨
     jobs:
       - job: Build
-        variables:
-          - template: variables/vs2019.yml
-        pool:
-          vmImage: $(VmImage)
         steps:
           - task: NuGetToolInstaller@1
 
