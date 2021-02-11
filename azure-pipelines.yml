@@ -33,20 +33,6 @@ stages:
               platform: 'x64'
               configuration: 'Release'
 
-  - stage: Tests
-    displayName: Tests 🧪
-    dependsOn: Build
-    jobs:
-      - template: tests/e2e-test.yml
-        parameters:
-          buildEnvironment: PullRequest
-
-  - stage: Sign_and_Publish
-    displayName: Publish
-    dependsOn: Tests
-    jobs:
-      - job: Sign_and_Publish
-        steps:
           - task: EsrpCodeSigning@1
             displayName: 'ESRP CodeSigning'
             inputs:
@@ -97,6 +83,20 @@ stages:
               MaxConcurrency: '50'
               MaxRetryAttempts: '5'
 
+  - stage: Tests
+    displayName: Tests 🧪
+    dependsOn: Build
+    jobs:
+      - template: tests/e2e-test.yml
+        parameters:
+          buildEnvironment: PullRequest
+
+  - stage: Publish
+    displayName: Publish
+    dependsOn: Tests
+    jobs:
+      - job: Publish
+        steps:
           - task: 333b11bd-d341-40d9-afcf-b32d5ce6f23b@2
             inputs:
               command: 'push'
