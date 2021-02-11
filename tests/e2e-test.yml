@@ -20,18 +20,6 @@ jobs:
       - checkout: self
         clean: true
         submodules: false
-            
-      - powershell: |
-          Write-Host "##vso[task.setvariable variable=BuildLogDirectory]$(Build.BinariesDirectory)\$(BuildPlatform)\BuildLogs"
-        displayName: Set BuildLogDirectory
-
-      - template: templates\prepare-env.yml
-
-      - task: CmdLine@2
-        displayName: Set LocalDumps
-        inputs:
-          script: $(Build.SourcesDirectory)\tests\scripts\SetupLocalDumps.cmd WinRTTests
-          workingDirectory: $(Build.SourcesDirectory)
 
       - task: NuGetToolInstaller@1
 
