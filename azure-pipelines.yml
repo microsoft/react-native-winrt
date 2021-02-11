@@ -45,7 +45,7 @@ stages:
     displayName: Publish
     dependsOn: Tests
     jobs:
-      - job: Sign and Publish
+      - job: Sign_and_Publish
         steps:
           - task: EsrpCodeSigning@1
             displayName: 'ESRP CodeSigning'
