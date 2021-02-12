@@ -1,0 +1,96 @@
+#
+jobs:
+  - job: E2ETest
+    displayName: E2E Test
+    strategy:
+      matrix:
+        x64:
+          BuildPlatform: x64
+
+    timeoutInMinutes: 60 # how long to run the job before automatically cancelling
+    cancelTimeoutInMinutes: 5 # how much time to give 'run always even if cancelled tasks' before killing them
+
+    steps:
+      - checkout: self
+        clean: true
+        submodules: false
+
+      - task: NuGetToolInstaller@1
+
+      - task: CmdLine@2
+        displayName: npm install
+        inputs:
+          script: "npm install"
+          workingDirectory: $(Build.SourcesDirectory)\tests\WinRTTests
+
+      - task: 333b11bd-d341-40d9-afcf-b32d5ce6f23b@2
+        inputs:
+          command: 'restore'
+          restoreSolution: 'tests\WinRTTests\windows\WinRTTests.sln'
+          feedsToUse: 'config'
+          nugetConfigPath: ''
+
+      - task: VSBuild@1
+        displayName: 'Build solution WinRTTests.sln'
+        continueOnError: true
+        inputs:
+          solution: tests\WinRTTests\windows\WinRTTests.sln
+          vsVersion: 'latest'
+          platform: 'x64'
+          configuration: 'Release'
+
+      - task: VSBuild@1
+        displayName: 'Build solution WinRTTests.sln'
+        inputs:
+          solution: tests\WinRTTests\windows\WinRTTests.sln
+          vsVersion: 'latest'
+          platform: 'x64'
+          configuration: 'Release'
+
+      - task: PowerShell@2
+        displayName: "Install WinRTTests Cert"
+        inputs:
+          targetType: "inline"
+          script: "Import-Certificate -FilePath $(Build.SourcesDirectory)\\tests\\winrttests\\windows\\AppPackages\\WinRTTests\\WinRTTests_1.0.0.0_x64_Test\\WinRTTests_1.0.0.0_x64.cer -CertStoreLocation Cert:\\LocalMachine\\Root"
+        condition: succeeded()
+
+      - task: PowerShell@2
+        displayName: "Install dependency - Microsoft.UI.Xaml.2.3"
+        inputs:
+          targetType: "inline"
+          script: "Add-AppxPackage $(Build.SourcesDirectory)\\tests\\WinRTTests\\windows\\AppPackages\\WinRTTests\\WinRTTests_1.0.0.0_x64_Test\\Dependencies\\x64\\Microsoft.UI.Xaml.2.3.appx"
+        condition: succeededOrFailed()
+
+      - task: PowerShell@2
+        displayName: "Install dependency - Microsoft.VCLibs.x64.14.00"
+        inputs:
+          targetType: "inline"
+          script: "Add-AppxPackage $(Build.SourcesDirectory)\\tests\\WinRTTests\\windows\\AppPackages\\WinRTTests\\WinRTTests_1.0.0.0_x64_Test\\Dependencies\\x64\\Microsoft.VCLibs.x64.14.00.appx"
+        condition: succeededOrFailed()
+
+      - task: PowerShell@2
+        displayName: "Install WinRTTests App"
+        inputs:
+          targetType: "inline"
+          script: "Add-AppxPackage $(Build.SourcesDirectory)\\tests\\WinRTTests\\windows\\AppPackages\\WinRTTests\\WinRTTests_1.0.0.0_x64_Test\\WinRTTests_1.0.0.0_x64.appx"
+        condition: succeededOrFailed()
+
+      - task: PowerShell@2
+        displayName: "Run WinRTTests"
+        inputs:
+          targetType: "inline"
+          script: "Start-Process -FilePath explorer.exe shell:appsFolder\\ade66fbb-2cb8-4ba7-b8e3-f0afcf0f7f3d_m393c780kgv6r!App"
+        condition: succeededOrFailed()
+
+      - task: CmdLine@2
+        displayName: Check for failure
+        inputs:
+          script: if exist $(UserProfile)\AppData\Local\Packages\ade66fbb-2cb8-4ba7-b8e3-f0afcf0f7f3d_m393c780kgv6r\LocalState\FailureLog.txt (FAIL)
+          failOnStderr: true
+
+      - task: PublishBuildArtifacts@1
+        displayName: Upload failure log
+        condition:  failed()
+        inputs:
+          pathtoPublish: '$(UserProfile)\AppData\Local\Packages\ade66fbb-2cb8-4ba7-b8e3-f0afcf0f7f3d_m393c780kgv6r\LocalState\FailureLog.txt'
+          artifactName: 'Failure log - $(Agent.JobName)-$(System.JobAttempt)'

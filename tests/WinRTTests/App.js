@@ -28,6 +28,7 @@ class App extends Component {
     state = { completedCount: 0, passCount: 0 };
     completedCount = 0;
     passCount = 0;
+    failures = "Failed Scenarios:\r\n";
 
     scenarios = [
         ...makePropertiesTestScenarios(this),
@@ -53,12 +54,17 @@ class App extends Component {
 
         scenario.result = result;
         scenario.emit('completed');
-        this.onSingleTestCompleted(result);
+        this.onSingleTestCompleted(scenario);
     }
 
-    onSingleTestCompleted(result) {
+    onSingleTestCompleted(scenario) {
         ++this.completedCount;
-        if (result == TestResult.Pass) ++this.passCount;
+        if (scenario.result == TestResult.Pass) {
+            ++this.passCount;
+        } else {
+            this.failures += scenario.name + "\r\n";
+        }
+
         this.setState({
             completedCount: this.completedCount,
             passCount: this.passCount,
@@ -74,6 +80,11 @@ class App extends Component {
     }
 
     resultText() {
+        if (!this.inProgress() && !this.passed())
+        {
+            TestComponent.Test.logFailures(this.failures);
+        }
+
         return this.inProgress() ? 'In Progress' :
             this.passed() ? 'Pass' : 'Fail';
     }
