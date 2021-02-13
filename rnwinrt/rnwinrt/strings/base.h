@@ -61,6 +61,394 @@ namespace jswinrt
         std::size_t m_size = 0;
     };
 
+    // NOTE: This is a std::vector-like type that uses a small-size buffer optimization
+    template <typename T, size_t BufferSize = 8>
+    struct sso_vector
+    {
+        sso_vector() = default;
+
+        sso_vector(const sso_vector& other)
+        {
+            copy_construct(other);
+        }
+
+        template <size_t OtherBufferSize>
+        sso_vector(const sso_vector<T, OtherBufferSize>& other)
+        {
+            copy_construct(other);
+        }
+
+        sso_vector(sso_vector&& other)
+        {
+            move_construct(other);
+        }
+
+        template <size_t OtherBufferSize>
+        sso_vector(sso_vector<T, OtherBufferSize>&& other)
+        {
+            move_construct(other);
+        }
+
+        sso_vector& operator=(const sso_vector& other)
+        {
+            if (&other != this)
+            {
+                copy_assign(other);
+            }
+
+            return *this;
+        }
+
+        template <size_t OtherBufferSize>
+        sso_vector& operator=(const sso_vector<T, OtherBufferSize>& other)
+        {
+            copy_assign(other);
+            return *this;
+        }
+
+        sso_vector& operator=(sso_vector&& other)
+        {
+            move_assign(other);
+            return *this;
+        }
+
+        template <size_t OtherBufferSize>
+        sso_vector& operator=(sso_vector<T, OtherBufferSize>&& other)
+        {
+            move_assign(other);
+            return *this;
+        }
+
+        ~sso_vector()
+        {
+            destroy_buffer();
+        }
+
+        size_t size() const noexcept
+        {
+            return m_size;
+        }
+
+        bool empty() const noexcept
+        {
+            return m_size == 0;
+        }
+
+        T& operator[](size_t index) noexcept
+        {
+            assert(index < m_size);
+            return data()[index];
+        }
+
+        const T& operator[](size_t index) const noexcept
+        {
+            assert(index < m_size);
+            return data()[index];
+        }
+
+        T& back() noexcept
+        {
+            assert(!empty());
+            return data()[m_size - 1];
+        }
+
+        const T& back() const noexcept
+        {
+            assert(!empty());
+            return data()[m_size - 1];
+        }
+
+        T* data() noexcept
+        {
+            return is_locally_allocated() ? local_data() : m_data.pointer;
+        }
+
+        const T* data() const noexcept
+        {
+            return is_locally_allocated() ? local_data() : m_data.pointer;
+        }
+
+        void reserve(size_t size)
+        {
+            // NOTE: Capacity will never fall below SSO buffer size, so this is always an allocate
+            if (size > m_capacity)
+            {
+                auto ptr = static_cast<T*>(::operator new(size * sizeof(T)));
+                try
+                {
+                    std::uninitialized_move(begin(), end(), ptr);
+                }
+                catch (...)
+                {
+                    ::operator delete(ptr);
+                    throw;
+                }
+
+                destroy_buffer();
+                m_capacity = size;
+                m_data.pointer = ptr;
+            }
+        }
+
+        void clear() noexcept
+        {
+            destroy_buffer();
+            m_size = 0;
+            m_capacity = BufferSize;
+        }
+
+        void push_back(const T& value)
+        {
+            if (m_size == m_capacity)
+            {
+                reserve(m_capacity * 2);
+            }
+
+            new (data() + m_size) T(value);
+            ++m_size;
+        }
+
+        void push_back(T&& value)
+        {
+            if (m_size == m_capacity)
+            {
+                reserve(m_capacity * 2);
+            }
+
+            new (data() + m_size) T(std::move(value));
+            ++m_size;
+        }
+
+        template <typename... Args>
+        void emplace_back(Args&&... args)
+        {
+            if (m_size == m_capacity)
+            {
+                reserve(m_capacity * 2);
+            }
+
+            new (data() + m_size) T(std::forward<Args>(args)...);
+            ++m_size;
+        }
+
+        void pop_back() noexcept
+        {
+            --m_size;
+            data()[m_size].~T();
+        }
+
+        T* begin() noexcept
+        {
+            return data();
+        }
+
+        const T* begin() const noexcept
+        {
+            return data();
+        }
+
+        T* end() noexcept
+        {
+            return begin() + m_size;
+        }
+
+        const T* end() const noexcept
+        {
+            return begin() + m_size;
+        }
+
+        const T* cbegin() const noexcept
+        {
+            return begin();
+        }
+
+        const T* cend() const noexcept
+        {
+            return end();
+        }
+
+    private:
+
+        template <size_t OtherBufferSize>
+        void copy_construct(const sso_vector<T, OtherBufferSize>& other)
+        {
+            assert(m_size == 0);
+            reserve(other.m_size);
+            std::uninitialized_copy(other.begin(), other.end(), data());
+            m_size = other.m_size;
+        }
+
+        template <size_t OtherBufferSize>
+        void copy_assign(const sso_vector<T, OtherBufferSize>& other)
+        {
+            if (other.m_size > m_capacity)
+            {
+                destroy_buffer();
+                m_size = 0;
+                m_capacity = BufferSize;
+                copy_construct(other);
+            }
+            else
+            {
+                // We either need to copy and construct new elements or copy and destroy old elements
+                auto assignCount = std::min(m_size, other.m_size);
+                std::copy(other.begin(), other.begin() + assignCount, begin());
+
+                if (m_size > other.m_size)
+                {
+                    std::destroy(begin() + assignCount, end());
+                }
+                else
+                {
+                    std::uninitialized_copy(other.begin() + assignCount, other.end(), begin() + assignCount);
+                }
+
+                m_size = other.m_size;
+            }
+        }
+
+        template <size_t OtherBufferSize>
+        void move_construct(sso_vector<T, OtherBufferSize>& other)
+        {
+            // TODO: We can "steal" the buffer in more scenarios
+            assert(m_size == 0);
+            if (other.m_size <= m_capacity)
+            {
+                std::uninitialized_move(other.begin(), other.end(), data());
+                m_size = other.m_size;
+                other.destroy_buffer();
+                other.m_size = 0;
+                other.m_capacity = OtherBufferSize; // NOTE: Could be less than our buffer size, so can't assume
+            }
+            else if (!other.is_locally_allocated())
+            {
+                m_data.pointer = other.m_data.pointer;
+                m_size = other.m_size;
+                m_capacity = other.m_capacity;
+                other.m_size = 0;
+                other.m_capacity = BufferSize;
+            }
+            else
+            {
+                reserve(other.m_size);
+                std::uninitialized_move(other.begin(), other.end(), data());
+                m_size = other.m_size;
+                other.destroy_buffer();
+                other.m_size = 0; // NOTE: Capacity already correct since it's locally allocated
+            }
+        }
+
+        template <size_t OtherBufferSize>
+        void move_assign(sso_vector<T, OtherBufferSize>& other)
+        {
+            if (other.is_locally_allocated())
+            {
+                // Scenario 1: Other is locally allocated. We need to move elements to our own buffer
+                if (other.m_size <= m_capacity)
+                {
+                    // Scenario 1.1: Current buffer is large enough. We need to move assign and then either construct or
+                    // destroy extra elements
+                    auto assignCount = std::min(m_size, other.m_size);
+                    std::move(other.begin(), other.begin() + assignCount, begin());
+
+                    if (m_size > other.m_size)
+                    {
+                        std::destroy(begin() + assignCount, end());
+                    }
+                    else
+                    {
+                        std::uninitialized_move(other.begin() + assignCount, other.end(), begin() + assignCount);
+                    }
+                }
+                else
+                {
+                    // Scenario 1.2: Current buffer is too small. We need to move elements into a new buffer
+                    destroy_buffer();
+                    m_size = 0;
+                    m_capacity = BufferSize;
+                    reserve(other.m_size);
+                    std::uninitialized_move(other.begin(), other.end(), data());
+                }
+
+                m_size = other.m_size;
+                other.destroy_buffer();
+                other.m_size = 0; // NOTE: Capacity already set to buffer size
+            }
+            else if (other.m_capacity <= BufferSize)
+            {
+                // Scenario 2: Other is heap allocated, but its capacity is not greater than our buffer size, so
+                // assuming ownership of the pointer would break assumptions. Keep our own buffer (we know it must be
+                // large enough), so that if it's already heap allocated, we may save the need to do a future allocation
+                auto assignCount = std::min(m_size, other.m_size);
+                std::move(other.begin(), other.begin() + assignCount, begin());
+
+                if (m_size > other.m_size)
+                {
+                    std::destroy(begin() + assignCount, end());
+                }
+                else
+                {
+                    std::uninitialized_move(other.begin() + assignCount, other.end(), begin() + assignCount);
+                }
+
+                m_size = other.m_size;
+                other.destroy_buffer();
+                other.m_size = 0;
+                other.m_capacity = OtherBufferSize;
+            }
+            else
+            {
+                // Scenario 3: Other is heap allocated and we can assume ownership of the buffer
+                destroy_buffer();
+                m_data.pointer = other.m_data.pointer;
+                m_size = other.m_size;
+                m_capacity = other.m_capacity;
+                other.m_size = 0;
+                other.m_capacity = OhterBufferSize;
+            }
+        }
+
+        bool is_locally_allocated() const noexcept
+        {
+            return m_capacity == BufferSize;
+        }
+
+        T* local_data() noexcept
+        {
+            return reinterpret_cast<T*>(&m_data.buffer);
+        }
+
+        const T* local_data() const noexcept
+        {
+            return reinterpret_cast<T*>(&m_data.buffer);
+        }
+
+        // NOTE: Caller is in charge of setting size/capacity correctly
+        void destroy_buffer()
+        {
+            static_assert(std::is_nothrow_destructible_v<T>);
+            if (is_locally_allocated())
+            {
+                auto ptr = local_data();
+                std::destroy(ptr, ptr + m_size);
+            }
+            else
+            {
+                auto ptr = m_data.pointer;
+                std::destroy(ptr, ptr + m_size);
+                ::operator delete(ptr);
+            }
+        }
+
+        size_t m_size = 0;
+        size_t m_capacity = BufferSize;
+        union
+        {
+            std::aligned_storage_t<BufferSize * sizeof(T), alignof(T)> buffer;
+            T* pointer;
+        } m_data;
+    };
+
     template <typename T, typename U, typename Return, typename... Args>
     auto bind_this(Return (U::*fn)(Args...), T* pThis)
     {
@@ -80,11 +468,22 @@ namespace jswinrt
     namespace jsi = facebook::jsi;
     using namespace std::string_literals;
 
-    using get_property_t = jsi::Value (*)(jsi::Runtime&);
-    using set_property_t = void (*)(jsi::Runtime&, const jsi::Value&);
-    using add_event_t = void (*)(jsi::Runtime&, std::string_view, const jsi::Value&);
-    using remove_event_t = void (*)(jsi::Runtime&, std::string_view, const jsi::Value&);
-    using call_fn_t = jsi::Value (*)(jsi::Runtime&, const jsi::Value&, const jsi::Value*, size_t);
+    using call_function_t = jsi::Value (*)(jsi::Runtime&, const jsi::Value&, const jsi::Value*, size_t);
+
+    using static_get_property_t = jsi::Value (*)(jsi::Runtime&);
+    using static_set_property_t = void (*)(jsi::Runtime&, const jsi::Value&);
+    using static_add_event_t = void (*)(jsi::Runtime&, const jsi::Value&);
+    using static_remove_event_t = void (*)(jsi::Runtime&, const jsi::Value&);
+
+    using instance_get_property_t = jsi::Value (*)(jsi::Runtime&, const winrt::Windows::Foundation::IInspectable&);
+    using instance_set_property_t = void (*)(
+        jsi::Runtime&, const winrt::Windows::Foundation::IInspectable&, const jsi::Value&);
+    using instance_add_event_t = void (*)(
+        jsi::Runtime&, const winrt::Windows::Foundation::IInspectable&, const jsi::Value&);
+    using instance_remove_event_t = void (*)(
+        jsi::Runtime&, const winrt::Windows::Foundation::IInspectable&, const jsi::Value&);
+    using instance_call_function_t = jsi::Value (*)(
+        jsi::Runtime&, const winrt::Windows::Foundation::IInspectable&, const jsi::Value*, size_t);
 
     inline constexpr std::string_view add_event_name = "addEventListener"sv;
     inline constexpr std::string_view remove_event_name = "removeEventListener"sv;
@@ -172,21 +571,21 @@ namespace jswinrt
         struct property_mapping
         {
             std::string_view name;
-            get_property_t getter;
-            set_property_t setter;
+            static_get_property_t getter;
+            static_set_property_t setter;
         };
 
         struct event_mapping
         {
             std::string_view name;
-            add_event_t add;
-            remove_event_t remove;
+            static_add_event_t add;
+            static_remove_event_t remove;
         };
 
         struct function_mapping
         {
             std::string_view name;
-            call_fn_t function;
+            call_function_t function;
         };
 
         constexpr static_class_data(std::string_view name, span<const property_mapping> properties,
@@ -210,7 +609,7 @@ namespace jswinrt
 
     struct static_activatable_class_data final : static_class_data
     {
-        constexpr static_activatable_class_data(std::string_view name, call_fn_t constructor,
+        constexpr static_activatable_class_data(std::string_view name, call_function_t constructor,
             span<const property_mapping> properties, span<const event_mapping> events,
             span<const function_mapping> functions) :
             static_class_data(name, properties, events, functions),
@@ -220,7 +619,47 @@ namespace jswinrt
 
         virtual jsi::Value create(jsi::Runtime& runtime) const override;
 
-        call_fn_t constructor;
+        call_function_t constructor;
+    };
+
+    // NOTE: We don't need to "create" objects from interfaces - we create objects and populate the interfaces that the
+    // object supports - hence the fact that we don't derive from 'static_projection_data' here.
+    struct static_interface_data
+    {
+        struct property_mapping
+        {
+            // NOTE: Unlike classes, the getter *can* be null
+            std::string_view name;
+            instance_get_property_t getter;
+            instance_set_property_t setter;
+        };
+
+        struct event_mapping
+        {
+            std::string_view name;
+            instance_add_event_t add;
+            instance_remove_event_t remove;
+        };
+
+        struct function_mapping
+        {
+            std::string_view name;
+            instance_call_function_t function;
+            size_t arity;
+            bool is_default_overload;
+        };
+
+        constexpr static_interface_data(const winrt::guid& guid, span<const property_mapping> properties,
+            span<const event_mapping> events, span<const function_mapping> functions) :
+            guid(guid),
+            properties(properties), events(events), functions(functions)
+        {
+        }
+
+        winrt::guid guid;
+        span<const property_mapping> properties;
+        span<const event_mapping> events;
+        span<const function_mapping> functions;
     };
 }
 
@@ -275,6 +714,33 @@ namespace jswinrt
     private:
 
         const static_class_data* m_data;
+        std::unordered_map<std::string_view, jsi::Value> m_functions;
+    };
+
+    struct projected_function;
+    struct projected_overloaded_function;
+
+    struct projected_object_instance : public jsi::HostObject
+    {
+        friend struct projected_function;
+        friend struct projected_overloaded_function;
+
+        projected_object_instance(const winrt::Windows::Foundation::IInspectable& instance);
+
+        // HostObject functions
+        virtual jsi::Value get(jsi::Runtime& runtime, const jsi::PropNameID& name) override;
+        virtual void set(jsi::Runtime& runtime, const jsi::PropNameID& name, const jsi::Value& value) override;
+        virtual std::vector<jsi::PropNameID> getPropertyNames(jsi::Runtime& runtime) override;
+
+    private:
+
+        static jsi::Value add_event_listener(
+            jsi::Runtime& runtime, const jsi::Value& thisVal, const jsi::Value* args, size_t count);
+        static jsi::Value remove_event_listener(
+            jsi::Runtime& runtime, const jsi::Value& thisVal, const jsi::Value* args, size_t count);
+
+        winrt::Windows::Foundation::IInspectable m_instance;
+        sso_vector<const static_interface_data*> m_interfaces;
         std::unordered_map<std::string_view, jsi::Value> m_functions;
     };
 }

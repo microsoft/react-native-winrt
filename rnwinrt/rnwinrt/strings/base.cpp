@@ -143,7 +143,7 @@ jsi::Value static_class_data::add_event_listener(
     auto name = args[0].asString(runtime).utf8(runtime);
     if (auto itr = find_by_name(events, name); itr != events.end())
     {
-        itr->add(runtime, name, args[1]);
+        itr->add(runtime, args[1]);
     }
 
     return jsi::Value::undefined();
@@ -160,7 +160,7 @@ jsi::Value static_class_data::remove_event_listener(
     auto name = args[0].asString(runtime).utf8(runtime);
     if (auto itr = find_by_name(events, name); itr != events.end())
     {
-        itr->remove(runtime, name, args[1]);
+        itr->remove(runtime, args[1]);
     }
 
     return jsi::Value::undefined();
@@ -184,17 +184,20 @@ jsi::Value projected_statics_class::get(jsi::Runtime& runtime, const jsi::PropNa
             auto fn = jsi::Function::createFromHostFunction(runtime, id, 0, dataItr->function);
             itr = m_functions.emplace(dataItr->name, jsi::Value(runtime, std::move(fn))).first;
         }
-        else if (name == add_event_name)
+        else if (!m_data->events.empty())
         {
-            auto fn = jsi::Function::createFromHostFunction(
-                runtime, id, 0, bind_this(&static_class_data::add_event_listener, m_data));
-            itr = m_functions.emplace(add_event_name, jsi::Value(runtime, std::move(fn))).first;
-        }
-        else if (name == remove_event_name)
-        {
-            auto fn = jsi::Function::createFromHostFunction(
-                runtime, id, 0, bind_this(&static_class_data::remove_event_listener, m_data));
-            itr = m_functions.emplace(remove_event_name, jsi::Value(runtime, std::move(fn))).first;
+            if (name == add_event_name)
+            {
+                auto fn = jsi::Function::createFromHostFunction(
+                    runtime, id, 0, bind_this(&static_class_data::add_event_listener, m_data));
+                itr = m_functions.emplace(add_event_name, jsi::Value(runtime, std::move(fn))).first;
+            }
+            else if (name == remove_event_name)
+            {
+                auto fn = jsi::Function::createFromHostFunction(
+                    runtime, id, 0, bind_this(&static_class_data::remove_event_listener, m_data));
+                itr = m_functions.emplace(remove_event_name, jsi::Value(runtime, std::move(fn))).first;
+            }
         }
     }
 
@@ -248,7 +251,7 @@ std::vector<jsi::PropNameID> projected_statics_class::getPropertyNames(jsi::Runt
 
 struct projected_property final : public jsi::HostObject
 {
-    projected_property(get_property_t getter, set_property_t setter) : m_getter(getter), m_setter(setter)
+    projected_property(static_get_property_t getter, static_set_property_t setter) : m_getter(getter), m_setter(setter)
     {
     }
 
@@ -316,9 +319,9 @@ struct projected_property final : public jsi::HostObject
     }
 
 private:
-    get_property_t m_getter;
+    static_get_property_t m_getter;
     jsi::Value m_getFn;
-    set_property_t m_setter;
+    static_set_property_t m_setter;
     jsi::Value m_setFn;
 };
 
@@ -356,6 +359,237 @@ jsi::Value static_activatable_class_data::create(jsi::Runtime& runtime) const
     }
 
     return result;
+}
+
+projected_object_instance::projected_object_instance(const IInspectable& instance) :
+    m_instance(instance)
+{
+    auto iids = winrt::get_interfaces(m_instance);
+    // TODO: Lookup in common map
+}
+
+namespace jswinrt
+{
+    struct projected_function
+    {
+        jsi::Value operator()(
+            jsi::Runtime& runtime, const jsi::Value& thisVal, const jsi::Value* args, size_t count) const
+        {
+            if (count != data->arity)
+            {
+                throw jsi::JSError(runtime, "TypeError: Non-overloaded function " + std::string(data->name) +
+                                                " expects " + std::to_string(data->arity) + " arguments, but " +
+                                                std::to_string(count) + " provided");
+            }
+
+            auto obj = thisVal.asObject(runtime).asHostObject<projected_object_instance>(runtime);
+            return data->function(runtime, obj->m_instance, args, count);
+        }
+
+        const static_interface_data::function_mapping* data;
+    };
+
+    struct projected_overloaded_function
+    {
+        jsi::Value operator()(
+            jsi::Runtime& runtime, const jsi::Value& thisVal, const jsi::Value* args, size_t count) const
+        {
+            for (auto func : data)
+            {
+                if (func->arity == count)
+                {
+                    auto obj = thisVal.asObject(runtime).asHostObject<projected_object_instance>(runtime);
+                    return func->function(runtime, obj->m_instance, args, count);
+                }
+            }
+
+            throw jsi::JSError(runtime, "TypeError: Overloaded function " + std::string(data[0]->name) +
+                                            " does not have an overload that expects " + std::to_string(count) +
+                                            " arguments");
+        }
+
+        // TODO: Figure out a good SSO size
+        sso_vector<const static_interface_data::function_mapping*, 4> data;
+    };
+}
+
+jsi::Value projected_object_instance::get(jsi::Runtime& runtime, const jsi::PropNameID& id)
+{
+    auto name = id.utf8(runtime);
+    if (auto itr = m_functions.find(name); itr != m_functions.end())
+    {
+        return jsi::Value(runtime, itr->second);
+    }
+
+    sso_vector<const static_interface_data::function_mapping*> functions;
+    bool hasEvents = false;
+    for (auto iface : m_interfaces)
+    {
+        if (auto itr = find_by_name(iface->properties, name); (itr != iface->properties.end()) && itr->getter)
+        {
+            return itr->getter(runtime, m_instance);
+        }
+
+        if (auto dataItr = find_by_name(iface->functions, name); dataItr != iface->functions.end())
+        {
+            functions.push_back(&*dataItr);
+        }
+
+        hasEvents = hasEvents || !iface->events.empty();
+    }
+
+    if (functions.size() > 1)
+    {
+        // Make sure there are no conflicts in arity. While this isn't technically 100% necessary, we still at least
+        // need to validate that default overloads are at the front of the list
+        // NOTE: The number of overloads should be pretty minimal, so doing this in a "selection sort-like" way should
+        // be fine
+        for (size_t i = 0; i < functions.size(); ++i)
+        {
+            // NOTE: Even if the target is the default overload, we still want to remove other ones with the same arity
+            auto tgt = functions[i];
+            for (size_t j = i + 1; j < functions.size(); )
+            {
+                auto test = functions[j];
+                if (tgt->arity == test->arity)
+                {
+                    if (!tgt->is_default_overload && test->is_default_overload)
+                    {
+                        // Use the other one
+                        tgt = test;
+                        functions[i] = test;
+                    }
+
+                    functions[j] = functions.back();
+                    functions.pop_back();
+                    continue;
+                }
+
+                ++j;
+            }
+        }
+    }
+
+    if (functions.size() == 1)
+    {
+        // Non-overloaded function, or at least not overloaded with different arities
+        auto fn =
+            jsi::Function::createFromHostFunction(runtime, id, functions[0]->arity, projected_function{ functions[0] });
+        return m_functions.emplace(functions[0]->name, jsi::Value(runtime, std::move(fn))).first->second;
+    }
+    else if (!functions.empty())
+    {
+        // TODO: Calculate max arity? Does it matter?
+        auto fn = jsi::Function::createFromHostFunction(
+            runtime, id, 0, projected_overloaded_function{ std::move(functions) });
+        return m_functions.emplace(functions[0]->name, jsi::Value(runtime, std::move(fn))).first->second;
+    }
+
+    if (hasEvents)
+    {
+        if (name == add_event_name)
+        {
+            auto fn = jsi::Function::createFromHostFunction(runtime, id, 2, &add_event_listener);
+            return m_functions.emplace(add_event_name, jsi::Value(runtime, std::move(fn))).first->second;
+        }
+        else if (name == remove_event_name)
+        {
+            auto fn = jsi::Function::createFromHostFunction(runtime, id, 2, &remove_event_listener);
+            return m_functions.emplace(remove_event_name, jsi::Value(runtime, std::move(fn))).first->second;
+        }
+    }
+
+    return jsi::Value::undefined();
+}
+
+void projected_object_instance::set(jsi::Runtime& runtime, const jsi::PropNameID& id, const jsi::Value& value)
+{
+    auto name = id.utf8(runtime);
+    for (auto iface : m_interfaces)
+    {
+        if (auto itr = find_by_name(iface->properties, name); (itr != iface->properties.end()) && itr->setter)
+        {
+            itr->setter(runtime, m_instance, value);
+            return;
+        }
+    }
+
+    // If no property exists with the given name, then ignore the call rather than throwing. This is more-or-less
+    // consistent with EdgeHTML WebView.
+}
+
+std::vector<jsi::PropNameID> projected_object_instance::getPropertyNames(jsi::Runtime& runtime)
+{
+    // TODO: Since functions can be overloaded - and we don't collate them on interfaces like we do with classes - we
+    // may end up with duplicates. Is that okay?
+    std::vector<jsi::PropNameID> result;
+    bool hasEvents = false;
+    for (auto iface : m_interfaces)
+    {
+        for (auto&& prop : iface->properties)
+        {
+            result.push_back(make_propid(runtime, prop.name));
+        }
+
+        for (auto&& func : iface->functions)
+        {
+            result.push_back(make_propid(runtime, func.name));
+        }
+
+        hasEvents = hasEvents || !iface->events.empty();
+    }
+
+    if (hasEvents)
+    {
+        result.push_back(make_propid(runtime, add_event_name));
+        result.push_back(make_propid(runtime, remove_event_name));
+    }
+
+    return result;
+}
+
+jsi::Value projected_object_instance::add_event_listener(
+    jsi::Runtime& runtime, const jsi::Value& thisVal, const jsi::Value* args, size_t count)
+{
+    if (count < 2)
+    {
+        throw jsi::JSError(runtime, "TypeError: addEventListener expects (at least) 2 arguments");
+    }
+
+    auto name = args[0].asString(runtime).utf8(runtime);
+    auto obj = thisVal.asObject(runtime).asHostObject<projected_object_instance>(runtime);
+    for (auto iface : obj->m_interfaces)
+    {
+        if (auto itr = find_by_name(iface->events, name); itr != iface->events.end())
+        {
+            itr->add(runtime, obj->m_instance, args[1]);
+            break;
+        }
+    }
+
+    return jsi::Value::undefined();
+}
+
+jsi::Value projected_object_instance::remove_event_listener(
+    jsi::Runtime& runtime, const jsi::Value& thisVal, const jsi::Value* args, size_t count)
+{
+    if (count < 2)
+    {
+        throw jsi::JSError(runtime, "TypeError: removeEventListener expects (at least) 2 arguments");
+    }
+
+    auto name = args[0].asString(runtime).utf8(runtime);
+    auto obj = thisVal.asObject(runtime).asHostObject<projected_object_instance>(runtime);
+    for (auto iface : obj->m_interfaces)
+    {
+        if (auto itr = find_by_name(iface->events, name); itr != iface->events.end())
+        {
+            itr->remove(runtime, obj->m_instance, args[1]);
+            break;
+        }
+    }
+
+    return jsi::Value::undefined();
 }
 
 bool projected_value_traits<bool>::as_native(jsi::Runtime&, const jsi::Value& value) noexcept
