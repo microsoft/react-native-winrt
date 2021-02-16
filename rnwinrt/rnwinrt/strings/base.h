@@ -65,6 +65,9 @@ namespace jswinrt
     template <typename T, size_t BufferSize = 8>
     struct sso_vector
     {
+        template <typename U, size_t OtherBufferSize>
+        friend struct sso_vector;
+
         sso_vector() = default;
 
         sso_vector(const sso_vector& other)
@@ -268,7 +271,6 @@ namespace jswinrt
         }
 
     private:
-
         template <size_t OtherBufferSize>
         void copy_construct(const sso_vector<T, OtherBufferSize>& other)
         {
@@ -326,7 +328,7 @@ namespace jswinrt
                 m_size = other.m_size;
                 m_capacity = other.m_capacity;
                 other.m_size = 0;
-                other.m_capacity = BufferSize;
+                other.m_capacity = OtherBufferSize;
             }
             else
             {
@@ -420,7 +422,7 @@ namespace jswinrt
 
         const T* local_data() const noexcept
         {
-            return reinterpret_cast<T*>(&m_data.buffer);
+            return reinterpret_cast<const T*>(&m_data.buffer);
         }
 
         // NOTE: Caller is in charge of setting size/capacity correctly
