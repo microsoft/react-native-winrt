@@ -702,7 +702,6 @@ namespace jswinrt
         virtual std::vector<jsi::PropNameID> getPropertyNames(jsi::Runtime& runtime) override;
 
     private:
-
         const static_namespace_data* m_data;
         std::vector<jsi::Value> m_children;
     };
@@ -719,7 +718,6 @@ namespace jswinrt
         virtual std::vector<jsi::PropNameID> getPropertyNames(jsi::Runtime& runtime) override;
 
     private:
-
         const static_enum_data* m_data;
     };
 
@@ -735,7 +733,6 @@ namespace jswinrt
         virtual std::vector<jsi::PropNameID> getPropertyNames(jsi::Runtime& runtime) override;
 
     private:
-
         const static_class_data* m_data;
         std::unordered_map<std::string_view, jsi::Value> m_functions;
     };
@@ -761,7 +758,6 @@ namespace jswinrt
         }
 
     private:
-
         static jsi::Value add_event_listener(
             jsi::Runtime& runtime, const jsi::Value& thisVal, const jsi::Value* args, size_t count);
         static jsi::Value remove_event_listener(
@@ -945,9 +941,7 @@ namespace jswinrt
     struct array_vector_base
     {
         array_vector_base(std::shared_ptr<ProjectionsContext> context, jsi::Array array) :
-            context(std::move(context)),
-            array(std::move(array)),
-            thread_id(::GetCurrentThreadId())
+            context(std::move(context)), array(std::move(array)), thread_id(::GetCurrentThreadId())
         {
         }
 
@@ -1183,8 +1177,7 @@ namespace jswinrt
 
     jsi::Value convert_from_property_value(
         jsi::Runtime& runtime, const winrt::Windows::Foundation::IPropertyValue& value);
-    winrt::Windows::Foundation::IInspectable convert_to_property_value(
-        jsi::Runtime& runtime, const jsi::Value& value);
+    winrt::Windows::Foundation::IInspectable convert_to_property_value(jsi::Runtime& runtime, const jsi::Value& value);
 
     template <typename T>
     struct projected_value_traits<T, std::enable_if_t<std::is_base_of_v<winrt::Windows::Foundation::IInspectable, T>>>
@@ -1246,7 +1239,7 @@ namespace jswinrt
             {
                 if (auto result = convert_to_property_value(runtime, value))
                 {
-                    if constexpr (std::is_same_v<T, winrt::Windows::Foundation::IInspectable)
+                    if constexpr (std::is_same_v<T, winrt::Windows::Foundation::IInspectable>)
                     {
                         return result;
                     }

@@ -406,7 +406,8 @@ namespace winrt::TestComponent::implementation
         s_enumEventSource.remove(token);
     }
 
-    winrt::event_token Test::StaticCompositeStructEventHandler(Windows::Foundation::EventHandler<CompositeType> const& handler)
+    winrt::event_token Test::StaticCompositeStructEventHandler(
+        Windows::Foundation::EventHandler<CompositeType> const& handler)
     {
         return s_compositeStructEventSource.add(handler);
     }
@@ -416,7 +417,8 @@ namespace winrt::TestComponent::implementation
         s_compositeStructEventSource.remove(token);
     }
 
-    winrt::event_token Test::StaticRefEventHandler(Windows::Foundation::EventHandler<Windows::Foundation::IReference<int32_t>> const& handler)
+    winrt::event_token Test::StaticRefEventHandler(
+        Windows::Foundation::EventHandler<Windows::Foundation::IReference<int32_t>> const& handler)
     {
         return s_refEventSource.add(handler);
     }
@@ -426,7 +428,8 @@ namespace winrt::TestComponent::implementation
         s_refEventSource.remove(token);
     }
 
-    winrt::event_token Test::StaticObjectEventHandler(Windows::Foundation::EventHandler<Windows::Foundation::Collections::IVector<int32_t>> const& handler)
+    winrt::event_token Test::StaticObjectEventHandler(
+        Windows::Foundation::EventHandler<Windows::Foundation::Collections::IVector<int32_t>> const& handler)
     {
         return s_objectEventSource.add(handler);
     }
@@ -511,17 +514,20 @@ namespace winrt::TestComponent::implementation
         return targetFn(inputValue);
     }
 
-    CompositeType Test::StaticInvokeCompositeStructDelegate(CompositeType const& inputValue, CompositeStructDelegate const& targetFn)
+    CompositeType Test::StaticInvokeCompositeStructDelegate(
+        CompositeType const& inputValue, CompositeStructDelegate const& targetFn)
     {
         return targetFn(inputValue);
     }
 
-    Windows::Foundation::IReference<int32_t> Test::StaticInvokeRefDelegate(Windows::Foundation::IReference<int32_t> const& inputValue, RefDelegate const& targetFn)
+    Windows::Foundation::IReference<int32_t> Test::StaticInvokeRefDelegate(
+        Windows::Foundation::IReference<int32_t> const& inputValue, RefDelegate const& targetFn)
     {
         return targetFn(inputValue);
     }
 
-    Windows::Foundation::Collections::IVector<int32_t> Test::StaticInvokeObjectDelegate(Windows::Foundation::Collections::IVector<int32_t> const& inputValue, ObjectDelegate const& targetFn)
+    Windows::Foundation::Collections::IVector<int32_t> Test::StaticInvokeObjectDelegate(
+        Windows::Foundation::Collections::IVector<int32_t> const& inputValue, ObjectDelegate const& targetFn)
     {
         return targetFn(inputValue);
     }
@@ -1251,7 +1257,8 @@ namespace winrt::TestComponent::implementation
         m_enumEventSource.remove(token);
     }
 
-    winrt::event_token Test::CompositeStructEventHandler(Windows::Foundation::EventHandler<CompositeType> const& handler)
+    winrt::event_token Test::CompositeStructEventHandler(
+        Windows::Foundation::EventHandler<CompositeType> const& handler)
     {
         return m_compositeStructEventSource.add(handler);
     }
@@ -1261,7 +1268,8 @@ namespace winrt::TestComponent::implementation
         m_compositeStructEventSource.remove(token);
     }
 
-    winrt::event_token Test::RefEventHandler(Windows::Foundation::EventHandler<Windows::Foundation::IReference<int32_t>> const& handler)
+    winrt::event_token Test::RefEventHandler(
+        Windows::Foundation::EventHandler<Windows::Foundation::IReference<int32_t>> const& handler)
     {
         return m_refEventSource.add(handler);
     }
@@ -1271,7 +1279,8 @@ namespace winrt::TestComponent::implementation
         m_refEventSource.remove(token);
     }
 
-    winrt::event_token Test::ObjectEventHandler(Windows::Foundation::EventHandler<Windows::Foundation::Collections::IVector<int32_t>> const& handler)
+    winrt::event_token Test::ObjectEventHandler(
+        Windows::Foundation::EventHandler<Windows::Foundation::Collections::IVector<int32_t>> const& handler)
     {
         return m_objectEventSource.add(handler);
     }
@@ -1356,17 +1365,20 @@ namespace winrt::TestComponent::implementation
         return targetFn(inputValue);
     }
 
-    CompositeType Test::InvokeCompositeStructDelegate(CompositeType const& inputValue, CompositeStructDelegate const& targetFn)
+    CompositeType Test::InvokeCompositeStructDelegate(
+        CompositeType const& inputValue, CompositeStructDelegate const& targetFn)
     {
         return targetFn(inputValue);
     }
 
-    Windows::Foundation::IReference<int32_t> Test::InvokeRefDelegate(Windows::Foundation::IReference<int32_t> const& inputValue, RefDelegate const& targetFn)
+    Windows::Foundation::IReference<int32_t> Test::InvokeRefDelegate(
+        Windows::Foundation::IReference<int32_t> const& inputValue, RefDelegate const& targetFn)
     {
         return targetFn(inputValue);
     }
 
-    Windows::Foundation::Collections::IVector<int32_t> Test::InvokeObjectDelegate(Windows::Foundation::Collections::IVector<int32_t> const& inputValue, ObjectDelegate const& targetFn)
+    Windows::Foundation::Collections::IVector<int32_t> Test::InvokeObjectDelegate(
+        Windows::Foundation::Collections::IVector<int32_t> const& inputValue, ObjectDelegate const& targetFn)
     {
         return targetFn(inputValue);
     }

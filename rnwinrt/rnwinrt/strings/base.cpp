@@ -69,8 +69,8 @@ jsi::Value projected_namespace::get(jsi::Runtime& runtime, const jsi::PropNameID
 
 void projected_namespace::set(jsi::Runtime& runtime, const jsi::PropNameID& name, const jsi::Value&)
 {
-    throw jsi::JSError(runtime,
-        "TypeError: Cannot assign to property '" + name.utf8(runtime) + "' of a projected WinRT namespace");
+    throw jsi::JSError(
+        runtime, "TypeError: Cannot assign to property '" + name.utf8(runtime) + "' of a projected WinRT namespace");
 }
 
 std::vector<jsi::PropNameID> projected_namespace::getPropertyNames(jsi::Runtime& runtime)
@@ -337,8 +337,8 @@ jsi::Value static_activatable_class_data::create(jsi::Runtime& runtime) const
     for (auto&& prop : properties)
     {
         defineProperty.call(runtime, result, make_string(runtime, prop.name),
-            jsi::Value(runtime, jsi::Object::createFromHostObject(runtime,
-                                    std::make_shared<projected_property>(prop.getter, prop.setter))));
+            jsi::Value(runtime, jsi::Object::createFromHostObject(
+                                    runtime, std::make_shared<projected_property>(prop.getter, prop.setter))));
     }
 
     for (auto&& fn : functions)
@@ -409,8 +409,7 @@ static const static_interface_data* find_interface(const winrt::guid& guid)
     return nullptr;
 }
 
-projected_object_instance::projected_object_instance(const IInspectable& instance) :
-    m_instance(instance)
+projected_object_instance::projected_object_instance(const IInspectable& instance) : m_instance(instance)
 {
     auto iids = winrt::get_interfaces(m_instance);
     for (auto&& iid : iids)
@@ -502,7 +501,7 @@ jsi::Value projected_object_instance::get(jsi::Runtime& runtime, const jsi::Prop
         {
             // NOTE: Even if the target is the default overload, we still want to remove other ones with the same arity
             auto tgt = functions[i];
-            for (size_t j = i + 1; j < functions.size(); )
+            for (size_t j = i + 1; j < functions.size();)
             {
                 auto test = functions[j];
                 if (tgt->arity == test->arity)
@@ -747,8 +746,7 @@ winrt::hstring projected_value_traits<winrt::hstring>::as_native(jsi::Runtime& r
 
     PWSTR stringBuffer;
     HSTRING_BUFFER buffer;
-    winrt::check_hresult(
-        ::WindowsPreallocateStringBuffer(static_cast<uint32_t>(len), &stringBuffer, &buffer));
+    winrt::check_hresult(::WindowsPreallocateStringBuffer(static_cast<uint32_t>(len), &stringBuffer, &buffer));
 
     winrt::hstring result;
     try
