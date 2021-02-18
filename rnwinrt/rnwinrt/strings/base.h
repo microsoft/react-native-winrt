@@ -2,9 +2,11 @@
 
 #if 1
 
+#include <atomic>
 #include <jsi/jsi.h>
 #include <string_view>
 #include <unordered_map>
+#include <variant>
 #include <winrt/Windows.Foundation.h>
 
 // Common helpers/types
@@ -503,7 +505,22 @@ namespace jswinrt
     }
 
     template <typename T, typename Enable = void>
-    struct projected_value_traits;
+    struct projected_value_traits
+    {
+        [[noreturn]] static jsi::Value as_value(jsi::Runtime&, const T&)
+        {
+            throw jsi::JSError(runtime, "TypeError: Conversion from native to JS not implemented for type '"s +
+                                            typeid(T).name() +
+                                            "'. This is likely caused by the type being in a non-projected namespace");
+        }
+
+        [[noreturn]] static T as_native(jsi::Runtime&, const jsi::Value&)
+        {
+            throw jsi::JSError(runtime, "TypeError: Conversion from JS to native not implemented for type '"s +
+                                            typeid(T).name() +
+                                            "'. This is likely caused by the type being in a non-projected namespace");
+        }
+    };
 
     template <typename T>
     jsi::Value convert_native_to_value(jsi::Runtime& runtime, T&& value)
@@ -567,6 +584,8 @@ namespace jswinrt
 
         span<const value_mapping> values;
     };
+
+    extern const span<const static_namespace_data* const> root_namespaces;
 
     struct static_class_data : static_projection_data
     {
@@ -663,6 +682,8 @@ namespace jswinrt
         span<const event_mapping> events;
         span<const function_mapping> functions;
     };
+
+    extern const span<const std::pair<winrt::guid, const static_interface_data*>> global_interface_map;
 }
 
 // Types used for object instances, etc.
@@ -734,6 +755,11 @@ namespace jswinrt
         virtual void set(jsi::Runtime& runtime, const jsi::PropNameID& name, const jsi::Value& value) override;
         virtual std::vector<jsi::PropNameID> getPropertyNames(jsi::Runtime& runtime) override;
 
+        const winrt::Windows::Foundation::IInspectable& instance() const noexcept
+        {
+            return m_instance;
+        }
+
     private:
 
         static jsi::Value add_event_listener(
@@ -745,6 +771,129 @@ namespace jswinrt
         sso_vector<const static_interface_data*> m_interfaces;
         std::unordered_map<std::string_view, jsi::Value> m_functions;
     };
+}
+
+// Instance mapping data
+namespace jswinrt
+{
+    struct runtime_context;
+
+    struct shared_runtime_context
+    {
+        runtime_context* pointer = nullptr;
+
+        shared_runtime_context() = default;
+        shared_runtime_context(runtime_context* ptr);
+
+        shared_runtime_context(const shared_runtime_context& other) : shared_runtime_context(other.pointer)
+        {
+        }
+
+        shared_runtime_context(shared_runtime_context&& other) : pointer(other.pointer)
+        {
+            other.pointer = nullptr;
+        }
+
+        ~shared_runtime_context();
+
+        shared_runtime_context& operator=(const shared_runtime_context& other);
+
+        shared_runtime_context& operator=(shared_runtime_context&& other)
+        {
+            std::swap(pointer, other.pointer);
+            return *this;
+        }
+
+        runtime_context* operator->() noexcept
+        {
+            return pointer;
+        }
+
+        const runtime_context* operator->() const noexcept
+        {
+            return pointer;
+        }
+
+        runtime_context& operator*() noexcept
+        {
+            return *pointer;
+        }
+
+        const runtime_context& operator*() const noexcept
+        {
+            return *pointer;
+        }
+    };
+
+    struct runtime_context
+    {
+        DWORD thread_id = ::GetCurrentThreadId();
+        std::unordered_map<void*, std::variant<jsi::WeakObject, std::weak_ptr<jsi::HostObject>>> instance_cache;
+
+        // TODO: This is kind of a hack/workaround for V8, which does not appear to have WeakObject support per
+        // V8Runtime::createWeakObject/V8Runtime::lockWeakObject
+        // (https://github.com/microsoft/v8-jsi/blob/master/src/V8JsiRuntime.cpp)
+        bool supports_weak_object = true;
+
+        jsi::Value get_instance(jsi::Runtime& runtime, const winrt::Windows::Foundation::IInspectable& value);
+
+        // For the most part, these pointers should only be accessed from the JS thread and therefore the reference
+        // count does not need to be bumped, but for things like asynchronous operations, we may need to take strong
+        // references to ensure the object does not get destroyed during use
+        std::atomic_uint32_t ref_count{ 1 };
+
+        [[nodiscard]] shared_runtime_context add_reference()
+        {
+            assert(thread_id == ::GetCurrentThreadId());
+            assert(ref_count.load() >= 1);
+            return shared_runtime_context{ this }; // NOTE: Bumps ref count
+        }
+
+        void release()
+        {
+            if (--ref_count == 0)
+            {
+                delete this;
+            }
+        }
+    };
+
+    inline shared_runtime_context::shared_runtime_context(runtime_context* ptr) : pointer(ptr)
+    {
+        if (pointer)
+        {
+            ++pointer->ref_count;
+        }
+    }
+
+    inline shared_runtime_context& shared_runtime_context::operator=(const shared_runtime_context& other)
+    {
+        if (this != &other)
+        {
+            if (pointer)
+            {
+                pointer->release();
+            }
+
+            pointer = other.pointer;
+            if (pointer)
+            {
+                ++pointer->ref_count;
+            }
+        }
+
+        return *this;
+    }
+
+    inline shared_runtime_context::~shared_runtime_context()
+    {
+        if (pointer)
+        {
+            pointer->release();
+        }
+    }
+
+    runtime_context* current_runtime_context();
 }
 
 // Collections wrappers
@@ -1002,8 +1151,6 @@ namespace jswinrt
         static winrt::guid as_native(jsi::Runtime& runtime, const jsi::Value& value);
     };
 
-    // TODO: Structs? Current behavior is to throw on unspecialized. Should we just default that for everything?
-
     template <>
     struct projected_value_traits<winrt::hresult>
     {
@@ -1034,6 +1181,11 @@ namespace jswinrt
 
     // TODO: Arrays
 
+    jsi::Value convert_from_property_value(
+        jsi::Runtime& runtime, const winrt::Windows::Foundation::IPropertyValue& value);
+    winrt::Windows::Foundation::IInspectable convert_to_property_value(
+        jsi::Runtime& runtime, const jsi::Value& value);
+
     template <typename T>
     struct projected_value_traits<T, std::enable_if_t<std::is_base_of_v<winrt::Windows::Foundation::IInspectable, T>>>
     {
@@ -1046,23 +1198,69 @@ namespace jswinrt
 
             if constexpr (std::is_same_v<T, winrt::Windows::Foundation::IPropertyValue>)
             {
-                // TODO
+                if (auto result = convert_from_property_value(runtime, value); !result.isUndefined())
+                {
+                    return result;
+                }
             }
             else if constexpr (std::is_same_v<T, winrt::Windows::Foundation::IInspectable>)
             {
                 if (auto propVal = value.try_as<winrt::Windows::Foundation::IPropertyValue>())
                 {
-                    // TODO
+                    if (auto result = convert_from_property_value(runtime, propVal); !result.isUndefined())
+                    {
+                        return result;
+                    }
                 }
             }
 
-            // TODO
-            return jsi::Value::null();
+            return current_runtime_context()->get_instance(runtime, value);
         }
 
         static T as_native(jsi::Runtime& runtime, const jsi::Value& value)
         {
-            return T{ nullptr }; // TODO
+            if (value.isNull() || value.isUndefined())
+            {
+                return nullptr;
+            }
+
+            if (value.isObject())
+            {
+                auto obj = value.getObject(runtime);
+                if (obj.isHostObject<projected_object_instance>(runtime))
+                {
+                    const auto& result = obj.getHostObject<projected_object_instance>(runtime)->instance();
+                    if constexpr (std::is_same_v<T, winrt::Windows::Foundation::IInspectable>)
+                    {
+                        return result;
+                    }
+                    else
+                    {
+                        return result.as<T>();
+                    }
+                }
+            }
+
+            if constexpr (std::is_same_v<T, winrt::Windows::Foundation::IInspectable> ||
+                          std::is_same_v<T, winrt::Windows::Foundation::IPropertyValue>)
+            {
+                if (auto result = convert_to_property_value(runtime, value))
+                {
+                    if constexpr (std::is_same_v<T, winrt::Windows::Foundation::IInspectable)
+                    {
+                        return result;
+                    }
+                    else
+                    {
+                        return result.as<winrt::Windows::Foundation::IPropertyValue>();
+                    }
+                }
+            }
+
+            // TODO: Array as Collections
+
+            throw jsi::JSError(
+                runtime, "TypeError: Cannot derive a WinRT interface for the JS value. Expecting: " + typeid(T).name());
         }
     };
 
@@ -1148,174 +1346,6 @@ namespace jswinrt
 #include <wil/win32_helpers.h>
 #include <wil/winrt.h>
 
-#define EXPAND_SEQUENCE1(x, y, d) x##1##y
-#define EXPAND_SEQUENCE2(x, y, d) EXPAND_SEQUENCE1(x, y, d)##d x##2##y
-#define EXPAND_SEQUENCE3(x, y, d) EXPAND_SEQUENCE2(x, y, d)##d x##3##y
-#define EXPAND_SEQUENCE4(x, y, d) EXPAND_SEQUENCE3(x, y, d)##d x##4##y
-#define EXPAND_SEQUENCE5(x, y, d) EXPAND_SEQUENCE4(x, y, d)##d x##5##y
-#define EXPAND_SEQUENCE6(x, y, d) EXPAND_SEQUENCE5(x, y, d)##d x##6##y
-#define EXPAND_SEQUENCE7(x, y, d) EXPAND_SEQUENCE6(x, y, d)##d x##7##y
-#define EXPAND_SEQUENCE8(x, y, d) EXPAND_SEQUENCE7(x, y, d)##d x##8##y
-#define EXPAND_SEQUENCE9(x, y, d) EXPAND_SEQUENCE8(x, y, d)##d x##9##y
-#define EXPAND_SEQUENCE10(x, y, d) EXPAND_SEQUENCE9(x, y, d)##d x##10##y
-#define EXPAND_SEQUENCE11(x, y, d) EXPAND_SEQUENCE10(x, y, d)##d x##11##y
-#define EXPAND_SEQUENCE12(x, y, d) EXPAND_SEQUENCE11(x, y, d)##d x##12##y
-#define EXPAND_SEQUENCE13(x, y, d) EXPAND_SEQUENCE12(x, y, d)##d x##13##y
-#define EXPAND_SEQUENCE14(x, y, d) EXPAND_SEQUENCE13(x, y, d)##d x##14##y
-#define EXPAND_SEQUENCE15(x, y, d) EXPAND_SEQUENCE14(x, y, d)##d x##15##y
-#define EXPAND_SEQUENCE16(x, y, d) EXPAND_SEQUENCE15(x, y, d)##d x##16##y
-#define EXPAND_SEQUENCE17(x, y, d) EXPAND_SEQUENCE16(x, y, d)##d x##17##y
-#define EXPAND_SEQUENCE18(x, y, d) EXPAND_SEQUENCE17(x, y, d)##d x##18##y
-#define EXPAND_SEQUENCE19(x, y, d) EXPAND_SEQUENCE18(x, y, d)##d x##19##y
-#define EXPAND_SEQUENCE20(x, y, d) EXPAND_SEQUENCE19(x, y, d)##d x##20##y
-#define EXPAND_SEQUENCE21(x, y, d) EXPAND_SEQUENCE20(x, y, d)##d x##21##y
-#define EXPAND_SEQUENCE22(x, y, d) EXPAND_SEQUENCE21(x, y, d)##d x##22##y
-#define EXPAND_SEQUENCE23(x, y, d) EXPAND_SEQUENCE22(x, y, d)##d x##23##y
-#define EXPAND_SEQUENCE24(x, y, d) EXPAND_SEQUENCE23(x, y, d)##d x##24##y
-#define EXPAND_SEQUENCE25(x, y, d) EXPAND_SEQUENCE24(x, y, d)##d x##25##y
-#define EXPAND_SEQUENCE26(x, y, d) EXPAND_SEQUENCE25(x, y, d)##d x##26##y
-#define EXPAND_SEQUENCE27(x, y, d) EXPAND_SEQUENCE26(x, y, d)##d x##27##y
-#define EXPAND_SEQUENCE28(x, y, d) EXPAND_SEQUENCE27(x, y, d)##d x##28##y
-#define EXPAND_SEQUENCE29(x, y, d) EXPAND_SEQUENCE27(x, y, d)##d x##29##y
-#define EXPAND_SEQUENCE30(x, y, d) EXPAND_SEQUENCE29(x, y, d)##d x##30##y
-#define EXPAND_SEQUENCE(x, y, i, d) EXPAND_SEQUENCE##i(x, y, d)
-
-#define EXPAND_SEQUENCE_PAIR1(x, y, z, d) x##1##y##1##z
-#define EXPAND_SEQUENCE_PAIR2(x, y, z, d) EXPAND_SEQUENCE_PAIR1(x, y, z, d)##d x##2##y##2##z
-#define EXPAND_SEQUENCE_PAIR3(x, y, z, d) EXPAND_SEQUENCE_PAIR2(x, y, z, d)##d x##3##y##3##z
-#define EXPAND_SEQUENCE_PAIR4(x, y, z, d) EXPAND_SEQUENCE_PAIR3(x, y, z, d)##d x##4##y##4##z
-#define EXPAND_SEQUENCE_PAIR5(x, y, z, d) EXPAND_SEQUENCE_PAIR4(x, y, z, d)##d x##5##y##5##z
-#define EXPAND_SEQUENCE_PAIR6(x, y, z, d) EXPAND_SEQUENCE_PAIR5(x, y, z, d)##d x##6##y##6##z
-#define EXPAND_SEQUENCE_PAIR7(x, y, z, d) EXPAND_SEQUENCE_PAIR6(x, y, z, d)##d x##7##y##7##z
-#define EXPAND_SEQUENCE_PAIR8(x, y, z, d) EXPAND_SEQUENCE_PAIR7(x, y, z, d)##d x##8##y##8##z
-#define EXPAND_SEQUENCE_PAIR9(x, y, z, d) EXPAND_SEQUENCE_PAIR8(x, y, z, d)##d x##9##y##9##z
-#define EXPAND_SEQUENCE_PAIR10(x, y, z, d) EXPAND_SEQUENCE_PAIR9(x, y, z, d)##d x##10##y##10##z
-#define EXPAND_SEQUENCE_PAIR11(x, y, z, d) EXPAND_SEQUENCE_PAIR10(x, y, z, d)##d x##11##y##11##z
-#define EXPAND_SEQUENCE_PAIR12(x, y, z, d) EXPAND_SEQUENCE_PAIR11(x, y, z, d)##d x##12##y##12##z
-#define EXPAND_SEQUENCE_PAIR13(x, y, z, d) EXPAND_SEQUENCE_PAIR12(x, y, z, d)##d x##13##y##13##z
-#define EXPAND_SEQUENCE_PAIR14(x, y, z, d) EXPAND_SEQUENCE_PAIR13(x, y, z, d)##d x##14##y##14##z
-#define EXPAND_SEQUENCE_PAIR15(x, y, z, d) EXPAND_SEQUENCE_PAIR14(x, y, z, d)##d x##15##y##15##z
-#define EXPAND_SEQUENCE_PAIR16(x, y, z, d) EXPAND_SEQUENCE_PAIR15(x, y, z, d)##d x##16##y##16##z
-#define EXPAND_SEQUENCE_PAIR17(x, y, z, d) EXPAND_SEQUENCE_PAIR16(x, y, z, d)##d x##17##y##17##z
-#define EXPAND_SEQUENCE_PAIR18(x, y, z, d) EXPAND_SEQUENCE_PAIR17(x, y, z, d)##d x##18##y##18##z
-#define EXPAND_SEQUENCE_PAIR19(x, y, z, d) EXPAND_SEQUENCE_PAIR18(x, y, z, d)##d x##19##y##19##z
-#define EXPAND_SEQUENCE_PAIR20(x, y, z, d) EXPAND_SEQUENCE_PAIR19(x, y, z, d)##d x##20##y##20##z
-#define EXPAND_SEQUENCE_PAIR21(x, y, z, d) EXPAND_SEQUENCE_PAIR20(x, y, z, d)##d x##21##y##21##z
-#define EXPAND_SEQUENCE_PAIR22(x, y, z, d) EXPAND_SEQUENCE_PAIR21(x, y, z, d)##d x##22##y##22##z
-#define EXPAND_SEQUENCE_PAIR23(x, y, z, d) EXPAND_SEQUENCE_PAIR22(x, y, z, d)##d x##23##y##23##z
-#define EXPAND_SEQUENCE_PAIR24(x, y, z, d) EXPAND_SEQUENCE_PAIR23(x, y, z, d)##d x##24##y##24##z
-#define EXPAND_SEQUENCE_PAIR25(x, y, z, d) EXPAND_SEQUENCE_PAIR24(x, y, z, d)##d x##25##y##25##z
-#define EXPAND_SEQUENCE_PAIR26(x, y, z, d) EXPAND_SEQUENCE_PAIR25(x, y, z, d)##d x##26##y##26##z
-#define EXPAND_SEQUENCE_PAIR27(x, y, z, d) EXPAND_SEQUENCE_PAIR26(x, y, z, d)##d x##27##y##27##z
-#define EXPAND_SEQUENCE_PAIR28(x, y, z, d) EXPAND_SEQUENCE_PAIR27(x, y, z, d)##d x##28##y##28##z
-#define EXPAND_SEQUENCE_PAIR29(x, y, z, d) EXPAND_SEQUENCE_PAIR27(x, y, z, d)##d x##29##y##29##z
-#define EXPAND_SEQUENCE_PAIR30(x, y, z, d) EXPAND_SEQUENCE_PAIR29(x, y, z, d)##d x##30##y##30##z
-#define EXPAND_SEQUENCE_PAIR(x, y, z, i, d) EXPAND_SEQUENCE_PAIR##i(x, y, z, d)
-
-#define EXPAND_DEFINITIONS1(x) x##(1)
-#define EXPAND_DEFINITIONS2(x)                                                                                         \
-    EXPAND_DEFINITIONS1(x)                                                                                             \
-    x##(2)
-#define EXPAND_DEFINITIONS3(x)                                                                                         \
-    EXPAND_DEFINITIONS2(x)                                                                                             \
-    x##(3)
-#define EXPAND_DEFINITIONS4(x)                                                                                         \
-    EXPAND_DEFINITIONS3(x)                                                                                             \
-    x##(4)
-#define EXPAND_DEFINITIONS5(x)                                                                                         \
-    EXPAND_DEFINITIONS4(x)                                                                                             \
-    x##(5)
-#define EXPAND_DEFINITIONS6(x)                                                                                         \
-    EXPAND_DEFINITIONS5(x)                                                                                             \
-    x##(6)
-#define EXPAND_DEFINITIONS7(x)                                                                                         \
-    EXPAND_DEFINITIONS6(x)                                                                                             \
-    x##(7)
-#define EXPAND_DEFINITIONS8(x)                                                                                         \
-    EXPAND_DEFINITIONS7(x)                                                                                             \
-    x##(8)
-#define EXPAND_DEFINITIONS9(x)                                                                                         \
-    EXPAND_DEFINITIONS8(x)                                                                                             \
-    x##(9)
-#define EXPAND_DEFINITIONS10(x)                                                                                        \
-    EXPAND_DEFINITIONS9(x)                                                                                             \
-    x##(10)
-#define EXPAND_DEFINITIONS11(x)                                                                                        \
-    EXPAND_DEFINITIONS10(x)                                                                                            \
-    x##(11)
-#define EXPAND_DEFINITIONS12(x)                                                                                        \
-    EXPAND_DEFINITIONS11(x)                                                                                            \
-    x##(12)
-#define EXPAND_DEFINITIONS13(x)                                                                                        \
-    EXPAND_DEFINITIONS12(x)                                                                                            \
-    x##(13)
-#define EXPAND_DEFINITIONS14(x)                                                                                        \
-    EXPAND_DEFINITIONS13(x)                                                                                            \
-    x##(14)
-#define EXPAND_DEFINITIONS15(x)                                                                                        \
-    EXPAND_DEFINITIONS14(x)                                                                                            \
-    x##(15)
-#define EXPAND_DEFINITIONS16(x)                                                                                        \
-    EXPAND_DEFINITIONS15(x)                                                                                            \
-    x##(16)
-#define EXPAND_DEFINITIONS17(x)                                                                                        \
-    EXPAND_DEFINITIONS16(x)                                                                                            \
-    x##(17)
-#define EXPAND_DEFINITIONS18(x)                                                                                        \
-    EXPAND_DEFINITIONS17(x)                                                                                            \
-    x##(18)
-#define EXPAND_DEFINITIONS19(x)                                                                                        \
-    EXPAND_DEFINITIONS18(x)                                                                                            \
-    x##(19)
-#define EXPAND_DEFINITIONS20(x)                                                                                        \
-    EXPAND_DEFINITIONS19(x)                                                                                            \
-    x##(20)
-#define EXPAND_DEFINITIONS21(x)                                                                                        \
-    EXPAND_DEFINITIONS20(x)                                                                                            \
-    x##(21)
-#define EXPAND_DEFINITIONS22(x)                                                                                        \
-    EXPAND_DEFINITIONS21(x)                                                                                            \
-    x##(22)
-#define EXPAND_DEFINITIONS23(x)                                                                                        \
-    EXPAND_DEFINITIONS22(x)                                                                                            \
-    x##(23)
-#define EXPAND_DEFINITIONS24(x)                                                                                        \
-    EXPAND_DEFINITIONS23(x)                                                                                            \
-    x##(24)
-#define EXPAND_DEFINITIONS25(x)                                                                                        \
-    EXPAND_DEFINITIONS24(x)                                                                                            \
-    x##(25)
-#define EXPAND_DEFINITIONS26(x)                                                                                        \
-    EXPAND_DEFINITIONS25(x)                                                                                            \
-    x##(26)
-#define EXPAND_DEFINITIONS27(x)                                                                                        \
-    EXPAND_DEFINITIONS26(x)                                                                                            \
-    x##(27)
-#define EXPAND_DEFINITIONS28(x)                                                                                        \
-    EXPAND_DEFINITIONS27(x)                                                                                            \
-    x##(28)
-#define EXPAND_DEFINITIONS29(x)                                                                                        \
-    EXPAND_DEFINITIONS28(x)                                                                                            \
-    x##(29)
-#define EXPAND_DEFINITIONS30(x)                                                                                        \
-    EXPAND_DEFINITIONS29(x)                                                                                            \
-    x##(30)
-#define EXPAND_DEFINITIONS(x, i) EXPAND_DEFINITIONS##i(x)
-
-#define COMMA ,
-#define PARENTHESIS_OPEN (
-#define PARENTHESIS_CLOSE )
-
-namespace jsi
-{
-    using namespace facebook::jsi;
-}
-
-namespace react
-{
-    using namespace facebook::react;
-}
-
 namespace std
 {
     template <>
@@ -1345,18 +1375,6 @@ using namespace std::literals;
 namespace WinRTTurboModule
 {
     struct ProjectionsContext;
-
-    inline jsi::PropNameID CreatePropNameID(jsi::Runtime& runtime, std::string_view value)
-    {
-        return jsi::PropNameID::forUtf8(runtime, reinterpret_cast<const uint8_t*>(value.data()), value.size());
-    }
-
-    inline jsi::String CreateString(jsi::Runtime& runtime, std::string_view value)
-    {
-        return jsi::String::createFromUtf8(runtime, reinterpret_cast<const uint8_t*>(value.data()), value.size());
-    }
-
-    jsi::String CreateString(jsi::Runtime& runtime, std::wstring_view value);
 
     jsi::Value CreateError(jsi::Runtime& runtime, std::string_view message);
     jsi::Value CreateError(jsi::Runtime& runtime, const std::exception& exception);
@@ -2814,24 +2832,6 @@ namespace WinRTTurboModule::Windows::Foundation::Collections
 
 namespace WinRTTurboModule
 {
-    // Structs: Converters should generally by code-gen'd aside from a few special types but it is possible that some
-    // are missing. For example, there are IDL issues like Windows.UI.Core.CorePhysicalKeyStatus being WebHostHidden but
-    // by types that are not such as Windows.Web.UI.Interop.IWebViewControlAcceleratorKeyPressedEventArgs (which
-    // probably should also be WebHostHidden).
-    template <typename T>
-    jsi::Value ConvertStructToValue(const std::shared_ptr<ProjectionsContext>& context, const T&)
-    {
-        throw jsi::JSError(context->Runtime,
-            std::string("TypeError: Conversion from native struct to JS not implemented for "sv) + typeid(T).name());
-    }
-
-    template <typename T>
-    T ConvertValueToStruct(const std::shared_ptr<ProjectionsContext>& context, const jsi::Value&)
-    {
-        throw jsi::JSError(context->Runtime,
-            std::string("TypeError: Conversion from JS to native struct not implemented for "sv) + typeid(T).name());
-    }
-
     template <typename T, auto CTV>
     jsi::Value ConvertComArrayToValue(
         const std::shared_ptr<ProjectionsContext>& context, const winrt::com_array<T>& value)
@@ -2938,99 +2938,6 @@ namespace WinRTTurboModule
         const std::shared_ptr<ProjectionsContext>& context, const jsi::Value& value)
     {
         return { context, value };
-    }
-
-    // Interfaces
-    std::optional<jsi::Value> TryConvertPropertyValueToValue(
-        const std::shared_ptr<ProjectionsContext>& context, const winrt::Windows::Foundation::IPropertyValue& value);
-    winrt::Windows::Foundation::IInspectable TryConvertValueToPropertyValue(
-        const std::shared_ptr<ProjectionsContext>& context, const jsi::Value& value);
-
-    template <typename T>
-    jsi::Value ConvertInterfaceToValue(const std::shared_ptr<ProjectionsContext>& context, const T& value)
-    {
-        if (!value)
-        {
-            return jsi::Value(nullptr);
-        }
-
-        if constexpr (std::is_same_v<T, winrt::Windows::Foundation::IPropertyValue>)
-        {
-            if (auto convertedValue = TryConvertPropertyValueToValue(context, value))
-            {
-                return std::move(*convertedValue);
-            }
-        }
-        else if constexpr (std::is_same_v<T, winrt::Windows::Foundation::IInspectable>)
-        {
-            if (const auto propertyValue = value.try_as<winrt::Windows::Foundation::IPropertyValue>())
-            {
-                if (auto convertedValue = TryConvertPropertyValueToValue(context, propertyValue))
-                {
-                    return std::move(*convertedValue);
-                }
-            }
-        }
-
-        // The purpose of the explicit QI as IInspectable is to reduce the probability of aliasing where we end up
-        // instantiatin multiple instances of ProjectedRuntimeClassInstance rather than reusing cached instances. The
-        // lookup is based on the raw ABI pointer as void* but since by definition WinRT COM interface inherit
-        // IInspectable (and IUnknown) it might a different vtable entry and a different pointer. So even if T ==
-        // winrt::Windows::Foundation::IInspectable we should QI just to be sure because a static_cast of a WinRT COM
-        // interface as IInspectable may have been performed pointing to a different vtable entry and giving a different
-        // pointer. In most cases a class will always return a particular implementation of IInspectable given use of a
-        // single implementation of IUnknown::QueryInterface.
-        return ProjectedRuntimeClassInstance::Get(context, value.as<winrt::Windows::Foundation::IInspectable>());
-    }
-
-    winrt::Windows::Foundation::IInspectable TryGetInterfaceFromHostObject(
-        jsi::Runtime& runtime, const jsi::Value& value);
-
-    template <typename T>
-    T ConvertValueToInterface(const std::shared_ptr<ProjectionsContext>& context, const jsi::Value& value)
-    {
-        if (value.isNull() || value.isUndefined())
-        {
-            return nullptr;
-        }
-
-        if (const auto inspectable = TryGetInterfaceFromHostObject(context->Runtime, value))
-        {
-            if constexpr (std::is_same_v<T, winrt::Windows::Foundation::IInspectable>)
-            {
-                return inspectable;
-            }
-            else if (const auto queried = inspectable.try_as<T>())
-            {
-                return queried;
-            }
-            else
-            {
-                throw jsi::JSError(
-                    context->Runtime, std::string("TypeError: Could not convert COM interface to ") + typeid(T).name());
-            }
-        }
-
-        if constexpr (std::is_same_v<T, winrt::Windows::Foundation::IInspectable> ||
-                      std::is_same_v<T, winrt::Windows::Foundation::IPropertyValue>)
-        {
-            if (auto inspectable = TryConvertValueToPropertyValue(context, value))
-            {
-                if constexpr (std::is_same_v<T, winrt::Windows::Foundation::IInspectable>)
-                {
-                    return inspectable;
-                }
-                else
-                {
-                    return inspectable.as<winrt::Windows::Foundation::IPropertyValue>();
-                }
-            }
-        }
-
-        // TODO: Special case allowing JS to pass types like Array for IVector/IVectorView and Map for IMap/IMapView.
-
-        throw jsi::JSError(context->Runtime,
-            std::string("TypeError: Cannot derive a WinRT interface for the JS value. Expecting: ") + typeid(T).name());
     }
 
     // ProjectedAsyncOperation is an imitation of Promise except it also supports some special features like Chakra such

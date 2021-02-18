@@ -361,11 +361,65 @@ jsi::Value static_activatable_class_data::create(jsi::Runtime& runtime) const
     return result;
 }
 
+static int compare_guid(const winrt::guid& lhs, const winrt::guid& rhs)
+{
+    // NOTE: This method of comparison needs to remain consistant with how we sort the static array
+    auto lhsPtr = reinterpret_cast<const std::int64_t*>(&lhs);
+    auto rhsPtr = reinterpret_cast<const std::int64_t*>(&rhs);
+    if (auto diff = lhsPtr[0] - rhsPtr[0])
+    {
+        return (diff < 0) ? -1 : 1;
+    }
+
+    auto diff = lhsPtr[1] - rhsPtr[1];
+    return (diff == 0) ? 0 : (diff < 0) ? -1 : 1;
+}
+
+static const static_interface_data* find_interface(const winrt::guid& guid)
+{
+    auto begin = global_interface_map.begin();
+    auto end = global_interface_map.end();
+    static constexpr std::ptrdiff_t linear_search_size = 16; // TODO: Find a good value
+    while ((end - begin) > linear_search_size)
+    {
+        auto mid = begin + (end - begin) / 2;
+        auto cmp = compare_guid(guid, mid->first);
+        if (cmp < 0)
+        {
+            begin = mid + 1;
+        }
+        else if (cmp > 0)
+        {
+            end = mid;
+        }
+        else
+        {
+            return mid->second;
+        }
+    }
+
+    for (; begin != end; ++begin)
+    {
+        if (begin->first == guid)
+        {
+            return begin->second;
+        }
+    }
+
+    return nullptr;
+}
+
 projected_object_instance::projected_object_instance(const IInspectable& instance) :
     m_instance(instance)
 {
     auto iids = winrt::get_interfaces(m_instance);
-    // TODO: Lookup in common map
+    for (auto&& iid : iids)
+    {
+        if (auto iface = find_interface(iid))
+        {
+            m_interfaces.push_back(iface);
+        }
+    }
 }
 
 namespace jswinrt
@@ -592,6 +646,60 @@ jsi::Value projected_object_instance::remove_event_listener(
     return jsi::Value::undefined();
 }
 
+jsi::Value runtime_context::get_instance(jsi::Runtime& runtime, const IInspectable& value)
+{
+    assert(thread_id == ::GetCurrentThreadId());
+
+    // NOTE: Each interface has its own associated v-table, so two IInspectable pointers to the same object may actually
+    // be different if they were originally pointers to two different interfaces. Hence the QI here
+    auto instance = value.as<IInspectable>();
+    auto key = winrt::get_abi(instance);
+    if (auto itr = instance_cache.find(key); itr != instance_cache.end())
+    {
+        // NOTE: It is possible for an interface to get deallocated and have its memory address reused for a new object,
+        // however because we hold strong references to WinRT objects and weak references to the JS objects we create,
+        // this would imply that the JS object also got GC'd and would fail to resolve below
+        if (supports_weak_object)
+        {
+            if (auto value = std::get<0>(itr->second).lock(runtime); !value.isUndefined())
+            {
+                return value;
+            }
+        }
+        else
+        {
+            if (auto hostObj = std::get<1>(itr->second).lock())
+            {
+                return jsi::Value(runtime, jsi::Object::createFromHostObject(runtime, std::move(hostObj)));
+            }
+        }
+
+        // Otherwise, the object has been GC'd. Remove it so that we can re-create the object below
+        instance_cache.erase(itr);
+    }
+
+    auto hostObj = std::make_shared<projected_object_instance>(instance);
+    auto obj = jsi::Object::createFromHostObject(runtime, hostObj);
+    if (supports_weak_object)
+    {
+        try
+        {
+            instance_cache.emplace(key, jsi::WeakObject(runtime, obj));
+        }
+        catch (std::logic_error&)
+        {
+            supports_weak_object = false;
+        }
+    }
+
+    if (!supports_weak_object)
+    {
+        instance_cache.emplace(key, std::move(hostObj));
+    }
+
+    return jsi::Value(runtime, std::move(obj));
+}
+
 bool projected_value_traits<bool>::as_native(jsi::Runtime&, const jsi::Value& value) noexcept
 {
     if (value.isBool())
@@ -742,6 +850,252 @@ TimeSpan projected_value_traits<TimeSpan>::as_native(jsi::Runtime& runtime, cons
     return std::chrono::duration_cast<TimeSpan>(ms);
 }
 
+jsi::Value convert_from_property_value(jsi::Runtime& runtime, const IPropertyValue& value)
+{
+    switch (value.Type())
+    {
+    case PropertyType::Empty:
+        return jsi::Value::undefined();
+    case PropertyType::UInt8:
+        return convert_native_to_value(runtime, value.GetUInt8());
+    case PropertyType::Int16:
+        return convert_native_to_value(runtime, value.GetInt16());
+    case PropertyType::UInt16:
+        return convert_native_to_value(runtime, value.GetUInt16());
+    case PropertyType::Int32:
+        return convert_native_to_value(runtime, value.GetInt32());
+    case PropertyType::UInt32:
+        return convert_native_to_value(runtime, value.GetUInt32());
+    case PropertyType::Int64:
+        return convert_native_to_value(runtime, value.GetInt64());
+    case PropertyType::UInt64:
+        return convert_native_to_value(runtime, value.GetUInt64());
+    case PropertyType::Single:
+        return convert_native_to_value(runtime, value.GetSingle());
+    case PropertyType::Double:
+        return convert_native_to_value(runtime, value.GetDouble());
+    case PropertyType::Char16:
+        return convert_native_to_value(runtime, value.GetChar16());
+    case PropertyType::Boolean:
+        return convert_native_to_value(runtime, value.GetBoolean());
+    case PropertyType::String:
+        return convert_native_to_value(runtime, value.GetString());
+    case PropertyType::Inspectable:
+        return jsi::Value::undefined(); // IInspectable is just the object itself
+    case PropertyType::DateTime:
+        return convert_native_to_value(runtime, value.GetDateTime());
+    case PropertyType::TimeSpan:
+        return convert_native_to_value(runtime, value.GetTimeSpan());
+    case PropertyType::Guid:
+        return convert_native_to_value(runtime, value.GetGuid());
+    case PropertyType::Point:
+        return convert_native_to_value(runtime, value.GetPoint());
+    case PropertyType::Size:
+        return convert_native_to_value(runtime, value.GetSize());
+    case PropertyType::Rect:
+        return convert_native_to_value(runtime, value.GetRect());
+    case PropertyType::OtherType:
+        return jsi::Value::undefined();
+    case PropertyType::UInt8Array: {
+        winrt::com_array<uint8_t> result;
+        value.GetUInt8Array(result);
+        return convert_native_to_value(runtime, std::move(result));
+    }
+    case PropertyType::Int16Array: {
+        winrt::com_array<int16_t> result;
+        value.GetInt16Array(result);
+        return convert_native_to_value(runtime, std::move(result));
+    }
+    case PropertyType::UInt16Array: {
+        winrt::com_array<uint16_t> result;
+        value.GetUInt16Array(result);
+        return convert_native_to_value(runtime, std::move(result));
+    }
+    case PropertyType::Int32Array: {
+        winrt::com_array<int32_t> result;
+        value.GetInt32Array(result);
+        return convert_native_to_value(runtime, std::move(result));
+    }
+    case PropertyType::UInt32Array: {
+        winrt::com_array<uint32_t> result;
+        value.GetUInt32Array(result);
+        return convert_native_to_value(runtime, std::move(result));
+    }
+    case PropertyType::Int64Array: {
+        winrt::com_array<int64_t> result;
+        value.GetInt64Array(result);
+        return convert_native_to_value(runtime, std::move(result));
+    }
+    case PropertyType::UInt64Array: {
+        winrt::com_array<uint64_t> result;
+        value.GetUInt64Array(result);
+        return convert_native_to_value(runtime, std::move(result));
+    }
+    case PropertyType::SingleArray: {
+        winrt::com_array<float> result;
+        value.GetSingleArray(result);
+        return convert_native_to_value(runtime, std::move(result));
+    }
+    case PropertyType::DoubleArray: {
+        winrt::com_array<double> result;
+        value.GetDoubleArray(result);
+        return convert_native_to_value(runtime, std::move(result));
+    }
+    case PropertyType::Char16Array: {
+        winrt::com_array<char16_t> result;
+        value.GetChar16Array(result);
+        return convert_native_to_value(runtime, std::move(result));
+    }
+    case PropertyType::BooleanArray: {
+        winrt::com_array<bool> result;
+        value.GetBooleanArray(result);
+        return convert_native_to_value(runtime, std::move(result));
+    }
+    case PropertyType::StringArray: {
+        winrt::com_array<winrt::hstring> result;
+        value.GetStringArray(result);
+        return convert_native_to_value(runtime, std::move(result));
+    }
+    case PropertyType::InspectableArray: {
+        winrt::com_array<IInspectable> result;
+        value.GetInspectableArray(result);
+        return convert_native_to_value(runtime, std::move(result));
+    }
+    case PropertyType::DateTimeArray: {
+        winrt::com_array<DateTime> result;
+        value.GetDateTimeArray(result);
+        return convert_native_to_value(runtime, std::move(result));
+    }
+    case PropertyType::TimeSpanArray: {
+        winrt::com_array<TimeSpan> result;
+        value.GetTimeSpanArray(result);
+        return convert_native_to_value(runtime, std::move(result));
+    }
+    case PropertyType::GuidArray: {
+        winrt::com_array<winrt::guid> result;
+        value.GetGuidArray(result);
+        return convert_native_to_value(runtime, std::move(result));
+    }
+    case PropertyType::PointArray: {
+        winrt::com_array<Point> result;
+        value.GetPointArray(result);
+        return convert_native_to_value(runtime, std::move(result));
+    }
+    case PropertyType::SizeArray: {
+        winrt::com_array<Size> result;
+        value.GetSizeArray(result);
+        return convert_native_to_value(runtime, std::move(result));
+    }
+    case PropertyType::RectArray: {
+        winrt::com_array<Rect> result;
+        value.GetRectArray(result);
+        return convert_native_to_value(runtime, std::move(result));
+    }
+    case PropertyType::OtherTypeArray:
+        return jsi::Value::undefined();
+    default:
+        winrt::terminate(); // TODO: Just return undefined?
+    }
+}
+
+IInspectable convert_to_property_value(jsi::Runtime& runtime, const jsi::Value& value)
+{
+    if (value.isBool())
+    {
+        return PropertyValue::CreateBoolean(value.getBool());
+    }
+    else if (value.isNumber())
+    {
+        // NOTE: Due to inherent ambiguities between the loosely typed JS 'number' type and strongly typed WinRT types,
+        // we can't do much better than to take a guess here and preserve the value as a double-precision floating point
+        // value. It's probably best for consumers to call the 'PropertyValue' static methods directly as needed
+        return PropertyValue::CreateDouble(value.getNumber());
+    }
+    else if (value.isString())
+    {
+        return PropertyValue::CreateString(convert_value_to_native<winrt::hstring>(runtime, value));
+    }
+    else if (value.isObject())
+    {
+        auto obj = value.getObject(runtime);
+        if (obj.isArray(runtime))
+        {
+            auto array = obj.getArray(runtime);
+
+            // Can't determine type from empty arrays
+            if (array.size(runtime) > 0)
+            {
+                auto elem = array.getValueAtIndex(runtime, 0);
+                if (elem.isBool())
+                {
+                    // TODO
+                    // return PropertyValue::CreateBooleanArray(convert_value_to_native<???>(runtime, value));
+                }
+                else if (elem.isNumber())
+                {
+                    // TODO
+                    // return PropertyValue::CreateDoubleArray(convert_value_to_native<???>(runtime, value));
+                }
+                else if (elem.isString())
+                {
+                    // TODO
+                    // return PropertyValue::CreateStringArray(convert_value_to_native<???>(runtime, value));
+                }
+                else if (elem.isObject())
+                {
+                    auto elemObj = elem.getObject(runtime);
+                    if (elemObj.isHostObject(runtime))
+                    {
+                        // TODO
+                        // return PropertyValue::CreateInspectableArray(convert_value_to_native<???>(runtime, value));
+                    }
+
+                    auto isPointLike = elemObj.hasProperty(runtime, "x") && elemObj.hasProperty(runtime, "y");
+                    auto isSizeLike = elemObj.hasProperty(runtime, "width") && elemObj.hasProperty(runtime, "height");
+                    if (isPointLike && isSizeLike)
+                    {
+                        // TODO
+                        // return PropertyValue::CreateRectArray(convert_value_to_native<???>(runtime, value));
+                    }
+                    else if (isPointLike)
+                    {
+                        // TODO
+                        // return PropertyValue::CreatePointArray(convert_value_to_native<???>(runtime, value));
+                    }
+                    else if (isSizeLike)
+                    {
+                        // TODO
+                        // return PropertyValue::CreateSizeArray(convert_value_to_native<???>(runtime, value));
+                    }
+
+                    // TODO: DateTimeArray?
+                }
+            }
+        }
+        else
+        {
+            auto isPointLike = obj.hasProperty(runtime, "x") && obj.hasProperty(runtime, "y");
+            auto isSizeLike = obj.hasProperty(runtime, "width") && obj.hasProperty(runtime, "height");
+            if (isPointLike && isSizeLike)
+            {
+                return PropertyValue::CreateRect(convert_value_to_native<Rect>(runtime, value));
+            }
+            else if (isPointLike)
+            {
+                return PropertyValue::CreatePoint(convert_value_to_native<Point>(runtime, value));
+            }
+            else if (isSizeLike)
+            {
+                return PropertyValue::CreateSize(convert_value_to_native<Size>(runtime, value));
+            }
+
+            // TODO: DateTime?
+        }
+    }
+
+    return nullptr;
+}
+
 #else
 
 #include <rnwinrt/ProjectedValueConverters.g.h>
@@ -749,30 +1103,6 @@ TimeSpan projected_value_traits<TimeSpan>::as_native(jsi::Runtime& runtime, cons
 
 namespace WinRTTurboModule
 {
-    jsi::String CreateString(jsi::Runtime& runtime, std::wstring_view value)
-    {
-        if (value.empty())
-        {
-            return jsi::String::createFromAscii(runtime, "");
-        }
-
-        // WideCharToMultiByte is requesting the size in utf8 characters required for 'value' without null termination
-        // as std::string constructed with a fill will actually allocated 'outputLength + 1' characters and asign the
-        // last as the null terminator automatically.
-
-        const auto outputLength = ::WideCharToMultiByte(CP_UTF8, WC_ERR_INVALID_CHARS, value.data(),
-            static_cast<int32_t>(value.size()), nullptr /*lpMultiByteStr*/, 0 /*cbMultiByte*/,
-            nullptr /*lpDefaultChar*/, nullptr /*lpUsedDefaultChar*/);
-        winrt::check_bool(outputLength);
-
-        std::string multibyteString(outputLength, '\0');
-        winrt::check_bool(
-            ::WideCharToMultiByte(CP_UTF8, WC_ERR_INVALID_CHARS, value.data(), static_cast<int32_t>(value.size()),
-                &multibyteString[0], outputLength, nullptr /*lpDefaultChar*/, nullptr /*lpUsedDefaultChar*/));
-
-        return jsi::String::createFromUtf8(runtime, multibyteString);
-    }
-
     jsi::Value CreateError(jsi::Runtime& runtime, std::string_view message)
     {
         jsi::Object result(runtime);
@@ -881,336 +1211,6 @@ namespace WinRTTurboModule
         return jsi::Value(
             context->Runtime, jsi::Object::createFromHostObject(context->Runtime,
                                   std::shared_ptr<jsi::HostObject>(new ProjectedAsyncOperation(context, value))));
-    }
-
-    std::optional<jsi::Value> TryConvertPropertyValueToValue(
-        const std::shared_ptr<ProjectionsContext>& context, const winrt::Windows::Foundation::IPropertyValue& value)
-    {
-        switch (value.Type())
-        {
-        case winrt::Windows::Foundation::PropertyType::Empty:
-            return {};
-
-        case winrt::Windows::Foundation::PropertyType::UInt8:
-            return ConvertNumberToValue(context, value.GetUInt8());
-
-        case winrt::Windows::Foundation::PropertyType::Int16:
-            return ConvertNumberToValue(context, value.GetInt16());
-
-        case winrt::Windows::Foundation::PropertyType::UInt16:
-            return ConvertNumberToValue(context, value.GetUInt16());
-
-        case winrt::Windows::Foundation::PropertyType::Int32:
-            return ConvertNumberToValue(context, value.GetInt32());
-
-        case winrt::Windows::Foundation::PropertyType::UInt32:
-            return ConvertNumberToValue(context, value.GetUInt32());
-
-        case winrt::Windows::Foundation::PropertyType::Int64:
-            return ConvertNumberToValue(context, value.GetInt64());
-
-        case winrt::Windows::Foundation::PropertyType::UInt64:
-            return ConvertNumberToValue(context, value.GetUInt64());
-
-        case winrt::Windows::Foundation::PropertyType::Single:
-            return ConvertNumberToValue(context, value.GetSingle());
-
-        case winrt::Windows::Foundation::PropertyType::Double:
-            return ConvertNumberToValue(context, value.GetDouble());
-
-        case winrt::Windows::Foundation::PropertyType::Char16:
-            return ConvertCharToValue(context, value.GetChar16());
-
-        case winrt::Windows::Foundation::PropertyType::Boolean:
-            return ConvertBooleanToValue(context, value.GetBoolean());
-
-        case winrt::Windows::Foundation::PropertyType::String:
-            return ConvertStringToValue(context, value.GetString());
-
-        case winrt::Windows::Foundation::PropertyType::Inspectable:
-            return {};
-
-        case winrt::Windows::Foundation::PropertyType::DateTime:
-            return ConvertStructToValue(context, value.GetDateTime());
-
-        case winrt::Windows::Foundation::PropertyType::TimeSpan:
-            return ConvertStructToValue(context, value.GetTimeSpan());
-
-        case winrt::Windows::Foundation::PropertyType::Guid:
-            return ConvertGuidToValue(context, value.GetGuid());
-
-        case winrt::Windows::Foundation::PropertyType::Point:
-            return ConvertStructToValue(context, value.GetPoint());
-
-        case winrt::Windows::Foundation::PropertyType::Size:
-            return ConvertStructToValue(context, value.GetSize());
-
-        case winrt::Windows::Foundation::PropertyType::Rect:
-            return ConvertStructToValue(context, value.GetRect());
-
-        case winrt::Windows::Foundation::PropertyType::OtherType:
-            return {}; // Likely requires using IReference<T>::Value().
-
-        case winrt::Windows::Foundation::PropertyType::UInt8Array: {
-            winrt::com_array<uint8_t> array;
-            value.GetUInt8Array(array);
-            return ConvertComArrayToValue<uint8_t, ConvertNumberToValue<uint8_t>>(context, array);
-        }
-
-        case winrt::Windows::Foundation::PropertyType::Int16Array: {
-            winrt::com_array<int16_t> array;
-            value.GetInt16Array(array);
-            return ConvertComArrayToValue<int16_t, ConvertNumberToValue<int16_t>>(context, array);
-        }
-
-        case winrt::Windows::Foundation::PropertyType::UInt16Array: {
-            winrt::com_array<uint16_t> array;
-            value.GetUInt16Array(array);
-            return ConvertComArrayToValue<uint16_t, ConvertNumberToValue<uint16_t>>(context, array);
-        }
-
-        case winrt::Windows::Foundation::PropertyType::Int32Array: {
-            winrt::com_array<int32_t> array;
-            value.GetInt32Array(array);
-            return ConvertComArrayToValue<int32_t, ConvertNumberToValue<int32_t>>(context, array);
-        }
-
-        case winrt::Windows::Foundation::PropertyType::UInt32Array: {
-            winrt::com_array<uint32_t> array;
-            value.GetUInt32Array(array);
-            return ConvertComArrayToValue<uint32_t, ConvertNumberToValue<uint32_t>>(context, array);
-        }
-
-        case winrt::Windows::Foundation::PropertyType::Int64Array: {
-            winrt::com_array<int64_t> array;
-            value.GetInt64Array(array);
-            return ConvertComArrayToValue<int64_t, ConvertNumberToValue<int64_t>>(context, array);
-        }
-
-        case winrt::Windows::Foundation::PropertyType::UInt64Array: {
-            winrt::com_array<uint64_t> array;
-            value.GetUInt64Array(array);
-            return ConvertComArrayToValue<uint64_t, ConvertNumberToValue<uint64_t>>(context, array);
-        }
-
-        case winrt::Windows::Foundation::PropertyType::SingleArray: {
-            winrt::com_array<float> array;
-            value.GetSingleArray(array);
-            return ConvertComArrayToValue<float, ConvertNumberToValue<float>>(context, array);
-        }
-
-        case winrt::Windows::Foundation::PropertyType::DoubleArray: {
-            winrt::com_array<double> array;
-            value.GetDoubleArray(array);
-            return ConvertComArrayToValue<double, ConvertNumberToValue<double>>(context, array);
-        }
-
-        case winrt::Windows::Foundation::PropertyType::Char16Array: {
-            winrt::com_array<char16_t> array;
-            value.GetChar16Array(array);
-            return ConvertComArrayToValue<char16_t, ConvertCharToValue>(context, array);
-        }
-
-        case winrt::Windows::Foundation::PropertyType::BooleanArray: {
-            winrt::com_array<bool> array;
-            value.GetBooleanArray(array);
-            return ConvertComArrayToValue<bool, ConvertBooleanToValue>(context, array);
-        }
-
-        case winrt::Windows::Foundation::PropertyType::StringArray: {
-            winrt::com_array<winrt::hstring> array;
-            value.GetStringArray(array);
-            return ConvertComArrayToValue<winrt::hstring, ConvertStringToValue>(context, array);
-        }
-
-        case winrt::Windows::Foundation::PropertyType::InspectableArray: {
-            winrt::com_array<winrt::Windows::Foundation::IInspectable> array;
-            value.GetInspectableArray(array);
-            return ConvertComArrayToValue<winrt::Windows::Foundation::IInspectable,
-                ConvertInterfaceToValue<winrt::Windows::Foundation::IInspectable>>(context, array);
-        }
-
-        case winrt::Windows::Foundation::PropertyType::DateTimeArray: {
-            winrt::com_array<winrt::Windows::Foundation::DateTime> array;
-            value.GetDateTimeArray(array);
-            return ConvertComArrayToValue<winrt::Windows::Foundation::DateTime,
-                ConvertStructToValue<winrt::Windows::Foundation::DateTime>>(context, array);
-        }
-
-        case winrt::Windows::Foundation::PropertyType::TimeSpanArray: {
-            winrt::com_array<winrt::Windows::Foundation::TimeSpan> array;
-            value.GetTimeSpanArray(array);
-            return ConvertComArrayToValue<winrt::Windows::Foundation::TimeSpan,
-                ConvertStructToValue<winrt::Windows::Foundation::TimeSpan>>(context, array);
-        }
-
-        case winrt::Windows::Foundation::PropertyType::GuidArray: {
-            winrt::com_array<winrt::guid> array;
-            value.GetGuidArray(array);
-            return ConvertComArrayToValue<winrt::guid, ConvertGuidToValue>(context, array);
-        }
-
-        case winrt::Windows::Foundation::PropertyType::PointArray: {
-            winrt::com_array<winrt::Windows::Foundation::Point> array;
-            value.GetPointArray(array);
-            return ConvertComArrayToValue<winrt::Windows::Foundation::Point,
-                ConvertStructToValue<winrt::Windows::Foundation::Point>>(context, array);
-        }
-
-        case winrt::Windows::Foundation::PropertyType::SizeArray: {
-            winrt::com_array<winrt::Windows::Foundation::Size> array;
-            value.GetSizeArray(array);
-            return ConvertComArrayToValue<winrt::Windows::Foundation::Size,
-                ConvertStructToValue<winrt::Windows::Foundation::Size>>(context, array);
-        }
-
-        case winrt::Windows::Foundation::PropertyType::RectArray: {
-            winrt::com_array<winrt::Windows::Foundation::Rect> array;
-            value.GetRectArray(array);
-            return ConvertComArrayToValue<winrt::Windows::Foundation::Rect,
-                ConvertStructToValue<winrt::Windows::Foundation::Rect>>(context, array);
-        }
-
-        case winrt::Windows::Foundation::PropertyType::OtherTypeArray:
-            return {}; // Likely requires using IReferenceArray<T>::Value().
-
-        default:
-            FAIL_FAST();
-        }
-    }
-
-    winrt::Windows::Foundation::IInspectable TryConvertValueToPropertyValue(
-        const std::shared_ptr<ProjectionsContext>& context, const jsi::Value& value)
-    {
-        // WARNING: Because of inherent ambiguities between JS and strongly typed ABI (e.g. number versus int64_t), it
-        //          is far safer to use the Windows.Foundation.PropertyValue factory to explicitly convert values. It
-        //          might be safer to remove the glue code below to better enforce safe practices.
-        if (value.isBool())
-        {
-            return winrt::Windows::Foundation::PropertyValue::CreateBoolean(ConvertValueToBoolean(context, value));
-        }
-        else if (value.isNumber())
-        {
-            // Not possible to disambiguate which numeric type is desired.
-            return winrt::Windows::Foundation::PropertyValue::CreateDouble(
-                ConvertValueToNumber<double>(context, value));
-        }
-        else if (value.isString())
-        {
-            // Not possible to differentiate with a GUID because JS represents GUIDs as strings. Similarly Char16 is
-            // ambiguously represented as string in JS.
-            return winrt::Windows::Foundation::PropertyValue::CreateString(ConvertValueToString(context, value));
-        }
-        else if (value.isObject())
-        {
-            auto& runtime = context->Runtime;
-            const auto object = value.asObject(runtime);
-            if (object.isArray(runtime))
-            {
-                const auto array = object.asArray(runtime);
-
-                // Can only handle non-empty arrays as there is no way to assume the type otherwise.
-                if (array.size(runtime) > 0)
-                {
-                    const auto element = array.getValueAtIndex(runtime, 0);
-                    if (element.isBool())
-                    {
-                        return winrt::Windows::Foundation::PropertyValue::CreateBooleanArray(
-                            ConvertValueToReadOnlyArrayView<bool, ConvertValueToBoolean>(context, value));
-                    }
-                    else if (element.isNumber())
-                    {
-                        return winrt::Windows::Foundation::PropertyValue::CreateDoubleArray(
-                            ConvertValueToReadOnlyArrayView<double, ConvertValueToNumber<double>>(context, value));
-                    }
-                    else if (element.isString())
-                    {
-                        return winrt::Windows::Foundation::PropertyValue::CreateStringArray(
-                            ConvertValueToReadOnlyArrayView<winrt::hstring, ConvertValueToString>(context, value));
-                    }
-                    else if (element.isObject())
-                    {
-                        const auto elementObject = value.asObject(runtime);
-                        if (elementObject.isHostObject(runtime))
-                        {
-                            return winrt::Windows::Foundation::PropertyValue::CreateInspectableArray(
-                                ConvertValueToReadOnlyArrayView<winrt::Windows::Foundation::IInspectable,
-                                    ConvertValueToInterface<winrt::Windows::Foundation::IInspectable>>(context, value));
-                        }
-
-                        const bool elementHasPoint =
-                            elementObject.hasProperty(runtime, "x") && elementObject.hasProperty(runtime, "y");
-                        if (elementObject.hasProperty(runtime, "width") && elementObject.hasProperty(runtime, "height"))
-                        {
-                            if (elementHasPoint)
-                            {
-                                return winrt::Windows::Foundation::PropertyValue::CreateRectArray(
-                                    ConvertValueToReadOnlyArrayView<winrt::Windows::Foundation::Rect,
-                                        ConvertValueToStruct<winrt::Windows::Foundation::Rect>>(context, value));
-                            }
-                            return winrt::Windows::Foundation::PropertyValue::CreateSizeArray(
-                                ConvertValueToReadOnlyArrayView<winrt::Windows::Foundation::Size,
-                                    ConvertValueToStruct<winrt::Windows::Foundation::Size>>(context, value));
-                        }
-                        else if (elementHasPoint)
-                        {
-                            return winrt::Windows::Foundation::PropertyValue::CreatePointArray(
-                                ConvertValueToReadOnlyArrayView<winrt::Windows::Foundation::Point,
-                                    ConvertValueToStruct<winrt::Windows::Foundation::Point>>(context, value));
-                        }
-                    }
-
-                    // TODO: Could support DateTime arrays too.
-                }
-            }
-            else
-            {
-                const bool hasPoint = object.hasProperty(runtime, "x") && object.hasProperty(runtime, "y");
-                if (object.hasProperty(runtime, "width") && object.hasProperty(runtime, "height"))
-                {
-                    if (hasPoint)
-                    {
-                        return winrt::Windows::Foundation::PropertyValue::CreateRect(
-                            ConvertValueToStruct<winrt::Windows::Foundation::Rect>(context, value));
-                    }
-                    return winrt::Windows::Foundation::PropertyValue::CreateSize(
-                        ConvertValueToStruct<winrt::Windows::Foundation::Size>(context, value));
-                }
-                else if (hasPoint)
-                {
-                    return winrt::Windows::Foundation::PropertyValue::CreatePoint(
-                        ConvertValueToStruct<winrt::Windows::Foundation::Point>(context, value));
-                }
-
-                // TODO: Could support DateTime too.
-            }
-        }
-
-        return nullptr;
-    }
-
-    winrt::Windows::Foundation::IInspectable TryGetInterfaceFromHostObject(
-        jsi::Runtime& runtime, const jsi::Value& value)
-    {
-        if (value.isObject())
-        {
-            const auto object = value.asObject(runtime);
-            if (object.isHostObject<ProjectedRuntimeClassInstance>(runtime))
-            {
-                const auto hostObject = object.getHostObject(runtime);
-                if (const auto runtimeClass = std::dynamic_pointer_cast<ProjectedRuntimeClassInstance>(hostObject))
-                {
-                    return runtimeClass->Instance();
-                }
-                else if (const auto asyncOperation = std::dynamic_pointer_cast<ProjectedAsyncOperationBase>(hostObject))
-                {
-                    return asyncOperation->Instance();
-                }
-
-                throw jsi::JSError(runtime, "TypeError: Cannot derive a WinRT object of from HostObject");
-            }
-        }
-        return nullptr;
     }
 }
 
