@@ -1920,8 +1920,8 @@ namespace WinRTTurboModule
         return it == properties.end() ? nullptr : it->second;
     }
 
-    const std::unordered_map<std::string_view, std::shared_ptr<IProjectedPropertyBase>>& ProjectedInterface::
-        Properties()
+    const std::unordered_map<std::string_view, std::shared_ptr<IProjectedPropertyBase>>&
+    ProjectedInterface::Properties()
     {
         EnsureInitialized();
         return m_propertyMap;
