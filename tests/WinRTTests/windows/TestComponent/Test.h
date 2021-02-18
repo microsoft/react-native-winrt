@@ -8,6 +8,8 @@ namespace winrt::TestComponent::implementation
     {
         Test() = default;
 
+        static void LogFailures(hstring const& failures);
+
         static bool StaticBoolProperty();
         static void StaticBoolProperty(bool value);
 

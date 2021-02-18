@@ -88,6 +88,9 @@ namespace TestComponent
         // Constructors
         Test();
 
+        // Infra helpers
+        static void LogFailures(String failures);
+
         // Static properties
         static Boolean StaticBoolProperty;
         // TODO: More, but static properties don't seem to work
