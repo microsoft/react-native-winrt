@@ -1979,7 +1979,140 @@ namespace jswinrt
     };
 
     // TODO: Async
-    // TODO: Delegates
+
+    template <typename T>
+    struct projected_value_traits<winrt::Windows::Foundation::EventHandler<T>>
+    {
+        static jsi::Value as_value(jsi::Runtime& runtime, const winrt::Windows::Foundation::EventHandler<T>& value)
+        {
+            return jsi::Function::createFromHostFunction(runtime, make_propid("EventHandler"), 2,
+                [value](jsi::Runtime& runtime, const jsi::Value&, const jsi::Value* args, size_t count) {
+                    if (count != 2)
+                    {
+                        throw jsi::JSError(runtime, "TypeError: Invalid number of arguments to EventHandler");
+                    }
+
+                    auto arg0 = convert_value_to_native<winrt::Windows::Foundation::IInspectable>(runtime, args[0]);
+                    auto arg1 = convert_value_to_native<T>(runtime, args[1]);
+                    value(arg0, arg1);
+                    return jsi::Value::undefined();
+                });
+        }
+
+        static winrt::Windows::Foundation::EventHandler<T> as_native(jsi::Runtime& runtime, const jsi::Value& value)
+        {
+            return [fn = value.asObject(runtime).asFunction(runtime)](const IInspectable& sender, const T& args) {
+                // TODO: Need to be able to call back to the JS thread.
+                // TODO: Is this guaranteed to be safe? What if the JS thread is waiting on this thread? Can we assume
+                // that will never happen since the JS thread in theory should never block? But since we're dealing with
+                // WinRT, perhaps that's something outside of our control? That said, it's certainly not safe for us to
+                // assume that the call is happening on the JS thread, and it is definitely not safe to make the call on
+                // a different thread...
+                // fn.call(runtime, convert_native_to_value(sender), convert_native_to_value(args));
+            };
+        }
+    };
+
+    template <typename TSender, typename TResult>
+    struct projected_value_traits<winrt::Windows::Foundation::TypedEventHandler<TSender, TResult>>
+    {
+        static jsi::Value as_value(
+            jsi::Runtime& runtime, const winrt::Windows::Foundation::TypedEventHandler<TSender, TResult>& value)
+        {
+            return jsi::Function::createFromHostFunction(runtime, make_propid("TypedEventHandler"), 2,
+                [value](jsi::Runtime& runtime, const jsi::Value&, const jsi::Value* args, size_t count) {
+                    if (count != 2)
+                    {
+                        throw jsi::JSError(runtime, "TypeError: Invalid number of arguments to TypedEventHandler");
+                    }
+
+                    auto arg0 = convert_value_to_native<TSender>(runtime, args[0]);
+                    auto arg1 = convert_value_to_native<TResult>(runtime, args[1]);
+                    value(arg0, arg1);
+                    return jsi::Value::undefined();
+                });
+        }
+
+        static winrt::Windows::Foundation::TypedEventHandler<TSender, TResult> as_native(
+            jsi::Runtime& runtime, const jsi::Value& value)
+        {
+            return [fn = value.asObject(runtime).asFunction(runtime)](const TSender& sender, const TResult& args) {
+                // TODO: Need to be able to call back to the JS thread.
+                // fn.call(runtime, convert_native_to_value(sender), convert_native_to_value(args));
+            };
+        }
+    };
+
+    template <typename K, typename V>
+    struct projected_value_traits<winrt::Windows::Foundation::Collections::MapChangedEventHandler<K, V>>
+    {
+        static jsi::Value as_value(
+            jsi::Runtime& runtime, const winrt::Windows::Foundation::Collections::MapChangedEventHandler<K, V>& value)
+        {
+            return jsi::Function::createFromHostFunction(runtime, make_propid("MapChangedEventHandler"), 2,
+                [value](jsi::Runtime& runtime, const jsi::Value&, const jsi::Value* args, size_t count) {
+                    if (count != 2)
+                    {
+                        throw jsi::JSError(runtime, "TypeError: Invalid number of arguments to MapChangedEventHandler");
+                    }
+
+                    auto arg0 = convert_value_to_native<winrt::Windows::Foundation::Collections::IObservableMap<K, V>>(
+                        runtime, args[0]);
+                    auto arg1 =
+                        convert_value_to_native<winrt::Windows::Foundation::Collections::IMapChangedEventArgs<K, V>>(
+                            runtime, args[1]);
+                    value(arg0, arg1);
+                    return jsi::Value::undefined();
+                });
+        }
+
+        static winrt::Windows::Foundation::Collections::MapChangedEventHandler<K, V> as_native(
+            jsi::Runtime& runtime, const jsi::Value& value)
+        {
+            return [fn = value.asObject(runtime).asFunction(runtime)](
+                       const winrt::Windows::Foundation::Collections::IObservableMap<K, V>& sender,
+                       const winrt::Windows::Foundation::Collections::IMapChangedEventArgs<K, V>& args) {
+                // TODO: Need to be able to call back to the JS thread.
+                // fn.call(runtime, convert_native_to_value(sender), convert_native_to_value(args));
+            };
+        }
+    };
+
+    template <typename T>
+    struct projected_value_traits<winrt::Windows::Foundation::Collections::VectorChangedEventHandler<T>>
+    {
+        static jsi::Value as_value(
+            jsi::Runtime& runtime, const winrt::Windows::Foundation::Collections::VectorChangedEventHandler<T>& value)
+        {
+            return jsi::Function::createFromHostFunction(runtime, make_propid("VectorChangedEventHandler"), 2,
+                [value](jsi::Runtime& runtime, const jsi::Value&, const jsi::Value* args, size_t count) {
+                    if (count != 2)
+                    {
+                        throw jsi::JSError(
+                            runtime, "TypeError: Invalid number of arguments to VectorChangedEventHandler");
+                    }
+
+                    auto arg0 = convert_value_to_native<winrt::Windows::Foundation::Collections::IObservableVector<T>>(
+                        runtime, args[0]);
+                    auto arg1 =
+                        convert_value_to_native<winrt::Windows::Foundation::Collections::IVectorChangedEventArgs<T>>(
+                            runtime, args[1]);
+                    value(arg0, arg1);
+                    return jsi::Value::undefined();
+                });
+        }
+
+        static winrt::Windows::Foundation::Collections::VectorChangedEventHandler<T> as_native(
+            jsi::Runtime& runtime, const jsi::Value& value)
+        {
+            return [fn = value.asObject(runtime).asFunction(runtime)](
+                       const winrt::Windows::Foundation::Collections::IObservableVector<T>& sender,
+                       const winrt::Windows::Foundation::Collections::IVectorChangedEventArgs<T>& args) {
+                // TODO: Need to be able to call back to the JS thread.
+                // fn.call(runtime, convert_native_to_value(sender), convert_native_to_value(args));
+            };
+        }
+    };
 }
 
 #else
@@ -3395,130 +3528,6 @@ namespace WinRTTurboModule
         return jsi::Value(context->Runtime,
             jsi::Object::createFromHostObject(context->Runtime,
                 std::shared_ptr<jsi::HostObject>(new ProjectedAsyncOperation(context, value, &CTV, &CPV))));
-    }
-
-    // Delegates
-    template <typename T>
-    jsi::Value ConvertDelegateToValue(const std::shared_ptr<ProjectionsContext>& context, const T& value)
-    {
-        throw jsi::JSError(context->Runtime,
-            std::string("TypeError: Conversion from native delegate to JS not implemented for "sv) + typeid(T).name());
-    }
-
-    template <typename T>
-    T ConvertValueToDelegate(const std::shared_ptr<ProjectionsContext>& context, const jsi::Value& value)
-    {
-        throw jsi::JSError(context->Runtime,
-            std::string("TypeError: Conversion from JS to native delegate not implemented for "sv) + typeid(T).name());
-    }
-
-    // Generic Delegates. These are special-cased because MidlRT special-cases generics so we don't need to generally
-    // support code-gen for generic delegates. Some are explicitly omitted below because there is no purpose in
-    // implementing the generic async-related delegates when the corresponding generic interfaces are not specialized
-    // and included in the interface map.
-
-    template <typename T, auto RC>
-    jsi::Value ConvertEventHandlerToValue(const std::shared_ptr<ProjectionsContext>& context, const T& value)
-    {
-        static auto s_function = ProjectedFunction::Create(
-            "invoke"sv, ProjectedFunctionOverload::Create<T>(
-                            &T::operator(), &ConvertValueToInterface<winrt::Windows::Foundation::IInspectable>, &RC));
-        return jsi::Value(context->Runtime, s_function->GetFunction<T>(value, context));
-    }
-
-    template <typename T, auto RC>
-    T ConvertValueToEventHandler(const std::shared_ptr<ProjectionsContext>& context, const jsi::Value& value)
-    {
-        return T([context, function{ value.asObject(context->Runtime).asFunction(context->Runtime) }](
-                     const winrt::Windows::Foundation::IInspectable& sender, const auto& args) {
-            context->Invoker->CallSync([&]() {
-                function.call(context->Runtime,
-                    ConvertInterfaceToValue<winrt::Windows::Foundation::IInspectable>(context, sender),
-                    RC(context, args));
-            });
-        });
-    }
-
-    template <typename T, auto SC, auto RC>
-    jsi::Value ConvertTypedEventHandlerToValue(const std::shared_ptr<ProjectionsContext>& context, const T& value)
-    {
-        static auto s_function =
-            ProjectedFunction::Create("invoke"sv, ProjectedFunctionOverload::Create<T>(&T::operator(), &SC, &RC));
-        return jsi::Value(context->Runtime, s_function->GetFunction<T>(value, context));
-    }
-
-    template <typename T, auto SC, auto RC>
-    T ConvertValueToTypedEventHandler(const std::shared_ptr<ProjectionsContext>& context, const jsi::Value& value)
-    {
-        return T([context, function{ value.asObject(context->Runtime).asFunction(context->Runtime) }](
-                     const auto& sender, const auto& args) {
-            context->Invoker->CallSync(
-                [&]() { function.call(context->Runtime, SC(context, sender), RC(context, args)); });
-        });
-    }
-
-    template <typename K, typename V>
-    jsi::Value ConvertMapChangedEventHandlerToValue(const std::shared_ptr<ProjectionsContext>& context,
-        const winrt::Windows::Foundation::Collections::MapChangedEventHandler<K, V>& value)
-    {
-        static auto s_function = ProjectedFunction::Create("invoke"sv,
-            ProjectedFunctionOverload::Create<winrt::Windows::Foundation::Collections::MapChangedEventHandler<K, V>>(
-                &winrt::Windows::Foundation::Collections::MapChangedEventHandler<K, V>::operator(),
-                &ConvertValueToInterface<winrt::Windows::Foundation::Collections::IObservableMap<K, V>>,
-                &ConvertValueToInterface<winrt::Windows::Foundation::Collections::IMapChangedEventArgs<K>>));
-        return jsi::Value(context->Runtime,
-            s_function->GetFunction<winrt::Windows::Foundation::Collections::MapChangedEventHandler<K, V>>(
-                value, context));
-    }
-
-    template <typename K, typename V>
-    winrt::Windows::Foundation::Collections::MapChangedEventHandler<K, V> ConvertValueToMapChangedEventHandler(
-        const std::shared_ptr<ProjectionsContext>& context, const jsi::Value& value)
-    {
-        return winrt::Windows::Foundation::Collections::MapChangedEventHandler<K, V>(
-            [context, function{ value.asObject(context->Runtime).asFunction(context->Runtime) }](
-                const winrt::Windows::Foundation::Collections::IObservableMap<K, V>& sender,
-                const winrt::Windows::Foundation::Collections::IMapChangedEventArgs<K>& event) {
-                context->Invoker->CallSync([&]() {
-                    function.call(context->Runtime,
-                        ConvertInterfaceToValue<winrt::Windows::Foundation::Collections::IObservableMap<K, V>>(
-                            context, sender),
-                        ConvertInterfaceToValue<winrt::Windows::Foundation::Collections::IMapChangedEventArgs<K>>(
-                            context, event));
-                });
-            });
-    }
-
-    template <typename T>
-    jsi::Value ConvertVectorChangedEventHandlerToValue(const std::shared_ptr<ProjectionsContext>& context,
-        const winrt::Windows::Foundation::Collections::VectorChangedEventHandler<T>& value)
-    {
-        static auto s_function = ProjectedFunction::Create("invoke"sv,
-            ProjectedFunctionOverload::Create<winrt::Windows::Foundation::Collections::VectorChangedEventHandler<T>>(
-                &winrt::Windows::Foundation::Collections::VectorChangedEventHandler<T>::operator(),
-                &ConvertValueToInterface<winrt::Windows::Foundation::Collections::IObservableVector<T>>,
-                &ConvertValueToInterface<winrt::Windows::Foundation::Collections::IVectorChangedEventArgs>));
-        return jsi::Value(context->Runtime,
-            s_function->GetFunction<winrt::Windows::Foundation::Collections::VectorChangedEventHandler<T>>(
-                value, context));
-    }
-
-    template <typename T>
-    winrt::Windows::Foundation::Collections::VectorChangedEventHandler<T> ConvertValueToVectorChangedEventHandler(
-        const std::shared_ptr<ProjectionsContext>& context, const jsi::Value& value)
-    {
-        return winrt::Windows::Foundation::Collections::VectorChangedEventHandler<T>(
-            [context, function{ value.asObject(context->Runtime).asFunction(context->Runtime) }](
-                const winrt::Windows::Foundation::Collections::IObservableVector<T>& sender,
-                const winrt::Windows::Foundation::Collections::IVectorChangedEventArgs& event) {
-                context->Invoker->CallSync([&]() {
-                    function.call(context->Runtime,
-                        ConvertInterfaceToValue<winrt::Windows::Foundation::Collections::IObservableVector<T>>(
-                            context, sender),
-                        ConvertInterfaceToValue<winrt::Windows::Foundation::Collections::IVectorChangedEventArgs>(
-                            context, event));
-                });
-            });
     }
 }
 
