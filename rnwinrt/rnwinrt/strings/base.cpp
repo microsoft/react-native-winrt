@@ -436,7 +436,7 @@ namespace jswinrt
             }
 
             auto obj = thisVal.asObject(runtime).asHostObject<projected_object_instance>(runtime);
-            return data->function(runtime, obj->m_instance, args, count);
+            return data->function(runtime, obj->m_instance, args);
         }
 
         const static_interface_data::function_mapping* data;
@@ -452,7 +452,7 @@ namespace jswinrt
                 if (func->arity == count)
                 {
                     auto obj = thisVal.asObject(runtime).asHostObject<projected_object_instance>(runtime);
-                    return func->function(runtime, obj->m_instance, args, count);
+                    return func->function(runtime, obj->m_instance, args);
                 }
             }
 
@@ -647,7 +647,7 @@ jsi::Value projected_object_instance::remove_event_listener(
 
 jsi::Value runtime_context::get_instance(jsi::Runtime& runtime, const IInspectable& value)
 {
-    assert(thread_id == ::GetCurrentThreadId());
+    assert(thread_id == std::this_thread::get_id());
 
     // NOTE: Each interface has its own associated v-table, so two IInspectable pointers to the same object may actually
     // be different if they were originally pointers to two different interfaces. Hence the QI here

@@ -487,7 +487,7 @@ namespace jswinrt
     using instance_remove_event_t = void (*)(
         jsi::Runtime&, const winrt::Windows::Foundation::IInspectable&, const jsi::Value&);
     using instance_call_function_t = jsi::Value (*)(
-        jsi::Runtime&, const winrt::Windows::Foundation::IInspectable&, const jsi::Value*, size_t);
+        jsi::Runtime&, const winrt::Windows::Foundation::IInspectable&, const jsi::Value*);
 
     inline constexpr std::string_view add_event_name = "addEventListener"sv;
     inline constexpr std::string_view remove_event_name = "removeEventListener"sv;
@@ -532,6 +532,35 @@ namespace jswinrt
     T convert_value_to_native(jsi::Runtime& runtime, const jsi::Value& value)
     {
         return projected_value_traits<T>::as_native(runtime, value);
+    }
+
+    namespace details
+    {
+        inline void fill_return_struct(jsi::Runtime&, jsi::Object&)
+        {
+        }
+
+        template <typename T, typename... Args>
+        void fill_return_struct(
+            jsi::Runtime& runtime, jsi::Object& target, std::string_view name, const T& value, const Args&... args)
+        {
+            target.setProperty(runtime, make_propid(name), convert_native_to_value(runtime, value));
+            fill_return_struct(runtime, target, args...);
+        }
+    }
+
+    template <typename T, typename... Args>
+    jsi::Value make_void_return_struct(jsi::Runtime& runtime, const Args&... args)
+    {
+        jsi::Object result(runtime);
+        details::fill_return_struct(runtime, result, args...);
+        return jsi::Value(runtime, result);
+    }
+
+    template <typename T, typename... Args>
+    jsi::Value make_return_struct(jsi::Runtime& runtime, const Args&... args)
+    {
+        return make_void_return_struct(runtime, "returnValue", args...);
     }
 }
 
@@ -686,6 +715,642 @@ namespace jswinrt
     extern const span<const std::pair<winrt::guid, const static_interface_data*>> global_interface_map;
 }
 
+// Static data for generic types
+namespace jswinrt
+{
+    namespace Windows::Foundation
+    {
+        using winrt::Windows::Foundation::IInspectable;
+
+        namespace IAsyncActionWithProgress
+        {
+            template <typename TProgress>
+            struct interface_data
+            {
+                using native_type = winrt::Windows::Foundation::IAsyncActionWithProgress<TProgress>;
+
+                static constexpr const static_interface_data::property_mapping properties[] = {
+                    { "completed",
+                        [](jsi::Runtime& runtime, const IInspectable& thisValue) {
+                            return convert_native_to_value(runtime, thisValue.as<native_type>().Completed());
+                        },
+                        [](jsi::Runtime& runtime, const IInspectable& thisValue, const jsi::Value& value) {
+                            thisValue.as<native_type>().Completed(convert_value_to_native<
+                                winrt::Windows::Foundation::AsyncActionWithProgressCompletedHandler<TProgress>>(value));
+                        } },
+                    { "progress",
+                        [](jsi::Runtime& runtime, const IInspectable& thisValue) {
+                            return convert_native_to_value(runtime, thisValue.as<native_type>().Progress());
+                        },
+                        [](jsi::Runtime& runtime, const IInspectable& thisValue, const jsi::Value& value) {
+                            thisValue.as<native_type>().Progress(convert_value_to_native<
+                                winrt::Windows::Foundation::AsyncActionProgressHandler<TProgress>>(runtime, value));
+                        } },
+                };
+
+                static constexpr const static_interface_data::function_mapping functions[] = {
+                    { "getResults",
+                        [](jsi::Runtime&, const IInspectable& thisValue, const jsi::Value*) {
+                            thisValue.as<native_type>().GetResults();
+                            return jsi::Value::undefined();
+                        },
+                        0, false },
+                };
+            };
+
+            template <typename TProgress>
+            struct data_t
+            {
+                using iface = interface_data<TProgress>;
+                static constexpr const static_interface_data value(
+                    winrt::guid_of<typename iface::native_type>(), iface::properties, {}, iface::functions);
+            };
+
+            template <typename TProgress>
+            constexpr const static_interface_data* data = &data_t<TProgress>::value;
+        }
+
+        namespace IAsyncOperation
+        {
+            template <typename TResult>
+            struct interface_data
+            {
+                using native_type = winrt::Windows::Foundation::IAsyncOperation<TResult>;
+
+                static constexpr const static_interface_data::property_mapping properties[] = {
+                    { "completed",
+                        [](jsi::Runtime& runtime, const IInspectable& thisValue) {
+                            return convert_native_to_value(runtime, thisValue.as<native_type>().Completed());
+                        },
+                        [](jsi::Runtime& runtime, const IInspectable& thisValue, const jsi::Value& value) {
+                            thisValue.as<native_type>().Completed(convert_value_to_native<
+                                winrt::Windows::Foundation::AsyncOperationCompletedHandler<TResult>>(runtime, value));
+                        } },
+                };
+
+                static constexpr const static_interface_data::function_mapping functions[] = {
+                    { "getResults",
+                        [](jsi::Runtime& runtime, const IInspectable thisValue, const jsi::Value*) {
+                            return convert_native_to_value(runtime, thisValue.as<native_type>().GetResults());
+                        },
+                        0, false },
+                }
+            };
+
+            template <typename TResult>
+            struct data_t
+            {
+                using iface = interface_data<TResult>;
+                static constexpr const static_interface_data value(
+                    winrt::guid_of<typename iface::native_type>(), iface::properties, {}, iface::functions);
+            };
+
+            template <typename TResult>
+            constexpr const static_interface_data* data = &data_t<TResult>::value;
+        }
+
+        namespace IAsyncOperationWithProgress
+        {
+            template <typename TResult, typename TProgress>
+            struct interface_data
+            {
+                using native_type = winrt::Windows::Foundation::IAsyncOperationWithProgress<TResult, TProgress>;
+
+                static constexpr const static_interface_data::property_mapping properties[] = {
+                    { "completed",
+                        [](jsi::Runtime& runtime, const IInspectable& thisValue) {
+                            return convert_native_to_value(runtime, thisValue.as<native_type>().Completed());
+                        },
+                        [](jsi::Runtime& runtime, const IInspectable& thisValue, const jsi::Value& value) {
+                            thisValue.as<native_type>().Completed(convert_value_to_native<winrt::Windows::Foundation::
+                                    AsyncOperationWithProgressCompletedHandler<TResult, TProgress>>(value));
+                        } },
+                    { "progress",
+                        [](jsi::Runtime& runtime, const IInspectable& thisValue) {
+                            return convert_native_to_value(runtime, thisValue.as<native_type>().Progress());
+                        },
+                        [](jsi::Runtime& runtime, const IInspectable& thisValue, const jsi::Value& value) {
+                            thisValue.as<native_type>().Progress(convert_value_to_native<
+                                winrt::Windows::Foundation::AsyncOperationProgressHandler<TResult, TProgress>>(
+                                runtime, value));
+                        } },
+                };
+
+                static constexpr const static_interface_data::function_mapping functions[] = {
+                    { "getResults",
+                        [](jsi::Runtime& runtime, const IInspectable& thisValue, const jsi::Value*) {
+                            return convert_native_to_value(runtime, thisValue.as<native_type>().GetResults());
+                        },
+                        0, false },
+                };
+            };
+
+            template <typename TResult, typename TProgress>
+            struct data_t
+            {
+                using iface = interface_data<TResult, TProgress>;
+                static constexpr const static_interface_data value(
+                    winrt::guid_of<typename iface::native_type>(), iface::properties, {}, iface::functions);
+            };
+
+            template <typename TResult, typename TProgress>
+            constexpr const static_interface_data* data = &data_t<TResult, TProgress>::value;
+        }
+    }
+
+    namespace Windows::Foundation::Collections
+    {
+        using winrt::Windows::Foundation::IInspectable;
+
+        namespace IIterable
+        {
+            template <typename T>
+            struct interface_data
+            {
+                using native_type = winrt::Windows::Foundation::Collections::IIterable<T>;
+
+                static constexpr const static_interface_data::function_mapping functions[] = {
+                    { "first",
+                        [](jsi::Runtime& runtime, const IInspectable& thisValue, const jsi::Value*) {
+                            return convert_native_to_value(runtime, thisValue.as<native_type>().First());
+                        } },
+                };
+            };
+
+            template <typename T>
+            struct data_t
+            {
+                using iface = interface_data<T>;
+                static constexpr const static_interface_data value(
+                    winrt::guid_of<typename iface::native_type>(), {}, {}, iface::functions);
+            };
+
+            template <typename T>
+            constexpr const static_interface_data* data = &data_t<T>::value;
+        }
+
+        namespace IIterator
+        {
+            template <typename T>
+            struct interface_data
+            {
+                using native_type = winrt::Windows::Foundation::Collections::IIterator<T>;
+
+                static constexpr const static_interface_data::property_mapping properties[] = {
+                    { "current",
+                        [](jsi::Runtime& runtime, const IInspectable& thisValue) {
+                            return convert_native_to_value(runtime, thisValue.as<native_type>().Current());
+                        },
+                        nullptr },
+                    { "hasCurrent",
+                        [](jsi::Runtime& runtime, const IInspectable& thisValue) {
+                            return convert_native_to_value(runtime, thisValue.as<native_type>().HasCurrent());
+                        },
+                        nullptr },
+                };
+
+                static constexpr const static_interface_data::function_mapping functions[] = {
+                    { "getMany",
+                        [](jsi::Runtime& runtime, const IInspectable& thisValue, const jsi::Value* args) {
+                            // TODO: Need to convert args[0] to native array of T
+                            // return convert_native_to_value(runtime, thisValue.as<native_type>().GetMany(items));
+                            return jsi::Value::undefined();
+                        },
+                        1, false },
+                    { "moveNext",
+                        [](jsi::Runtime& runtime, const IInspectable& thisValue, const jsi::Value*) {
+                            return convert_native_to_value(runtime, thisValue.as<native_type>().MoveNext());
+                        },
+                        0, false },
+                };
+            };
+
+            template <typename T>
+            struct data_t
+            {
+                using iface = interface_data<T>;
+                static constexpr const static_interface_data value(
+                    winrt::guid_of<typename iface::native_type>(), iface::properties, {}, properties::functions);
+            };
+
+            template <typename T>
+            constexpr const static_interface_data* data = &data_t<T>::value;
+        }
+
+        namespace IKeyValuePair
+        {
+            template <typename K, typename V>
+            struct interface_data
+            {
+                using native_type = winrt::Windows::Foundation::Collections::IKeyValuePair<K, V>;
+
+                static constexpr const static_interface_data::property_mapping properties[] = {
+                    { "key",
+                        [](jsi::Runtime& runtime, const IInspectable& thisValue) {
+                            return convert_native_to_value(runtime, thisValue.as<native_type>().Key());
+                        },
+                        nullptr },
+                    { "value",
+                        [](jsi::Runtime& runtime, const IInspectable& thisValue) {
+                            return convert_native_to_value(runtime, thisValue.as<native_type>().Value());
+                        },
+                        nullptr },
+                };
+            };
+
+            template <typename K, typename V>
+            struct data_t
+            {
+                using iface = interface_type<Key, V>;
+                static constexpr const static_interface_data value(
+                    winrt::guid_of<typename iface::native_type>(), iface::properties, {}, {});
+            };
+
+            template <typename K, typename V>
+            constexpr const static_interface_data* data = &data_t<K, V>::value;
+        }
+
+        namespace IMap
+        {
+            template <typename K, typename V>
+            struct interface_data
+            {
+                using native_type = winrt::Windows::Foundation::Collections::IMap<K, V>;
+
+                static constexpr const static_interface_data::property_mapping properties[] = {
+                    { "size",
+                        [](jsi::Runtime& runtime, const IInspectable& thisValue) {
+                            return convert_native_to_value(runtime, thisValue.as<native_value>().Size());
+                        },
+                        nullptr },
+                };
+
+                static constexpr const static_interface_data::function_mapping functions[] = {
+                    { "clear",
+                        [](jsi::Runtime&, const IInspectable& thisValue, const jsi::Value*) {
+                            thisValue.as<native_type>().Clear();
+                            return jsi::Value::undefined();
+                        },
+                        0, false },
+                    { "getView",
+                        [](jsi::Runtime& runtime, const IInspectable& thisValue, const jsi::Value*) {
+                            return convert_native_to_value(runtime, thisValue.as<native_type>().GetView());
+                        },
+                        0, false },
+                    { "hasKey",
+                        [](jsi::Runtime& runtime, const IInspectable& thisValue, const jsi::Value* args) {
+                            auto key = convert_value_to_native<K>(runtime, args[0]);
+                            return convert_native_to_value(runtime, thisValue.as<native_type>().HasKey(key));
+                        },
+                        1, false },
+                    { "insert",
+                        [](jsi::Runtime& runtime, const IInspectable& thisValue, const jsi::Value* args) {
+                            auto key = convert_value_to_native<K>(runtime, args[0]);
+                            auto value = convert_value_to_native<V>(runtime, args[1]);
+                            return convert_native_to_value(runtime, thisValue.as<native_type>().Insert(key, value));
+                        },
+                        2, false },
+                    { "lookup",
+                        [](jsi::Runtime& runtime, const IInspectable& thisValue, const jsi::Value* args) {
+                            auto key = convert_value_to_native<K>(args[0]);
+                            return convert_native_to_value(runtime, thisValue.as<native_type>().Lookup(key));
+                        },
+                        1, false },
+                    { "remove",
+                        [](jsi::Runtime& runtime, const IInspectable& thisValue, const jsi::Value* args) {
+                            auto key = convert_value_to_native<K>(args[0]);
+                            thisValue.as<native_type>().Remove(key);
+                            return jsi::Value::undefined();
+                        },
+                        1, false },
+                };
+            };
+
+            template <typename K, typename V>
+            struct data_t
+            {
+                using iface = interface_data<K, V>;
+                static constexpr const static_interface_data value(
+                    winrt::guid_of<typename iface::native_type>(), iface::properties, {}, iface::functions);
+            };
+
+            template <typename K, typename V>
+            constexpr const static_interface_data* data = &data_t<K, V>::value;
+        }
+
+        namespace IMapChangedEventArgs
+        {
+            template <typename K>
+            struct interface_data
+            {
+                using native_type = winrt::Windows::Foundation::Collections::IMapChangedEventArgs<K>;
+
+                static constexpr const static_interface_data::property_mapping properties[] = {
+                    { "collectionChange",
+                        [](jsi::Runtime& runtime, const IInspectable& thisValue) {
+                            return convert_native_to_value(runtime, thisValue.as<native_type>().CollectionChange());
+                        },
+                        nullptr },
+                    { "key",
+                        [](jsi::Runtime& runtime, const IInspectable& thisValue) {
+                            return convert_native_to_value(runtime, thisValue.as<native_type>().Key());
+                        },
+                        nullptr },
+                };
+            };
+
+            template <typename K>
+            struct data_t
+            {
+                using iface = interface_type<K>;
+                static constexpr const static_interface_data value(
+                    winrt::guid_of<typename iface::native_type>(), iface::properties, {}, {});
+            };
+
+            template <typename K>
+            constexpr const static_interface_data* data = &data_t<K>::value;
+        }
+
+        namespace IMapView
+        {
+            template <typename K, typename V>
+            struct interface_data
+            {
+                using native_type = winrt::Windows::Foundation::Collections::IMapView<K, V>;
+
+                static constexpr const static_interface_data::property_mapping properties[] = {
+                    { "size",
+                        [](jsi::Runtime& runtime, const IInspectable& thisValue) {
+                            return convert_native_to_value(runtime, thisValue.as<native_value>().Size());
+                        },
+                        nullptr },
+                };
+
+                static constexpr const static_interface_data::function_mapping functions[] = {
+                    { "hasKey",
+                        [](jsi::Runtime& runtime, const IInspectable& thisValue, const jsi::Value* args) {
+                            auto key = convert_value_to_native<K>(runtime, args[0]);
+                            return convert_native_to_value(runtime, thisValue.as<native_type>().HasKey(key));
+                        },
+                        1, false },
+                    { "lookup",
+                        [](jsi::Runtime& runtime, const IInspectable& thisValue, const jsi::Value* args) {
+                            auto key = convert_value_to_native<K>(args[0]);
+                            return convert_native_to_value(runtime, thisValue.as<native_type>().Lookup(key));
+                        },
+                        1, false },
+                    { "split",
+                        [](jsi::Runtime& runtime, const IInspectable& thisValue, const jsi::Value*) {
+                            winrt::Windows::Foundation::Collections::IMapView<K, V> first;
+                            winrt::Windows::Foundation::Collections::IMapView<K, V> second;
+                            thisValue.as<native_type>().Split(first, second);
+                            return make_void_return_struct(runtime, "first", first, "second", second);
+                        },
+                        0, false },
+                };
+            };
+
+            template <typename K, typename V>
+            struct data_t
+            {
+                using iface = interface_data<K, V>;
+                static constexpr const static_interface_data value(
+                    winrt::guid_of<typename iface::native_type>(), iface::properties, {}, iface::functions);
+            };
+
+            template <typename K, typename V>
+            constexpr const static_interface_data* data = &data_t<K, V>::value;
+        }
+
+        namespace IObservableMap
+        {
+            template <typename K, typename V>
+            struct interface_data
+            {
+                using native_type = winrt::Windows::Foundation::Collections::IObservableMap<K, V>;
+
+                static constexpr const static_interface_data::event_mapping events[] = {
+                    { "mapchanged",
+                        [](jsi::Runtime& runtime, const IInspectable& thisValue, const jsi::Value& callback) {
+                            auto handler = convert_value_to_native<
+                                winrt::Windows::Foundation::Collections::MapChangedEventHandler<K, V>>(
+                                runtime, callback);
+                            auto token = thisValue.as<native_type>().MapChanged(handler);
+                            // TODO: Store callback -> token mapping
+                        },
+                        [](jsi::Runtime& runtime, const IInspectable& thisValue, const jsi::Value& callback) {
+                            // TODO: Get token from callback
+                            // thisValue.as<native_type>().MapChanged(token);
+                        } },
+                }
+            };
+
+            template <typename K, typename V>
+            struct data_t
+            {
+                using iface = interface_data<K, V>;
+                static constexpr const static_interface_data value(
+                    winrt::guid_of<typename iface::native_type>(), {}, iface::events, {});
+            };
+
+            template <typename K, typename V>
+            constexpr const static_interface_data* data = &data_t<K, V>::value;
+        }
+
+        namespace IObservableVector
+        {
+            template <typename T>
+            struct interface_data
+            {
+                using native_type = winrt::Windows::Foundation::Collections::IObservableVector<T>;
+
+                static constexpr const static_interface_data::event_mapping events[] = {
+                    { "vectorchanged",
+                        [](jsi::Runtime& runtime, const IInspectable& thisValue, const jsi::Value& callback) {
+                            auto handler = convert_value_to_native<
+                                winrt::Windows::Foundation::Collections::VectorChangedEventHandler<T>>(
+                                runtime, callback);
+                            auto token = thisValue.as<native_type>().VectorChanged(handler);
+                            // TODO: Store callback -> token mapping
+                        },
+                        [](jsi::Runtime& runtime, const IInspectable& thisValue, const jsi::Value& callback) {
+                            // TODO: Get token from callback
+                            // thisValue.as<native_type>().VectorChanged(token);
+                        } },
+                };
+            };
+
+            template <typename T>
+            struct data_t
+            {
+                using iface = interface_data<T>;
+                static constexpr const static_interface_data value(
+                    winrt::guid_of<typename iface::native_type>(), {}, iface::events, {});
+            };
+
+            template <typename T>
+            constexpr const static_interface_data* data = &data_t<T>::value;
+        }
+
+        namespace IVector
+        {
+            template <typename T>
+            struct interface_data
+            {
+                using native_type = winrt::Windows::Foundation::Collections::IVector<T>;
+
+                static constexpr const static_interface_data::property_mapping properties[] = {
+                    { "size",
+                        [](jsi::Runtime& runtime, const IInspectable& thisValue) {
+                            return convert_native_to_value(runtime, thisValue.as<native_type>().Size());
+                        },
+                        nullptr },
+                };
+
+                static constexpr const static_interface_data::function_mapping functions[] = {
+                    { "append",
+                        [](jsi::Runtime& runtime, const IInspectable& thisValue, const jsi::Value* args) {
+                            auto value = convert_value_to_native<T>(runtime, args[0]);
+                            thisValue.as<native_type>().Append(value);
+                            return jsi::Value::undefined();
+                        },
+                        1, false },
+                    { "clear",
+                        [](jsi::Runtime&, const IInspectable& thisValue, const jsi::Value*) {
+                            thisValue.as<native_type>().Clear();
+                            return jsi::Value::undefined();
+                        },
+                        0, false },
+                    { "getAt",
+                        [](jsi::Runtime& runtime, const IInspectable& thisValue, const jsi::Value* args) {
+                            auto index = convert_value_to_native<uint32_t>(runtime, args[0]);
+                            return convert_native_to_value(runtime, thisValue.as<native_type>().GetAt(index));
+                        },
+                        1, false },
+                    { "getMany",
+                        [](jsi::Runtime& runtime, const IInspectable& thisValue, const jsi::Value* args) {
+                            auto startIndex = convert_value_to_native<uint32_t>(runtime, args[0]);
+                            // TODO: Need to allocate array for fill array & copy back
+                            return jsi::Value::undefined();
+                        },
+                        2, false },
+                    { "getView",
+                        [](jsi::Runtime& runtime, const IInspectable& thisValue, const jsi::Value*) {
+                            return convert_native_to_value(runtime, thisValue.as<native_type>().GetView());
+                        },
+                        0, false },
+                    { "indexOf",
+                        [](jsi::Runtime& runtime, const IInspectable& thisValue, const jsi::Value* args) {
+                            auto value = convert_value_to_native<T>(args[0]);
+                            uint32_t index;
+                            auto returnValue = thisValue.as<native_type>().IndexOf(value, index);
+                            return make_return_struct(runtime, returnValue, "index", index);
+                        },
+                        1, false },
+                    { "insertAt",
+                        [](jsi::Runtime& runtime, const IInspectable& thisValue, const jsi::Value* args) {
+                            auto index = convert_value_to_native<uint32_t>(runtime, args[0]);
+                            auto value = convert_value_to_native<T>(runtime, args[1]);
+                            thisValue.as<native_type>().InsertAt(index, value);
+                            return jsi::Value::undefined();
+                        },
+                        2, false },
+                    { "removeAt",
+                        [](jsi::Runtime& runtime, const IInspectable& thisValue, const jsi::Value* args) {
+                            auto index = convert_value_to_native<uint32_t>(runtime, args[0]);
+                            thisValue.as<native_type>().RemoveAt(index);
+                            return jsi::Value::undefined();
+                        },
+                        1, false },
+                    { "removeAtEnd",
+                        [](jsi::Runtime& runtime, const IInspectable& thisValue, const jsi::Value*) {
+                            thisValue.as<native_type>().RemoveAtEnd();
+                            return jsi::Value::undefined();
+                        },
+                        0, false },
+                    { "replaceAll",
+                        [](jsi::Runtime& runtime, const IInspectable& thisValue, const jsi::Value* args) {
+                            // TODO: Convert to read-only array
+                            return jsi::Value::undefined();
+                        },
+                        1, false },
+                    { "setAt",
+                        [](jsi::Runtime& runtime, const IInspectable& thisValue, const jsi::Value* args) {
+                            auto index = convert_value_to_native<uint32_t>(runtime, args[0]);
+                            auto value = convert_value_to_native<T>(runtime, args[1]);
+                            thisValue.as<native_type>().SetAt(index, value);
+                            return jsi::Value::undefined();
+                        },
+                        2, false },
+                };
+            };
+
+            template <typename T>
+            struct data_t
+            {
+                using iface = interface_data<T>;
+                static constexpr const static_interface_data value(
+                    winrt::guid_of<typename iface::native_type>(), iface::properties, {}, iface::functions);
+            };
+
+            template <typename T>
+            constexpr const static_interface_data* data = &data_t<T>::value;
+        }
+
+        namespace IVectorView
+        {
+            template <typename T>
+            struct interface_data
+            {
+                using native_type = winrt::Windows::Foundation::Collections::IVectorView<T>;
+
+                static constexpr const static_interface_data::property_mapping properties[] = {
+                    { "size",
+                        [](jsi::Runtime& runtime, const IInspectable& thisValue) {
+                            return convert_native_to_value(runtime, thisValue.as<native_type>().Size());
+                        },
+                        nullptr },
+                };
+
+                static constexpr const static_interface_data::function_mapping functions[] = {
+                    { "getAt",
+                        [](jsi::Runtime& runtime, const IInspectable& thisValue, const jsi::Value* args) {
+                            auto index = convert_value_to_native<uint32_t>(runtime, args[0]);
+                            return convert_native_to_value(runtime, thisValue.as<native_type>().GetAt(index));
+                        },
+                        1, false },
+                    { "getMany",
+                        [](jsi::Runtime& runtime, const IInspectable& thisValue, const jsi::Value* args) {
+                            auto startIndex = convert_value_to_native<uint32_t>(runtime, args[0]);
+                            // TODO: Need to allocate array for fill array & copy back
+                            return jsi::Value::undefined();
+                        },
+                        2, false },
+                    { "indexOf",
+                        [](jsi::Runtime& runtime, const IInspectable& thisValue, const jsi::Value* args) {
+                            auto value = convert_value_to_native<T>(args[0]);
+                            uint32_t index;
+                            auto returnValue = thisValue.as<native_type>().IndexOf(value, index);
+                            return make_return_struct(runtime, returnValue, "index", index);
+                        },
+                        1, false },
+                };
+            };
+
+            template <typename T>
+            struct data_t
+            {
+                using iface = interface_data<T>;
+                static constexpr const static_interface_data value(
+                    winrt::guid_of<typename iface::native_type>(), iface::properties, {}, iface::functions);
+            };
+
+            template <typename T>
+            constexpr const static_interface_data* data = &data_t<T>::value;
+        }
+    }
+}
+
 // Types used for object instances, etc.
 namespace jswinrt
 {
@@ -823,7 +1488,7 @@ namespace jswinrt
 
     struct runtime_context
     {
-        DWORD thread_id = ::GetCurrentThreadId();
+        std::thread::id thread_id = std::this_thread::get_id();
         std::unordered_map<void*, std::variant<jsi::WeakObject, std::weak_ptr<jsi::HostObject>>> instance_cache;
 
         // TODO: This is kind of a hack/workaround for V8, which does not appear to have WeakObject support per
@@ -840,7 +1505,7 @@ namespace jswinrt
 
         [[nodiscard]] shared_runtime_context add_reference()
         {
-            assert(thread_id == ::GetCurrentThreadId());
+            assert(thread_id == std::this_thread::get_id());
             assert(ref_count.load() >= 1);
             return shared_runtime_context{ this }; // NOTE: Bumps ref count
         }
@@ -2586,241 +3251,6 @@ namespace WinRTTurboModule
 
         T m_instance;
     };
-}
-
-namespace WinRTTurboModule::Windows::Foundation::Collections
-{
-    template <typename T>
-    ProjectedInterfaceData InitIIterableInterface()
-    {
-        return { {},
-            {
-                ProjectedFunction::Create("first"sv,
-                    ProjectedFunctionOverload::Create<winrt::Windows::Foundation::Collections::IIterable<T>>(
-                        &winrt::impl::consume_t<winrt::Windows::Foundation::Collections::IIterable<T>>::First,
-                        &ConvertInterfaceToValue<winrt::Windows::Foundation::Collections::IIterator<T>>)),
-            },
-            {} };
-    }
-
-    template <typename T, auto CTV>
-    ProjectedInterfaceData InitIIteratorInterface()
-    {
-        return { {
-                     ProjectedProperty::Create<winrt::Windows::Foundation::Collections::IIterator<T>>(
-                         "current"sv, &winrt::Windows::Foundation::Collections::IIterator<T>::Current, &CTV),
-                     ProjectedProperty::Create<winrt::Windows::Foundation::Collections::IIterator<T>>("hasCurrent"sv,
-                         &winrt::Windows::Foundation::Collections::IIterator<T>::HasCurrent, &ConvertBooleanToValue),
-                 },
-            {
-                ProjectedFunction::Create("getMany"sv,
-                    ProjectedFunctionOverload::Create<winrt::Windows::Foundation::Collections::IIterator<T>>(
-                        &winrt::impl::consume_t<winrt::Windows::Foundation::Collections::IIterator<T>>::GetMany,
-                        &ConvertNumberToValue<uint32_t>, &ConvertValueToWriteOnlyArrayView<T, CTV>)),
-                ProjectedFunction::Create("moveNext"sv,
-                    ProjectedFunctionOverload::Create<winrt::Windows::Foundation::Collections::IIterator<T>>(
-                        &winrt::impl::consume_t<winrt::Windows::Foundation::Collections::IIterator<T>>::MoveNext,
-                        &ConvertBooleanToValue)),
-            },
-            {} };
-    }
-
-    template <typename K, typename T, auto CKV, auto CTV>
-    ProjectedInterfaceData InitIKeyValuePairInterface()
-    {
-        return { {
-                     ProjectedProperty::Create<winrt::Windows::Foundation::Collections::IKeyValuePair<K, T>>(
-                         "key"sv, &winrt::Windows::Foundation::Collections::IKeyValuePair<K, T>::Key, &CKV),
-                     ProjectedProperty::Create<winrt::Windows::Foundation::Collections::IKeyValuePair<K, T>>(
-                         "value"sv, &winrt::Windows::Foundation::Collections::IKeyValuePair<K, T>::Value, &CTV),
-                 },
-            {}, {} };
-    }
-
-    template <typename K, auto CKV>
-    ProjectedInterfaceData InitIMapChangedEventArgsInterface()
-    {
-        return { {
-                     ProjectedProperty::Create<winrt::Windows::Foundation::Collections::IMapChangedEventArgs<K>>(
-                         "collectionChange"sv,
-                         &winrt::Windows::Foundation::Collections::IMapChangedEventArgs<K>::CollectionChange,
-                         &ConvertEnumToValue<winrt::Windows::Foundation::Collections::CollectionChange>),
-                     ProjectedProperty::Create<winrt::Windows::Foundation::Collections::IMapChangedEventArgs<K>>(
-                         "key"sv, &winrt::Windows::Foundation::Collections::IMapChangedEventArgs<K>::Key, &CKV),
-                 },
-            {}, {} };
-    }
-
-    template <typename K, typename T, auto CVK, auto CTV>
-    ProjectedInterfaceData InitIMapViewInterface()
-    {
-        return { {
-                     ProjectedProperty::Create<winrt::Windows::Foundation::Collections::IMapView<K, T>>("size"sv,
-                         &winrt::Windows::Foundation::Collections::IMapView<K, T>::Size,
-                         &ConvertNumberToValue<uint32_t>),
-                 },
-            {
-                ProjectedFunction::Create("hasKey"sv,
-                    ProjectedFunctionOverload::Create<winrt::Windows::Foundation::Collections::IMapView<K, T>>(
-                        &winrt::impl::consume_t<winrt::Windows::Foundation::Collections::IMapView<K, T>>::HasKey,
-                        &ConvertBooleanToValue, &CVK)),
-                ProjectedFunction::Create("lookup"sv,
-                    ProjectedFunctionOverload::Create<winrt::Windows::Foundation::Collections::IMapView<K, T>>(
-                        &winrt::impl::consume_t<winrt::Windows::Foundation::Collections::IMapView<K, T>>::Lookup, &CTV,
-                        &CVK)),
-                ProjectedFunction::Create("split"sv,
-                    ProjectedFunctionOverload::Create<winrt::Windows::Foundation::Collections::IMapView<K, T>>(
-                        &winrt::impl::consume_t<winrt::Windows::Foundation::Collections::IMapView<K, T>>::Split,
-                        ProjectedFunctionParamInfo(ProjectedFunctionOutParam,
-                            &ConvertInterfaceToValue<winrt::Windows::Foundation::Collections::IMapView<K, T>>, "first"),
-                        ProjectedFunctionParamInfo(ProjectedFunctionOutParam,
-                            &ConvertInterfaceToValue<winrt::Windows::Foundation::Collections::IMapView<K, T>>,
-                            "second"))),
-            },
-            {} };
-    }
-
-    template <typename K, typename T, auto CVK, auto CTV, auto CVT>
-    ProjectedInterfaceData InitIMapInterface()
-    {
-        return { {
-                     ProjectedProperty::Create<winrt::Windows::Foundation::Collections::IMap<K, T>>("size"sv,
-                         &winrt::Windows::Foundation::Collections::IMap<K, T>::Size, &ConvertNumberToValue<uint32_t>),
-                 },
-            {
-                ProjectedFunction::Create("clear"sv,
-                    ProjectedFunctionOverload::Create<winrt::Windows::Foundation::Collections::IMap<K, T>>(
-                        &winrt::impl::consume_t<winrt::Windows::Foundation::Collections::IMap<K, T>>::Clear)),
-                ProjectedFunction::Create("getView"sv,
-                    ProjectedFunctionOverload::Create<winrt::Windows::Foundation::Collections::IMap<K, T>>(
-                        &winrt::impl::consume_t<winrt::Windows::Foundation::Collections::IMap<K, T>>::GetView,
-                        &ConvertInterfaceToValue<winrt::Windows::Foundation::Collections::IMapView<K, T>>)),
-                ProjectedFunction::Create("hasKey"sv,
-                    ProjectedFunctionOverload::Create<winrt::Windows::Foundation::Collections::IMap<K, T>>(
-                        &winrt::impl::consume_t<winrt::Windows::Foundation::Collections::IMap<K, T>>::HasKey,
-                        &ConvertBooleanToValue, &CVK)),
-                ProjectedFunction::Create("insert"sv,
-                    ProjectedFunctionOverload::Create<winrt::Windows::Foundation::Collections::IMap<K, T>>(
-                        &winrt::impl::consume_t<winrt::Windows::Foundation::Collections::IMap<K, T>>::Insert,
-                        &ConvertBooleanToValue, &CVK, &CVT)),
-                ProjectedFunction::Create("lookup"sv,
-                    ProjectedFunctionOverload::Create<winrt::Windows::Foundation::Collections::IMap<K, T>>(
-                        &winrt::impl::consume_t<winrt::Windows::Foundation::Collections::IMap<K, T>>::Lookup, &CTV,
-                        &CVK)),
-                ProjectedFunction::Create("remove"sv,
-                    ProjectedFunctionOverload::Create<winrt::Windows::Foundation::Collections::IMap<K, T>>(
-                        &winrt::impl::consume_t<winrt::Windows::Foundation::Collections::IMap<K, T>>::Remove, &CVK)),
-            },
-            {} };
-    }
-
-    template <typename K, typename T>
-    ProjectedInterfaceData InitIObservableMapInterface()
-    {
-        return { {}, {},
-            {
-                ProjectedEvent::Create<winrt::Windows::Foundation::Collections::IObservableMap<K, T>>("mapChanged"sv,
-                    &winrt::Windows::Foundation::Collections::IObservableMap<K, T>::MapChanged,
-                    &winrt::Windows::Foundation::Collections::IObservableMap<K, T>::MapChanged,
-                    &ConvertValueToMapChangedEventHandler<K, T>),
-            } };
-    }
-
-    template <typename T, auto CTV, auto CVT>
-    ProjectedInterfaceData InitIVectorViewInterface()
-    {
-        return { {
-                     ProjectedProperty::Create<winrt::Windows::Foundation::Collections::IVectorView<T>>("size"sv,
-                         &winrt::Windows::Foundation::Collections::IVectorView<T>::Size,
-                         &ConvertNumberToValue<uint32_t>),
-                 },
-            {
-                ProjectedFunction::Create("getAt"sv,
-                    ProjectedFunctionOverload::Create<winrt::Windows::Foundation::Collections::IVectorView<T>>(
-                        &winrt::impl::consume_t<winrt::Windows::Foundation::Collections::IVectorView<T>>::GetAt, &CTV,
-                        &ConvertValueToNumber<uint32_t>)),
-                ProjectedFunction::Create("getMany"sv,
-                    ProjectedFunctionOverload::Create<winrt::Windows::Foundation::Collections::IVectorView<T>>(
-                        &winrt::impl::consume_t<winrt::Windows::Foundation::Collections::IVectorView<T>>::GetMany,
-                        &ConvertNumberToValue<uint32_t>, &ConvertValueToNumber<uint32_t>,
-                        &ConvertValueToWriteOnlyArrayView<T, CTV>)),
-                ProjectedFunction::Create("indexOf"sv,
-                    ProjectedFunctionOverload::Create<winrt::Windows::Foundation::Collections::IVectorView<T>>(
-                        &winrt::impl::consume_t<winrt::Windows::Foundation::Collections::IVectorView<T>>::IndexOf,
-                        &ConvertBooleanToValue, ProjectedFunctionParamInfo(ProjectedFunctionInParam, &CVT),
-                        ProjectedFunctionParamInfo(
-                            ProjectedFunctionOutParam, &ConvertNumberToValue<uint32_t>, "index"))),
-            },
-            {} };
-    }
-
-    template <typename T, auto CTV, auto CVT>
-    ProjectedInterfaceData InitIVectorInterface()
-    {
-        return { {
-                     ProjectedProperty::Create<winrt::Windows::Foundation::Collections::IVector<T>>("size"sv,
-                         &winrt::Windows::Foundation::Collections::IVector<T>::Size, &ConvertNumberToValue<uint32_t>),
-                 },
-            {
-                ProjectedFunction::Create("append"sv,
-                    ProjectedFunctionOverload::Create<winrt::Windows::Foundation::Collections::IVector<T>>(
-                        &winrt::impl::consume_t<winrt::Windows::Foundation::Collections::IVector<T>>::Append, &CVT)),
-                ProjectedFunction::Create("clear"sv,
-                    ProjectedFunctionOverload::Create<winrt::Windows::Foundation::Collections::IVector<T>>(
-                        &winrt::impl::consume_t<winrt::Windows::Foundation::Collections::IVector<T>>::Clear)),
-                ProjectedFunction::Create(
-                    "getAt"sv, ProjectedFunctionOverload::Create<winrt::Windows::Foundation::Collections::IVector<T>>(
-                                   &winrt::impl::consume_t<winrt::Windows::Foundation::Collections::IVector<T>>::GetAt,
-                                   &CTV, &ConvertValueToNumber<uint32_t>)),
-                ProjectedFunction::Create("getMany"sv,
-                    ProjectedFunctionOverload::Create<winrt::Windows::Foundation::Collections::IVector<T>>(
-                        &winrt::impl::consume_t<winrt::Windows::Foundation::Collections::IVector<T>>::GetMany,
-                        &ConvertNumberToValue<uint32_t>, &ConvertValueToNumber<uint32_t>,
-                        &ConvertValueToWriteOnlyArrayView<T, CTV>)),
-                ProjectedFunction::Create("getView"sv,
-                    ProjectedFunctionOverload::Create<winrt::Windows::Foundation::Collections::IVector<T>>(
-                        &winrt::impl::consume_t<winrt::Windows::Foundation::Collections::IVector<T>>::GetView,
-                        &ConvertInterfaceToValue<winrt::Windows::Foundation::Collections::IVectorView<T>>)),
-                ProjectedFunction::Create("indexOf"sv,
-                    ProjectedFunctionOverload::Create<winrt::Windows::Foundation::Collections::IVector<T>>(
-                        &winrt::impl::consume_t<winrt::Windows::Foundation::Collections::IVector<T>>::IndexOf,
-                        &ConvertBooleanToValue, ProjectedFunctionParamInfo(ProjectedFunctionInParam, &CVT),
-                        ProjectedFunctionParamInfo(
-                            ProjectedFunctionOutParam, &ConvertNumberToValue<uint32_t>, "index"))),
-                ProjectedFunction::Create("insertAt"sv,
-                    ProjectedFunctionOverload::Create<winrt::Windows::Foundation::Collections::IVector<T>>(
-                        &winrt::impl::consume_t<winrt::Windows::Foundation::Collections::IVector<T>>::InsertAt,
-                        &ConvertValueToNumber<uint32_t>, &CVT)),
-                ProjectedFunction::Create("replaceAll"sv,
-                    ProjectedFunctionOverload::Create<winrt::Windows::Foundation::Collections::IVector<T>>(
-                        &winrt::impl::consume_t<winrt::Windows::Foundation::Collections::IVector<T>>::ReplaceAll,
-                        &ConvertValueToReadOnlyArrayView<T, CVT>)),
-                ProjectedFunction::Create("removeAt"sv,
-                    ProjectedFunctionOverload::Create<winrt::Windows::Foundation::Collections::IVector<T>>(
-                        &winrt::impl::consume_t<winrt::Windows::Foundation::Collections::IVector<T>>::RemoveAt,
-                        &ConvertValueToNumber<uint32_t>)),
-                ProjectedFunction::Create("removeAtEnd"sv,
-                    ProjectedFunctionOverload::Create<winrt::Windows::Foundation::Collections::IVector<T>>(
-                        &winrt::impl::consume_t<winrt::Windows::Foundation::Collections::IVector<T>>::RemoveAtEnd)),
-                ProjectedFunction::Create(
-                    "setAt"sv, ProjectedFunctionOverload::Create<winrt::Windows::Foundation::Collections::IVector<T>>(
-                                   &winrt::impl::consume_t<winrt::Windows::Foundation::Collections::IVector<T>>::SetAt,
-                                   &ConvertValueToNumber<uint32_t>, &CVT)),
-            },
-            {} };
-    }
-
-    template <typename T>
-    ProjectedInterfaceData InitIObservableVectorInterface()
-    {
-        return { {}, {},
-            {
-                ProjectedEvent::Create<winrt::Windows::Foundation::Collections::IObservableVector<T>>("vectorChanged"sv,
-                    &winrt::Windows::Foundation::Collections::IObservableVector<T>::VectorChanged,
-                    &winrt::Windows::Foundation::Collections::IObservableVector<T>::VectorChanged,
-                    &ConvertValueToVectorChangedEventHandler<T>),
-            } };
-    }
 }
 
 namespace WinRTTurboModule
