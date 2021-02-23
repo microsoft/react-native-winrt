@@ -480,8 +480,8 @@ namespace jswinrt
 
     using static_get_property_t = jsi::Value (*)(jsi::Runtime&);
     using static_set_property_t = void (*)(jsi::Runtime&, const jsi::Value&);
-    using static_add_event_t = void (*)(jsi::Runtime&, const jsi::Value&);
-    using static_remove_event_t = void (*)(jsi::Runtime&, const jsi::Value&);
+    using static_add_event_t = winrt::event_token (*)(jsi::Runtime&, const jsi::Value&);
+    using static_remove_event_t = void (*)(jsi::Runtime&, winrt::event_token);
 
     using instance_get_property_t = jsi::Value (*)(jsi::Runtime&, const winrt::Windows::Foundation::IInspectable&);
     using instance_set_property_t = void (*)(
@@ -568,6 +568,234 @@ namespace jswinrt
     }
 }
 
+// Instance mapping data
+namespace jswinrt
+{
+    struct runtime_context;
+
+    struct shared_runtime_context
+    {
+        runtime_context* pointer = nullptr;
+
+        shared_runtime_context() = default;
+        shared_runtime_context(runtime_context* ptr);
+
+        shared_runtime_context(const shared_runtime_context& other) : shared_runtime_context(other.pointer)
+        {
+        }
+
+        shared_runtime_context(shared_runtime_context&& other) : pointer(other.pointer)
+        {
+            other.pointer = nullptr;
+        }
+
+        ~shared_runtime_context();
+
+        shared_runtime_context& operator=(const shared_runtime_context& other);
+
+        shared_runtime_context& operator=(shared_runtime_context&& other)
+        {
+            std::swap(pointer, other.pointer);
+            return *this;
+        }
+
+        runtime_context* operator->() noexcept
+        {
+            return pointer;
+        }
+
+        const runtime_context* operator->() const noexcept
+        {
+            return pointer;
+        }
+
+        runtime_context& operator*() noexcept
+        {
+            return *pointer;
+        }
+
+        const runtime_context& operator*() const noexcept
+        {
+            return *pointer;
+        }
+    };
+
+    struct object_instance_cache
+    {
+        // Maps an IInspectable pointer to the HostObject that represents that object. Note that it is possible for a
+        // WinRT object to get destroyed and have its memory location re-used for a later object. This is okay since the
+        // HostObject holds a strong reference to the WinRT object and therefore the WinRT object getting destroyed
+        // would therefore imply that the JS object also got destroyed, meaning we won't accidentally re-use the same
+        // HostObject after its underlying object got destroyed
+        std::unordered_map<void*, std::variant<jsi::WeakObject, std::weak_ptr<jsi::HostObject>>> instances;
+
+        // TODO: This is kind of a hack/workaround for V8, which does not appear to have WeakObject support per
+        // V8Runtime::createWeakObject/V8Runtime::lockWeakObject
+        // (https://github.com/microsoft/v8-jsi/blob/master/src/V8JsiRuntime.cpp)
+        bool supports_weak_object = true;
+
+        jsi::Value get_instance(jsi::Runtime& runtime, const winrt::Windows::Foundation::IInspectable& value);
+    };
+
+    struct event_registration_array
+    {
+        // NOTE: It's possible to re-use the same callback for multiple events on the same object (especially since
+        // we're talking about JS here), so we include the event name in the mapping here. Since event names are all
+        // stored as static data, we primarily use it as an integer id and perform pointer comparison.
+        struct registration_data
+        {
+            jsi::Object object;
+            const char* event_name;
+            winrt::event_token token;
+        };
+
+        sso_vector<registration_data, 4> registrations;
+
+        bool empty() const noexcept
+        {
+            return registrations.empty();
+        }
+
+        void add(jsi::Object object, const char* eventName, winrt::event_token token)
+        {
+            registrations.push_back({ std::move(object), eventName, token });
+        }
+
+        winrt::event_token remove(jsi::Runtime& runtime, const jsi::Object& object, const char* eventName)
+        {
+            for (auto& data : registrations)
+            {
+                if ((data.event_name == eventName) && jsi::Object::strictEquals(runtime, data.object, object))
+                {
+                    auto result = data.token;
+                    data = std::move(registrations.back());
+                    registrations.pop_back();
+                    return result;
+                }
+            }
+
+            return {};
+        }
+    };
+
+    struct object_event_cache
+    {
+        // NOTE: Since we currently hold strong references to the function objects being used as delegates, and just
+        // cleanup in general, we hold a weak reference to the WinRT object and periodically try and clean the map up.
+        // Note that some objects don't support weak references, in which case we just forgo this cleanup and instead
+        // rely on the consumer to clean up registrations.
+        struct instance_data
+        {
+            winrt::weak_ref<winrt::Windows::Foundation::IInspectable> weak_ref;
+            event_registration_array registrations;
+        };
+
+        std::unordered_map<void*, instance_data> events;
+
+        void add(const winrt::Windows::Foundation::IInspectable& instance, jsi::Object object, const char* eventName,
+            winrt::event_token token)
+        {
+            auto ptr = winrt::get_abi(instance);
+            auto& data = events[ptr];
+            if (data.weak_ref && !data.weak_ref.get())
+            {
+                data = {}; // Object address was re-used; clean up the registrations
+            }
+
+            if (data.registrations.empty())
+            {
+                // NOTE: C++/WinRT has no 'try_make_weak_ref' or equivalent, so doing it manually here...
+                assert(!data.weak_ref);
+                if (auto src = instance.try_as<::IWeakReferenceSource>())
+                {
+                    winrt::check_hresult(
+                        src->GetWeakReference(reinterpret_cast<::IWeakReference**>(data.weak_ref.put())));
+                }
+            }
+
+            data.registrations.add(std::move(object), eventName, token);
+        }
+
+        winrt::event_token remove(jsi::Runtime& runtime, const winrt::Windows::Foundation::IInspectable& instance,
+            const jsi::Object& object, const char* eventName)
+        {
+            auto ptr = winrt::get_abi(instance);
+            if (auto itr = events.find(ptr); itr != events.end())
+            {
+                return itr->second.registrations.remove(runtime, object, eventName);
+            }
+
+            return {};
+        }
+    };
+
+    struct runtime_context
+    {
+        std::thread::id thread_id = std::this_thread::get_id();
+
+        // TODO: Clean up maps periodically
+        object_instance_cache instance_cache;
+        object_event_cache event_cache;
+
+        // For the most part, these pointers should only be accessed from the JS thread and therefore the reference
+        // count does not need to be bumped, but for things like asynchronous operations, we may need to take strong
+        // references to ensure the object does not get destroyed during use
+        std::atomic_uint32_t ref_count{ 1 };
+
+        [[nodiscard]] shared_runtime_context add_reference()
+        {
+            assert(thread_id == std::this_thread::get_id());
+            assert(ref_count.load() >= 1);
+            return shared_runtime_context{ this }; // NOTE: Bumps ref count
+        }
+
+        void release()
+        {
+            if (--ref_count == 0)
+            {
+                delete this;
+            }
+        }
+    };
+
+    inline shared_runtime_context::shared_runtime_context(runtime_context* ptr) : pointer(ptr)
+    {
+        if (pointer)
+        {
+            ++pointer->ref_count;
+        }
+    }
+
+    inline shared_runtime_context& shared_runtime_context::operator=(const shared_runtime_context& other)
+    {
+        if (this != &other)
+        {
+            if (pointer)
+            {
+                pointer->release();
+            }
+
+            pointer = other.pointer;
+            if (pointer)
+            {
+                ++pointer->ref_count;
+            }
+        }
+
+        return *this;
+    }
+
+    inline shared_runtime_context::~shared_runtime_context()
+    {
+        if (pointer)
+        {
+            pointer->release();
+        }
+    }
+
+    runtime_context* current_runtime_context();
+}
+
 // Types used to store static data
 namespace jswinrt
 {
@@ -650,11 +878,6 @@ namespace jswinrt
         }
 
         virtual jsi::Value create(jsi::Runtime& runtime) const override;
-
-        jsi::Value add_event_listener(
-            jsi::Runtime& runtime, const jsi::Value&, const jsi::Value* args, size_t count) const;
-        jsi::Value remove_event_listener(
-            jsi::Runtime& runtime, const jsi::Value&, const jsi::Value* args, size_t count) const;
 
         span<const property_mapping> properties;
         span<const event_mapping> events;
@@ -766,8 +989,14 @@ namespace jswinrt
         virtual std::vector<jsi::PropNameID> getPropertyNames(jsi::Runtime& runtime) override;
 
     private:
+        static jsi::Value add_event_listener(
+            jsi::Runtime& runtime, const jsi::Value& thisVal, const jsi::Value* args, size_t count);
+        static jsi::Value remove_event_listener(
+            jsi::Runtime& runtime, const jsi::Value& thisVal, const jsi::Value* args, size_t count);
+
         const static_class_data* m_data;
         std::unordered_map<std::string_view, jsi::Value> m_functions;
+        event_registration_array m_events;
     };
 
     struct projected_function;
@@ -800,220 +1029,6 @@ namespace jswinrt
         sso_vector<const static_interface_data*> m_interfaces;
         std::unordered_map<std::string_view, jsi::Value> m_functions;
     };
-}
-
-// Instance mapping data
-namespace jswinrt
-{
-    struct runtime_context;
-
-    struct shared_runtime_context
-    {
-        runtime_context* pointer = nullptr;
-
-        shared_runtime_context() = default;
-        shared_runtime_context(runtime_context* ptr);
-
-        shared_runtime_context(const shared_runtime_context& other) : shared_runtime_context(other.pointer)
-        {
-        }
-
-        shared_runtime_context(shared_runtime_context&& other) : pointer(other.pointer)
-        {
-            other.pointer = nullptr;
-        }
-
-        ~shared_runtime_context();
-
-        shared_runtime_context& operator=(const shared_runtime_context& other);
-
-        shared_runtime_context& operator=(shared_runtime_context&& other)
-        {
-            std::swap(pointer, other.pointer);
-            return *this;
-        }
-
-        runtime_context* operator->() noexcept
-        {
-            return pointer;
-        }
-
-        const runtime_context* operator->() const noexcept
-        {
-            return pointer;
-        }
-
-        runtime_context& operator*() noexcept
-        {
-            return *pointer;
-        }
-
-        const runtime_context& operator*() const noexcept
-        {
-            return *pointer;
-        }
-    };
-
-    struct object_instance_cache
-    {
-        // Maps an IInspectable pointer to the HostObject that represents that object. Note that it is possible for a
-        // WinRT object to get destroyed and have its memory location re-used for a later object. This is okay since the
-        // HostObject holds a strong reference to the WinRT object and therefore the WinRT object getting destroyed
-        // would therefore imply that the JS object also got destroyed, meaning we won't accidentally re-use the same
-        // HostObject after its underlying object got destroyed
-        std::unordered_map<void*, std::variant<jsi::WeakObject, std::weak_ptr<jsi::HostObject>>> instances;
-
-        // TODO: This is kind of a hack/workaround for V8, which does not appear to have WeakObject support per
-        // V8Runtime::createWeakObject/V8Runtime::lockWeakObject
-        // (https://github.com/microsoft/v8-jsi/blob/master/src/V8JsiRuntime.cpp)
-        bool supports_weak_object = true;
-
-        jsi::Value get_instance(jsi::Runtime& runtime, const winrt::Windows::Foundation::IInspectable& value);
-    };
-
-    struct object_event_cache
-    {
-        // NOTE: Since we currently hold strong references to the function objects being used as delegates, and just
-        // cleanup in general, we hold a weak reference to the WinRT object and periodically try and clean the map up.
-        // Note that some objects don't support weak references, in which case we just forgo this cleanup and instead
-        // rely on the consumer to clean up registrations.
-        struct instance_data
-        {
-            // NOTE: It's possible to re-use the same callback for multiple events on the same object (especially since
-            // we're talking about JS here), so we include the event name in the mapping here. Since event names are all
-            // stored as static data, we primarily use it as an integer id and perform pointer comparison.
-            struct event_data
-            {
-                jsi::Object object;
-                const char* event_name;
-                winrt::event_token token;
-            };
-
-            winrt::weak_ref<winrt::Windows::Foundation::IInspectable> weak_ref;
-            sso_vector<event_data, 2> registrations;
-        };
-
-        std::unordered_map<void*, instance_data> events;
-
-        void add(const winrt::Windows::Foundation::IInspectable& instance, jsi::Object object, const char* eventName,
-            winrt::event_token token)
-        {
-            auto ptr = winrt::get_abi(instance);
-            auto& data = events[ptr];
-            if (data.weak_ref && !data.weak_ref.get())
-            {
-                data = {}; // Object address was re-used; clean up the registrations
-            }
-
-            if (data.registrations.empty())
-            {
-                // NOTE: C++/WinRT has no 'try_make_weak_ref' or equivalent, so doing it manually here...
-                assert(!data.weak_ref);
-                if (auto src = instance.try_as<::IWeakReferenceSource>())
-                {
-                    winrt::check_hresult(
-                        src->GetWeakReference(reinterpret_cast<::IWeakReference**>(data.weak_ref.put())));
-                }
-            }
-
-            data.registrations.push_back({ std::move(object), eventName, token });
-        }
-
-        winrt::event_token remove(jsi::Runtime& runtime, const winrt::Windows::Foundation::IInspectable& instance,
-            const jsi::Object& object, const char* eventName)
-        {
-            auto ptr = winrt::get_abi(instance);
-            if (auto itr = events.find(ptr); itr != events.end())
-            {
-                auto& data = itr->second;
-                for (size_t i = 0; i < data.registrations.size(); ++i)
-                {
-                    auto& info = data.registrations[i];
-                    if ((info.event_name == eventName) && jsi::Object::strictEquals(runtime, object, info.object))
-                    {
-                        auto result = info.token;
-                        info = std::move(data.registrations.back());
-                        data.registrations.pop_back();
-
-                        if (data.registrations.empty())
-                        {
-                            events.erase(itr);
-                        }
-
-                        return result;
-                    }
-                }
-            }
-
-            return {};
-        }
-    };
-
-    struct runtime_context
-    {
-        std::thread::id thread_id = std::this_thread::get_id();
-
-        // TODO: Clean up maps periodically
-        object_instance_cache instance_cache;
-        object_event_cache event_cache;
-
-        // For the most part, these pointers should only be accessed from the JS thread and therefore the reference
-        // count does not need to be bumped, but for things like asynchronous operations, we may need to take strong
-        // references to ensure the object does not get destroyed during use
-        std::atomic_uint32_t ref_count{ 1 };
-
-        [[nodiscard]] shared_runtime_context add_reference()
-        {
-            assert(thread_id == std::this_thread::get_id());
-            assert(ref_count.load() >= 1);
-            return shared_runtime_context{ this }; // NOTE: Bumps ref count
-        }
-
-        void release()
-        {
-            if (--ref_count == 0)
-            {
-                delete this;
-            }
-        }
-    };
-
-    inline shared_runtime_context::shared_runtime_context(runtime_context* ptr) : pointer(ptr)
-    {
-        if (pointer)
-        {
-            ++pointer->ref_count;
-        }
-    }
-
-    inline shared_runtime_context& shared_runtime_context::operator=(const shared_runtime_context& other)
-    {
-        if (this != &other)
-        {
-            if (pointer)
-            {
-                pointer->release();
-            }
-
-            pointer = other.pointer;
-            if (pointer)
-            {
-                ++pointer->ref_count;
-            }
-        }
-
-        return *this;
-    }
-
-    inline shared_runtime_context::~shared_runtime_context()
-    {
-        if (pointer)
-        {
-            pointer->release();
-        }
-    }
-
-    runtime_context* current_runtime_context();
 }
 
 // Collections wrappers

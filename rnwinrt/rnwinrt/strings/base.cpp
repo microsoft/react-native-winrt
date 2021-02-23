@@ -135,8 +135,8 @@ jsi::Value static_class_data::create(jsi::Runtime& runtime) const
         runtime, jsi::Object::createFromHostObject(runtime, std::make_shared<projected_statics_class>(this)));
 }
 
-jsi::Value static_class_data::add_event_listener(
-    jsi::Runtime& runtime, const jsi::Value&, const jsi::Value* args, size_t count) const
+static jsi::Value static_add_event_listener(jsi::Runtime& runtime, const jsi::Value* args, size_t count,
+    const static_class_data* data, event_registration_array& registrations)
 {
     if (count < 2)
     {
@@ -144,16 +144,17 @@ jsi::Value static_class_data::add_event_listener(
     }
 
     auto name = args[0].asString(runtime).utf8(runtime);
-    if (auto itr = find_by_name(events, name); itr != events.end())
+    if (auto itr = find_by_name(data->events, name); itr != data->events.end())
     {
-        itr->add(runtime, args[1]);
+        auto token = itr->add(runtime, args[1]);
+        registrations.add(args[1].asObject(runtime), itr->name.data(), token);
     }
 
     return jsi::Value::undefined();
 }
 
-jsi::Value static_class_data::remove_event_listener(
-    jsi::Runtime& runtime, const jsi::Value&, const jsi::Value* args, size_t count) const
+static jsi::Value static_remove_event_listener(jsi::Runtime& runtime, const jsi::Value* args, size_t count,
+    const static_class_data* data, event_registration_array& registrations)
 {
     if (count < 2)
     {
@@ -161,9 +162,10 @@ jsi::Value static_class_data::remove_event_listener(
     }
 
     auto name = args[0].asString(runtime).utf8(runtime);
-    if (auto itr = find_by_name(events, name); itr != events.end())
+    if (auto itr = find_by_name(data->events, name); itr != data->events.end())
     {
-        itr->remove(runtime, args[1]);
+        auto token = registrations.remove(runtime, args[1].asObject(runtime), itr->name.data());
+        itr->remove(runtime, token);
     }
 
     return jsi::Value::undefined();
@@ -191,14 +193,12 @@ jsi::Value projected_statics_class::get(jsi::Runtime& runtime, const jsi::PropNa
         {
             if (name == add_event_name)
             {
-                auto fn = jsi::Function::createFromHostFunction(
-                    runtime, id, 0, bind_this(&static_class_data::add_event_listener, m_data));
+                auto fn = jsi::Function::createFromHostFunction(runtime, id, 0, add_event_listener);
                 itr = m_functions.emplace(add_event_name, jsi::Value(runtime, std::move(fn))).first;
             }
             else if (name == remove_event_name)
             {
-                auto fn = jsi::Function::createFromHostFunction(
-                    runtime, id, 0, bind_this(&static_class_data::remove_event_listener, m_data));
+                auto fn = jsi::Function::createFromHostFunction(runtime, id, 0, remove_event_listener);
                 itr = m_functions.emplace(remove_event_name, jsi::Value(runtime, std::move(fn))).first;
             }
         }
@@ -250,6 +250,20 @@ std::vector<jsi::PropNameID> projected_statics_class::getPropertyNames(jsi::Runt
     }
 
     return result;
+}
+
+jsi::Value projected_statics_class::add_event_listener(
+    jsi::Runtime& runtime, const jsi::Value& thisVal, const jsi::Value* args, size_t count)
+{
+    auto inst = thisVal.asObject(runtime).asHostObject<projected_statics_class>(runtime);
+    return static_add_event_listener(runtime, args, count, inst->m_data, inst->m_events);
+}
+
+jsi::Value projected_statics_class::remove_event_listener(
+    jsi::Runtime& runtime, const jsi::Value& thisVal, const jsi::Value* args, size_t count)
+{
+    auto inst = thisVal.asObject(runtime).asHostObject<projected_statics_class>(runtime);
+    return static_remove_event_listener(runtime, args, count, inst->m_data, inst->m_events);
 }
 
 struct projected_property final : public jsi::HostObject
@@ -352,13 +366,22 @@ jsi::Value static_activatable_class_data::create(jsi::Runtime& runtime) const
 
     if (!events.empty())
     {
+        // NOTE: We need shared state, but there's not really a good way to store that state on the function object that
+        // we return... Use a unique_ptr here and give ownership to a single lambda. Neither should outlive the object
+        // we return, so this should be okay
+        auto evtArray = std::make_unique<event_registration_array>();
+
         auto name = make_propid(runtime, add_event_name);
         result.setProperty(runtime, name,
-            jsi::Function::createFromHostFunction(runtime, name, 0, bind_this(&add_event_listener, this)));
+            jsi::Function::createFromHostFunction(runtime, name, 0,
+                [this, evtArray = evtArray.get()](jsi::Runtime& runtime, const jsi::Value&, const jsi::Value* args,
+                    size_t count) { return static_add_event_listener(runtime, args, count, this, *evtArray); }));
 
         name = make_propid(runtime, remove_event_name);
         result.setProperty(runtime, name,
-            jsi::Function::createFromHostFunction(runtime, name, 0, bind_this(&remove_event_listener, this)));
+            jsi::Function::createFromHostFunction(runtime, name, 0,
+                [this, evtArray = std::move(evtArray)](jsi::Runtime& runtime, const jsi::Value&, const jsi::Value* args,
+                    size_t count) { return static_remove_event_listener(runtime, args, count, this, *evtArray); }));
     }
 
     return result;
