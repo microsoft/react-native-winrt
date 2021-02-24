@@ -2,10 +2,12 @@
 
 #include "MetadataHelpers.h"
 
-std::map<std::string_view, std::shared_ptr<Namespace>> Namespace::GetRoots(const Settings& settings)
+#if 1
+
+std::vector<std::shared_ptr<static_projection_data>> static_projection_data::ParseMetaData(const Settings& settings)
 {
-    std::map<std::string_view, std::shared_ptr<Namespace>> roots;
-    std::shared_ptr<Namespace> previousNamespace;
+    std::vector<std::shared_ptr<static_projection_data>> roots;
+    std::shared_ptr<static_namespace_data> previousNamespace;
     for (const auto& [currentFullName, members] : settings.Cache.namespaces())
     {
         if (!IsNamespaceAllowed(settings, currentFullName, members))
@@ -52,7 +54,7 @@ std::map<std::string_view, std::shared_ptr<Namespace>> Namespace::GetRoots(const
             }
             else
             {
-                previousNamespace = std::make_shared<Namespace>(
+                previousNamespace = std::make_shared<static_projection_data>(
                     previousNamespace, std::string(currentNameSegment), isFinalSegment ? &members : nullptr);
                 targetMap[previousNamespace->Name()] = previousNamespace;
             }
@@ -61,20 +63,104 @@ std::map<std::string_view, std::shared_ptr<Namespace>> Namespace::GetRoots(const
     return roots;
 }
 
-Namespace::Namespace(const std::shared_ptr<Namespace>& parent, std::string&& name,
-    const winmd::reader::cache::namespace_members* members) :
-    m_name(std::forward<std::string>(name)),
-    m_members(members),
-    m_parent(parent ? std::optional<std::weak_ptr<Namespace>>(parent) : std::optional<std::weak_ptr<Namespace>>())
+bool HasAllowedTypes(const Settings& settings, const winmd::reader::cache::namespace_members& members)
 {
+    for (const auto& typeDef : members.interfaces)
+    {
+        if (IsTypeAllowed(settings, typeDef))
+        {
+            return true;
+        }
+    }
+
+    for (const auto& typeDef : members.classes)
+    {
+        if (IsTypeAllowed(settings, typeDef, true /*isClass*/))
+        {
+            return true;
+        }
+    }
+
+    for (const auto& typeDef : members.enums)
+    {
+        if (IsTypeAllowed(settings, typeDef))
+        {
+            return true;
+        }
+    }
+
+    for (const auto& typeDef : members.structs)
+    {
+        if (IsTypeAllowed(settings, typeDef))
+        {
+            return true;
+        }
+    }
+
+    for (const auto& typeDef : members.delegates)
+    {
+        if (IsTypeAllowed(settings, typeDef))
+        {
+            return true;
+        }
+    }
+
+    return false;
 }
 
-const std::string& Namespace::Name() const noexcept
+bool IsNamespaceAllowed(const Settings& settings, const std::string_view& namespaceFullName,
+    const winmd::reader::cache::namespace_members& members)
+{
+    if (!HasAllowedTypes(settings, members))
+    {
+        return false;
+    }
+
+    return true;
+}
+
+bool IsTypeAllowed(const Settings& settings, const winmd::reader::TypeDef& typeDef, const bool isClass)
+{
+    if (!settings.Filter.Includes(typeDef))
+    {
+        return false;
+    }
+
+    if (isClass && settings.FilterToAllowForWeb &&
+        !HasAttribute(typeDef, "Windows.Foundation.Metadata"sv, "AllowForWebAttribute"sv))
+    {
+        return false;
+    }
+
+    if (!settings.IncludeDeprecated && HasAttribute(typeDef, "Windows.Foundation.Metadata"sv, "DeprecatedAttribute"sv))
+    {
+        return false;
+    }
+
+    if (!settings.IncludeWebHostHidden &&
+        HasAttribute(typeDef, "Windows.Foundation.Metadata"sv, "WebHostHiddenAttribute"sv))
+    {
+        // Special-case Windows.Foundation.IPropertyValueStatics which should not be WebHostHidden as it breaks basic
+        // language features by omission.
+        if (typeDef.TypeNamespace() == "Windows.Foundation"sv)
+        {
+            if (isClass ? (typeDef.TypeName() == "PropertyValue"sv) : (typeDef.TypeName() == "IPropertyValueStatics"sv))
+            {
+                return true;
+            }
+        }
+        return false;
+    }
+
+    return true;
+}
+
+const std::string& static_projection_data::Name() const noexcept
 {
     return m_name;
 }
 
-const std::string& Namespace::FullName(bool useCppDelim) const
+const std::string& static_projection_data::FullName(bool useCppDelim) const
 {
     auto& fullName = useCppDelim ? m_fullNameCpp : m_fullName;
     if (fullName.empty())
@@ -89,6 +175,16 @@ const std::string& Namespace::FullName(bool useCppDelim) const
         }
     }
     return fullName;
+}
+
+#else
+
+Namespace::Namespace(const std::shared_ptr<Namespace>& parent, std::string&& name,
+    const winmd::reader::cache::namespace_members* members) :
+    m_name(std::forward<std::string>(name)),
+    m_members(members),
+    m_parent(parent ? std::optional<std::weak_ptr<Namespace>>(parent) : std::optional<std::weak_ptr<Namespace>>())
+{
 }
 
 const winmd::reader::cache::namespace_members& Namespace::Members() const noexcept
@@ -184,62 +280,6 @@ bool Namespace::EnumerateAll(const std::map<std::string_view, std::shared_ptr<Na
     return true;
 }
 
-bool HasAllowedTypes(const Settings& settings, const winmd::reader::cache::namespace_members& members)
-{
-    for (const auto& typeDef : members.interfaces)
-    {
-        if (IsTypeAllowed(settings, typeDef))
-        {
-            return true;
-        }
-    }
-
-    for (const auto& typeDef : members.classes)
-    {
-        if (IsTypeAllowed(settings, typeDef, true /*isClass*/))
-        {
-            return true;
-        }
-    }
-
-    for (const auto& typeDef : members.enums)
-    {
-        if (IsTypeAllowed(settings, typeDef))
-        {
-            return true;
-        }
-    }
-
-    for (const auto& typeDef : members.structs)
-    {
-        if (IsTypeAllowed(settings, typeDef))
-        {
-            return true;
-        }
-    }
-
-    for (const auto& typeDef : members.delegates)
-    {
-        if (IsTypeAllowed(settings, typeDef))
-        {
-            return true;
-        }
-    }
-
-    return false;
-}
-
-bool IsNamespaceAllowed(const Settings& settings, const std::string_view& namespaceFullName,
-    const winmd::reader::cache::namespace_members& members)
-{
-    if (!HasAllowedTypes(settings, members))
-    {
-        return false;
-    }
-
-    return true;
-}
-
 bool IsMethodAllowed(const Settings& settings, const winmd::reader::MethodDef& methodDef)
 {
     if (!settings.IncludeDeprecated &&
@@ -251,42 +291,6 @@ bool IsMethodAllowed(const Settings& settings, const winmd::reader::MethodDef& m
     if (!settings.IncludeWebHostHidden &&
         HasAttribute(methodDef, "Windows.Foundation.Metadata"sv, "WebHostHiddenAttribute"sv))
     {
-        return false;
-    }
-
-    return true;
-}
-
-bool IsTypeAllowed(const Settings& settings, const winmd::reader::TypeDef& typeDef, const bool isClass)
-{
-    if (!settings.Filter.Includes(typeDef))
-    {
-        return false;
-    }
-
-    if (isClass && settings.FilterToAllowForWeb &&
-        !HasAttribute(typeDef, "Windows.Foundation.Metadata"sv, "AllowForWebAttribute"sv))
-    {
-        return false;
-    }
-
-    if (!settings.IncludeDeprecated && HasAttribute(typeDef, "Windows.Foundation.Metadata"sv, "DeprecatedAttribute"sv))
-    {
-        return false;
-    }
-
-    if (!settings.IncludeWebHostHidden &&
-        HasAttribute(typeDef, "Windows.Foundation.Metadata"sv, "WebHostHiddenAttribute"sv))
-    {
-        // Special-case Windows.Foundation.IPropertyValueStatics which should not be WebHostHidden as it breaks basic
-        // language features by omission.
-        if (typeDef.TypeNamespace() == "Windows.Foundation"sv)
-        {
-            if (isClass ? (typeDef.TypeName() == "PropertyValue"sv) : (typeDef.TypeName() == "IPropertyValueStatics"sv))
-            {
-                return true;
-            }
-        }
         return false;
     }
 
@@ -491,3 +495,5 @@ bool UseLowerCamelCaseCodeGenForStruct(const winmd::reader::TypeDef& type)
     }
     return false;
 }
+
+#endif
