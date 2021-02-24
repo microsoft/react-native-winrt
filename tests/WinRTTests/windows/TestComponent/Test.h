@@ -176,6 +176,18 @@ namespace winrt::TestComponent::implementation
         void RefEnumProperty(Windows::Foundation::IReference<TestEnum> const& value);
         Windows::Foundation::Collections::IVector<int32_t> ObjectProperty();
         void ObjectProperty(Windows::Foundation::Collections::IVector<int32_t> const& value);
+        Windows::Foundation::DateTime DateTimeProperty();
+        void DateTimeProperty(Windows::Foundation::DateTime value);
+        hstring DateTimePropertyCppValue();
+        Windows::Foundation::TimeSpan TimeSpanProperty();
+        void TimeSpanProperty(Windows::Foundation::TimeSpan value);
+        hstring TimeSpanPropertyCppValue();
+        hresult HResultProperty();
+        void HResultProperty(hresult value);
+        Windows::Foundation::IPropertyValue PropertyValue();
+        void PropertyValue(Windows::Foundation::IPropertyValue value);
+        Windows::Foundation::Collections::IVector<int32_t> CreateIVector();
+        Windows::Foundation::IAsyncAction AppendZeroToIVectorAsync(Windows::Foundation::Collections::IVector<int32_t> vector);
 
         com_array<bool> BooleanArrayProperty();
         void BooleanArrayProperty(array_view<bool const> value);
@@ -335,6 +347,10 @@ namespace winrt::TestComponent::implementation
         std::vector<CompositeType> m_compositeStructArrayProperty;
         std::vector<Windows::Foundation::IReference<int32_t>> m_refArrayProperty;
         std::vector<Windows::Foundation::Collections::IVector<int32_t>> m_objectArrayProperty;
+        Windows::Foundation::DateTime m_dateTimeProperty;
+        Windows::Foundation::TimeSpan m_timeSpanProperty;
+        hresult m_hresultProperty;
+        Windows::Foundation::IPropertyValue m_propertyValue;
 
         // Non-static event sources
         event<Windows::Foundation::EventHandler<bool>> m_boolEventSource;

@@ -254,6 +254,24 @@ export const TestValues = {
         valid: [ { b: true }, { b: false } ],
         invalid: [ {}, { b: 'true' }, { b: 1 }, { b: true, extraProperty: 42 } ],
     },
+    dates: {
+        valid: [new Date(2020, 2, 3, 4, 5, 6, 7)],
+        cppValuesForValidDates: ["132277107060070000"],
+        invalid: [132323, "21321321"]
+    },
+    timeSpans: {
+        valid: [1726, 0, -218761],
+        cppValuesForValidTimeSpans: ["1726", "0", "-218761"],
+        invalid: [{duration: 98217}, new Date()]
+    },
+    hResults: {
+        valid: [1726, 0, -218761],
+        invalid: [{hresult: 98217}, {}]
+    },
+    propertyValues: {
+        valid: [true, 12723, "hello", [21, 23, 43], ["sasa", "sa"]],
+        invalid: [{}, ["hi", true]]
+    },
     composite: {
         valid: [
             {

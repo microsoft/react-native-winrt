@@ -5,6 +5,10 @@
 #include <iostream>
 #include <fstream>
 #include <winrt/Windows.Storage.h>
+#include <atomic>
+#include <ppltasks.h>
+#include <pplawait.h>
+#include <concurrent_vector.h>
 
 #include "Test.h"
 
@@ -933,6 +937,69 @@ namespace winrt::TestComponent::implementation
     void Test::ObjectArrayProperty(array_view<Windows::Foundation::Collections::IVector<int32_t> const> value)
     {
         m_objectArrayProperty.assign(value.begin(), value.end());
+    }
+
+    Windows::Foundation::DateTime Test::DateTimeProperty()
+    {
+        return m_dateTimeProperty;
+    }
+
+    void Test::DateTimeProperty(Windows::Foundation::DateTime value)
+    {
+        m_dateTimeProperty = value;
+    }
+
+    hstring Test::DateTimePropertyCppValue()
+    { 
+        return winrt::to_hstring(static_cast<int64_t>(winrt::clock::to_file_time(m_dateTimeProperty).value));
+    }
+
+    Windows::Foundation::TimeSpan Test::TimeSpanProperty()
+    {
+        return m_timeSpanProperty;
+    }
+
+    void Test::TimeSpanProperty(Windows::Foundation::TimeSpan value)
+    {
+        m_timeSpanProperty = value;
+    }
+
+    hstring Test::TimeSpanPropertyCppValue()
+    {
+        return winrt::to_hstring(std::chrono::duration_cast<std::chrono::duration<int64_t, std::milli>>(m_timeSpanProperty).count());
+    }
+
+    hresult Test::HResultProperty()
+    {
+        return m_hresultProperty;
+    }
+
+    void Test::HResultProperty(hresult value)
+    {
+        this->m_hresultProperty = value;
+    }
+
+    Windows::Foundation::IAsyncAction Test::AppendZeroToIVectorAsync(Windows::Foundation::Collections::IVector<int32_t> vector)
+    {
+        co_await concurrency::create_task([&vector] { 
+            vector.Append(0);
+        });
+    }
+
+    Windows::Foundation::IPropertyValue Test::PropertyValue()
+    {
+        return m_propertyValue;
+    }
+
+    void Test::PropertyValue(Windows::Foundation::IPropertyValue value)
+    {
+        m_propertyValue = value;
+    }
+
+    Windows::Foundation::Collections::IVector<int32_t> Test::CreateIVector()
+    {
+        Windows::Foundation::Collections::IVector<int32_t> vector{ winrt::single_threaded_vector<int>() };
+        return vector;
     }
 
     bool Test::Or(bool lhs, bool rhs)
