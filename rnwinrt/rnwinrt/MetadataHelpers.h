@@ -1,14 +1,17 @@
 #pragma once
 #include "Settings.h"
+#include "FileGenerator.h"
+#include "ValueConverters.h"
+#include "Writer.h"
 
 #if 1
 
 struct static_projection_data : public std::enable_shared_from_this<static_projection_data>
 {
-    static std::vector<std::shared_ptr<static_projection_data>> ParseMetaData(const Settings& settings);
-
-    static_projection_data(std::string_view name, std::vector<std::shared_ptr<static_projection_data>> children) :
-        m_name(name), m_children(children)
+    static_projection_data(const std::shared_ptr<static_projection_data>& parent, std::string_view name) :
+        m_parent(parent ? std::optional<std::weak_ptr<static_projection_data>>(parent) :
+                          std::optional<std::weak_ptr<static_projection_data>>()),
+        m_name(name)
     {
     }
 
@@ -21,19 +24,101 @@ private:
     const std::optional<std::weak_ptr<static_projection_data>> m_parent;
     const std::string m_name;
 
-    std::vector<std::shared_ptr<static_projection_data>> m_children;
     mutable std::string m_fullName;
     mutable std::string m_fullNameCpp;
 };
 
-struct static_namespace_data final : static_projection_data
+struct static_class_data final : static_projection_data
 {
-    static_namespace_data(std::string_view name, std::vector<std::shared_ptr<static_projection_data>> children) :
-        static_projection_data(name, children)
+    static_class_data(const std::shared_ptr<static_projection_data>& parent, std::string_view name,
+        const winmd::reader::TypeDef typeDef) :
+        static_projection_data(parent, name),
+        m_typeDef(typeDef)
     {
     }
 
-    //virtual jsi::Value create(jsi::Runtime& runtime) const override;
+private:
+    winmd::reader::TypeDef m_typeDef;
+};
+
+struct static_enum_data final : static_projection_data
+{
+    static_enum_data(const std::shared_ptr<static_projection_data>& parent, std::string_view name,
+        const winmd::reader::TypeDef typeDef) :
+        static_projection_data(parent, name),
+        m_typeDef(typeDef)
+    {
+    }
+
+private:
+    winmd::reader::TypeDef m_typeDef;
+};
+
+struct static_struct_data final : static_projection_data
+{
+    static_struct_data(const std::shared_ptr<static_projection_data>& parent, std::string_view name,
+        const winmd::reader::TypeDef typeDef) :
+        static_projection_data(parent, name),
+        m_typeDef(typeDef)
+    {
+    }
+
+private:
+    winmd::reader::TypeDef m_typeDef;
+};
+
+struct static_delegate_data final : static_projection_data
+{
+    static_delegate_data(const std::shared_ptr<static_projection_data>& parent, std::string_view name,
+        const winmd::reader::TypeDef typeDef) :
+        static_projection_data(parent, name),
+        m_typeDef(typeDef)
+    {
+    }
+
+private:
+    winmd::reader::TypeDef m_typeDef;
+};
+
+struct static_interface_data final : static_projection_data
+{
+    static_interface_data(const std::shared_ptr<static_projection_data>& parent, std::string_view name,
+        const winmd::reader::TypeDef typeDef) :
+        static_projection_data(parent, name),
+        m_typeDef(typeDef)
+    {
+    }
+
+private:
+    winmd::reader::TypeDef m_typeDef;
+};
+
+struct static_namespace_data final : static_projection_data
+{
+    static std::vector<std::shared_ptr<static_namespace_data>> ParseMetaData(const Settings& settings);
+
+    static_namespace_data(const std::shared_ptr<static_projection_data>& parent, std::string_view name,
+        const winmd::reader::cache::namespace_members* members, const Settings& settings) :
+        static_projection_data(parent, name)
+    {
+        ParseChildren(members, settings);
+    }
+
+    // virtual jsi::Value create(jsi::Runtime& runtime) const override;
+
+    std::vector<std::shared_ptr<static_projection_data>> m_children;
+    std::vector<std::shared_ptr<static_interface_data>> m_interfaces;
+    std::vector<std::shared_ptr<static_struct_data>> m_structs;
+    std::vector<std::shared_ptr<static_delegate_data>> m_delegates;
+
+private:
+    void ParseChildren(const winmd::reader::cache::namespace_members* members, const Settings& settings);
+
+    template <typename T, typename U>
+    void ParseTypeDefs(std::vector<std::shared_ptr<T>>& items, const std::vector<winmd::reader::TypeDef>& typeDefs,
+        const Settings& settings, std::vector<std::shared_ptr<T>>& globalList = nullptr);
+
+    static void SortGlobalLists();
 };
 
 bool IsNamespaceAllowed(const Settings& settings, const std::string_view& namespaceFullName,
@@ -45,6 +130,10 @@ bool HasAttribute(T const& row, const std::string_view& attributeNamespace, cons
 {
     return static_cast<bool>(winmd::reader::get_attribute(row, attributeNamespace, attributeName));
 }
+
+static std::vector<std::shared_ptr<static_interface_data>> _interfaces;
+static std::vector<std::shared_ptr<static_struct_data>> _structs;
+static std::vector<std::shared_ptr<static_delegate_data>> _delegates;
 
 #else
 

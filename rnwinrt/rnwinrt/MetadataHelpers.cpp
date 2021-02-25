@@ -4,9 +4,9 @@
 
 #if 1
 
-std::vector<std::shared_ptr<static_projection_data>> static_projection_data::ParseMetaData(const Settings& settings)
+std::vector<std::shared_ptr<static_namespace_data>> static_namespace_data::ParseMetaData(const Settings& settings)
 {
-    std::vector<std::shared_ptr<static_projection_data>> roots;
+    std::vector<std::shared_ptr<static_namespace_data>> roots;
     std::shared_ptr<static_namespace_data> previousNamespace;
     for (const auto& [currentFullName, members] : settings.Cache.namespaces())
     {
@@ -47,20 +47,76 @@ std::vector<std::shared_ptr<static_projection_data>> static_projection_data::Par
                 remainingNameSegments.remove_prefix(delim + 1);
             }
 
-            auto& targetMap = previousNamespace ? previousNamespace->m_children : roots;
-            if (auto it = targetMap.find(currentNameSegment); it != targetMap.end())
+            if (previousNamespace)
             {
-                previousNamespace = it->second;
+                bool found = false;
+                for (int i = previousNamespace->m_children.size() - 1; i >= 0; i--)
+                {
+                    if (previousNamespace->m_children[i]->Name() == currentNameSegment)
+                    {
+                        found = true;
+                        previousNamespace = previousNamespace->m_children[i];
+                    }
+                }
+                if (!found)
+                {
+                    previousNamespace = std::make_shared<static_namespace_data>(previousNamespace,
+                        std::string(currentNameSegment), isFinalSegment ? &members : nullptr, settings);
+                    previousNamespace->m_children.push_back(previousNamespace);
+                }
             }
             else
             {
-                previousNamespace = std::make_shared<static_projection_data>(
-                    previousNamespace, std::string(currentNameSegment), isFinalSegment ? &members : nullptr);
-                targetMap[previousNamespace->Name()] = previousNamespace;
+                bool found = false;
+                for (int i = roots.size() - 1; i >= 0; i--)
+                {
+                    if (roots[i]->Name() == currentNameSegment)
+                    {
+                        found = true;
+                        previousNamespace = roots[i];
+                    }
+                }
+                if (!found)
+                {
+                    previousNamespace = std::make_shared<static_namespace_data>(previousNamespace,
+                        std::string(currentNameSegment), isFinalSegment ? &members : nullptr, settings);
+                    roots.push_back(previousNamespace);
+                }
             }
         }
     }
+
+    SortGlobalLists();
     return roots;
+}
+
+void static_namespace_data::ParseChildren(
+    const winmd::reader::cache::namespace_members* members, const Settings& settings)
+{
+    ParseTypeDefs<static_projection_data, static_class_data>(m_children, members->classes, settings);
+    ParseTypeDefs<static_projection_data, static_enum_data>(m_children, members->enums, settings);
+    ParseTypeDefs<static_struct_data, static_struct_data>(m_structs, members->structs, settings, _structs);
+    ParseTypeDefs<static_delegate_data, static_delegate_data>(m_delegates, members->delegates, settings, _delegates);
+    ParseTypeDefs<static_interface_data, static_interface_data>(m_interfaces, members->interfaces, settings, _interfaces);
+}
+
+template <typename T, typename U>
+void static_namespace_data::ParseTypeDefs(std::vector<std::shared_ptr<T>>& items,
+    const std::vector<winmd::reader::TypeDef>& typeDefs, const Settings& settings,
+    std::vector<std::shared_ptr<T>>& globalList)
+{
+    for (const auto& typeDef : typeDefs)
+    {
+        if (IsTypeAllowed(settings, typeDef))
+        {
+            auto item = std::make_shared<U>(this, typeDef.TypeName(), typeDef)
+            items.push_back(item);
+            if (globalList)
+            {
+                globalList.push_back(item);
+            }
+        }
+    }
 }
 
 bool HasAllowedTypes(const Settings& settings, const winmd::reader::cache::namespace_members& members)
@@ -177,15 +233,38 @@ const std::string& static_projection_data::FullName(bool useCppDelim) const
     return fullName;
 }
 
-#else
-
-Namespace::Namespace(const std::shared_ptr<Namespace>& parent, std::string&& name,
-    const winmd::reader::cache::namespace_members* members) :
-    m_name(std::forward<std::string>(name)),
-    m_members(members),
-    m_parent(parent ? std::optional<std::weak_ptr<Namespace>>(parent) : std::optional<std::weak_ptr<Namespace>>())
+std::shared_ptr<static_projection_data> static_projection_data::Parent() const
 {
+    if (m_parent)
+    {
+        if (auto parent = m_parent->lock())
+        {
+            return parent;
+        }
+        ThrowInvalidArg("Parent Namespace node has expired!");
+    }
+    return nullptr;
 }
+
+void static_namespace_data::SortGlobalLists()
+{
+    std::sort(_structs.begin(), _structs.end(), [](auto const& lhs, auto const& rhs) {
+        auto name_compare = strcmp(lhs.Name(), rhs.Name());
+        return (name_compare > 0);
+    });
+
+    std::sort(_delegates.begin(), _delegates.end(), [](auto const& lhs, auto const& rhs) {
+        auto name_compare = strcmp(lhs.Name(), rhs.Name());
+        return (name_compare > 0);
+    });
+
+    std::sort(_interfaces.begin(), _interfaces.end(), [](auto const& lhs, auto const& rhs) {
+        auto name_compare = strcmp(lhs.Name(), rhs.Name());
+        return (name_compare > 0);
+    });
+}
+
+#else
 
 const winmd::reader::cache::namespace_members& Namespace::Members() const noexcept
 {
@@ -201,19 +280,6 @@ const winmd::reader::cache::namespace_members& Namespace::Members() const noexce
 bool Namespace::HasProjectedTypes() const noexcept
 {
     return m_members;
-}
-
-std::shared_ptr<Namespace> Namespace::Parent() const
-{
-    if (m_parent)
-    {
-        if (auto parent = m_parent->lock())
-        {
-            return parent;
-        }
-        ThrowInvalidArg("Parent Namespace node has expired!");
-    }
-    return nullptr;
 }
 
 const std::map<std::string_view, std::shared_ptr<Namespace>>& Namespace::Children() const noexcept
