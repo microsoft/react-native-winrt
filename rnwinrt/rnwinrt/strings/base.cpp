@@ -49,6 +49,58 @@ static auto find_by_name(span<const ThingWithName> list, std::string_view name) 
     return std::find_if(list.begin(), list.end(), [&](const ThingWithName& thing) { return thing.name == name; });
 }
 
+jsi::Value object_instance_cache::get_instance(jsi::Runtime& runtime, const winrt::IInspectable& value)
+{
+    // NOTE: Each interface has its own associated v-table, so two IInspectable pointers to the same object may actually
+    // be different if they were originally pointers to two different interfaces. Hence the QI here
+    auto instance = value.as<winrt::IInspectable>();
+    auto key = winrt::get_abi(instance);
+    if (auto itr = instances.find(key); itr != instances.end())
+    {
+        // NOTE: It is possible for an interface to get deallocated and have its memory address reused for a new object,
+        // however because we hold strong references to WinRT objects and weak references to the JS objects we create,
+        // this would imply that the JS object also got GC'd and would fail to resolve below
+        if (supports_weak_object)
+        {
+            if (auto value = std::get<0>(itr->second).lock(runtime); !value.isUndefined())
+            {
+                return value;
+            }
+        }
+        else
+        {
+            if (auto hostObj = std::get<1>(itr->second).lock())
+            {
+                return jsi::Value(runtime, jsi::Object::createFromHostObject(runtime, std::move(hostObj)));
+            }
+        }
+
+        // Otherwise, the object has been GC'd. Remove it so that we can re-create the object below
+        instances.erase(itr);
+    }
+
+    auto hostObj = std::make_shared<projected_object_instance>(instance);
+    auto obj = jsi::Object::createFromHostObject(runtime, hostObj);
+    if (supports_weak_object)
+    {
+        try
+        {
+            instances.emplace(key, jsi::WeakObject(runtime, obj));
+        }
+        catch (std::logic_error&)
+        {
+            supports_weak_object = false;
+        }
+    }
+
+    if (!supports_weak_object)
+    {
+        instances.emplace(key, std::move(hostObj));
+    }
+
+    return jsi::Value(runtime, std::move(obj));
+}
+
 jsi::Value static_namespace_data::create(jsi::Runtime& runtime) const
 {
     return jsi::Value(runtime, jsi::Object::createFromHostObject(runtime, std::make_shared<projected_namespace>(this)));
@@ -193,12 +245,13 @@ jsi::Value projected_statics_class::get(jsi::Runtime& runtime, const jsi::PropNa
         {
             if (name == add_event_name)
             {
-                auto fn = jsi::Function::createFromHostFunction(runtime, id, 0, add_event_listener);
+                auto fn = jsi::Function::createFromHostFunction(runtime, id, 0, bind_host_function(add_event_listener));
                 itr = m_functions.emplace(add_event_name, jsi::Value(runtime, std::move(fn))).first;
             }
             else if (name == remove_event_name)
             {
-                auto fn = jsi::Function::createFromHostFunction(runtime, id, 0, remove_event_listener);
+                auto fn =
+                    jsi::Function::createFromHostFunction(runtime, id, 0, bind_host_function(remove_event_listener));
                 itr = m_functions.emplace(remove_event_name, jsi::Value(runtime, std::move(fn))).first;
             }
         }
@@ -252,18 +305,14 @@ std::vector<jsi::PropNameID> projected_statics_class::getPropertyNames(jsi::Runt
     return result;
 }
 
-jsi::Value projected_statics_class::add_event_listener(
-    jsi::Runtime& runtime, const jsi::Value& thisVal, const jsi::Value* args, size_t count)
+jsi::Value projected_statics_class::add_event_listener(jsi::Runtime& runtime, const jsi::Value* args, size_t count)
 {
-    auto inst = thisVal.asObject(runtime).asHostObject<projected_statics_class>(runtime);
-    return static_add_event_listener(runtime, args, count, inst->m_data, inst->m_events);
+    return static_add_event_listener(runtime, args, count, m_data, m_events);
 }
 
-jsi::Value projected_statics_class::remove_event_listener(
-    jsi::Runtime& runtime, const jsi::Value& thisVal, const jsi::Value* args, size_t count)
+jsi::Value projected_statics_class::remove_event_listener(jsi::Runtime& runtime, const jsi::Value* args, size_t count)
 {
-    auto inst = thisVal.asObject(runtime).asHostObject<projected_statics_class>(runtime);
-    return static_remove_event_listener(runtime, args, count, inst->m_data, inst->m_events);
+    return static_remove_event_listener(runtime, args, count, m_data, m_events);
 }
 
 struct projected_property final : public jsi::HostObject
@@ -568,12 +617,12 @@ jsi::Value projected_object_instance::get(jsi::Runtime& runtime, const jsi::Prop
     {
         if (name == add_event_name)
         {
-            auto fn = jsi::Function::createFromHostFunction(runtime, id, 2, &add_event_listener);
+            auto fn = jsi::Function::createFromHostFunction(runtime, id, 2, bind_host_function(add_event_listener));
             return m_functions.emplace(add_event_name, jsi::Value(runtime, std::move(fn))).first->second;
         }
         else if (name == remove_event_name)
         {
-            auto fn = jsi::Function::createFromHostFunction(runtime, id, 2, &remove_event_listener);
+            auto fn = jsi::Function::createFromHostFunction(runtime, id, 2, bind_host_function(remove_event_listener));
             return m_functions.emplace(remove_event_name, jsi::Value(runtime, std::move(fn))).first->second;
         }
     }
@@ -627,8 +676,7 @@ std::vector<jsi::PropNameID> projected_object_instance::getPropertyNames(jsi::Ru
     return result;
 }
 
-jsi::Value projected_object_instance::add_event_listener(
-    jsi::Runtime& runtime, const jsi::Value& thisVal, const jsi::Value* args, size_t count)
+jsi::Value projected_object_instance::add_event_listener(jsi::Runtime& runtime, const jsi::Value* args, size_t count)
 {
     if (count < 2)
     {
@@ -636,14 +684,12 @@ jsi::Value projected_object_instance::add_event_listener(
     }
 
     auto name = args[0].asString(runtime).utf8(runtime);
-    auto obj = thisVal.asObject(runtime).asHostObject<projected_object_instance>(runtime);
-    for (auto iface : obj->m_interfaces)
+    for (auto iface : m_interfaces)
     {
         if (auto itr = find_by_name(iface->events, name); itr != iface->events.end())
         {
-            auto token = itr->add(runtime, obj->m_instance, args[1]);
-            current_runtime_context()->event_cache.add(
-                obj->m_instance, args[1].asObject(runtime), itr->name.data(), token);
+            auto token = itr->add(runtime, m_instance, args[1]);
+            current_runtime_context()->event_cache.add(m_instance, args[1].asObject(runtime), itr->name.data(), token);
             break;
         }
     }
@@ -651,8 +697,7 @@ jsi::Value projected_object_instance::add_event_listener(
     return jsi::Value::undefined();
 }
 
-jsi::Value projected_object_instance::remove_event_listener(
-    jsi::Runtime& runtime, const jsi::Value& thisVal, const jsi::Value* args, size_t count)
+jsi::Value projected_object_instance::remove_event_listener(jsi::Runtime& runtime, const jsi::Value* args, size_t count)
 {
     if (count < 2)
     {
@@ -660,72 +705,19 @@ jsi::Value projected_object_instance::remove_event_listener(
     }
 
     auto name = args[0].asString(runtime).utf8(runtime);
-    auto obj = thisVal.asObject(runtime).asHostObject<projected_object_instance>(runtime);
-    for (auto iface : obj->m_interfaces)
+    for (auto iface : m_interfaces)
     {
         if (auto itr = find_by_name(iface->events, name); itr != iface->events.end())
         {
             // TODO: Should we just no-op if the token can't be found?
             auto token = current_runtime_context()->event_cache.remove(
-                runtime, obj->m_instance, args[1].asObject(runtime), itr->name.data());
-            itr->remove(runtime, obj->m_instance, args[1], token);
+                runtime, m_instance, args[1].asObject(runtime), itr->name.data());
+            itr->remove(runtime, m_instance, args[1], token);
             break;
         }
     }
 
     return jsi::Value::undefined();
-}
-
-jsi::Value object_instance_cache::get_instance(jsi::Runtime& runtime, const winrt::IInspectable& value)
-{
-    // NOTE: Each interface has its own associated v-table, so two IInspectable pointers to the same object may actually
-    // be different if they were originally pointers to two different interfaces. Hence the QI here
-    auto instance = value.as<winrt::IInspectable>();
-    auto key = winrt::get_abi(instance);
-    if (auto itr = instances.find(key); itr != instances.end())
-    {
-        // NOTE: It is possible for an interface to get deallocated and have its memory address reused for a new object,
-        // however because we hold strong references to WinRT objects and weak references to the JS objects we create,
-        // this would imply that the JS object also got GC'd and would fail to resolve below
-        if (supports_weak_object)
-        {
-            if (auto value = std::get<0>(itr->second).lock(runtime); !value.isUndefined())
-            {
-                return value;
-            }
-        }
-        else
-        {
-            if (auto hostObj = std::get<1>(itr->second).lock())
-            {
-                return jsi::Value(runtime, jsi::Object::createFromHostObject(runtime, std::move(hostObj)));
-            }
-        }
-
-        // Otherwise, the object has been GC'd. Remove it so that we can re-create the object below
-        instances.erase(itr);
-    }
-
-    auto hostObj = std::make_shared<projected_object_instance>(instance);
-    auto obj = jsi::Object::createFromHostObject(runtime, hostObj);
-    if (supports_weak_object)
-    {
-        try
-        {
-            instances.emplace(key, jsi::WeakObject(runtime, obj));
-        }
-        catch (std::logic_error&)
-        {
-            supports_weak_object = false;
-        }
-    }
-
-    if (!supports_weak_object)
-    {
-        instances.emplace(key, std::move(hostObj));
-    }
-
-    return jsi::Value(runtime, std::move(obj));
 }
 
 bool projected_value_traits<bool>::as_native(jsi::Runtime&, const jsi::Value& value) noexcept
@@ -1227,17 +1219,6 @@ namespace WinRTTurboModule
 
             event.wait();
         }
-    }
-}
-
-namespace WinRTTurboModule
-{
-    jsi::Value ConvertAsyncActionToValue(
-        const std::shared_ptr<ProjectionsContext>& context, const winrt::Windows::Foundation::IAsyncAction& value)
-    {
-        return jsi::Value(
-            context->Runtime, jsi::Object::createFromHostObject(context->Runtime,
-                                  std::shared_ptr<jsi::HostObject>(new ProjectedAsyncOperation(context, value))));
     }
 }
 

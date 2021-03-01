@@ -470,7 +470,7 @@ namespace jswinrt
     }
 }
 
-// JSI helpers
+// Generic helpers
 namespace jswinrt
 {
     namespace jsi = facebook::jsi;
@@ -506,6 +506,44 @@ namespace jswinrt
     inline jsi::PropNameID make_propid(jsi::Runtime& runtime, std::string_view str)
     {
         return jsi::PropNameID::forUtf8(runtime, reinterpret_cast<const uint8_t*>(str.data()), str.size());
+    }
+
+    inline jsi::Value make_error(jsi::Runtime& runtime, std::string_view message)
+    {
+        jsi::Object result(runtime);
+        result.setProperty(runtime, "message", make_string(runtime, message));
+        return jsi::Value(runtime, result);
+    }
+
+    inline jsi::Value make_error(jsi::Runtime& runtime, const std::exception& exception)
+    {
+        return make_error(runtime, exception.what());
+    }
+
+    inline jsi::Value make_error(jsi::Runtime& runtime, const winrt::hresult_error& error)
+    {
+        jsi::Object result(runtime);
+        result.setProperty(runtime, "message", make_string(runtime, error.message()));
+        result.setProperty(runtime, "number", static_cast<int32_t>(error.code()));
+        return jsi::Value(runtime, result);
+    }
+
+    template <typename T>
+    auto bind_host_function(jsi::Value (T::*fn)(jsi::Runtime&, const jsi::Value*, size_t))
+    {
+        return [fn](jsi::Runtime& runtime, const jsi::Value& thisValue, const jsi::Value* args, size_t count) {
+            auto strongThis = thisValue.asObject(runtime).asHostObject<T>(runtime);
+            return (strongThis->*fn)(runtime, args, count);
+        }
+    }
+
+    template <typename T>
+    auto bind_host_function(jsi::Value (T::*fn)(jsi::Runtime&, const jsi::Value*, size_t) const)
+    {
+        return [fn](jsi::Runtime& runtime, const jsi::Value& thisValue, const jsi::Value* args, size_t count) {
+            auto strongThis = thisValue.asObject(runtime).asHostObject<T>(runtime);
+            return (strongThis->*fn)(runtime, args, count);
+        }
     }
 
     template <typename T, typename Enable = void>
@@ -566,13 +604,108 @@ namespace jswinrt
     {
         return make_void_return_struct(runtime, "returnValue", args...);
     }
+
+    struct pinterface_traits_base
+    {
+        static constexpr bool is_async_with_progress = false;
+        static constexpr bool is_async_with_result = false;
+    };
+
+    template <typename T>
+    struct pinterface_traits : pinterface_traits_base
+    {
+    };
+
+    struct pinterface_traits<winrt::Windows::Foundation::IAsyncAction> : pinterface_traits_base
+    {
+        // NOTE: Currently don't need anything to differentiate here
+    };
+
+    template <typename TProgress>
+    struct pinterface_traits<winrt::Windows::Foundation::IAsyncActionWithProgress<TProgress>> : pinterface_traits_base
+    {
+        using progress_type = TProgress;
+        static constexpr bool is_async_with_progress = true;
+    };
+
+    template <typename TResult>
+    struct pinterface_traits<winrt::Windows::Foundation::IAsyncOperation<TResult>> : pinterface_traits_base
+    {
+        using result_type = TResult;
+        static constexpr bool is_async_with_result = true;
+    };
+
+    template <typename TResult, typename TProgress>
+    struct pinterface_traits<winrt::Windows::Foundation::IAsyncOperationWithProgress<TResult, TProgress>> :
+        pinterface_traits_base
+    {
+        using progress_type = TProgress;
+        using result_type = TResult;
+        static constexpr bool is_async_with_progress = true;
+        static constexpr bool is_async_with_result = true;
+    };
+
+    struct promise_wrapper
+    {
+        static promise_wrapper create(jsi::Runtime& runtime)
+        {
+            // NOTE: The promise callback is called immediately, hence the capture by reference
+            std::optional<jsi::Function> resolve, reject;
+            auto callback = jsi::Function::createFromHostFunction(runtime, make_propid(runtime, "callback"), 2,
+                [&](jsi::Runtime& runtime, const jsi::Value&, const jsi::Value* args, size_t count) {
+                    if (count < 2)
+                    {
+                        throw jsi::JSError(runtime, "Promise callback unexpectedly called with insufficient arguments");
+                    }
+
+                    resolve = args[0].asObject(runtime).asFunction(runtime);
+                    reject = args[1].asObject(runtime).asFunction(runtime);
+                    return jsi::Value::undefined();
+                });
+
+            auto promise =
+                runtime.global().getPropertyAsFunction(runtime, "Promise").callAsConstructor(runtime, callback);
+            return promise_wrapper(std::move(promise), std::move(*resolve), std::move(*reject));
+        }
+
+        const jsi::Value& get() const noexcept
+        {
+            return m_promise;
+        }
+
+        void resolve(jsi::Runtime& runtime, const jsi::Value& value)
+        {
+            assert(!m_completed); // TODO: Throw/fail fast?
+            m_completed = true;
+            m_resolve.call(runtime, value);
+        }
+
+        void reject(jsi::Runtime& runtime, const jsi::Value& value)
+        {
+            assert(!m_completed); // TODO: Throw/fail fast?
+            m_completed = true;
+            m_reject.call(runtime, value);
+        }
+
+    private:
+        promise_wrapper(jsi::Value promise, jsi::Function resolve, jsi::Function reject) :
+            m_promise(std::move(promise)), m_resolve(std::move(resolve)), m_reject(std::move(reject))
+        {
+        }
+
+        jsi::Value m_promise;
+        bool m_completed = false;
+        jsi::Function m_resolve;
+        jsi::Function m_reject;
+    };
 }
 
-// Instance mapping data
+// JS thread context data
 namespace jswinrt
 {
     struct runtime_context;
 
+    // A shared, strong reference to the context, for (safe) use off the JS thread
     struct shared_runtime_context
     {
         runtime_context* pointer = nullptr;
@@ -637,6 +770,7 @@ namespace jswinrt
         jsi::Value get_instance(jsi::Runtime& runtime, const winrt::Windows::Foundation::IInspectable& value);
     };
 
+    // A reusable mapping of (delegate, event name) -> event_token for a single object
     struct event_registration_array
     {
         // NOTE: It's possible to re-use the same callback for multiple events on the same object (especially since
@@ -731,11 +865,63 @@ namespace jswinrt
 
     struct runtime_context
     {
+        jsi::Runtime& runtime;
         std::thread::id thread_id = std::this_thread::get_id();
+        std::function<void(std::function<void()>)> call_invoker;
 
         // TODO: Clean up maps periodically
         object_instance_cache instance_cache;
         object_event_cache event_cache;
+
+        runtime_context(jsi::Runtime& runtime, std::function<void(std::function<void()>)> callInvoker) :
+            runtime(runtime), call_invoker(callInvoker)
+        {
+        }
+
+        void call(std::function<void()> fn)
+        {
+            if (thread_id == std::this_thread::get_id())
+            {
+                fn();
+            }
+            else
+            {
+                call_invoker(std::move(fn));
+            }
+        }
+
+        void call_async(std::function<void()> fn)
+        {
+            call_invoker(std::move(fn));
+        }
+
+        void call_sync(std::function<void()> fn)
+        {
+            if (thread_id == std::this_thread::get_id())
+            {
+                fn();
+            }
+            else
+            {
+                winrt::handle event(::CreateEventW(nullptr, true, false, nullptr));
+                if (!event.get())
+                {
+                    winrt::throw_last_error();
+                }
+
+                // TODO: Propagate exceptions?
+                call_invoker([&]() {
+                    fn();
+                    ::SetEvent(event.get());
+                });
+
+                if (::WaitForSingleObject(event.get(), INFINITE) != WAIT_OBJECT_0)
+                {
+                    // TODO: Too harsh? We could release/leak the event & capture by value
+                    winrt::terminate();
+                }
+            }
+        }
 
         // For the most part, these pointers should only be accessed from the JS thread and therefore the reference
         // count does not need to be bumped, but for things like asynchronous operations, we may need to take strong
@@ -989,10 +1175,8 @@ namespace jswinrt
         virtual std::vector<jsi::PropNameID> getPropertyNames(jsi::Runtime& runtime) override;
 
     private:
-        static jsi::Value add_event_listener(
-            jsi::Runtime& runtime, const jsi::Value& thisVal, const jsi::Value* args, size_t count);
-        static jsi::Value remove_event_listener(
-            jsi::Runtime& runtime, const jsi::Value& thisVal, const jsi::Value* args, size_t count);
+        jsi::Value add_event_listener(jsi::Runtime& runtime, const jsi::Value* args, size_t count);
+        jsi::Value remove_event_listener(jsi::Runtime& runtime, const jsi::Value* args, size_t count);
 
         const static_class_data* m_data;
         std::unordered_map<std::string_view, jsi::Value> m_functions;
@@ -1020,14 +1204,323 @@ namespace jswinrt
         }
 
     private:
-        static jsi::Value add_event_listener(
-            jsi::Runtime& runtime, const jsi::Value& thisVal, const jsi::Value* args, size_t count);
-        static jsi::Value remove_event_listener(
-            jsi::Runtime& runtime, const jsi::Value& thisVal, const jsi::Value* args, size_t count);
+        jsi::Value add_event_listener(jsi::Runtime& runtime, const jsi::Value* args, size_t count);
+        jsi::Value remove_event_listener(jsi::Runtime& runtime, const jsi::Value* args, size_t count);
 
         winrt::Windows::Foundation::IInspectable m_instance;
         sso_vector<const static_interface_data*> m_interfaces;
         std::unordered_map<std::string_view, jsi::Value> m_functions;
+    };
+
+    template <typename IFace>
+    struct projected_async_instance :
+        public jsi::HostObject,
+        public std::enable_shared_from_this<projected_async_instance>
+    {
+        using traits = pinterface_traits<IFace>;
+
+        projected_async_instance(IFace instance) : m_instance(std::move(instance))
+        {
+            initialize(m_instance);
+
+            if constexpr (traits::is_async_with_progress) // IAsync*WithProgress
+            {
+                m_instance.Progress([weakThis = weak_from_this(), ctxt = current_runtime_context()->add_reference()](
+                                        const auto&, const auto& progress) {
+                    ctxt->call([progress, weakThis]() {
+                        if (auto strongThis = weakThis.lock())
+                        {
+                            strongThis->on_progress(
+                                current_runtime_context()->runtime, convert_native_to_value(progress));
+                        }
+                    });
+                });
+            }
+        }
+
+        // HostObject functions
+        virtual jsi::Value get(jsi::Runtime& runtime, const jsi::PropNameID& id) override
+        {
+            auto name = id.utf8(runtime);
+            if (name == "cancel"sv)
+            {
+                return jsi::Value(
+                    runtime, jsi::Function::createFromHostFunction(runtime, id, 0, bind_host_function(on_cancel)));
+            }
+            else if (name == "catch"sv)
+            {
+                return jsi::Value(
+                    runtime, jsi::Function::createFromHostFunction(runtime, id, 1, bind_host_function(on_catch)));
+            }
+            else if (name == "done"sv)
+            {
+                return jsi::Value(
+                    runtime, jsi::Function::createFromHostFunction(runtime, id, 3, bind_host_function(on_done)));
+            }
+            else if (name == "finally"sv)
+            {
+                return jsi::Value(
+                    runtime, jsi::Function::createFromHostFunction(runtime, id, 3, bind_host_function(on_finally)));
+            }
+            else if (name == "then"sv)
+            {
+                return jsi::Value(
+                    runtime, jsi::Function::createFromHostFunction(runtime, id, 3, bind_host_function(on_then)));
+            }
+            else if (name == "operation"sv)
+            {
+                return current_runtime_context()->instance_cache.get_instance(runtime, m_instance);
+            }
+
+            return jsi::Value::undefined();
+        }
+
+        virtual void set(jsi::Runtime& runtime, const jsi::PropNameID& name, const jsi::Value& value) override
+        {
+            throw jsi::JSError(runtime, "TypeError: Cannot assign to property '" + name.utf8(runtime) +
+                                            "' of a projected WinRT AsyncOperation");
+        }
+
+        virtual std::vector<jsi::PropNameID> getPropertyNames(jsi::Runtime& runtime) override
+        {
+            std::vector<jsi::PropNameID> result;
+            result.reserve(6);
+
+            result.push_back(make_propid(runtime, "cancel"sv));
+            result.push_back(make_propid(runtime, "catch"sv));
+            result.push_back(make_propid(runtime, "done"sv));
+            result.push_back(make_propid(runtime, "finally"sv));
+            result.push_back(make_propid(runtime, "then"sv));
+            result.push_back(make_propid(runtime, "operation"sv));
+
+            return result;
+        }
+
+    private:
+        winrt::fire_and_forget initialize(IFace inst)
+        {
+            auto weakThis = weak_from_this();
+            auto ctxt = current_runtime_context()->add_reference();
+            auto& runtime = ctxt->runtime;
+            try
+            {
+                if constexpr (!traits::is_async_with_result) // IAsyncAction*
+                {
+                    co_await inst;
+                    ctxt->call([weakThis, &runtime]() {
+                        if (auto strongThis = weakThis.lock())
+                        {
+                            strongThis->on_completed(runtime, jsi::Value::undefined(), true);
+                        }
+                    });
+                }
+                else // IAsyncOperation*
+                {
+                    auto result = co_await inst;
+                    ctxt->call([weakThis, &runtime, result = std::move(result)]() {
+                        if (auto strongThis = weakThis.lock())
+                        {
+                            strongThis->on_completed(runtime, convert_native_to_value(result), true);
+                        }
+                    });
+                }
+            }
+            catch (winrt::hresult_error& err)
+            {
+                ctxt->call([weakThis, &runtime, err = std::move(err)]() {
+                    if (auto strongThis = weakThis.lock())
+                    {
+                        strongThis->on_completed(runtime, make_error(runtime, err), false);
+                    }
+                });
+            }
+            catch (std::exception& err)
+            {
+                ctxt->call([weakThis, &runtime, err = std::move(err)]() {
+                    if (auto strongThis = weakThis.lock())
+                    {
+                        strongThis->on_completed(runtime, make_error(runtime, err), false);
+                    }
+                });
+            }
+        }
+
+        jsi::Value on_cancel(jsi::Runtime& runtime, const jsi::Value*, size_t)
+        {
+            m_instance.Cancel();
+            return jsi::Value::undefined();
+        }
+
+        jsi::Value on_catch(jsi::Runtime& runtime, const jsi::Value* args, size_t count)
+        {
+            // Prototype: catch(rejectCallback) -> Promise
+            // NOTE: Equivalent to 'then(null, rejectCallback)'
+            return handle_then(runtime, jsi::Value::undefined(), count >= 1 ? args[0] : jsi::Value::undefined());
+        }
+
+        jsi::Value on_done(jsi::Runtime& runtime, const jsi::Value* args, size_t count)
+        {
+            // Prototype: done(resolveCallback, rejectCallback, progressCallback)
+            continuation c{ continuation::type::done, {},
+                { count >= 1 ? jsi::Value(runtime, args[0]) : jsi::Value::undefined(),
+                    count >= 2 ? jsi::Value(runtime, args[1]) : jsi::Value::undefined(),
+                    count >= 3 ? jsi::Value(runtime, args[2]) : jsi::Value::undefined() } };
+            handle_continuation(runtime, std::move(c));
+
+            return jsi::Value::undefined();
+        }
+
+        jsi::Value on_finally(jsi::Runtime& runtime, const jsi::Value* args, size_t count)
+        {
+            // Prototype: finally(callback) -> Promise
+            continuation c{ continuation::type::finally, promise_wrapper::create(runtime),
+                { count >= 1 ? jsi::Value(runtime, args[0]) : jsi::Value::undefined() } };
+
+            auto result = jsi::Value(runtime, c.get());
+            handle_continuation(runtime, std::move(c));
+
+            return result;
+        }
+
+        jsi::Value on_then(jsi::Runtime& runtime, const jsi::Value* args, size_t count)
+        {
+            // Prototype: then(resolvedCallback, rejectedCallback)
+            return handle_then(runtime, count >= 1 ? args[0] : jsi::Value::undefined(),
+                count >= 2 ? args[1] : jsi::Value::undefined());
+        }
+
+        jsi::Value handle_then(
+            jsi::Runtime& runtime, const jsi::Value& resolvedHandler, const jsi::Value& rejectedHandler)
+        {
+            continuation c{ continuation::type::then, promise_wrapper::create(runtime),
+                { jsi::Value(runtime, resolvedHandler), jsi::Value(runtime, rejectedHandler) } };
+
+            auto result = jsi::Value(runtime, c.get());
+            handle_continuation(runtime, std::move(c));
+
+            return result;
+        }
+
+        void handle_continuation(jsi::Runtime& runtime, continuation&& c)
+        {
+            if (m_state != state::pending)
+            {
+                // NOTE: Still expected to be async
+                // NOTE: The callback will occur on the same thread, implying that the 'Runtime' instance will still be
+                // alive and valid, hence the ref is safe
+                current_runtime_context()->call_async(
+                    [&runtime, strongThis = shared_from_this(), cont = std::move(c)]() {
+                        strongThis->dispatch_continuation(runtime, cont);
+                    });
+            }
+            else
+            {
+                m_continuations.push_back(std::move(c));
+            }
+        }
+
+        void on_progress(jsi::Runtime& runtime, const jsi::Value& progress)
+        {
+            for (auto& cont : m_continuations)
+            {
+                if ((cont.kind == continuation::type::done) && cont.data[2].isFunction(runtime))
+                {
+                    cont.data[2].getFunction(runtime).call(runtime, progress);
+                }
+            }
+        }
+
+        void on_completed(jsi::Runtime& runtime, const jsi::Value& value, bool resolved)
+        {
+            assert(m_state == state::pending);
+            m_state = resolved ? state::resolved : state::rejected;
+
+            for (auto& cont : m_continuations)
+            {
+                dispatch_continuation(runtime, cont);
+            }
+        }
+
+        void dispatch_continuation(jsi::Runtime& runtime, continuation& cont)
+        {
+            assert(m_state != state::pending);
+            std::optional<jsi::Value> continuationResult;
+            bool resolved = m_state == state::resolved;
+
+            switch (cont.kind)
+            {
+            case continuation::type::then:
+            case continuation::type::done: // Effectively 'then', but with progress and no promise
+                if (resolved)
+                {
+                    if (cont.data[0].isFunction(runtime))
+                    {
+                        continuationResult = cont.data[0].getFunction(runtime).call(runtime, m_result);
+                    }
+                }
+                else // rejected
+                {
+                    if (cont.data[1].isFunction(runtime))
+                    {
+                        continuationResult = cont.data[1].getFunction(runtime).call(runtime, m_result);
+                        resolved = true;
+                    }
+                }
+                break;
+
+            case continuation::type::finally:
+                // NOTE: Finally does not change the value, nor the resolved state
+                if (cont.data[0].isFunction(runtime))
+                {
+                    cont.data[0].getFunction(runtime).call(runtime, m_result);
+                }
+                break;
+            }
+
+            auto& effectiveResult = continuationResult ? *continuationResult : m_result;
+            if (cont.promise)
+            {
+                if (resolved)
+                {
+                    cont.promise->resolve(runtime, effectiveResult);
+                }
+                else
+                {
+                    cont.promise->reject(runtime, effectiveResult);
+                }
+            }
+            else if (!resolved)
+            {
+                // Failure in 'done' scenario - throw unhandled errors instead of swallowing
+                throw jsi::JSError(runtime, jsi::Value(runtime, effectiveResult));
+            }
+        }
+
+        struct continuation
+        {
+            enum class type
+            {
+                then, // Covers both .then and .catch
+                finally,
+                done,
+            };
+
+            type kind;
+            std::optional<promise_wrapper> promise;
+            jsi::Value data[3]; // Contents depend on 'kind'
+        };
+
+        enum class state
+        {
+            pending,
+            resolved,
+            rejected,
+        };
+
+        IFace m_instance;
+        sso_vector<continuation, 1> m_continuations;
+        state m_state = state::pending;
+        jsi::Value m_result;
     };
 }
 
@@ -1452,7 +1945,75 @@ namespace jswinrt
         }
     };
 
-    // TODO: Async
+    template <>
+    struct projected_value_traits<winrt::Windows::Foundation::IAsyncAction>
+    {
+        using interface_type = winrt::Windows::Foundation::IAsyncAction;
+        static jsi::Value as_value(jsi::Runtime& runtime, const interface_type& value)
+        {
+            return jsi::Value(runtime, jsi::Object::createFromHostObject(
+                                           runtime, std::make_shared<projected_async_instance<interface_type>>(value)));
+        }
+
+        static interface_type as_native(jsi::Runtime& runtime, const jsi::Value&)
+        {
+            // TODO: Any chance this will ever be necessary?
+            throw jsi::JSError(runtime, "TypeError: Conversion from JS value to IAsyncAction is not supported");
+        }
+    };
+
+    template <typename TProgress>
+    struct projected_value_traits<winrt::Windows::Foundation::IAsyncActionWithProgress<TProgress>>
+    {
+        using interface_type = winrt::Windows::Foundation::IAsyncActionWithProgress<TProgress>;
+        static jsi::Value as_value(jsi::Runtime& runtime, const interface_type& value)
+        {
+            return jsi::Value(runtime, jsi::Object::createFromHostObject(
+                                           runtime, std::make_shared<projected_async_instance<interface_type>>(value)));
+        }
+
+        static interface_type as_native(jsi::Runtime& runtime, const jsi::Value&)
+        {
+            // TODO: Any chance this will ever be necessary?
+            throw jsi::JSError(
+                runtime, "TypeError: Conversion from JS value to IAsyncActionWithProgress is not supported");
+        }
+    };
+
+    template <typename TResult>
+    struct projected_value_traits<winrt::Windows::Foundation::IAsyncOperation<TResult>>
+    {
+        using interface_type = winrt::Windows::Foundation::IAsyncOperation<TResult>;
+        static jsi::Value as_value(jsi::Runtime& runtime, const interface_type& value)
+        {
+            return jsi::Value(runtime, jsi::Object::createFromHostObject(
+                                           runtime, std::make_shared<projected_async_instance<interface_type>>(value)));
+        }
+
+        static interface_type as_native(jsi::Runtime& runtime, const jsi::Value&)
+        {
+            // TODO: Any chance this will ever be necessary?
+            throw jsi::JSError(runtime, "TypeError: Conversion from JS value to IAsyncOperation is not supported");
+        }
+    };
+
+    template <typename TResult, typename TProgress>
+    struct projected_value_traits<winrt::Windows::Foundation::IAsyncOperationWithProgress<TResult, TProgress>>
+    {
+        using interface_type = winrt::Windows::Foundation::IAsyncOperationWithProgress<TResult, TProgress>;
+        static jsi::Value as_value(jsi::Runtime& runtime, const interface_type& value)
+        {
+            return jsi::Value(runtime, jsi::Object::createFromHostObject(
+                                           runtime, std::make_shared<projected_async_instance<interface_type>>(value)));
+        }
+
+        static interface_type as_native(jsi::Runtime& runtime, const jsi::Value&)
+        {
+            // TODO: Any chance this will ever be necessary?
+            throw jsi::JSError(
+                runtime, "TypeError: Conversion from JS value to IAsyncOperationWithProgress is not supported");
+        }
+    };
 
     template <typename T>
     struct projected_value_traits<winrt::Windows::Foundation::EventHandler<T>>
@@ -3598,40 +4159,6 @@ namespace WinRTTurboModule
         const std::shared_ptr<ProjectionsContext>& context, const jsi::Value& value)
     {
         return { context, value };
-    }
-
-    // ProjectedAsyncOperation is an imitation of Promise except it also supports some special features like Chakra such
-    // as a progress callback and exposing the underlying IAsyncOperation as an "operation" property. It is better than
-    // Chakra's as it implements Promise rather than just PromiseLike. That said, to avoid code bloat, the interfaces
-    // for the underlying operation are not specialized (exception IAsyncAction since it isn't generic anyway) and
-    // exposing them would give the same functionality as the ProjectedAsyncOperation Proimise wrapper. If there is
-    // strong reasons for their projection it could be done.
-    jsi::Value ConvertAsyncActionToValue(
-        const std::shared_ptr<ProjectionsContext>& context, const winrt::Windows::Foundation::IAsyncAction& value);
-
-    template <typename A, auto CPV>
-    jsi::Value ConvertAsyncActionWithProgressToValue(const std::shared_ptr<ProjectionsContext>& context, const A& value)
-    {
-        return jsi::Value(context->Runtime, jsi::Object::createFromHostObject(context->Runtime,
-                                                std::shared_ptr<jsi::HostObject>(new ProjectedAsyncOperation(context,
-                                                    value, NativeToValueConverter<IsAsyncAction>(nullptr), &CPV))));
-    }
-
-    template <typename A, auto CTV>
-    jsi::Value ConvertAsyncOperationToValue(const std::shared_ptr<ProjectionsContext>& context, const A& value)
-    {
-        return jsi::Value(
-            context->Runtime, jsi::Object::createFromHostObject(context->Runtime,
-                                  std::shared_ptr<jsi::HostObject>(new ProjectedAsyncOperation(context, value, &CTV))));
-    }
-
-    template <typename A, auto CTV, auto CPV>
-    jsi::Value ConvertAsyncOperationWithProgressToValue(
-        const std::shared_ptr<ProjectionsContext>& context, const A& value)
-    {
-        return jsi::Value(context->Runtime,
-            jsi::Object::createFromHostObject(context->Runtime,
-                std::shared_ptr<jsi::HostObject>(new ProjectedAsyncOperation(context, value, &CTV, &CPV))));
     }
 }
 

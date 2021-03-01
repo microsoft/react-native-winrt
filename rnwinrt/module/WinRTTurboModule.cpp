@@ -40,7 +40,8 @@ public:
             m_initialized = true;
 
             assert(!current_thread_context);
-            current_thread_context = new runtime_context();
+            current_thread_context = new runtime_context(
+                runtime, [invoker = m_invoker](std::function<void()> fn) { invoker->invokeAsync(std::move(fn)); });
 
             auto global = runtime.global();
             for (auto data : root_namespaces)
@@ -52,7 +53,7 @@ public:
 
 private:
     bool m_initialized = false;
-    const std::shared_ptr<react::CallInvoker> m_invoker;
+    std::shared_ptr<react::CallInvoker> m_invoker;
 };
 
 runtime_context* current_runtime_context()
