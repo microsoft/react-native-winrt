@@ -19,71 +19,63 @@ export function makeAsyncTestScenarios(pThis) {
 
 function runAsyncActionTest(scenario) {
     const vector = TestComponent.Test.makeNumericVector([]);
-    this.runAsync(scenario, () => {
-        return new Promise((resolve, reject) => {
-            this.test.appendZeroToIVectorAsync(vector).then(() => {
-                    assert.equal(0, vector.getAt(0));
-                    assert.equal(1, vector.size);  
-                    resolve();
-                }).catch(reject);
-        })
+    this.runAsync(scenario, (resolve, reject) => {
+        this.test.appendZeroToIVectorAsync(vector).then(() => {
+                assert.equal(0, vector.getAt(0));
+                assert.equal(1, vector.size);  
+                resolve();
+            }).catch(reject);
     });
 }
 
 function runAsyncActionWithProgressTest(scenario) {
     const vector = TestComponent.Test.makeNumericVector([]);
     let progressIteration = 0;
-    this.runAsync(scenario, () => {
-        return new Promise((resolve, reject) => {
-            this.test.fillZeroesToIVectorAsync(vector).done(() => {
-                assert.equal(0, vector.getAt(0));
-                assert.equal(10, vector.size); 
-                resolve();
-            }, reject, progress => {
-                progressIteration++;
-                assert.equal(0.1 * progressIteration, progress);
-            });
+    this.runAsync(scenario, (resolve, reject) => {
+        this.test.fillZeroesToIVectorAsync(vector).done(() => {
+            assert.equal(0, vector.getAt(0));
+            assert.equal(10, vector.size); 
+            assert.equal(10, progressIteration);
+            resolve();
+        }, reject, progress => {
+            progressIteration++;
+            assert.equal(0.1 * progressIteration, progress);
         });
     });
 }
 
 function runAsyncOperationTest(scenario) {
-    this.runAsync(scenario, () => {
-        return new Promise((resolve, reject) => {
-            this.test.createIVectorAsync().then(vector => {
-                    assert.equal(0, vector.size);  
-                    resolve();
-                }).catch(reject);
-        })
+    this.runAsync(scenario, (resolve, reject) => {
+        this.test.createIVectorAsync().then(vector => {
+                assert.equal(0, vector.size);  
+                resolve();
+            }).catch(reject);
     });
 }
 
 function runAsyncOperationWithProgressTest(scenario) {
     let progressIteration = 0;
-    this.runAsync(scenario, () => {
-        return new Promise((resolve, reject) => {
-            this.test.createIVectorWithZeroesAsync().done(vector => {
-                assert.equal(0, vector.getAt(0));
-                assert.equal(10, vector.size); 
-                resolve();
-            }, reject, progress => {
-                progressIteration++;
-                assert.equal(0.1 * progressIteration, progress);
-            });
+    this.runAsync(scenario, (resolve, reject) => {
+        this.test.createIVectorWithZeroesAsync().done(vector => {
+            assert.equal(0, vector.getAt(0));
+            assert.equal(10, vector.size); 
+            assert.equal(10, progressIteration);
+            resolve();
+        }, reject, progress => {
+            progressIteration++;
+            assert.equal(0.1 * progressIteration, progress);
         });
     });
 }
 
 function runAsyncActionWithException(scenario) {
-    this.runAsync(scenario, () => {
-        return new Promise((resolve, reject) => {
-            this.test.createAsyncException().done(reject, e => {
-                if (e.number == -2147024809 && e.message == "test") {
-                    resolve();
-                } else {
-                    reject(e);
-                }
-            });
+    this.runAsync(scenario, (resolve, reject) => {
+        this.test.createAsyncException().done(reject, e => {
+            if (e.number == -2147024809 && e.message == "test") {
+                resolve();
+            } else {
+                reject(e);
+            }
         });
     });
 }

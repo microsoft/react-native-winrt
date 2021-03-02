@@ -66,7 +66,7 @@ class App extends Component {
             scenario.result = TestResult.NotRun;
         }
         var result = TestResult.Fail;
-        fn().then(() => {
+        new Promise(fn).then(() => {
             result = TestResult.Pass;
             scenario.result = result;
             scenario.emit('completed');
