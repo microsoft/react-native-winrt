@@ -1038,6 +1038,8 @@ namespace winrt::TestComponent::implementation
     Windows::Foundation::IAsyncAction Test::CreateAsyncException()
     {
         co_await winrt::resume_background();
+        co_await std::chrono::milliseconds(10);
+        throw std::invalid_argument("test");
     }
 
     Windows::Foundation::IPropertyValue Test::PropertyValue()
@@ -1048,12 +1050,6 @@ namespace winrt::TestComponent::implementation
     void Test::PropertyValue(Windows::Foundation::IPropertyValue value)
     {
         m_propertyValue = value;
-    }
-
-    Windows::Foundation::Collections::IVector<int32_t> Test::CreateIVector()
-    {
-        Windows::Foundation::Collections::IVector<int32_t> vector{ winrt::single_threaded_vector<int>() };
-        return vector;
     }
 
     bool Test::Or(bool lhs, bool rhs)

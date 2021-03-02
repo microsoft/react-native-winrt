@@ -13,11 +13,12 @@ export function makeAsyncTestScenarios(pThis) {
         new TestScenario('Test::FillZeroesToIVectorAsync', runAsyncActionWithProgressTest.bind(pThis)),
         new TestScenario('Test::CreateIVectorAsync', runAsyncOperationTest.bind(pThis)),
         new TestScenario('Test::CreateIVectorWithZeroesAsync', runAsyncOperationWithProgressTest.bind(pThis)),
+        new TestScenario('Test::CreateAsyncException', runAsyncActionWithException.bind(pThis)),
     ];
 }
 
 function runAsyncActionTest(scenario) {
-    const vector = this.test.createIVector();
+    const vector = TestComponent.Test.makeNumericVector([]);
     this.runAsync(scenario, () => {
         return new Promise((resolve, reject) => {
             this.test.appendZeroToIVectorAsync(vector).then(() => {
@@ -30,7 +31,7 @@ function runAsyncActionTest(scenario) {
 }
 
 function runAsyncActionWithProgressTest(scenario) {
-    const vector = this.test.createIVector();
+    const vector = TestComponent.Test.makeNumericVector([]);
     let progressIteration = 0;
     this.runAsync(scenario, () => {
         return new Promise((resolve, reject) => {
@@ -68,6 +69,20 @@ function runAsyncOperationWithProgressTest(scenario) {
             }, reject, progress => {
                 progressIteration++;
                 assert.equal(0.1 * progressIteration, progress);
+            });
+        });
+    });
+}
+
+function runAsyncActionWithException(scenario) {
+    this.runAsync(scenario, () => {
+        return new Promise((resolve, reject) => {
+            this.test.createAsyncException().done(reject, e => {
+                if (e.number == -2147024809 && e.message == "test") {
+                    resolve();
+                } else {
+                    reject(e);
+                }
             });
         });
     });

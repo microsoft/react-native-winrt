@@ -190,7 +190,6 @@ namespace winrt::TestComponent::implementation
         Windows::Foundation::IPropertyValue PropertyValue();
         void PropertyValue(Windows::Foundation::IPropertyValue value);
 
-        Windows::Foundation::Collections::IVector<int32_t> CreateIVector();
         Windows::Foundation::IAsyncAction AppendZeroToIVectorAsync(
             Windows::Foundation::Collections::IVector<int32_t> vector);
         Windows::Foundation::IAsyncActionWithProgress<double> FillZeroesToIVectorAsync(
