@@ -1390,7 +1390,11 @@ namespace WinRTTurboModule
                 // original thread rather than on some arbitrary background thread.
                 m_instance.Progress(
                     [progressConverter, methods{ m_methods }, context](const auto&, const auto& progress) {
-                        methods->OnProgress(progressConverter(context, progress));
+                        auto& runtime = context->Runtime;
+                        const auto& invoker = context->Invoker;
+                        invoker->Call([progressConverter, context, methods, progress]() {
+                            methods->OnProgress(progressConverter(context, progress));
+                        });
                     });
             }
         }
@@ -1874,7 +1878,7 @@ namespace WinRTTurboModule
         }
         CATCH_LOG_RETURN()
 
-        operator winrt::array_view<T>&()
+        operator winrt::array_view<T> &()
         {
             return m_nativeArray;
         }

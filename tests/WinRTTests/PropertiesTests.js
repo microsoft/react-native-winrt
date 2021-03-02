@@ -42,7 +42,6 @@ export function makePropertiesTestScenarios(pThis) {
         new TestScenario('Test::TimeSpanProperty', runTimeSpanProperty.bind(pThis)),
         new TestScenario('Test::HResultproperty', runHResultProperty.bind(pThis)),
         new TestScenario('Test::PropertyValue', runPropertyValueProperty.bind(pThis)),
-        new TestScenario('Test::AsyncTest', runAsyncTest.bind(pThis)),
 
         // Non-static array properties
         new TestScenario('Test::BooleanArrayProperty', runBooleanArrayProperty.bind(pThis)),
@@ -130,18 +129,6 @@ function runPropertyValueProperty(scenario) {
 
 function runHResultProperty(scenario) {
     runSyncPropertyTest.call(this, scenario, 'number', TestValues.hResults.valid, TestValues.hResults.invalid, () => this.test.hResultProperty, (val) => this.test.hResultProperty = val);
-}
-
-//TODO: When the IVector <-> array is implemented, add tests here for the same
-function runAsyncTest(scenario) {
-    this.runSync(scenario, () => {
-        const vector = this.test.createIVector();
-        this.test.appendZeroToIVectorAsync(vector).then(
-            () => {
-                assert.equal(0, vector.getAt(0));
-                assert.equal(1, vector.size);  
-            });
-    });
 }
 
 function runCharProperty(scenario) {

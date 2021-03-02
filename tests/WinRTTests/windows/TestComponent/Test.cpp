@@ -1,14 +1,15 @@
 #include "pch.h"
 
-#include <cwctype>
-#include <numeric>
-#include <iostream>
-#include <fstream>
-#include <winrt/Windows.Storage.h>
 #include <atomic>
-#include <ppltasks.h>
-#include <pplawait.h>
 #include <concurrent_vector.h>
+#include <cwctype>
+#include <fstream>
+#include <iostream>
+#include <numeric>
+#include <ppl.h>
+#include <pplawait.h>
+#include <ppltasks.h>
+#include <winrt/Windows.Storage.h>
 
 #include "Test.h"
 
@@ -54,7 +55,10 @@ namespace winrt::TestComponent::implementation
     void Test::LogFailures(hstring const& failures)
     {
         auto storageFolder = winrt::Windows::Storage::ApplicationData::Current().LocalFolder();
-        auto storageFile = storageFolder.CreateFileAsync(winrt::hstring(L"FailureLog.txt"), winrt::Windows::Storage::CreationCollisionOption::ReplaceExisting).get();
+        auto storageFile = storageFolder
+                               .CreateFileAsync(winrt::hstring(L"FailureLog.txt"),
+                                   winrt::Windows::Storage::CreationCollisionOption::ReplaceExisting)
+                               .get();
 
         winrt::Windows::Storage::FileIO::WriteTextAsync(storageFile, failures).get();
     }
@@ -421,7 +425,8 @@ namespace winrt::TestComponent::implementation
         s_enumEventSource.remove(token);
     }
 
-    winrt::event_token Test::StaticCompositeStructEventHandler(Windows::Foundation::EventHandler<CompositeType> const& handler)
+    winrt::event_token Test::StaticCompositeStructEventHandler(
+        Windows::Foundation::EventHandler<CompositeType> const& handler)
     {
         return s_compositeStructEventSource.add(handler);
     }
@@ -431,7 +436,8 @@ namespace winrt::TestComponent::implementation
         s_compositeStructEventSource.remove(token);
     }
 
-    winrt::event_token Test::StaticRefEventHandler(Windows::Foundation::EventHandler<Windows::Foundation::IReference<int32_t>> const& handler)
+    winrt::event_token Test::StaticRefEventHandler(
+        Windows::Foundation::EventHandler<Windows::Foundation::IReference<int32_t>> const& handler)
     {
         return s_refEventSource.add(handler);
     }
@@ -441,7 +447,8 @@ namespace winrt::TestComponent::implementation
         s_refEventSource.remove(token);
     }
 
-    winrt::event_token Test::StaticObjectEventHandler(Windows::Foundation::EventHandler<Windows::Foundation::Collections::IVector<int32_t>> const& handler)
+    winrt::event_token Test::StaticObjectEventHandler(
+        Windows::Foundation::EventHandler<Windows::Foundation::Collections::IVector<int32_t>> const& handler)
     {
         return s_objectEventSource.add(handler);
     }
@@ -526,17 +533,20 @@ namespace winrt::TestComponent::implementation
         return targetFn(inputValue);
     }
 
-    CompositeType Test::StaticInvokeCompositeStructDelegate(CompositeType const& inputValue, CompositeStructDelegate const& targetFn)
+    CompositeType Test::StaticInvokeCompositeStructDelegate(
+        CompositeType const& inputValue, CompositeStructDelegate const& targetFn)
     {
         return targetFn(inputValue);
     }
 
-    Windows::Foundation::IReference<int32_t> Test::StaticInvokeRefDelegate(Windows::Foundation::IReference<int32_t> const& inputValue, RefDelegate const& targetFn)
+    Windows::Foundation::IReference<int32_t> Test::StaticInvokeRefDelegate(
+        Windows::Foundation::IReference<int32_t> const& inputValue, RefDelegate const& targetFn)
     {
         return targetFn(inputValue);
     }
 
-    Windows::Foundation::Collections::IVector<int32_t> Test::StaticInvokeObjectDelegate(Windows::Foundation::Collections::IVector<int32_t> const& inputValue, ObjectDelegate const& targetFn)
+    Windows::Foundation::Collections::IVector<int32_t> Test::StaticInvokeObjectDelegate(
+        Windows::Foundation::Collections::IVector<int32_t> const& inputValue, ObjectDelegate const& targetFn)
     {
         return targetFn(inputValue);
     }
@@ -950,7 +960,7 @@ namespace winrt::TestComponent::implementation
     }
 
     hstring Test::DateTimePropertyCppValue()
-    { 
+    {
         return winrt::to_hstring(static_cast<int64_t>(winrt::clock::to_file_time(m_dateTimeProperty).value));
     }
 
@@ -966,7 +976,8 @@ namespace winrt::TestComponent::implementation
 
     hstring Test::TimeSpanPropertyCppValue()
     {
-        return winrt::to_hstring(std::chrono::duration_cast<std::chrono::duration<int64_t, std::milli>>(m_timeSpanProperty).count());
+        return winrt::to_hstring(
+            std::chrono::duration_cast<std::chrono::duration<int64_t, std::milli>>(m_timeSpanProperty).count());
     }
 
     hresult Test::HResultProperty()
@@ -979,11 +990,54 @@ namespace winrt::TestComponent::implementation
         this->m_hresultProperty = value;
     }
 
-    Windows::Foundation::IAsyncAction Test::AppendZeroToIVectorAsync(Windows::Foundation::Collections::IVector<int32_t> vector)
+    Windows::Foundation::IAsyncAction Test::AppendZeroToIVectorAsync(
+        Windows::Foundation::Collections::IVector<int32_t> vector)
     {
-        co_await concurrency::create_task([&vector] { 
+        co_await concurrency::create_task([&vector] { vector.Append(0); });
+    }
+
+    Windows::Foundation::IAsyncActionWithProgress<double> Test::FillZeroesToIVectorAsync(
+        Windows::Foundation::Collections::IVector<int32_t> vector)
+    {
+        co_await winrt::resume_background();
+        co_await std::chrono::milliseconds(10);
+        auto progress{ co_await winrt::get_progress_token() };
+        for (int i = 0; i < 10; i++)
+        {
+            co_await std::chrono::milliseconds(10);
             vector.Append(0);
-        });
+            auto p = (i + 1) * 0.1;
+            progress(p);
+        }
+    }
+
+    Windows::Foundation::IAsyncOperation<Windows::Foundation::Collections::IVector<int32_t>> Test::CreateIVectorAsync()
+    {
+        co_await winrt::resume_background();
+        co_await std::chrono::milliseconds(10);
+        Windows::Foundation::Collections::IVector<int32_t> vector{ winrt::single_threaded_vector<int>() };
+        co_return vector;
+    }
+
+    Windows::Foundation::IAsyncOperationWithProgress<Windows::Foundation::Collections::IVector<int32_t>, double> Test::
+        CreateIVectorWithZeroesAsync()
+    {
+        co_await winrt::resume_background();
+        co_await std::chrono::milliseconds(10);
+        auto progress{ co_await winrt::get_progress_token() };
+        Windows::Foundation::Collections::IVector<int32_t> vector{ winrt::single_threaded_vector<int>() };
+        for (int i = 0; i < 10; i++)
+        {
+            co_await std::chrono::milliseconds(10);
+            vector.Append(0);
+            progress((i + 1) * 0.1);
+        }
+        co_return vector;
+    }
+
+    Windows::Foundation::IAsyncAction Test::CreateAsyncException()
+    {
+        co_await winrt::resume_background();
     }
 
     Windows::Foundation::IPropertyValue Test::PropertyValue()
@@ -1329,7 +1383,8 @@ namespace winrt::TestComponent::implementation
         m_enumEventSource.remove(token);
     }
 
-    winrt::event_token Test::CompositeStructEventHandler(Windows::Foundation::EventHandler<CompositeType> const& handler)
+    winrt::event_token Test::CompositeStructEventHandler(
+        Windows::Foundation::EventHandler<CompositeType> const& handler)
     {
         return m_compositeStructEventSource.add(handler);
     }
@@ -1339,7 +1394,8 @@ namespace winrt::TestComponent::implementation
         m_compositeStructEventSource.remove(token);
     }
 
-    winrt::event_token Test::RefEventHandler(Windows::Foundation::EventHandler<Windows::Foundation::IReference<int32_t>> const& handler)
+    winrt::event_token Test::RefEventHandler(
+        Windows::Foundation::EventHandler<Windows::Foundation::IReference<int32_t>> const& handler)
     {
         return m_refEventSource.add(handler);
     }
@@ -1349,7 +1405,8 @@ namespace winrt::TestComponent::implementation
         m_refEventSource.remove(token);
     }
 
-    winrt::event_token Test::ObjectEventHandler(Windows::Foundation::EventHandler<Windows::Foundation::Collections::IVector<int32_t>> const& handler)
+    winrt::event_token Test::ObjectEventHandler(
+        Windows::Foundation::EventHandler<Windows::Foundation::Collections::IVector<int32_t>> const& handler)
     {
         return m_objectEventSource.add(handler);
     }
@@ -1434,17 +1491,20 @@ namespace winrt::TestComponent::implementation
         return targetFn(inputValue);
     }
 
-    CompositeType Test::InvokeCompositeStructDelegate(CompositeType const& inputValue, CompositeStructDelegate const& targetFn)
+    CompositeType Test::InvokeCompositeStructDelegate(
+        CompositeType const& inputValue, CompositeStructDelegate const& targetFn)
     {
         return targetFn(inputValue);
     }
 
-    Windows::Foundation::IReference<int32_t> Test::InvokeRefDelegate(Windows::Foundation::IReference<int32_t> const& inputValue, RefDelegate const& targetFn)
+    Windows::Foundation::IReference<int32_t> Test::InvokeRefDelegate(
+        Windows::Foundation::IReference<int32_t> const& inputValue, RefDelegate const& targetFn)
     {
         return targetFn(inputValue);
     }
 
-    Windows::Foundation::Collections::IVector<int32_t> Test::InvokeObjectDelegate(Windows::Foundation::Collections::IVector<int32_t> const& inputValue, ObjectDelegate const& targetFn)
+    Windows::Foundation::Collections::IVector<int32_t> Test::InvokeObjectDelegate(
+        Windows::Foundation::Collections::IVector<int32_t> const& inputValue, ObjectDelegate const& targetFn)
     {
         return targetFn(inputValue);
     }

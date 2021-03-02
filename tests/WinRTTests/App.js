@@ -22,6 +22,7 @@ import { makePropertiesTestScenarios } from './PropertiesTests'
 import { makeBasicFunctionTestScenarios } from './BasicFunctionTests'
 import { makeArrayTestScenarios } from './ArrayTests'
 import { makeDelegateAndEventTestScenarios } from './DelegateAndEventTests'
+import { makeAsyncTestScenarios } from './AsyncTests'
 
 class App extends Component {
     test = new TestComponent.Test();
@@ -35,6 +36,7 @@ class App extends Component {
         ...makeBasicFunctionTestScenarios(this),
         ...makeArrayTestScenarios(this),
         ...makeDelegateAndEventTestScenarios(this),
+        ...makeAsyncTestScenarios(this),
     ];
 
     runSync(scenario, fn) {
@@ -55,6 +57,26 @@ class App extends Component {
         scenario.result = result;
         scenario.emit('completed');
         this.onSingleTestCompleted(scenario);
+    }
+
+    runAsync(scenario, fn) {
+        if (scenario.result != TestResult.NotRun) {
+            --this.completedCount;
+            if (scenario.result == TestResult.Pass) --this.passCount;
+            scenario.result = TestResult.NotRun;
+        }
+        var result = TestResult.Fail;
+        fn().then(() => {
+            result = TestResult.Pass;
+            scenario.result = result;
+            scenario.emit('completed');
+            this.onSingleTestCompleted(scenario);
+        }).catch(e => {
+            scenario.failureText = e.message;
+            scenario.result = result;
+            scenario.emit('completed');
+            this.onSingleTestCompleted(scenario);
+        })
     }
 
     onSingleTestCompleted(scenario) {
