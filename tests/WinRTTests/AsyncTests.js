@@ -20,11 +20,13 @@ export function makeAsyncTestScenarios(pThis) {
 function runAsyncActionTest(scenario) {
     const vector = TestComponent.Test.makeNumericVector([]);
     this.runAsync(scenario, (resolve, reject) => {
-        this.test.appendZeroToIVectorAsync(vector).then(() => {
+        this.test.appendZeroToIVectorAsync(vector)
+            .catch(reject)
+            .then(() => {
                 assert.equal(0, vector.getAt(0));
                 assert.equal(1, vector.size);  
                 resolve();
-            }).catch(reject);
+            });
     });
 }
 
@@ -46,10 +48,12 @@ function runAsyncActionWithProgressTest(scenario) {
 
 function runAsyncOperationTest(scenario) {
     this.runAsync(scenario, (resolve, reject) => {
-        this.test.createIVectorAsync().then(vector => {
-                assert.equal(0, vector.size);  
-                resolve();
-            }).catch(reject);
+        const op = this.test.createIVectorAsync();
+        op.catch(reject);
+        op.then(vector => {
+            assert.equal(0, vector.size);  
+            resolve();
+        });
     });
 }
 
@@ -68,14 +72,23 @@ function runAsyncOperationWithProgressTest(scenario) {
     });
 }
 
+// TODO: remove commented out code once the rejected promises are fixed to run catch after finally and not then
 function runAsyncActionWithException(scenario) {
     this.runAsync(scenario, (resolve, reject) => {
-        this.test.createAsyncException().done(reject, e => {
-            if (e.number == -2147024809 && e.message == "test") {
-                resolve();
-            } else {
-                reject(e);
-            }
-        });
+        isFinallyRun = false;
+        this.test.createAsyncException()
+            // .finally(() => {
+            //     isFinallyRun = true;
+            // })
+            .catch(e => {
+                // if (!isFinallyRun) {
+                //     reject('Finally must run before catch');
+                // } else 
+                if (e.number == -2147024809 && e.message == "test") {
+                    resolve();
+                } else {
+                    reject(e);
+                }
+            }).then(reject);
     });
 }
