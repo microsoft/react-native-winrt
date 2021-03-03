@@ -26,7 +26,7 @@ App::App() noexcept
     InstanceSettings().UseFastRefresh(false);
 #else
     JavaScriptMainModuleName(L"index");
-    InstanceSettings().UseWebDebugger(true);
+    InstanceSettings().UseWebDebugger(false);
     InstanceSettings().UseFastRefresh(true);
 #endif
 

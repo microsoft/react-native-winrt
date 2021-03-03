@@ -38,6 +38,10 @@ export function makePropertiesTestScenarios(pThis) {
         new TestScenario('Test::RefNumericProperty', runRefNumericProperty.bind(pThis)),
         new TestScenario('Test::RefEnumProperty', runRefEnumProperty.bind(pThis)),
         new TestScenario('Test::ObjectProperty', runObjectProperty.bind(pThis)),
+        new TestScenario('Test::DateTimeProperty', runDateTimeProperty.bind(pThis)),
+        new TestScenario('Test::TimeSpanProperty', runTimeSpanProperty.bind(pThis)),
+        new TestScenario('Test::HResultproperty', runHResultProperty.bind(pThis)),
+        new TestScenario('Test::PropertyValue', runPropertyValueProperty.bind(pThis)),
 
         // Non-static array properties
         new TestScenario('Test::BooleanArrayProperty', runBooleanArrayProperty.bind(pThis)),
@@ -83,6 +87,48 @@ function runStaticBoolProperty(scenario) {
 // Non-static properties
 function runBoolProperty(scenario) {
     runSyncPropertyTest.call(this, scenario, 'boolean', TestValues.bools.valid, TestValues.bools.invalid, () => this.test.boolProperty, (val) => this.test.boolProperty = val);
+}
+
+function runDateTimeProperty(scenario) {
+    runSyncPropertyTest.call(this, scenario, 'object', TestValues.dates.valid, TestValues.dates.invalid, () => this.test.dateTimeProperty, (val) => this.test.dateTimeProperty = val);
+    this.runSync(scenario, () => {
+        for (let i = 0; i < TestValues.dates.valid.length; i++) {
+            let assignedValue = TestValues.dates.valid[i];
+            this.test.dateTimeProperty = assignedValue;
+            assert.equal(TestValues.dates.cppValuesForValidDates[i], this.test.dateTimePropertyCppValue());
+            let returnedValue = this.test.dateTimeProperty;
+            assert.equal(assignedValue, returnedValue);
+        }
+    });
+}
+
+function runTimeSpanProperty(scenario) {
+    runSyncPropertyTest.call(this, scenario, 'number', TestValues.timeSpans.valid, TestValues.timeSpans.invalid, () => this.test.timeSpanProperty, (val) => this.test.timeSpanProperty = val);
+    this.runSync(scenario, () => {
+        for (let i = 0; i < TestValues.timeSpans.valid.length; i++) {
+            let assignedValue = TestValues.timeSpans.valid[i];
+            this.test.timeSpanProperty = assignedValue;
+            assert.equal(TestValues.timeSpans.cppValuesForValidTimeSpans[i], this.test.timeSpanPropertyCppValue());
+            let returnedValue = this.test.timeSpanProperty;
+            assert.equal(assignedValue, returnedValue);
+        }
+    });
+}
+
+function runPropertyValueProperty(scenario) {
+    runSyncPropertyTest.call(this, scenario, 'object', TestValues.propertyValues.valid, TestValues.propertyValues.invalid, () => this.test.propertyValue, (val) => this.test.propertyValue = val);
+    this.runSync(scenario, () => {
+        for (let i = 0; i < TestValues.propertyValues.valid.length; i++) {
+            let assignedValue = TestValues.propertyValues.valid[i];
+            this.test.propertyValue = assignedValue;
+            let returnedValue = this.test.propertyValue;
+            assert.equal(assignedValue, returnedValue);
+        }
+    });
+}
+
+function runHResultProperty(scenario) {
+    runSyncPropertyTest.call(this, scenario, 'number', TestValues.hResults.valid, TestValues.hResults.invalid, () => this.test.hResultProperty, (val) => this.test.hResultProperty = val);
 }
 
 function runCharProperty(scenario) {

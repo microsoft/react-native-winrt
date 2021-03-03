@@ -225,6 +225,18 @@ namespace TestComponent
         Windows.Foundation.IReference<Int32> RefNumericProperty;
         Windows.Foundation.IReference<TestEnum> RefEnumProperty;
         Windows.Foundation.Collections.IVector<Int32> ObjectProperty;
+        Windows.Foundation.DateTime DateTimeProperty;
+        String DateTimePropertyCppValue();
+        Windows.Foundation.TimeSpan TimeSpanProperty;
+        String TimeSpanPropertyCppValue();
+        HRESULT HResultProperty;
+        Windows.Foundation.IPropertyValue PropertyValue;
+
+        Windows.Foundation.IAsyncAction AppendZeroToIVectorAsync(Windows.Foundation.Collections.IVector<Int32> vector);
+        Windows.Foundation.IAsyncActionWithProgress<Double> FillZeroesToIVectorAsync(Windows.Foundation.Collections.IVector<Int32> vector);
+        Windows.Foundation.IAsyncOperation<Windows.Foundation.Collections.IVector<Int32> > CreateIVectorAsync();
+        Windows.Foundation.IAsyncOperationWithProgress<Windows.Foundation.Collections.IVector<Int32>, Double> CreateIVectorWithZeroesAsync();
+        Windows.Foundation.IAsyncAction CreateAsyncException();
 
         // Member array properties
         Boolean[] BooleanArrayProperty;

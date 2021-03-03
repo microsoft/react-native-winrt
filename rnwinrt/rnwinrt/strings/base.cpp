@@ -268,7 +268,7 @@ namespace WinRTTurboModule
     }
 
     // TODO: Use std::chrono for conversions rather than using magic numbers directly.
-    constexpr int64_t c_jsFileTimeEpochDelta = 116444736 * wil::filetime_duration::one_millisecond;
+    constexpr int64_t c_jsFileTimeEpochDelta = 11644473600000 * wil::filetime_duration::one_millisecond;
 
     template <>
     jsi::Value ConvertStructToValue<winrt::Windows::Foundation::DateTime>(
@@ -278,7 +278,7 @@ namespace WinRTTurboModule
         return runtime.global()
             .getPropertyAsFunction(runtime, "Date")
             .callAsConstructor(runtime,
-                static_cast<double>(std::min(0ll, static_cast<int64_t>(winrt::clock::to_file_time(value).value) -
+                static_cast<double>(std::max(0ll, static_cast<int64_t>(winrt::clock::to_file_time(value).value) -
                                                       c_jsFileTimeEpochDelta) /
                                     wil::filetime_duration::one_millisecond));
     }
