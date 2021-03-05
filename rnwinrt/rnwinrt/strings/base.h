@@ -607,6 +607,11 @@ namespace jswinrt
     {
         static constexpr bool is_async_with_progress = false;
         static constexpr bool is_async_with_result = false;
+
+        static constexpr bool is_array_convertible = false;
+        static constexpr bool is_iterable = false;
+        static constexpr bool is_vector_view = false;
+        static constexpr bool is_vector = false;
     };
 
     template <typename T>
@@ -641,6 +646,30 @@ namespace jswinrt
         using result_type = TResult;
         static constexpr bool is_async_with_progress = true;
         static constexpr bool is_async_with_result = true;
+    };
+
+    template <typename T>
+    struct pinterface_traits<winrt::Windows::Foundation::Collections::IIterable<T>> : pinterface_traits_base
+    {
+        using value_type = T;
+        static constexpr bool is_array_convertible = true;
+        static constexpr bool is_iterable = true;
+    };
+
+    template <typename T>
+    struct pinterface_traits<winrt::Windows::Foundation::Collections::IVectorView<T>> : pinterface_traits_base
+    {
+        using value_type = T;
+        static constexpr bool is_array_convertible = true;
+        static constexpr bool is_vector_view = true;
+    };
+
+    template <typename T>
+    struct pinterface_traits<winrt::Windows::Foundation::Collections::IVector<T>> : pinterface_traits_base
+    {
+        using value_type = T;
+        static constexpr bool is_array_convertible = true;
+        static constexpr bool is_vector = true;
     };
 
     struct promise_wrapper
@@ -1610,8 +1639,7 @@ namespace jswinrt
 
         T Current()
         {
-            target->CheckThread();
-            throw winrt::hresult_not_implemented(); // TODO
+            return target->GetAt(index);
         }
 
         bool HasCurrent()
@@ -1644,20 +1672,19 @@ namespace jswinrt
     template <typename D, typename T>
     struct array_vector_base
     {
-        array_vector_base(std::shared_ptr<ProjectionsContext> context, jsi::Array array) :
-            context(std::move(context)), array(std::move(array)), thread_id(::GetCurrentThreadId())
+        array_vector_base(jsi::Runtime& runtime, jsi::Array array) : runtime(runtime), array(std::move(array))
         {
         }
 
         void CheckThread()
         {
-            if (thread_id != ::GetCurrentThreadId())
+            if (thread_id != std::this_thread::get_id())
             {
                 throw winrt::hresult_wrong_thread{};
             }
         }
 
-        // IIterator functions
+        // IIterable functions
         winrt::Windows::Foundation::Collections::IIterator<T> First()
         {
             return winrt::make<array_iterator<D, T>>(static_cast<D*>(this));
@@ -1672,23 +1699,40 @@ namespace jswinrt
 
         T GetAt(std::uint32_t index)
         {
-            CheckThread();
-            // TODO
-            throw winrt::hresult_not_implemented{};
+            auto size = Size(); // NOTE: Checks thread access
+            if (index >= size)
+            {
+                throw winrt::hresult_out_of_bounds();
+            }
+
+            return convert_value_to_native<T>(runtime, array.getValueAtIndex(runtime, index));
         }
 
         std::uint32_t GetMany(std::uint32_t startIndex, winrt::array_view<T> const& items)
         {
-            CheckThread();
-            // TODO
-            throw winrt::hresult_not_implemented{};
+            auto size = Size(); // NOTE: Checks thread access
+            auto count = std::min(size - startIndex, items.size());
+            for (uint32_t i = 0; i < count; ++i)
+            {
+                items[i] = convert_value_to_native<T>(runtime, array.getValueAtIndex(runtime, startIndex + i));
+            }
+
+            return count;
         }
 
         bool IndexOf(T const& value, std::uint32_t& index)
         {
-            CheckThread();
-            // TODO
-            throw winrt::hresult_not_implemented{};
+            auto size = Size(); // NOTE: Checks thread access
+            for (uint32_t i = 0; i < size; ++i)
+            {
+                if (value == convert_value_to_native<T>(runtime, array.getValueAtIndex(runtime, i)))
+                {
+                    index = i;
+                    return true;
+                }
+            }
+
+            return false;
         }
 
         // IVector functions, with the exception of 'GetView'
@@ -1742,13 +1786,18 @@ namespace jswinrt
 
         void SetAt(std::uint32_t index, T const& value)
         {
-            CheckThread();
-            // TODO
+            auto size = Size(); // NOTE: Checks thread access
+            if (index >= size)
+            {
+                throw winrt::hresult_out_of_bounds();
+            }
+
+            array.setValueAtIndex(runtime, index, convert_native_to_value(runtime, value));
         }
 
-        std::shared_ptr<ProjectionsContext> context;
+        jsi::Runtime& runtime;
         jsi::Array array;
-        DWORD thread_id;
+        std::thread::id thread_id = std::this_thread::get_id();
     };
 
     template <typename T>
@@ -1776,7 +1825,7 @@ namespace jswinrt
 
         winrt::Windows::Foundation::Collections::IVectorView<T> GetView()
         {
-            // TODO: Is there a better way to "copy" the array reference?
+            // TODO: It seems like there should be a cleaner way of duplicating the array reference...
             return winrt::make<array_vector_view<T>>(context, array.getArray(context->Runtime));
         }
     };
@@ -2070,7 +2119,31 @@ namespace jswinrt
                 }
             }
 
-            // TODO: Array as Collections
+            if constexpr (pinterface_traits<T>::is_array_convertible)
+            {
+                if (value.isObject())
+                {
+                    auto obj = value.getObject(runtime);
+                    if (obj.isArray(runtime))
+                    {
+                        if constexpr (pinterface_traits<T>::is_iterable)
+                        {
+                            return winrt::make<array_iterable<T>>(runtime, obj.getArray(runtime));
+                        }
+                        else if constexpr (pinterface_traits<T>::is_vector_view)
+                        {
+                            return winrt::make<array_vector_view<T>>(runtime, obj.getArray(runtime));
+                        }
+                        else // is_vector
+                        {
+                            static_assert(pinterface_traits<T>::is_vector);
+                            return winrt::make<array_vector<T>>(runtime, obj.getArray(runtime));
+                        }
+                    }
+                }
+            }
+
+            // TODO: Also IMap/IMapView?
 
             throw jsi::JSError(
                 runtime, "TypeError: Cannot derive a WinRT interface for the JS value. Expecting: " + typeid(T).name());
