@@ -1,38 +1,37 @@
 #pragma once
 #include "Settings.h"
-#include "FileGenerator.h"
-#include "ValueConverters.h"
-#include "Writer.h"
-
-#if 1
 
 struct static_projection_data : public std::enable_shared_from_this<static_projection_data>
 {
-    static_projection_data(const std::shared_ptr<static_projection_data>& parent, std::string_view name) :
-        m_parent(parent ? std::optional<std::weak_ptr<static_projection_data>>(parent) :
-                          std::optional<std::weak_ptr<static_projection_data>>()),
-        m_name(name)
+    static std::vector<std::shared_ptr<static_projection_data>> ParseMetaData(const Settings& settings);
+
+    static void SortGlobalLists();
+
+    static_projection_data(std::string_view name, std::string_view fullName) : m_name(name), m_fullName(fullName)
     {
     }
 
     const std::string& Name() const noexcept;
     const std::string& FullName(bool useCppDelim = false) const;
 
-    std::shared_ptr<static_projection_data> Parent() const;
+    // virtual jsi::Value create(jsi::Runtime& runtime) const override;
+    virtual std::vector<std::shared_ptr<static_projection_data>>* Children()
+    {
+        return {};
+    }
 
 private:
-    const std::optional<std::weak_ptr<static_projection_data>> m_parent;
     const std::string m_name;
+    const std::string m_fullName;
 
-    mutable std::string m_fullName;
     mutable std::string m_fullNameCpp;
 };
 
 struct static_class_data final : static_projection_data
 {
-    static_class_data(const std::shared_ptr<static_projection_data>& parent, std::string_view name,
+    static_class_data(std::string_view name, std::string_view fullName,
         const winmd::reader::TypeDef typeDef) :
-        static_projection_data(parent, name),
+        static_projection_data(name, fullName),
         m_typeDef(typeDef)
     {
     }
@@ -43,9 +42,9 @@ private:
 
 struct static_enum_data final : static_projection_data
 {
-    static_enum_data(const std::shared_ptr<static_projection_data>& parent, std::string_view name,
+    static_enum_data(std::string_view name, std::string_view fullName,
         const winmd::reader::TypeDef typeDef) :
-        static_projection_data(parent, name),
+        static_projection_data(name, fullName),
         m_typeDef(typeDef)
     {
     }
@@ -56,9 +55,9 @@ private:
 
 struct static_struct_data final : static_projection_data
 {
-    static_struct_data(const std::shared_ptr<static_projection_data>& parent, std::string_view name,
+    static_struct_data(std::string_view name, std::string_view fullName,
         const winmd::reader::TypeDef typeDef) :
-        static_projection_data(parent, name),
+        static_projection_data(name, fullName),
         m_typeDef(typeDef)
     {
     }
@@ -69,9 +68,9 @@ private:
 
 struct static_delegate_data final : static_projection_data
 {
-    static_delegate_data(const std::shared_ptr<static_projection_data>& parent, std::string_view name,
+    static_delegate_data(std::string_view name, std::string_view fullName,
         const winmd::reader::TypeDef typeDef) :
-        static_projection_data(parent, name),
+        static_projection_data(name, fullName),
         m_typeDef(typeDef)
     {
     }
@@ -82,9 +81,9 @@ private:
 
 struct static_interface_data final : static_projection_data
 {
-    static_interface_data(const std::shared_ptr<static_projection_data>& parent, std::string_view name,
+    static_interface_data(std::string_view name, std::string_view fullName,
         const winmd::reader::TypeDef typeDef) :
-        static_projection_data(parent, name),
+        static_projection_data(name, fullName),
         m_typeDef(typeDef)
     {
     }
@@ -92,19 +91,31 @@ struct static_interface_data final : static_projection_data
 private:
     winmd::reader::TypeDef m_typeDef;
 };
+/*
+struct static_generic_interface_data final : static_projection_data
+{
+    static_interface_data(std::string_view name, std::string_view fullName) :
+        static_projection_data(name, fullName)
+    {
+    }
 
+private:
+
+};
+*/
 struct static_namespace_data final : static_projection_data
 {
-    static std::vector<std::shared_ptr<static_namespace_data>> ParseMetaData(const Settings& settings);
-
-    static_namespace_data(const std::shared_ptr<static_projection_data>& parent, std::string_view name,
+    static_namespace_data(std::string_view name, std::string_view fullName,
         const winmd::reader::cache::namespace_members* members, const Settings& settings) :
-        static_projection_data(parent, name)
+        static_projection_data(name, fullName)
     {
         ParseChildren(members, settings);
     }
 
-    // virtual jsi::Value create(jsi::Runtime& runtime) const override;
+    virtual std::vector<std::shared_ptr<static_projection_data>>* Children() override
+    {
+        return &m_children;
+    }
 
     std::vector<std::shared_ptr<static_projection_data>> m_children;
     std::vector<std::shared_ptr<static_interface_data>> m_interfaces;
@@ -116,26 +127,21 @@ private:
 
     template <typename T, typename U>
     void ParseTypeDefs(std::vector<std::shared_ptr<T>>& items, const std::vector<winmd::reader::TypeDef>& typeDefs,
-        const Settings& settings, std::vector<std::shared_ptr<T>>& globalList = nullptr);
-
-    static void SortGlobalLists();
+        const Settings& settings, std::vector<std::shared_ptr<static_projection_data>>* globalList);
 };
 
-bool IsNamespaceAllowed(const Settings& settings, const std::string_view& namespaceFullName,
-    const winmd::reader::cache::namespace_members& members);
-bool IsTypeAllowed(const Settings& settings, const winmd::reader::TypeDef& typeDef, const bool isClass = false);
+extern std::vector<std::shared_ptr<static_projection_data>> _interfaces;
+extern std::vector<std::shared_ptr<static_projection_data>> _structs;
+extern std::vector<std::shared_ptr<static_projection_data>> _delegates;
 
-template <typename T>
-bool HasAttribute(T const& row, const std::string_view& attributeNamespace, const std::string_view& attributeName)
-{
-    return static_cast<bool>(winmd::reader::get_attribute(row, attributeNamespace, attributeName));
-}
 
-static std::vector<std::shared_ptr<static_interface_data>> _interfaces;
-static std::vector<std::shared_ptr<static_struct_data>> _structs;
-static std::vector<std::shared_ptr<static_delegate_data>> _delegates;
 
-#else
+
+
+
+
+
+
 
 struct Namespace : public std::enable_shared_from_this<Namespace>
 {
@@ -169,7 +175,16 @@ private:
     mutable std::string m_fullNameCpp;
 };
 
+bool IsNamespaceAllowed(const Settings& settings, const std::string_view& namespaceFullName,
+    const winmd::reader::cache::namespace_members& members);
 bool IsMethodAllowed(const Settings& settings, const winmd::reader::MethodDef& methodDef);
+bool IsTypeAllowed(const Settings& settings, const winmd::reader::TypeDef& typeDef, const bool isClass = false);
+
+template <typename T>
+bool HasAttribute(T const& row, const std::string_view& attributeNamespace, const std::string_view& attributeName)
+{
+    return static_cast<bool>(winmd::reader::get_attribute(row, attributeNamespace, attributeName));
+}
 
 struct ActivationFactoryInterfaceInfo
 {
@@ -220,5 +235,3 @@ inline bool StartsWith(const std::string_view& lhs, const std::string_view& rhs)
 {
     return !lhs.compare(0, rhs.length(), rhs);
 };
-
-#endif
