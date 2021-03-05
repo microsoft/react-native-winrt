@@ -2,6 +2,176 @@
 
 #include "MetadataHelpers.h"
 
+std::vector<std::shared_ptr<static_projection_data>> _interfaces;
+std::vector<std::shared_ptr<static_projection_data>> _structs;
+std::vector<std::shared_ptr<static_projection_data>> _delegates;
+
+std::vector<std::shared_ptr<static_projection_data>> static_projection_data::ParseMetaData(const Settings& settings)
+{
+    std::vector<std::shared_ptr<static_projection_data>> roots;
+
+    for (const auto& [fullName, members] : settings.Cache.namespaces())
+    {
+        if (!IsNamespaceAllowed(settings, fullName, members))
+        {
+            continue;
+        }
+
+        std::string currentFullName;
+        std::string_view remainingNameSegments = fullName;
+        auto parent = std::shared_ptr<static_projection_data>{};
+        auto children = &roots;
+        while (!remainingNameSegments.empty())
+        {
+            const auto delim = remainingNameSegments.find(".");
+            const bool isFinalSegment = (delim == std::string_view::npos);
+
+            if (currentFullName.length() > 0)
+            {
+                currentFullName += ".";
+            }
+            currentFullName += remainingNameSegments.substr(0, delim);
+
+            std::string_view currentNameSegment;
+            if (isFinalSegment)
+            {
+                std::swap(currentNameSegment, remainingNameSegments);
+            }
+            else
+            {
+                currentNameSegment = remainingNameSegments.substr(0, delim);
+                remainingNameSegments.remove_prefix(delim + 1);
+            }
+
+            bool found = false;
+            for (int i = children->size() - 1; i >= 0; i--)
+            {
+                auto match = children->at(i);
+                if (std::dynamic_pointer_cast<static_namespace_data>(match) != nullptr)
+                {
+                    if (match->Name() == currentNameSegment)
+                    {
+                        found = true;
+                        parent = match;
+                        children = parent->Children();
+                        break;
+                    }
+                }
+            }
+            if (!found)
+            {
+                std::shared_ptr<static_namespace_data> newNamespace =
+                    std::make_shared<static_namespace_data>(std::string(currentNameSegment),
+                        currentFullName, isFinalSegment ? &members : nullptr, settings);
+                children->push_back(newNamespace);
+            }
+        }
+    }
+
+    SortGlobalLists();
+
+    return roots;
+}
+
+void static_namespace_data::ParseChildren(
+    const winmd::reader::cache::namespace_members* members, const Settings& settings)
+{
+    if (members)
+    {
+        ParseTypeDefs<static_projection_data, static_class_data>(m_children, members->classes, settings, nullptr);
+        ParseTypeDefs<static_projection_data, static_enum_data>(m_children, members->enums, settings, nullptr);
+        ParseTypeDefs<static_struct_data, static_struct_data>(m_structs, members->structs, settings, &_structs);
+        ParseTypeDefs<static_delegate_data, static_delegate_data>(m_delegates, members->delegates, settings, &_delegates);
+        ParseTypeDefs<static_interface_data, static_interface_data>(m_interfaces, members->interfaces, settings, &_interfaces);
+    }
+}
+
+template <typename T, typename U>
+void static_namespace_data::ParseTypeDefs(std::vector<std::shared_ptr<T>>& items,
+    const std::vector<winmd::reader::TypeDef>& typeDefs, const Settings& settings,
+    std::vector<std::shared_ptr<static_projection_data>>* globalList)
+{
+    for (const auto& typeDef : typeDefs)
+    {
+        if (IsTypeAllowed(settings, typeDef))
+        {
+            if (auto pair = typeDef.GenericParam(); std::distance(pair.first, pair.second) == 0)
+            {
+                std::string fullName = std::string(typeDef.TypeNamespace()) + "." + std::string(typeDef.TypeName());
+                auto item = std::make_shared<U>(typeDef.TypeName(), fullName, typeDef);
+                items.push_back(item);
+                if (globalList != nullptr)
+                {
+                    globalList->push_back(item);
+                }
+
+//                CheckForGenericMembers(typeDef);
+
+
+                // 1) call typeDef->Extends recursively - this just checks if it's generic somewhere in the implements chain
+            }
+        }
+    }
+}
+/*
+CheckForGenericMembers(typeDef, (optional)templateArray)
+{
+    // look at properties/events/methods/fields of typeDef
+    //  properties/events/fields: look at type and check if generic
+    //  methods: look at input/output/return values
+    // if generic: HandleGenericInst()
+}
+
+HandleGenericInstantiation(type, templateArray)
+{
+    // type always interface type
+    // maintain 1 entry per type/template combo
+    // add too global interface vector
+    // CheckForGenericMembers on this type/template
+}
+*/
+const std::string& static_projection_data::Name() const noexcept
+{
+    return m_name;
+}
+
+const std::string& static_projection_data::FullName(bool useCppDelim) const
+{
+    if (!useCppDelim)
+    {
+        return m_fullName;
+    }
+
+    if (m_fullNameCpp.empty())
+    {
+        m_fullNameCpp = m_fullName;
+        size_t pos = m_fullNameCpp.find(".");
+
+        while (pos != std::string::npos)
+        {
+            m_fullNameCpp.replace(pos, 1, "::");
+            pos = m_fullNameCpp.find(".", pos + 2);
+        }
+    }
+
+    return m_fullNameCpp;
+}
+
+void static_projection_data::SortGlobalLists()
+{
+    std::sort(_interfaces.begin(), _interfaces.end(),
+        [](auto const& lhs, auto const& rhs) { return (lhs->Name() < rhs->Name()); });
+}
+
+
+
+
+
+
+
+
+
+
 std::map<std::string_view, std::shared_ptr<Namespace>> Namespace::GetRoots(const Settings& settings)
 {
     std::map<std::string_view, std::shared_ptr<Namespace>> roots;

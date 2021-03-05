@@ -75,7 +75,7 @@ int main(int const argc, char** argv)
         }
 
         Settings settings(args);
-        const auto roots = Namespace::GetRoots(settings);
+        const auto roots = static_namespace_data::ParseMetaData(settings);
         WriteFiles(settings, roots);
     }
     catch (std::exception const& e)

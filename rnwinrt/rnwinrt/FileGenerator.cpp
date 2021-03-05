@@ -1461,3 +1461,59 @@ void WriteFiles(const Settings& settings, const std::map<std::string_view, std::
 
     WriteBaseFiles(settings);
 }
+
+
+
+
+
+
+
+
+
+
+void WriteChildren(const std::vector<std::shared_ptr<static_projection_data>>* items, FileWriter& writer)
+{
+    if (items)
+    {
+        for (int i = 0; i < items->size(); i++)
+        {
+            writer.Write("%    %\n", items->at(i)->Name(), items->at(i)->FullName());
+            WriteChildren(items->at(i)->Children(), writer);
+        }
+    }
+}
+
+void WriteFiles(const Settings& settings, const std::vector<std::shared_ptr<static_projection_data>>& roots)
+{
+    FileWriter writer(settings.OutputFolder / "TEST_TREE_VIEW.txt");
+
+    writer.Write("Namespaces\n----------\n");
+    WriteChildren(&roots, writer);
+
+    writer.Write("\nStructs\n-------\n");
+    //if (_structs)
+    {
+        for (int i = 0; i < _structs.size(); i++)
+        {
+            writer.Write("%\n", _structs.at(i)->Name());
+        }
+    }
+
+    writer.Write("\nDelegates\n---------\n");
+    //if (_delegates)
+    {
+        for (int i = 0; i < _delegates.size(); i++)
+        {
+            writer.Write("%\n", _delegates.at(i)->Name());
+        }
+    }
+
+    writer.Write("\nInterfaces\n----------\n");
+    //if (_interfaces)
+    {
+        for (int i = 0; i < _interfaces.size(); i++)
+        {
+            writer.Write("%\n", _interfaces.at(i)->Name());
+        }
+    }
+}

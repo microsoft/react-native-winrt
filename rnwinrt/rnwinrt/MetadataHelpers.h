@@ -1,6 +1,148 @@
 #pragma once
 #include "Settings.h"
 
+struct static_projection_data : public std::enable_shared_from_this<static_projection_data>
+{
+    static std::vector<std::shared_ptr<static_projection_data>> ParseMetaData(const Settings& settings);
+
+    static void SortGlobalLists();
+
+    static_projection_data(std::string_view name, std::string_view fullName) : m_name(name), m_fullName(fullName)
+    {
+    }
+
+    const std::string& Name() const noexcept;
+    const std::string& FullName(bool useCppDelim = false) const;
+
+    // virtual jsi::Value create(jsi::Runtime& runtime) const override;
+    virtual std::vector<std::shared_ptr<static_projection_data>>* Children()
+    {
+        return {};
+    }
+
+private:
+    const std::string m_name;
+    const std::string m_fullName;
+
+    mutable std::string m_fullNameCpp;
+};
+
+struct static_class_data final : static_projection_data
+{
+    static_class_data(std::string_view name, std::string_view fullName,
+        const winmd::reader::TypeDef typeDef) :
+        static_projection_data(name, fullName),
+        m_typeDef(typeDef)
+    {
+    }
+
+private:
+    winmd::reader::TypeDef m_typeDef;
+};
+
+struct static_enum_data final : static_projection_data
+{
+    static_enum_data(std::string_view name, std::string_view fullName,
+        const winmd::reader::TypeDef typeDef) :
+        static_projection_data(name, fullName),
+        m_typeDef(typeDef)
+    {
+    }
+
+private:
+    winmd::reader::TypeDef m_typeDef;
+};
+
+struct static_struct_data final : static_projection_data
+{
+    static_struct_data(std::string_view name, std::string_view fullName,
+        const winmd::reader::TypeDef typeDef) :
+        static_projection_data(name, fullName),
+        m_typeDef(typeDef)
+    {
+    }
+
+private:
+    winmd::reader::TypeDef m_typeDef;
+};
+
+struct static_delegate_data final : static_projection_data
+{
+    static_delegate_data(std::string_view name, std::string_view fullName,
+        const winmd::reader::TypeDef typeDef) :
+        static_projection_data(name, fullName),
+        m_typeDef(typeDef)
+    {
+    }
+
+private:
+    winmd::reader::TypeDef m_typeDef;
+};
+
+struct static_interface_data final : static_projection_data
+{
+    static_interface_data(std::string_view name, std::string_view fullName,
+        const winmd::reader::TypeDef typeDef) :
+        static_projection_data(name, fullName),
+        m_typeDef(typeDef)
+    {
+    }
+
+private:
+    winmd::reader::TypeDef m_typeDef;
+};
+/*
+struct static_generic_interface_data final : static_projection_data
+{
+    static_interface_data(std::string_view name, std::string_view fullName) :
+        static_projection_data(name, fullName)
+    {
+    }
+
+private:
+
+};
+*/
+struct static_namespace_data final : static_projection_data
+{
+    static_namespace_data(std::string_view name, std::string_view fullName,
+        const winmd::reader::cache::namespace_members* members, const Settings& settings) :
+        static_projection_data(name, fullName)
+    {
+        ParseChildren(members, settings);
+    }
+
+    virtual std::vector<std::shared_ptr<static_projection_data>>* Children() override
+    {
+        return &m_children;
+    }
+
+    std::vector<std::shared_ptr<static_projection_data>> m_children;
+    std::vector<std::shared_ptr<static_interface_data>> m_interfaces;
+    std::vector<std::shared_ptr<static_struct_data>> m_structs;
+    std::vector<std::shared_ptr<static_delegate_data>> m_delegates;
+
+private:
+    void ParseChildren(const winmd::reader::cache::namespace_members* members, const Settings& settings);
+
+    template <typename T, typename U>
+    void ParseTypeDefs(std::vector<std::shared_ptr<T>>& items, const std::vector<winmd::reader::TypeDef>& typeDefs,
+        const Settings& settings, std::vector<std::shared_ptr<static_projection_data>>* globalList);
+};
+
+extern std::vector<std::shared_ptr<static_projection_data>> _interfaces;
+extern std::vector<std::shared_ptr<static_projection_data>> _structs;
+extern std::vector<std::shared_ptr<static_projection_data>> _delegates;
+
+
+
+
+
+
+
+
+
+
 struct Namespace : public std::enable_shared_from_this<Namespace>
 {
     static std::map<std::string_view, std::shared_ptr<Namespace>> GetRoots(const Settings& settings);
