@@ -333,7 +333,7 @@ public:
                 else if (returnNameTypePairs.size() == 1)
                 {
                     WriteTypeSemantics(jswinrt::typeparser::get_type_semantics(returnNameTypePairs.at(0).second),
-                        containerType, textWriter, methodSignature.return_signature().Type().is_szarray(), false);
+                        containerType, textWriter, returnNameTypePairs.at(0).second.is_szarray(), false);
                 }
                 else
                 {
