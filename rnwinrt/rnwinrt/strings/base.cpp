@@ -1,6 +1,4 @@
 
-#if 1
-
 #define NOMINMAX
 #define WIN32_LEAN_AND_MEAN
 
@@ -51,6 +49,11 @@ static auto find_by_name(span<const ThingWithName> list, std::string_view name) 
 
 jsi::Value object_instance_cache::get_instance(jsi::Runtime& runtime, const winrt::IInspectable& value)
 {
+    if ((std::chrono::steady_clock::now() - last_cleanup) >= cleanup_interval)
+    {
+        cleanup(runtime);
+    }
+
     // NOTE: Each interface has its own associated v-table, so two IInspectable pointers to the same object may actually
     // be different if they were originally pointers to two different interfaces. Hence the QI here
     auto instance = value.as<winrt::IInspectable>();
@@ -455,6 +458,10 @@ static const static_interface_data* find_interface(const winrt::guid& guid)
     auto begin = global_interface_map.begin();
     auto end = global_interface_map.end();
     static constexpr std::ptrdiff_t linear_search_size = 16; // TODO: Find a good value
+
+#if 0 // TODO: Currently the list of interfaces is not assumed to be sorted because of generic types, so always fall
+      // back to linear search. It might be good to change this to a non-static array that we sort on DLL load for the
+      // time being, since the interface array is likely to be pretty big
     while ((end - begin) > linear_search_size)
     {
         auto mid = begin + (end - begin) / 2;
@@ -472,6 +479,7 @@ static const static_interface_data* find_interface(const winrt::guid& guid)
             return mid->second;
         }
     }
+#endif
 
     for (; begin != end; ++begin)
     {
@@ -536,7 +544,7 @@ namespace jswinrt
                                             " arguments");
         }
 
-        // TODO: Figure out a good SSO size
+        // TODO: Figure out a good SSO size (4 might be larger than we need most of the time. Perhaps 2?)
         sso_vector<const static_interface_data::function_mapping*, 4> data;
     };
 }
@@ -1047,44 +1055,44 @@ winrt::IInspectable convert_to_property_value(jsi::Runtime& runtime, const jsi::
                 auto elem = array.getValueAtIndex(runtime, 0);
                 if (elem.isBool())
                 {
-                    // TODO
-                    // return PropertyValue::CreateBooleanArray(convert_value_to_native<???>(runtime, value));
+                    return winrt::PropertyValue::CreateBooleanArray(
+                        convert_value_to_native<winrt::array_view<const bool>>(runtime, value));
                 }
                 else if (elem.isNumber())
                 {
-                    // TODO
-                    // return PropertyValue::CreateDoubleArray(convert_value_to_native<???>(runtime, value));
+                    return winrt::PropertyValue::CreateDoubleArray(
+                        convert_value_to_native<winrt::array_view<const double>>(runtime, value));
                 }
                 else if (elem.isString())
                 {
-                    // TODO
-                    // return PropertyValue::CreateStringArray(convert_value_to_native<???>(runtime, value));
+                    return winrt::PropertyValue::CreateStringArray(
+                        convert_value_to_native<winrt::array_view<const winrt::hstring>>(runtime, value));
                 }
                 else if (elem.isObject())
                 {
                     auto elemObj = elem.getObject(runtime);
                     if (elemObj.isHostObject(runtime))
                     {
-                        // TODO
-                        // return PropertyValue::CreateInspectableArray(convert_value_to_native<???>(runtime, value));
+                        return winrt::PropertyValue::CreateInspectableArray(
+                            convert_value_to_native<winrt::array_view<const winrt::IInspectable>>(runtime, value));
                     }
 
                     auto isPointLike = elemObj.hasProperty(runtime, "x") && elemObj.hasProperty(runtime, "y");
                     auto isSizeLike = elemObj.hasProperty(runtime, "width") && elemObj.hasProperty(runtime, "height");
                     if (isPointLike && isSizeLike)
                     {
-                        // TODO
-                        // return PropertyValue::CreateRectArray(convert_value_to_native<???>(runtime, value));
+                        return winrt::PropertyValue::CreateRectArray(
+                            convert_value_to_native<winrt::array_view<const winrt::Rect>>(runtime, value));
                     }
                     else if (isPointLike)
                     {
-                        // TODO
-                        // return PropertyValue::CreatePointArray(convert_value_to_native<???>(runtime, value));
+                        return winrt::PropertyValue::CreatePointArray(
+                            convert_value_to_native<winrt::array_view<const winrt::Point>>(runtime, value));
                     }
                     else if (isSizeLike)
                     {
-                        // TODO
-                        // return PropertyValue::CreateSizeArray(convert_value_to_native<???>(runtime, value));
+                        return winrt::PropertyValue::CreateSizeArray(
+                            convert_value_to_native<winrt::array_view<const winrt::Size>>(runtime, value));
                     }
 
                     // TODO: DateTimeArray?

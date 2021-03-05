@@ -1,7 +1,5 @@
 #pragma once
 
-#if 1
-
 #include <atomic>
 #include <jsi/jsi.h>
 #include <string_view>
@@ -571,7 +569,7 @@ namespace jswinrt
     }
 
     template <typename T>
-    T convert_value_to_native(jsi::Runtime& runtime, const jsi::Value& value)
+    auto convert_value_to_native(jsi::Runtime& runtime, const jsi::Value& value)
     {
         return projected_value_traits<T>::as_native(runtime, value);
     }
@@ -753,6 +751,9 @@ namespace jswinrt
         }
     };
 
+    // TODO: Figure out a good interval for performing cleanup
+    static constexpr auto cleanup_interval = 5min;
+
     struct object_instance_cache
     {
         // Maps an IInspectable pointer to the HostObject that represents that object. Note that it is possible for a
@@ -767,10 +768,44 @@ namespace jswinrt
         // (https://github.com/microsoft/v8-jsi/blob/master/src/V8JsiRuntime.cpp)
         bool supports_weak_object = true;
 
+        // TODO: Ideally this would be a periodic thing (on a timer), but for now we'll manually trigger cleanup
+        // occasionally when we're querying for object instances
+        std::chrono::steady_clock::time_point last_cleanup = std::chrono::steady_clock::now();
+
         jsi::Value get_instance(jsi::Runtime& runtime, const winrt::Windows::Foundation::IInspectable& value);
+
+        void cleanup(jsi::Runtime& runtime)
+        {
+            last_cleanup = std::chrono::steady_clock::now();
+            for (auto itr = instances.begin(); itr != instances.end(); )
+            {
+                if (supports_weak_object)
+                {
+                    if (auto value = std::get<0>(itr->second).lock(runtime); !value.isUndefined()) // Object still alive
+                    {
+                        ++itr;
+                    }
+                    else // Object was destroyed
+                    {
+                        itr = instances.erase(itr);
+                    }
+                }
+                else
+                {
+                    if (std::get<1>(itr->second).lock()) // Object still alive
+                    {
+                        ++itr;
+                    }
+                    else // Object was destroyed
+                    {
+                        itr = instances.erase(itr);
+                    }
+                }
+            }
+        }
     };
 
-    // A reusable mapping of (delegate, event name) -> event_token for a single object
+    // A reusable mapping of (delegate, event name) -> event_token for a single
     struct event_registration_array
     {
         // NOTE: It's possible to re-use the same callback for multiple events on the same object (especially since
@@ -826,9 +861,18 @@ namespace jswinrt
 
         std::unordered_map<void*, instance_data> events;
 
+        // TODO: Ideally this would be a periodic thing (on a timer), but for now we'll manually trigger cleanup
+        // occasionally when adding tokens
+        std::chrono::steady_clock::time_point last_cleanup = std::chrono::steady_clock::now();
+
         void add(const winrt::Windows::Foundation::IInspectable& instance, jsi::Object object, const char* eventName,
             winrt::event_token token)
         {
+            if ((std::chrono::steady_clock::now() - last_cleanup) >= cleanup_interval)
+            {
+                cleanup();
+            }
+
             auto ptr = winrt::get_abi(instance);
             auto& data = events[ptr];
             if (data.weak_ref && !data.weak_ref.get())
@@ -861,6 +905,22 @@ namespace jswinrt
 
             return {};
         }
+
+        void cleanup()
+        {
+            last_cleanup = std::chrono::steady_clock::now();
+            for (auto itr = events.begin(); itr != events.end(); )
+            {
+                if (itr->second.weak_ref.get()) // Object still alive
+                {
+                    ++itr;
+                }
+                else // Object was destroyed
+                {
+                    itr = events.erase(itr);
+                }
+            }
+        }
     };
 
     struct runtime_context
@@ -869,7 +929,8 @@ namespace jswinrt
         std::thread::id thread_id = std::this_thread::get_id();
         std::function<void(std::function<void()>)> call_invoker;
 
-        // TODO: Clean up maps periodically
+        // TODO: Currently each of these objects handles its own periodic cleanup. It would be great if we could do this
+        // on a more well-defined basis for both (e.g. on a timer)
         object_instance_cache instance_cache;
         object_event_cache event_cache;
 
@@ -909,16 +970,27 @@ namespace jswinrt
                     winrt::throw_last_error();
                 }
 
-                // TODO: Propagate exceptions?
+                std::exception_ptr exception;
                 call_invoker([&]() {
-                    fn();
+                    try
+                    {
+                        fn();
+                    }
+                    catch (...)
+                    {
+                        exception = std::current_exception();
+                    }
                     ::SetEvent(event.get());
                 });
 
                 if (::WaitForSingleObject(event.get(), INFINITE) != WAIT_OBJECT_0)
                 {
-                    // TODO: Too harsh? We could release/leak the event & capture by value
                     winrt::terminate();
+                }
+
+                if (exception)
+                {
+                    std::rethrow_exception(exception);
                 }
             }
         }
@@ -1805,7 +1877,123 @@ namespace jswinrt
         static winrt::Windows::Foundation::TimeSpan as_native(jsi::Runtime& runtime, const jsi::Value& value);
     };
 
-    // TODO: Arrays
+    template <typename T>
+    struct fill_array_wrapper
+    {
+        fill_array_wrapper(jsi::Runtime& runtime, const jsi::Value& value) :
+            m_runtime(runtime), m_jsArray(value.asObject(runtime).asArray(runtime))
+        {
+            auto size = m_jsArray.size(runtime);
+            if constexpr (std::is_base_of_v<winrt::Windows::Foundation::IUnknown, T>)
+            {
+                m_data.resize(size, nullptr);
+            }
+            else
+            {
+                m_data.reserve(size);
+            }
+        }
+
+        ~fill_array_wrapper()
+        {
+            for (std::size_t i = 0; i < m_data.size(); ++i)
+            {
+                m_jsArray.setValueAtIndex(m_runtime, i, convert_native_to_value(m_data[i]));
+            }
+        }
+
+        operator winrt::array_view<T>()
+        {
+            return winrt::array_view<T>(m_data.data(), m_data.data() + m_data.size());
+        }
+
+    private:
+
+        jsi::Runtime& m_runtime;
+        jsi::Array m_jsArray;
+        std::vector<T> m_data;
+    };
+
+    template <typename T>
+    struct projected_value_traits<winrt::array_view<T>>
+    {
+        // NOTE: Non-const 'T' - this is specific to 'fill array' scenarios
+        static jsi::Value as_value(jsi::Runtime& runtime, winrt::array_view<T>& value)
+        {
+            // TODO: We could see this when implementing interfaces (currently not supported) or for delegates that use
+            // the fill array pattern (also currently not supported, but maybe we should?)
+            throw jsi::JSError(runtime, "TypeError: JS implemented fill array patterns are currently not supported");
+        }
+
+        static fill_array_wrapper<T> as_native(jsi::Runtime& runtime, const jsi::Value& value)
+        {
+            return fill_array_wrapper<T>(runtime, value);
+        }
+    };
+
+    template <typename T>
+    struct pass_array_wrapper
+    {
+        pass_array_wrapper(jsi::Runtime& runtime, const jsi::Value& value)
+        {
+            auto array = value.asObject(runtime).asArray(runtime);
+            auto size = array.size(runtime);
+            m_data.reserve(size);
+            for (std::size_t i = 0; i < size; ++i)
+            {
+                m_data.push_back(convert_value_to_native<T>(array.getValueAtIndex(runtime, i)));
+            }
+        }
+
+        operator winrt::array_view<const T>()
+        {
+            return winrt::array_view<const T>(m_data.data(), m_data.data() + m_data.size());
+        }
+
+    private:
+
+        std::vector<T> m_data;
+    };
+
+    template <typename T>
+    struct projected_value_traits<winrt::array_view<const T>>
+    {
+        // NOTE: Const 'T' - this is specific to 'pass array' scenarios
+        static jsi::Value as_value(jsi::Runtime& runtime, winrt::array_view<const T>& value)
+        {
+            // TODO: We could see this when implementing interfaces (currently not supported) or for delegates that use
+            // the pass array pattern (also currently not supported, but maybe we should?)
+            throw jsi::JSError(runtime, "TypeError: JS implemented pass array patterns are currently not supported");
+        }
+
+        static pass_array_wrapper<T> as_native(jsi::Runtime& runtime, const jsi::Value& value)
+        {
+            return pass_array_wrapper<T>(runtime, value);
+        }
+    };
+
+    template <typename T>
+    struct projected_value_traits<winrt::com_array<T>>
+    {
+        static jsi::Value as_value(jsi::Runtime& runtime, const winrt::com_array<T>& value)
+        {
+            auto result = jsi::Array(runtime, value.size());
+            for (std::size_t i = 0; i < value.size(); ++i)
+            {
+                result.setValueAtIndex(runtime, i, convert_native_to_value(value[i]));
+            }
+
+            return result;
+        }
+
+        static winrt::com_array<T> as_native(jsi::Runtime& runtime, const jsi::Value& value)
+        {
+            // TODO: We could see this when implementing interfaces (currently not supported), or for delegates that use
+            // the output/return array pattern (also currently not supported, but maybe we should?)
+            throw jsi::JSError(
+                runtime, "TypeError: JS implemented out/return array patterns are currently not supported");
+        }
+    };
 
     jsi::Value convert_from_property_value(
         jsi::Runtime& runtime, const winrt::Windows::Foundation::IPropertyValue& value);
@@ -1917,16 +2105,14 @@ namespace jswinrt
     template <typename T>
     struct projected_value_traits<winrt::Windows::Foundation::IReferenceArray<T>>
     {
-        static jsi::Value as_value(jsi::Runtime&, const winrt::Windows::Foundation::IReferenceArray<T>& value)
+        static jsi::Value as_value(jsi::Runtime& runtime, const winrt::Windows::Foundation::IReferenceArray<T>& value)
         {
             if (!value)
             {
                 return jsi::Value(nullptr);
             }
 
-            // TODO: Array return
-            // return ConvertComArrayToValue<decltype(std::declval(I).Value()), CTV>(context, value.Value());
-            throw winrt::hresult_not_implemented();
+            return convert_native_to_value(runtime, value.Value());
         }
 
         static winrt::Windows::Foundation::IReferenceArray<T> from_value(jsi::Runtime&, const jsi::Value& value)
@@ -2036,14 +2222,14 @@ namespace jswinrt
 
         static winrt::Windows::Foundation::EventHandler<T> as_native(jsi::Runtime& runtime, const jsi::Value& value)
         {
-            return [fn = value.asObject(runtime).asFunction(runtime)](const IInspectable& sender, const T& args) {
-                // TODO: Need to be able to call back to the JS thread.
-                // TODO: Is this guaranteed to be safe? What if the JS thread is waiting on this thread? Can we assume
-                // that will never happen since the JS thread in theory should never block? But since we're dealing with
-                // WinRT, perhaps that's something outside of our control? That said, it's certainly not safe for us to
-                // assume that the call is happening on the JS thread, and it is definitely not safe to make the call on
-                // a different thread...
-                // fn.call(runtime, convert_native_to_value(sender), convert_native_to_value(args));
+            return [ctxt = current_runtime_context()->add_reference(),
+                       fn = value.asObject(runtime).asFunction(runtime)](const IInspectable& sender, const T& args) {
+                // TODO: Do we need to call synchronously? One reason might be to propagate errors, but typically event
+                // sources don't care about those.
+                ctxt->call_sync([&]() {
+                    fn.call(ctxt->runtime, convert_native_to_value(runtime, sender),
+                        convert_native_to_value(runtime, args));
+                });
             };
         }
     };
@@ -2071,9 +2257,12 @@ namespace jswinrt
         static winrt::Windows::Foundation::TypedEventHandler<TSender, TResult> as_native(
             jsi::Runtime& runtime, const jsi::Value& value)
         {
-            return [fn = value.asObject(runtime).asFunction(runtime)](const TSender& sender, const TResult& args) {
-                // TODO: Need to be able to call back to the JS thread.
-                // fn.call(runtime, convert_native_to_value(sender), convert_native_to_value(args));
+            return [ctxt = current_runtime_context()->add_reference(),
+                       fn = value.asObject(runtime).asFunction(runtime)](const TSender& sender, const TResult& args) {
+                ctxt->call_sync([&]() {
+                    fn.call(ctxt->runtime, convert_native_to_value(runtime, sender),
+                        convert_native_to_value(runtime, args));
+                });
             };
         }
     };
@@ -2104,12 +2293,15 @@ namespace jswinrt
         static winrt::Windows::Foundation::Collections::MapChangedEventHandler<K, V> as_native(
             jsi::Runtime& runtime, const jsi::Value& value)
         {
-            return [fn = value.asObject(runtime).asFunction(runtime)](
-                       const winrt::Windows::Foundation::Collections::IObservableMap<K, V>& sender,
-                       const winrt::Windows::Foundation::Collections::IMapChangedEventArgs<K, V>& args) {
-                // TODO: Need to be able to call back to the JS thread.
-                // fn.call(runtime, convert_native_to_value(sender), convert_native_to_value(args));
-            };
+            return
+                [ctxt = current_runtime_context()->add_reference(), fn = value.asObject(runtime).asFunction(runtime)](
+                    const winrt::Windows::Foundation::Collections::IObservableMap<K, V>& sender,
+                    const winrt::Windows::Foundation::Collections::IMapChangedEventArgs<K, V>& args) {
+                    ctxt->call_sync([&]() {
+                        fn.call(ctxt->runtime, convert_native_to_value(runtime, sender),
+                            convert_native_to_value(runtime, args));
+                    });
+                };
         }
     };
 
@@ -2140,12 +2332,15 @@ namespace jswinrt
         static winrt::Windows::Foundation::Collections::VectorChangedEventHandler<T> as_native(
             jsi::Runtime& runtime, const jsi::Value& value)
         {
-            return [fn = value.asObject(runtime).asFunction(runtime)](
-                       const winrt::Windows::Foundation::Collections::IObservableVector<T>& sender,
-                       const winrt::Windows::Foundation::Collections::IVectorChangedEventArgs<T>& args) {
-                // TODO: Need to be able to call back to the JS thread.
-                // fn.call(runtime, convert_native_to_value(sender), convert_native_to_value(args));
-            };
+            return
+                [ctxt = current_runtime_context()->add_reference(), fn = value.asObject(runtime).asFunction(runtime)](
+                    const winrt::Windows::Foundation::Collections::IObservableVector<T>& sender,
+                    const winrt::Windows::Foundation::Collections::IVectorChangedEventArgs<T>& args) {
+                    ctxt->call_sync([&]() {
+                        fn.call(ctxt->runtime, convert_native_to_value(runtime, sender),
+                            convert_native_to_value(runtime, args));
+                    })
+                };
         }
     };
 }
@@ -2347,9 +2542,8 @@ namespace jswinrt
                 static constexpr const static_interface_data::function_mapping functions[] = {
                     { "getMany",
                         [](jsi::Runtime& runtime, const IInspectable& thisValue, const jsi::Value* args) {
-                            // TODO: Need to convert args[0] to native array of T
-                            // return convert_native_to_value(runtime, thisValue.as<native_type>().GetMany(items));
-                            return jsi::Value::undefined();
+                            auto items = convert_value_to_native<winrt::array_view<T>>(runtime, args[0]);
+                            return convert_native_to_value(runtime, thisValue.as<native_type>().GetMany(items));
                         },
                         1, false },
                     { "moveNext",
@@ -2659,8 +2853,9 @@ namespace jswinrt
                     { "getMany",
                         [](jsi::Runtime& runtime, const IInspectable& thisValue, const jsi::Value* args) {
                             auto startIndex = convert_value_to_native<uint32_t>(runtime, args[0]);
-                            // TODO: Need to allocate array for fill array & copy back
-                            return jsi::Value::undefined();
+                            auto items = convert_value_to_native<winrt::array_view<T>>(runtime, args[1]);
+                            return convert_native_to_value(
+                                runtime, thisValue.as<native_type>().GetMany(startIndex, items));
                         },
                         2, false },
                     { "getView",
@@ -2699,8 +2894,8 @@ namespace jswinrt
                         0, false },
                     { "replaceAll",
                         [](jsi::Runtime& runtime, const IInspectable& thisValue, const jsi::Value* args) {
-                            // TODO: Convert to read-only array
-                            return jsi::Value::undefined();
+                            auto items = convert_value_to_native<winrt::array_view<const T>>(runtime, args[0]);
+                            return convert_native_to_value(runtime, thisValue.as<native_type>().ReplaceAll(items));
                         },
                         1, false },
                     { "setAt",
@@ -2751,8 +2946,9 @@ namespace jswinrt
                     { "getMany",
                         [](jsi::Runtime& runtime, const IInspectable& thisValue, const jsi::Value* args) {
                             auto startIndex = convert_value_to_native<uint32_t>(runtime, args[0]);
-                            // TODO: Need to allocate array for fill array & copy back
-                            return jsi::Value::undefined();
+                            auto items = convert_value_to_native<winrt::array_view<T>>(runtime, args[1]);
+                            return convert_native_to_value(
+                                runtime, thisValue.as<native_type>().GetMany(startIndex, items));
                         },
                         2, false },
                     { "indexOf",
@@ -2779,164 +2975,3 @@ namespace jswinrt
         }
     }
 }
-
-#else
-
-#define NOMINMAX
-
-#include <set>
-#include <variant>
-
-#include <inspectable.h>
-#include <unknwn.h>
-#include <winrt/Windows.Foundation.Collections.h>
-#include <winrt/Windows.Foundation.h>
-
-#include <TurboModule/Core/TurboModule.h> // TODO: Move react-specific code to separate files
-#include <jsi/jsi.h>
-
-#include <Windows.h>
-
-#include <wil/cppwinrt.h>
-#include <wil/resource.h>
-#include <wil/win32_helpers.h>
-#include <wil/winrt.h>
-
-namespace std
-{
-    template <>
-    struct less<winrt::guid>
-    {
-        bool operator()(const winrt::guid& left, const winrt::guid& right) const
-        {
-            return memcmp(&left, &right, sizeof(winrt::guid)) < 0;
-        }
-    };
-
-#if 0
-    template<> struct hash<winrt::guid>
-    {
-        size_t operator()(const winrt::guid& guid) const
-        {
-            const uint64_t* const guidAsUint64 = reinterpret_cast<uint64_t const*>(&guid);
-            hash<uint64_t> uint64Hash;
-            return static_cast<size_t>(uint64Hash(guidAsUint64[0]) ^ uint64Hash(guidAsUint64[1]));
-        }
-    };
-#endif
-}
-
-using namespace std::literals;
-
-namespace WinRTTurboModule
-{
-    template <typename T, auto CTV>
-    jsi::Value ConvertComArrayToValue(
-        const std::shared_ptr<ProjectionsContext>& context, const winrt::com_array<T>& value)
-    {
-        const auto size = value.size();
-        auto jsArray = jsi::Array(context->Runtime, size);
-        for (uint32_t i = 0; i < size; ++i)
-        {
-            jsArray.setValueAtIndex(context->Runtime, i, CTV(context, value[i]));
-        }
-        return jsArray;
-    }
-
-    template <typename T, auto CVT>
-    struct ReadOnlyArrayWrapper final
-    {
-        ReadOnlyArrayWrapper() = default;
-
-        ReadOnlyArrayWrapper(const std::shared_ptr<ProjectionsContext>& context, const jsi::Value& value)
-        {
-            auto& runtime = context->Runtime;
-            const auto array = value.asObject(runtime).asArray(runtime);
-            const auto size = array.size(runtime);
-
-            if constexpr (std::is_base_of_v<winrt::Windows::Foundation::IUnknown, T>)
-            {
-                m_nativeArray = winrt::com_array<T>(static_cast<uint32_t>(size), nullptr);
-            }
-            else
-            {
-                m_nativeArray = winrt::com_array<T>(static_cast<uint32_t>(size));
-            }
-
-            for (uint32_t i = 0; i < size; ++i)
-            {
-                m_nativeArray[i] = CVT(context, array.getValueAtIndex(runtime, i));
-            }
-        }
-
-        operator winrt::array_view<const T>()
-        {
-            return winrt::array_view<const T>(static_cast<const T*>(m_nativeArray.data()),
-                static_cast<const T*>(m_nativeArray.data() + m_nativeArray.size()));
-        }
-
-    private:
-        winrt::com_array<T> m_nativeArray;
-    };
-
-    template <typename T, auto CVT>
-    ReadOnlyArrayWrapper<T, CVT> ConvertValueToReadOnlyArrayView(
-        const std::shared_ptr<ProjectionsContext>& context, const jsi::Value& value)
-    {
-        return { context, value };
-    }
-
-    template <typename T, auto CTV>
-    struct WriteOnlyArrayWrapper final
-    {
-        WriteOnlyArrayWrapper() = default;
-
-        WriteOnlyArrayWrapper(const std::shared_ptr<ProjectionsContext>& context, const jsi::Value& value) :
-            m_context(context), m_jsArray(value.asObject(m_context->Runtime).asArray(m_context->Runtime))
-        {
-            const auto size = m_jsArray->size(m_context->Runtime);
-            if constexpr (std::is_base_of_v<winrt::Windows::Foundation::IUnknown, T>)
-            {
-                m_nativeArray = winrt::com_array<T>(static_cast<uint32_t>(size), nullptr);
-            }
-            else
-            {
-                m_nativeArray = winrt::com_array<T>(static_cast<uint32_t>(size));
-            }
-        }
-
-        WriteOnlyArrayWrapper(const WriteOnlyArrayWrapper&) = delete;
-        WriteOnlyArrayWrapper(WriteOnlyArrayWrapper&&) = default;
-
-        // TODO: Should an exception here be allowed to propagate, potentially fatally?
-        ~WriteOnlyArrayWrapper() noexcept
-        try
-        {
-            const auto size = m_nativeArray.size();
-            for (uint32_t i = 0; i < size; ++i)
-            {
-                m_jsArray->setValueAtIndex(m_context->Runtime, i, CTV(m_context, m_nativeArray[i]));
-            }
-        }
-        CATCH_LOG_RETURN()
-
-        operator winrt::array_view<T>&()
-        {
-            return m_nativeArray;
-        }
-
-    private:
-        const std::shared_ptr<ProjectionsContext> m_context;
-        std::optional<jsi::Array> m_jsArray;
-        winrt::com_array<T> m_nativeArray;
-    };
-
-    template <typename T, auto CTV>
-    WriteOnlyArrayWrapper<T, CTV> ConvertValueToWriteOnlyArrayView(
-        const std::shared_ptr<ProjectionsContext>& context, const jsi::Value& value)
-    {
-        return { context, value };
-    }
-}
-
-#endif
