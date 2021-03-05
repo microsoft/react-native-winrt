@@ -1738,50 +1738,53 @@ namespace jswinrt
         // IVector functions, with the exception of 'GetView'
         void Append(T const& value)
         {
+            // NOTE: JSI doesn't currently seem to allow modification of arrays from native
             CheckThread();
-            // TODO: Currently, jsi::Array does not allow modification of size. We might be able to get around this by
-            // invoking javascript methods directly? E.g. call 'push'
-            throw winrt::hresult_not_implemented{};
+            auto pushFn = array.getPropertyAsFunction(runtime, "push");
+            pushFn.callWithThis(runtime, array, convert_native_to_value(runtime, value));
         }
 
         void Clear()
         {
+            // NOTE: JSI doesn't currently seem to allow modification of arrays from native
             CheckThread();
-            // TODO: Currently, jsi::Array does not allow modification of size. We might be able to get around this by
-            // invoking javascript methods directly?
-            throw winrt::hresult_not_implemented{};
+            array.setProperty(runtime, "length", 0);
         }
 
         void InsertAt(std::uint32_t index, T const& value)
         {
+            // NOTE: JSI doesn't currently seem to allow modification of arrays from native
             CheckThread();
-            // TODO: Currently, jsi::Array does not allow modification of size. We might be able to get around this by
-            // invoking javascript methods directly? E.g. call 'splice'
-            throw winrt::hresult_not_implemented{};
+            auto spliceFn = array.getPropertyAsFunction(runtime, "splice");
+            spliceFn.callWithThis(runtime, array, index, 0, convert_native_to_value(runtime, value));
         }
 
         void RemoveAt(std::uint32_t index)
         {
+            // NOTE: JSI doesn't currently seem to allow modification of arrays from native
             CheckThread();
-            // TODO: Currently, jsi::Array does not allow modification of size. We might be able to get around this by
-            // invoking javascript methods directly? E.g. call 'splice'
-            throw winrt::hresult_not_implemented{};
+            auto spliceFn = array.getPropertyAsFunction(runtime, "splice");
+            spliceFn.callWithThis(runtime, array, index, 1);
         }
 
         void RemoveAtEnd()
         {
+            // NOTE: JSI doesn't currently seem to allow modification of arrays from native
             CheckThread();
-            // TODO: Currently, jsi::Array does not allow modification of size. We might be able to get around this by
-            // invoking javascript methods directly? E.g. call 'splice'
-            throw winrt::hresult_not_implemented{};
+            auto popFn = array.getPropertyAsFunction(runtime, "pop");
+            popFn.callWithThis(runtime, array);
         }
 
         void ReplaceAll(winrt::array_view<const T> const& items)
         {
+            // NOTE: JSI doesn't currently seem to allow modification of arrays from native
             CheckThread();
-            // TODO: Currently, jsi::Array does not allow modification of size. We might be able to get around this by
-            // invoking javascript methods directly?
-            throw winrt::hresult_not_implemented{};
+            array.setProperty(runtime, "length", items.size());
+
+            for (uint32_t i = 0; i < items.size(); ++i)
+            {
+                array.setValueAtIndex(runtime, i, convert_native_to_value(runtime, items[i]));
+            }
         }
 
         void SetAt(std::uint32_t index, T const& value)
