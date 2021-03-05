@@ -266,6 +266,7 @@ public:
         TextWriter& textWriter, bool isAnonymousFunction = false)
     {
         jswinrt::typeparser::method_signature methodSignature(method);
+        std::vector<std::pair<std::string_view, winmd::reader::TypeSig>> returnNameTypePairs;
         textWriter.Write(
             "%%%%(%)%;"sv, [&]() { WriteAccess(method.Flags().Access(), textWriter); },
             [&]() {
@@ -294,18 +295,22 @@ public:
                 }
             },
             [&]() {
-                auto idx = 0;
+                bool hasAtleastOneInParam = false;
                 for (auto&& [param, paramSignature] : methodSignature.params())
                 {
+                    if (param.Flags().Out())
+                    {
+                        returnNameTypePairs.push_back(std::make_pair(param.Name(), paramSignature->Type()));
+                        continue;
+                    }
                     textWriter.Write("%: ", param.Name());
                     WriteTypeSemantics(jswinrt::typeparser::get_type_semantics(paramSignature->Type()), containerType,
                         textWriter, paramSignature->Type().is_szarray(), false);
-                    if (idx < methodSignature.params().size() - 1)
-                    {
-                        textWriter.Write("%", ", ");
-                    }
-                    idx++;
+                    textWriter.Write("%", ", ");
+                    hasAtleastOneInParam = true;
                 }
+                if (hasAtleastOneInParam)
+                    textWriter.DeleteLast(2);
             },
             [&]() {
                 if (jswinrt::typeparser::is_constructor(method))
@@ -313,13 +318,36 @@ public:
                     return;
                 }
                 isAnonymousFunction ? textWriter.Write(" => ") : textWriter.Write(": ");
-                if (methodSignature.return_signature().Type().element_type() == winmd::reader::ElementType::Void)
+
+                if (methodSignature.return_signature() &&
+                    methodSignature.return_signature().Type().element_type() != winmd::reader::ElementType::Void)
+                {
+                    returnNameTypePairs.push_back(
+                        std::make_pair("returnValue", methodSignature.return_signature().Type()));
+                }
+
+                if (returnNameTypePairs.size() == 0)
                 {
                     textWriter.Write("void");
-                    return;
                 }
-                WriteTypeSemantics(jswinrt::typeparser::get_type_semantics(methodSignature.return_signature().Type()),
-                    containerType, textWriter, methodSignature.return_signature().Type().is_szarray(), false);
+                else if (returnNameTypePairs.size() == 1)
+                {
+                    WriteTypeSemantics(jswinrt::typeparser::get_type_semantics(returnNameTypePairs.at(0).second),
+                        containerType, textWriter, methodSignature.return_signature().Type().is_szarray(), false);
+                }
+                else
+                {
+                    textWriter.Write("{ ");
+                    for (auto&& [returnName, returnType] : returnNameTypePairs)
+                    {
+                        textWriter.Write("%: ", returnName);
+                        WriteTypeSemantics(jswinrt::typeparser::get_type_semantics(returnType), containerType,
+                            textWriter, returnType.is_szarray(), false);
+                        textWriter.Write("; ");
+                    }
+                    textWriter.DeleteLast(2);
+                    textWriter.Write(" }");
+                }
             });
     }
 
