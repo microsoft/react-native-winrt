@@ -1,11 +1,15 @@
 #pragma once
 
+#ifndef NOMINMAX
+#define NOMINMAX 1
+#endif
+
+#include <WeakReference.h>
 #include <atomic>
 #include <jsi/jsi.h>
 #include <string_view>
 #include <unordered_map>
 #include <variant>
-#include <WeakReference.h>
 #include <winrt/Windows.Foundation.h>
 
 // Common helpers/types
@@ -410,7 +414,7 @@ namespace jswinrt
                 m_size = other.m_size;
                 m_capacity = other.m_capacity;
                 other.m_size = 0;
-                other.m_capacity = OhterBufferSize;
+                other.m_capacity = OtherBufferSize;
             }
         }
 
@@ -455,6 +459,38 @@ namespace jswinrt
         } m_data;
     };
 
+    // Used to capture a lambda whose capture includes non-copyable types in scenarios where a copy constructor is
+    // needed (e.g. std::function), but is never used in practice.
+    template <typename TLambda>
+    struct move_only_lambda
+    {
+        move_only_lambda(TLambda lambda) : m_lambda(std::move(lambda))
+        {
+        }
+
+        move_only_lambda(move_only_lambda&&) = default;
+        move_only_lambda& operator=(move_only_lambda&&) = default;
+
+        move_only_lambda(const move_only_lambda& other) : m_lambda(std::move(const_cast<TLambda&>(other.m_lambda)))
+        {
+            winrt::terminate();
+        }
+
+        move_only_lambda& operator=(const move_only_lambda&)
+        {
+            winrt::terminate();
+        }
+
+        template <typename... Args>
+        auto operator()(Args&&... args)
+        {
+            return m_lambda(std::forward<Args>(args)...);
+        }
+
+    private:
+        TLambda m_lambda;
+    };
+
     template <typename T, typename U, typename Return, typename... Args>
     auto bind_this(Return (U::*fn)(Args...), T* pThis)
     {
@@ -472,7 +508,7 @@ namespace jswinrt
 namespace jswinrt
 {
     namespace jsi = facebook::jsi;
-    using namespace std::string_literals;
+    using namespace std::literals;
 
     using call_function_t = jsi::Value (*)(jsi::Runtime&, const jsi::Value&, const jsi::Value*, size_t);
 
@@ -531,8 +567,8 @@ namespace jswinrt
     {
         return [fn](jsi::Runtime& runtime, const jsi::Value& thisValue, const jsi::Value* args, size_t count) {
             auto strongThis = thisValue.asObject(runtime).asHostObject<T>(runtime);
-            return (strongThis->*fn)(runtime, args, count);
-        }
+            return (strongThis.get()->*fn)(runtime, args, count);
+        };
     }
 
     template <typename T>
@@ -540,8 +576,8 @@ namespace jswinrt
     {
         return [fn](jsi::Runtime& runtime, const jsi::Value& thisValue, const jsi::Value* args, size_t count) {
             auto strongThis = thisValue.asObject(runtime).asHostObject<T>(runtime);
-            return (strongThis->*fn)(runtime, args, count);
-        }
+            return (strongThis.get()->*fn)(runtime, args, count);
+        };
     }
 
     template <typename T, typename Enable = void>
@@ -619,6 +655,7 @@ namespace jswinrt
     {
     };
 
+    template <>
     struct pinterface_traits<winrt::Windows::Foundation::IAsyncAction> : pinterface_traits_base
     {
         // NOTE: Currently don't need anything to differentiate here
@@ -806,7 +843,7 @@ namespace jswinrt
         void cleanup(jsi::Runtime& runtime)
         {
             last_cleanup = std::chrono::steady_clock::now();
-            for (auto itr = instances.begin(); itr != instances.end(); )
+            for (auto itr = instances.begin(); itr != instances.end();)
             {
                 if (supports_weak_object)
                 {
@@ -938,7 +975,7 @@ namespace jswinrt
         void cleanup()
         {
             last_cleanup = std::chrono::steady_clock::now();
-            for (auto itr = events.begin(); itr != events.end(); )
+            for (auto itr = events.begin(); itr != events.end();)
             {
                 if (itr->second.weak_ref.get()) // Object still alive
                 {
@@ -1316,7 +1353,7 @@ namespace jswinrt
     template <typename IFace>
     struct projected_async_instance :
         public jsi::HostObject,
-        public std::enable_shared_from_this<projected_async_instance>
+        public std::enable_shared_from_this<projected_async_instance<IFace>>
     {
         using traits = pinterface_traits<IFace>;
 
@@ -1345,28 +1382,28 @@ namespace jswinrt
             auto name = id.utf8(runtime);
             if (name == "cancel"sv)
             {
-                return jsi::Value(
-                    runtime, jsi::Function::createFromHostFunction(runtime, id, 0, bind_host_function(on_cancel)));
+                return jsi::Value(runtime, jsi::Function::createFromHostFunction(runtime, id, 0,
+                                               bind_host_function(&projected_async_instance::on_cancel)));
             }
             else if (name == "catch"sv)
             {
-                return jsi::Value(
-                    runtime, jsi::Function::createFromHostFunction(runtime, id, 1, bind_host_function(on_catch)));
+                return jsi::Value(runtime, jsi::Function::createFromHostFunction(runtime, id, 1,
+                                               bind_host_function(&projected_async_instance::on_catch)));
             }
             else if (name == "done"sv)
             {
-                return jsi::Value(
-                    runtime, jsi::Function::createFromHostFunction(runtime, id, 3, bind_host_function(on_done)));
+                return jsi::Value(runtime, jsi::Function::createFromHostFunction(
+                                               runtime, id, 3, bind_host_function(&projected_async_instance::on_done)));
             }
             else if (name == "finally"sv)
             {
-                return jsi::Value(
-                    runtime, jsi::Function::createFromHostFunction(runtime, id, 3, bind_host_function(on_finally)));
+                return jsi::Value(runtime, jsi::Function::createFromHostFunction(runtime, id, 3,
+                                               bind_host_function(&projected_async_instance::on_finally)));
             }
             else if (name == "then"sv)
             {
-                return jsi::Value(
-                    runtime, jsi::Function::createFromHostFunction(runtime, id, 3, bind_host_function(on_then)));
+                return jsi::Value(runtime, jsi::Function::createFromHostFunction(
+                                               runtime, id, 3, bind_host_function(&projected_async_instance::on_then)));
             }
             else if (name == "operation"sv)
             {
@@ -1376,7 +1413,7 @@ namespace jswinrt
             return jsi::Value::undefined();
         }
 
-        virtual void set(jsi::Runtime& runtime, const jsi::PropNameID& name, const jsi::Value& value) override
+        virtual void set(jsi::Runtime& runtime, const jsi::PropNameID& name, const jsi::Value&) override
         {
             throw jsi::JSError(runtime, "TypeError: Cannot assign to property '" + name.utf8(runtime) +
                                             "' of a projected WinRT AsyncOperation");
@@ -1398,6 +1435,27 @@ namespace jswinrt
         }
 
     private:
+        struct continuation
+        {
+            enum class type
+            {
+                then, // Covers both .then and .catch
+                finally,
+                done,
+            };
+
+            type kind;
+            std::optional<promise_wrapper> promise;
+            jsi::Value data[3]; // Contents depend on 'kind'
+        };
+
+        enum class state
+        {
+            pending,
+            resolved,
+            rejected,
+        };
+
         winrt::fire_and_forget initialize(IFace inst)
         {
             auto weakThis = weak_from_this();
@@ -1446,7 +1504,7 @@ namespace jswinrt
             }
         }
 
-        jsi::Value on_cancel(jsi::Runtime& runtime, const jsi::Value*, size_t)
+        jsi::Value on_cancel(jsi::Runtime&, const jsi::Value*, size_t)
         {
             m_instance.Cancel();
             return jsi::Value::undefined();
@@ -1456,7 +1514,8 @@ namespace jswinrt
         {
             // Prototype: catch(rejectCallback) -> Promise
             // NOTE: Equivalent to 'then(null, rejectCallback)'
-            return handle_then(runtime, jsi::Value::undefined(), count >= 1 ? args[0] : jsi::Value::undefined());
+            auto undefined = jsi::Value::undefined();
+            return handle_then(runtime, undefined, count >= 1 ? args[0] : undefined);
         }
 
         jsi::Value on_done(jsi::Runtime& runtime, const jsi::Value* args, size_t count)
@@ -1477,7 +1536,7 @@ namespace jswinrt
             continuation c{ continuation::type::finally, promise_wrapper::create(runtime),
                 { count >= 1 ? jsi::Value(runtime, args[0]) : jsi::Value::undefined() } };
 
-            auto result = jsi::Value(runtime, c.get());
+            auto result = jsi::Value(runtime, c.promise->get());
             handle_continuation(runtime, std::move(c));
 
             return result;
@@ -1486,8 +1545,8 @@ namespace jswinrt
         jsi::Value on_then(jsi::Runtime& runtime, const jsi::Value* args, size_t count)
         {
             // Prototype: then(resolvedCallback, rejectedCallback)
-            return handle_then(runtime, count >= 1 ? args[0] : jsi::Value::undefined(),
-                count >= 2 ? args[1] : jsi::Value::undefined());
+            auto undefined = jsi::Value::undefined();
+            return handle_then(runtime, count >= 1 ? args[0] : undefined, count >= 2 ? args[1] : undefined);
         }
 
         jsi::Value handle_then(
@@ -1496,7 +1555,7 @@ namespace jswinrt
             continuation c{ continuation::type::then, promise_wrapper::create(runtime),
                 { jsi::Value(runtime, resolvedHandler), jsi::Value(runtime, rejectedHandler) } };
 
-            auto result = jsi::Value(runtime, c.get());
+            auto result = jsi::Value(runtime, c.promise->get());
             handle_continuation(runtime, std::move(c));
 
             return result;
@@ -1510,9 +1569,9 @@ namespace jswinrt
                 // NOTE: The callback will occur on the same thread, implying that the 'Runtime' instance will still be
                 // alive and valid, hence the ref is safe
                 current_runtime_context()->call_async(
-                    [&runtime, strongThis = shared_from_this(), cont = std::move(c)]() {
+                    move_only_lambda([&runtime, strongThis = shared_from_this(), cont = std::move(c)]() mutable {
                         strongThis->dispatch_continuation(runtime, cont);
-                    });
+                    }));
             }
             else
             {
@@ -1531,10 +1590,11 @@ namespace jswinrt
             }
         }
 
-        void on_completed(jsi::Runtime& runtime, const jsi::Value& value, bool resolved)
+        void on_completed(jsi::Runtime& runtime, jsi::Value&& value, bool resolved)
         {
             assert(m_state == state::pending);
             m_state = resolved ? state::resolved : state::rejected;
+            m_result = std::move(value);
 
             for (auto& cont : m_continuations)
             {
@@ -1554,16 +1614,18 @@ namespace jswinrt
             case continuation::type::done: // Effectively 'then', but with progress and no promise
                 if (resolved)
                 {
-                    if (cont.data[0].isFunction(runtime))
+                    if (cont.data[0].isObject())
                     {
-                        continuationResult = cont.data[0].getFunction(runtime).call(runtime, m_result);
+                        continuationResult =
+                            cont.data[0].getObject(runtime).asFunction(runtime).call(runtime, m_result);
                     }
                 }
                 else // rejected
                 {
-                    if (cont.data[1].isFunction(runtime))
+                    if (cont.data[1].isObject())
                     {
-                        continuationResult = cont.data[1].getFunction(runtime).call(runtime, m_result);
+                        continuationResult =
+                            cont.data[1].getObject(runtime).asFunction(runtime).call(runtime, m_result);
                         resolved = true;
                     }
                 }
@@ -1571,9 +1633,9 @@ namespace jswinrt
 
             case continuation::type::finally:
                 // NOTE: Finally does not change the value, nor the resolved state
-                if (cont.data[0].isFunction(runtime))
+                if (cont.data[0].isObject())
                 {
-                    cont.data[0].getFunction(runtime).call(runtime, m_result);
+                    cont.data[0].getObject(runtime).asFunction(runtime).call(runtime, m_result);
                 }
                 break;
             }
@@ -1596,27 +1658,6 @@ namespace jswinrt
                 throw jsi::JSError(runtime, jsi::Value(runtime, effectiveResult));
             }
         }
-
-        struct continuation
-        {
-            enum class type
-            {
-                then, // Covers both .then and .catch
-                finally,
-                done,
-            };
-
-            type kind;
-            std::optional<promise_wrapper> promise;
-            jsi::Value data[3]; // Contents depend on 'kind'
-        };
-
-        enum class state
-        {
-            pending,
-            resolved,
-            rejected,
-        };
 
         IFace m_instance;
         sso_vector<continuation, 1> m_continuations;
@@ -1960,7 +2001,6 @@ namespace jswinrt
         }
 
     private:
-
         jsi::Runtime& m_runtime;
         jsi::Array m_jsArray;
         std::vector<T> m_data;
@@ -2003,7 +2043,6 @@ namespace jswinrt
         }
 
     private:
-
         std::vector<T> m_data;
     };
 
@@ -2468,8 +2507,8 @@ namespace jswinrt
             struct data_t
             {
                 using iface = interface_data<TProgress>;
-                static constexpr const static_interface_data value(
-                    winrt::guid_of<typename iface::native_type>(), iface::properties, {}, iface::functions);
+                static constexpr const static_interface_data value{ winrt::guid_of<typename iface::native_type>(),
+                    iface::properties, {}, iface::functions };
             };
 
             template <typename TProgress>
@@ -2500,15 +2539,15 @@ namespace jswinrt
                             return convert_native_to_value(runtime, thisValue.as<native_type>().GetResults());
                         },
                         0, false },
-                }
+                };
             };
 
             template <typename TResult>
             struct data_t
             {
                 using iface = interface_data<TResult>;
-                static constexpr const static_interface_data value(
-                    winrt::guid_of<typename iface::native_type>(), iface::properties, {}, iface::functions);
+                static constexpr const static_interface_data value{ winrt::guid_of<typename iface::native_type>(),
+                    iface::properties, {}, iface::functions };
             };
 
             template <typename TResult>
@@ -2555,8 +2594,8 @@ namespace jswinrt
             struct data_t
             {
                 using iface = interface_data<TResult, TProgress>;
-                static constexpr const static_interface_data value(
-                    winrt::guid_of<typename iface::native_type>(), iface::properties, {}, iface::functions);
+                static constexpr const static_interface_data value{ winrt::guid_of<typename iface::native_type>(),
+                    iface::properties, {}, iface::functions };
             };
 
             template <typename TResult, typename TProgress>
@@ -2587,8 +2626,8 @@ namespace jswinrt
             struct data_t
             {
                 using iface = interface_data<T>;
-                static constexpr const static_interface_data value(
-                    winrt::guid_of<typename iface::native_type>(), {}, {}, iface::functions);
+                static constexpr const static_interface_data value{ winrt::guid_of<typename iface::native_type>(), {},
+                    {}, iface::functions };
             };
 
             template <typename T>
@@ -2634,8 +2673,8 @@ namespace jswinrt
             struct data_t
             {
                 using iface = interface_data<T>;
-                static constexpr const static_interface_data value(
-                    winrt::guid_of<typename iface::native_type>(), iface::properties, {}, properties::functions);
+                static constexpr const static_interface_data value{ winrt::guid_of<typename iface::native_type>(),
+                    iface::properties, {}, properties::functions };
             };
 
             template <typename T>
@@ -2666,9 +2705,9 @@ namespace jswinrt
             template <typename K, typename V>
             struct data_t
             {
-                using iface = interface_type<Key, V>;
-                static constexpr const static_interface_data value(
-                    winrt::guid_of<typename iface::native_type>(), iface::properties, {}, {});
+                using iface = interface_data<K, V>;
+                static constexpr const static_interface_data value{ winrt::guid_of<typename iface::native_type>(),
+                    iface::properties, {}, {} };
             };
 
             template <typename K, typename V>
@@ -2735,8 +2774,8 @@ namespace jswinrt
             struct data_t
             {
                 using iface = interface_data<K, V>;
-                static constexpr const static_interface_data value(
-                    winrt::guid_of<typename iface::native_type>(), iface::properties, {}, iface::functions);
+                static constexpr const static_interface_data value{ winrt::guid_of<typename iface::native_type>(),
+                    iface::properties, {}, iface::functions };
             };
 
             template <typename K, typename V>
@@ -2767,9 +2806,9 @@ namespace jswinrt
             template <typename K>
             struct data_t
             {
-                using iface = interface_type<K>;
-                static constexpr const static_interface_data value(
-                    winrt::guid_of<typename iface::native_type>(), iface::properties, {}, {});
+                using iface = interface_data<K>;
+                static constexpr const static_interface_data value{ winrt::guid_of<typename iface::native_type>(),
+                    iface::properties, {}, {} };
             };
 
             template <typename K>
@@ -2819,8 +2858,8 @@ namespace jswinrt
             struct data_t
             {
                 using iface = interface_data<K, V>;
-                static constexpr const static_interface_data value(
-                    winrt::guid_of<typename iface::native_type>(), iface::properties, {}, iface::functions);
+                static constexpr const static_interface_data value{ winrt::guid_of<typename iface::native_type>(),
+                    iface::properties, {}, iface::functions };
             };
 
             template <typename K, typename V>
@@ -2844,15 +2883,15 @@ namespace jswinrt
                         },
                         [](jsi::Runtime& runtime, const IInspectable& thisValue, const jsi::Value& callback,
                             winrt::event_token token) { thisValue.as<native_type>().MapChanged(token); } },
-                }
+                };
             };
 
             template <typename K, typename V>
             struct data_t
             {
                 using iface = interface_data<K, V>;
-                static constexpr const static_interface_data value(
-                    winrt::guid_of<typename iface::native_type>(), {}, iface::events, {});
+                static constexpr const static_interface_data value{ winrt::guid_of<typename iface::native_type>(), {},
+                    iface::events, {} };
             };
 
             template <typename K, typename V>
@@ -2883,8 +2922,8 @@ namespace jswinrt
             struct data_t
             {
                 using iface = interface_data<T>;
-                static constexpr const static_interface_data value(
-                    winrt::guid_of<typename iface::native_type>(), {}, iface::events, {});
+                static constexpr const static_interface_data value{ winrt::guid_of<typename iface::native_type>(), {},
+                    iface::events, {} };
             };
 
             template <typename T>
@@ -2989,8 +3028,8 @@ namespace jswinrt
             struct data_t
             {
                 using iface = interface_data<T>;
-                static constexpr const static_interface_data value(
-                    winrt::guid_of<typename iface::native_type>(), iface::properties, {}, iface::functions);
+                static constexpr const static_interface_data value{ winrt::guid_of<typename iface::native_type>(),
+                    iface::properties, {}, iface::functions };
             };
 
             template <typename T>
@@ -3042,8 +3081,8 @@ namespace jswinrt
             struct data_t
             {
                 using iface = interface_data<T>;
-                static constexpr const static_interface_data value(
-                    winrt::guid_of<typename iface::native_type>(), iface::properties, {}, iface::functions);
+                static constexpr const static_interface_data value{ winrt::guid_of<typename iface::native_type>(),
+                    iface::properties, {}, iface::functions };
             };
 
             template <typename T>
