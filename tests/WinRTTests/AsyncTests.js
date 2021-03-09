@@ -18,25 +18,25 @@ export function makeAsyncTestScenarios(pThis) {
 }
 
 function runAsyncActionTest(scenario) {
-    const vector = TestComponent.Test.makeNumericVector([]);
+    const vector = TestComponent.Test.copyNumericsToVector([]);
     this.runAsync(scenario, (resolve, reject) => {
         this.test.appendZeroToIVectorAsync(vector)
             .catch(reject)
             .then(() => {
                 assert.equal(0, vector.getAt(0));
-                assert.equal(1, vector.size);  
+                assert.equal(1, vector.size);
                 resolve();
             });
     });
 }
 
 function runAsyncActionWithProgressTest(scenario) {
-    const vector = TestComponent.Test.makeNumericVector([]);
+    const vector = TestComponent.Test.copyNumericsToVector([]);
     let progressIteration = 0;
     this.runAsync(scenario, (resolve, reject) => {
         this.test.fillZeroesToIVectorAsync(vector).done(() => {
             assert.equal(0, vector.getAt(0));
-            assert.equal(10, vector.size); 
+            assert.equal(10, vector.size);
             assert.equal(10, progressIteration);
             resolve();
         }, reject, progress => {
@@ -51,7 +51,7 @@ function runAsyncOperationTest(scenario) {
         const op = this.test.createIVectorAsync();
         op.catch(reject);
         op.then(vector => {
-            assert.equal(0, vector.size);  
+            assert.equal(0, vector.size);
             resolve();
         });
     });
@@ -62,7 +62,7 @@ function runAsyncOperationWithProgressTest(scenario) {
     this.runAsync(scenario, (resolve, reject) => {
         this.test.createIVectorWithZeroesAsync().done(vector => {
             assert.equal(0, vector.getAt(0));
-            assert.equal(10, vector.size); 
+            assert.equal(10, vector.size);
             assert.equal(10, progressIteration);
             resolve();
         }, reject, progress => {
@@ -83,7 +83,7 @@ function runAsyncActionWithException(scenario) {
             .catch(e => {
                 // if (!isFinallyRun) {
                 //     reject('Finally must run before catch');
-                // } else 
+                // } else
                 if (e.number == -2147024809 && e.message == "test") {
                     resolve();
                 } else {

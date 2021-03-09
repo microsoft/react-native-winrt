@@ -123,7 +123,7 @@ function runStaticRefEventHandler(scenario) {
 }
 
 function runStaticObjectEventHandler(scenario) {
-    var vals = [TestComponent.Test.makeNumericVector([]), TestComponent.Test.makeNumericVector([0]), TestComponent.Test.makeNumericVector([0, 1, 2, 3, 4])];
+    var vals = [TestComponent.Test.copyNumericsToVector([]), TestComponent.Test.copyNumericsToVector([0]), TestComponent.Test.copyNumericsToVector([0, 1, 2, 3, 4])];
     testStaticEventHandler.call(this, scenario, vals, 'staticobjecteventhandler', (arg) => TestComponent.Test.raiseStaticObjectEvent(arg));
 }
 
@@ -180,7 +180,7 @@ function runStaticRefDelegate(scenario) {
 function runStaticObjectDelegate(scenario) {
     var values = [];
     for (var val of TestValues.s32.validArrays) {
-        values.push(TestComponent.Test.makeNumericVector(val));
+        values.push(TestComponent.Test.copyNumericsToVector(val));
     }
 
     runDelegateTest.call(this, scenario, values, (val, fn) => TestComponent.Test.staticInvokeObjectDelegate(val, fn));
@@ -253,7 +253,7 @@ function runRefEventHandler(scenario) {
 }
 
 function runObjectEventHandler(scenario) {
-    var vals = [TestComponent.Test.makeNumericVector([]), TestComponent.Test.makeNumericVector([0]), TestComponent.Test.makeNumericVector([0, 1, 2, 3, 4])];
+    var vals = [TestComponent.Test.copyNumericsToVector([]), TestComponent.Test.copyNumericsToVector([0]), TestComponent.Test.copyNumericsToVector([0, 1, 2, 3, 4])];
     testEventHandler.call(this, scenario, vals, 'objecteventhandler', (arg) => this.test.raiseObjectEvent(arg));
 }
 
@@ -293,7 +293,7 @@ function runRefDelegate(scenario) {
 function runObjectDelegate(scenario) {
     var values = [];
     for (var val of TestValues.s32.validArrays) {
-        values.push(TestComponent.Test.makeNumericVector(val));
+        values.push(TestComponent.Test.copyNumericsToVector(val));
     }
 
     runDelegateTest.call(this, scenario, values, (val, fn) => this.test.invokeObjectDelegate(val, fn));

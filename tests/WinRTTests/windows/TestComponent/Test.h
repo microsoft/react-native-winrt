@@ -131,7 +131,40 @@ namespace winrt::TestComponent::implementation
             ObjectDelegateWithOutParam const& targetFn);
         */
 
-        static Windows::Foundation::Collections::IVector<int32_t> MakeNumericVector(array_view<int32_t const> values);
+        static Windows::Foundation::Collections::IVector<bool> CopyBoolsToVector(array_view<bool const> values);
+        static Windows::Foundation::Collections::IVector<char16_t> CopyCharsToVector(array_view<char16_t const> values);
+        static Windows::Foundation::Collections::IVector<int32_t> CopyNumericsToVector(
+            array_view<int32_t const> values);
+        static Windows::Foundation::Collections::IVector<hstring> CopyStringsToVector(array_view<hstring const> values);
+        static Windows::Foundation::Collections::IVector<winrt::guid> CopyGuidsToVector(
+            array_view<winrt::guid const> values);
+        static Windows::Foundation::Collections::IVector<TestEnum> CopyEnumValuesToVector(
+            array_view<TestEnum const> values);
+        static Windows::Foundation::Collections::IVector<CompositeType> CopyCompositeStructsToVector(
+            array_view<CompositeType const> values);
+        static Windows::Foundation::Collections::IVector<Windows::Foundation::IReference<int32_t>> CopyRefsToVector(
+            array_view<Windows::Foundation::IReference<int32_t> const> values);
+        static Windows::Foundation::Collections::IVector<Windows::Foundation::IInspectable> CopyObjectsToVector(
+            array_view<Windows::Foundation::IInspectable const> values);
+
+        static Windows::Foundation::Collections::IVector<bool> ReturnSameBoolVector(
+            Windows::Foundation::Collections::IVector<bool> const& vector);
+        static Windows::Foundation::Collections::IVector<char16_t> ReturnSameCharVector(
+            Windows::Foundation::Collections::IVector<char16_t> const& vector);
+        static Windows::Foundation::Collections::IVector<int32_t> ReturnSameNumericVector(
+            Windows::Foundation::Collections::IVector<int32_t> const& vector);
+        static Windows::Foundation::Collections::IVector<hstring> ReturnSameStringVector(
+            Windows::Foundation::Collections::IVector<hstring> const& vector);
+        static Windows::Foundation::Collections::IVector<winrt::guid> ReturnSameGuidVector(
+            Windows::Foundation::Collections::IVector<winrt::guid> const& vector);
+        static Windows::Foundation::Collections::IVector<TestEnum> ReturnSameEnumVector(
+            Windows::Foundation::Collections::IVector<TestEnum> const& vector);
+        static Windows::Foundation::Collections::IVector<CompositeType> ReturnSameCompositeStructVector(
+            Windows::Foundation::Collections::IVector<CompositeType> const& vector);
+        static Windows::Foundation::Collections::IVector<Windows::Foundation::IReference<int32_t>> ReturnSameRefVector(
+            Windows::Foundation::Collections::IVector<Windows::Foundation::IReference<int32_t>> const& vector);
+        static Windows::Foundation::Collections::IVector<Windows::Foundation::IInspectable> ReturnSameObjectVector(
+            Windows::Foundation::Collections::IVector<Windows::Foundation::IInspectable> const& vector);
 
         bool BoolProperty();
         void BoolProperty(bool value);

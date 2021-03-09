@@ -135,9 +135,9 @@ function runStaticObjectArrayOutParam(scenario) {
     this.runSync(scenario, () => {
         var fn = (val) => TestComponent.Test.staticObjectArrayOutParam(val);
         validateArrayOutParam([
-            TestComponent.Test.makeNumericVector([]),
-            TestComponent.Test.makeNumericVector([0]),
-            TestComponent.Test.makeNumericVector([0, 1, 2, 3, 4])
+            TestComponent.Test.copyNumericsToVector([]),
+            TestComponent.Test.copyNumericsToVector([0]),
+            TestComponent.Test.copyNumericsToVector([0, 1, 2, 3, 4])
         ], fn);
     });
 }
@@ -363,9 +363,9 @@ function runObjectArrayOutParam(scenario) {
     this.runSync(scenario, () => {
         var fn = (val) => this.test.objectArrayOutParam(val);
         validateArrayOutParam([
-            TestComponent.Test.makeNumericVector([]),
-            TestComponent.Test.makeNumericVector([0]),
-            TestComponent.Test.makeNumericVector([0, 1, 2, 3, 4])
+            TestComponent.Test.copyNumericsToVector([]),
+            TestComponent.Test.copyNumericsToVector([0]),
+            TestComponent.Test.copyNumericsToVector([0, 1, 2, 3, 4])
         ], fn);
     });
 }

@@ -198,8 +198,29 @@ namespace TestComponent
             ObjectDelegateWithOutParam targetFn);
         */
 
-        // NOTE: Just a helper. Conversion support should ideally be built in
-        static Windows.Foundation.Collections.IVector<Int32> MakeNumericVector(Int32[] values);
+        // Copy array to IVector
+        static Windows.Foundation.Collections.IVector<Boolean> CopyBoolsToVector(Boolean[] values);
+        static Windows.Foundation.Collections.IVector<Char> CopyCharsToVector(Char[] values);
+        static Windows.Foundation.Collections.IVector<Int32> CopyNumericsToVector(Int32[] values);
+        static Windows.Foundation.Collections.IVector<String> CopyStringsToVector(String[] values);
+        static Windows.Foundation.Collections.IVector<Guid> CopyGuidsToVector(Guid[] values);
+        static Windows.Foundation.Collections.IVector<TestEnum> CopyEnumValuesToVector(TestEnum[] values);
+        static Windows.Foundation.Collections.IVector<CompositeType> CopyCompositeStructsToVector(CompositeType[] values);
+        static Windows.Foundation.Collections.IVector<Windows.Foundation.IReference<Int32> > CopyRefsToVector(
+            Windows.Foundation.IReference<Int32>[] values);
+        static Windows.Foundation.Collections.IVector<Object> CopyObjectsToVector(Object[] values);
+
+        // Convert array to IVector
+        static Windows.Foundation.Collections.IVector<Boolean> ReturnSameBoolVector(Windows.Foundation.Collections.IVector<Boolean> vector);
+        static Windows.Foundation.Collections.IVector<Char> ReturnSameCharVector(Windows.Foundation.Collections.IVector<Char> vector);
+        static Windows.Foundation.Collections.IVector<Int32> ReturnSameNumericVector(Windows.Foundation.Collections.IVector<Int32> vector);
+        static Windows.Foundation.Collections.IVector<String> ReturnSameStringVector(Windows.Foundation.Collections.IVector<String> vector);
+        static Windows.Foundation.Collections.IVector<Guid> ReturnSameGuidVector(Windows.Foundation.Collections.IVector<Guid> vector);
+        static Windows.Foundation.Collections.IVector<TestEnum> ReturnSameEnumVector(Windows.Foundation.Collections.IVector<TestEnum> vector);
+        static Windows.Foundation.Collections.IVector<CompositeType> ReturnSameCompositeStructVector(Windows.Foundation.Collections.IVector<CompositeType> vector);
+        static Windows.Foundation.Collections.IVector<Windows.Foundation.IReference<Int32> > ReturnSameRefVector(
+            Windows.Foundation.Collections.IVector<Windows.Foundation.IReference<Int32> > vector);
+        static Windows.Foundation.Collections.IVector<Object> ReturnSameObjectVector(Windows.Foundation.Collections.IVector<Object> vector);
 
         // Member properties
         Boolean BoolProperty;

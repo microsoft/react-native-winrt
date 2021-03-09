@@ -283,7 +283,7 @@ function runObjectProperty(scenario) {
             assert.equal(prev, null);
 
             for (var val of TestValues.s32.validArrays) {
-                var vector = TestComponent.Test.makeNumericVector(val);
+                var vector = TestComponent.Test.copyNumericsToVector(val);
                 var assignedVal;
                 assignedVal = this.test.objectProperty = vector;
                 assert.equal(typeof(this.test.objectProperty), 'object');
@@ -338,7 +338,7 @@ function runObjectArrayProperty(scenario) {
     this.runSync(scenario, () => {
         var array = [];
         for (var val of TestValues.s32.validArrays) {
-            array.push(TestComponent.Test.makeNumericVector(val));
+            array.push(TestComponent.Test.copyNumericsToVector(val));
         }
 
         this.test.objectArrayProperty = array;

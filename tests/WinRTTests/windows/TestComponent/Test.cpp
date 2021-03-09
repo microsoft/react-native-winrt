@@ -624,9 +624,104 @@ namespace winrt::TestComponent::implementation
     }
     */
 
-    Windows::Foundation::Collections::IVector<int32_t> Test::MakeNumericVector(array_view<int32_t const> values)
+   template <typename T>
+   static Windows::Foundation::Collections::IVector<T> CopyToVector(array_view<T const> values)
+   {
+       return single_threaded_vector(std::vector<T>(values.begin(), values.end()));
+   }
+
+    Windows::Foundation::Collections::IVector<bool> Test::CopyBoolsToVector(array_view<bool const> values)
     {
-        return single_threaded_vector(std::vector<int32_t>(values.begin(), values.end()));
+        return CopyToVector(values);
+    }
+
+    Windows::Foundation::Collections::IVector<char16_t> Test::CopyCharsToVector(array_view<char16_t const> values)
+    {
+        return CopyToVector(values);
+    }
+
+    Windows::Foundation::Collections::IVector<int32_t> Test::CopyNumericsToVector(array_view<int32_t const> values)
+    {
+        return CopyToVector(values);
+    }
+
+    Windows::Foundation::Collections::IVector<hstring> Test::CopyStringsToVector(array_view<hstring const> values)
+    {
+        return CopyToVector(values);
+    }
+
+    Windows::Foundation::Collections::IVector<winrt::guid> Test::CopyGuidsToVector(array_view<winrt::guid const> values)
+    {
+        return CopyToVector(values);
+    }
+
+    Windows::Foundation::Collections::IVector<TestEnum> Test::CopyEnumValuesToVector(array_view<TestEnum const> values)
+    {
+        return CopyToVector(values);
+    }
+
+    Windows::Foundation::Collections::IVector<CompositeType> Test::CopyCompositeStructsToVector(
+        array_view<CompositeType const> values)
+    {
+        return CopyToVector(values);
+    }
+
+    Windows::Foundation::Collections::IVector<Windows::Foundation::IReference<int32_t>> Test::CopyRefsToVector(
+        array_view<Windows::Foundation::IReference<int32_t> const> values)
+    {
+        return CopyToVector(values);
+    }
+
+    Windows::Foundation::Collections::IVector<Windows::Foundation::IInspectable> Test::CopyObjectsToVector(
+        array_view<Windows::Foundation::IInspectable const> values)
+    {
+        return CopyToVector(values);
+    }
+
+    Windows::Foundation::Collections::IVector<bool> Test::ReturnSameBoolVector(
+        Windows::Foundation::Collections::IVector<bool> const& vector)
+    {
+        return vector;
+    }
+    Windows::Foundation::Collections::IVector<char16_t> Test::ReturnSameCharVector(
+        Windows::Foundation::Collections::IVector<char16_t> const& vector)
+    {
+        return vector;
+    }
+    Windows::Foundation::Collections::IVector<int32_t> Test::ReturnSameNumericVector(
+        Windows::Foundation::Collections::IVector<int32_t> const& vector)
+    {
+        return vector;
+    }
+    Windows::Foundation::Collections::IVector<hstring> Test::ReturnSameStringVector(
+        Windows::Foundation::Collections::IVector<hstring> const& vector)
+    {
+        return vector;
+    }
+    Windows::Foundation::Collections::IVector<winrt::guid> Test::ReturnSameGuidVector(
+        Windows::Foundation::Collections::IVector<winrt::guid> const& vector)
+    {
+        return vector;
+    }
+    Windows::Foundation::Collections::IVector<TestComponent::TestEnum> Test::ReturnSameEnumVector(
+        Windows::Foundation::Collections::IVector<TestComponent::TestEnum> const& vector)
+    {
+        return vector;
+    }
+    Windows::Foundation::Collections::IVector<TestComponent::CompositeType> Test::ReturnSameCompositeStructVector(
+        Windows::Foundation::Collections::IVector<TestComponent::CompositeType> const& vector)
+    {
+        return vector;
+    }
+    Windows::Foundation::Collections::IVector<Windows::Foundation::IReference<int32_t>> Test::ReturnSameRefVector(
+        Windows::Foundation::Collections::IVector<Windows::Foundation::IReference<int32_t>> const& vector)
+    {
+        return vector;
+    }
+    Windows::Foundation::Collections::IVector<Windows::Foundation::IInspectable> Test::ReturnSameObjectVector(
+        Windows::Foundation::Collections::IVector<Windows::Foundation::IInspectable> const& vector)
+    {
+        return vector;
     }
 
     bool Test::BoolProperty()

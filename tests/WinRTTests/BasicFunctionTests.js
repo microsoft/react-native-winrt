@@ -241,7 +241,7 @@ function runStaticRefOutParam(scenario) {
 
 function runStaticObjectOutParam(scenario) {
     this.runSync(scenario, () => {
-        var val = TestComponent.Test.makeNumericVector([0, 1, 2, 3, 4]);
+        var val = TestComponent.Test.copyNumericsToVector([0, 1, 2, 3, 4]);
         var { returnValue, doubledValues, tripledValues } = TestComponent.Test.staticObjectOutParam(val);
         assert.isTrue(val == returnValue);
 
@@ -441,7 +441,7 @@ function runRefOutParam(scenario) {
 
 function runObjectOutParam(scenario) {
     this.runSync(scenario, () => {
-        var val = TestComponent.Test.makeNumericVector([0, 1, 2, 3, 4]);
+        var val = TestComponent.Test.copyNumericsToVector([0, 1, 2, 3, 4]);
         var { returnValue, doubledValues, tripledValues } = this.test.objectOutParam(val);
         assert.isTrue(val == returnValue);
 
