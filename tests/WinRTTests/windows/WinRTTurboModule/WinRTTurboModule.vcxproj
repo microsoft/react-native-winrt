@@ -16,7 +16,7 @@
     <CppWinRTOptimized>true</CppWinRTOptimized>
     <CppWinRTPackageDir>..\packages\Microsoft.Windows.CppWinRT.2.0.201113.7\</CppWinRTPackageDir>
     <CppWinRTRootNamespaceAutoMerge>true</CppWinRTRootNamespaceAutoMerge>
-    <CppWinRTGenerateWindowsMetadata>false</CppWinRTGenerateWindowsMetadata>
+    <CppWinRTGenerateWindowsMetadata>true</CppWinRTGenerateWindowsMetadata>
     <CppWinRTVerbosity>high</CppWinRTVerbosity>
     <CppWinRTParameters>-base</CppWinRTParameters>
     <RnWinRTParameters>-include Windows.Foundation -include TestComponent</RnWinRTParameters>
