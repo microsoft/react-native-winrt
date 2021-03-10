@@ -9,7 +9,7 @@
 #include <winrt/Windows.Foundation.Collections.h>
 #include <winrt/Windows.Foundation.h>
 
-#include <TurboModule/Core/TurboModule.h> // TODO: Move react-specific code to separate files
+#include <ReactCommon/TurboModule.h> // TODO: Move react-specific code to separate files
 #include <jsi/jsi.h>
 
 #include <Windows.h>
