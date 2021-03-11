@@ -83,7 +83,7 @@ jobs:
         condition: succeededOrFailed()
 
       - task: CmdLine@2
-        displayName: Check for failure
+        displayName: Check for test failure
         inputs:
           script: if exist $(UserProfile)\AppData\Local\Packages\ade66fbb-2cb8-4ba7-b8e3-f0afcf0f7f3d_m393c780kgv6r\LocalState\FailureLog.txt (FAIL)
           failOnStderr: true
@@ -94,3 +94,11 @@ jobs:
         inputs:
           pathtoPublish: '$(UserProfile)\AppData\Local\Packages\ade66fbb-2cb8-4ba7-b8e3-f0afcf0f7f3d_m393c780kgv6r\LocalState\FailureLog.txt'
           artifactName: 'Failure log - $(Agent.JobName)-$(System.JobAttempt)'
+
+      - task: PowerShell@2
+        displayName: "Check if generated test TypeScript differs from expected output"
+        inputs:
+          targetType: filePath
+          filePath: $(Build.SourcesDirectory)\\tests\\TestArtifacts\\compareGeneratedTypeScript.ps1
+          arguments: -expectedFilesDir '$(Build.SourcesDirectory)\\tests\\TestArtifacts' -generatedFilesDir '$(Build.SourcesDirectory)\\tests\\WinRTTests\\windows\\WinRTTurboModule\\Generated Files\\types'
+        condition: succeededOrFailed()
