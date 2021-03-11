@@ -1,5 +1,5 @@
 //tslint:disable
-
+FORCE TEST FAILURE
 declare namespace TestComponent {
     type BoolDelegate = (inputValue: boolean) => boolean;
     
