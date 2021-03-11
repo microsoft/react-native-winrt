@@ -37,9 +37,3 @@ namespace WinRTTurboModule
     }
 
 }
-
-std::shared_ptr<react::TurboModule> CreateWinRTTurboModule(
-    const std::shared_ptr<facebook::react::CallInvoker>& jsInvoker)
-{
-    return std::make_shared<WinRTTurboModule::WinRTTurboModule>(jsInvoker);
-}
