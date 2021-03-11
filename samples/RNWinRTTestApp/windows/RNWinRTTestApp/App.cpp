@@ -20,12 +20,13 @@ App::App() noexcept
     settings.UseFastRefresh(false);
 
 #if _DEBUG
+    settings.UseWebDebugger(false);
     settings.UseDirectDebugger(true);
 #endif
 
 #else
     JavaScriptMainModuleName(L"index");
-    settings.UseWebDebugger(true);
+    settings.UseWebDebugger(false);
     settings.UseFastRefresh(true);
 #endif
 
@@ -38,7 +39,7 @@ App::App() noexcept
     RegisterAutolinkedNativeModulePackages(PackageProviders()); // Includes any autolinked modules
 
     PackageProviders().Append(make<ReactPackageProvider>()); // Includes all modules in this project
-
+    PackageProviders().Append(winrt::WinRTTurboModule::ReactPackageProvider());
     InitializeComponent();
 }
 

@@ -1,2 +1,4 @@
 ﻿EXPORTS
-CreateWinRTTurboModule
+DllMain = DllMain                                       PRIVATE
+DllCanUnloadNow = WINRT_CanUnloadNow                    PRIVATE
+DllGetActivationFactory = WINRT_GetActivationFactory    PRIVATE
