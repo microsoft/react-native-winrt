@@ -76,18 +76,9 @@
   </PropertyGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.props" />
   <PropertyGroup>
-    <!-- <ReactNativeWindowsDir>..\..\node_modules\react-native-windows</ReactNativeWindowsDir> -->
-    <!-- <JsiDir>..\..\node_modules\react-native\ReactCommon\jsi\</JsiDir> -->
     <ModuleImplementationDir>..\..\..\..\rnwinrt\module\</ModuleImplementationDir>
-    <!-- <ReactPlatform Condition="'$(Platform)'!='Win32'">$(Platform)</ReactPlatform> -->
-    <!-- <ReactPlatform Condition="'$(Platform)'=='Win32'">x86</ReactPlatform> -->
-    <!-- <ReactCommonDir>$(ReactNativeWindowsDir)..\react-native\ReactCommon\</ReactCommonDir> -->
   </PropertyGroup>
-  <!-- <Target Name="PrintPaths">
-    <Message Importance="High" Text="$(ReactNativeWindowsDir)" />
-  </Target> -->
   <Import Project="..\..\node_modules\react-native-windows\PropertySheets\external\Microsoft.ReactNative.Uwp.CppLib.props" Condition="Exists('..\..\node_modules\react-native-windows\PropertySheets\External\Microsoft.ReactNative.Uwp.CppLib.props')" />
-
   <ItemDefinitionGroup>
     <ClCompile>
       <PrecompiledHeader>Use</PrecompiledHeader>
@@ -103,6 +94,7 @@
         $(ReactCommonDir)callinvoker;
         $(ReactCommonDir)react\nativemodule\core;
         $(GeneratedFilesDir);
+        $(ModuleImplementationDir);
         %(AdditionalIncludeDirectories);
       </AdditionalIncludeDirectories>
       <AdditionalUsingDirectories>
@@ -133,6 +125,7 @@
   <ItemGroup>
     <ClInclude Include="pch.h" />
     <ClInclude Include="ReactPackageProvider.h" />
+    <ClInclude Include="$(ModuleImplementationDir)WinRTTurboModule.h" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="pch.cpp">
@@ -177,15 +170,4 @@
     <Error Condition="!Exists('..\packages\Microsoft.Windows.CppWinRT.2.0.201113.7\build\native\Microsoft.Windows.CppWinRT.props')" Text="$([System.String]::Format('$(ErrorText)', '..\packages\Microsoft.Windows.CppWinRT.2.0.201113.7\build\native\Microsoft.Windows.CppWinRT.props'))" />
     <Error Condition="!Exists('..\packages\Microsoft.Windows.ImplementationLibrary.1.0.201120.3\build\native\Microsoft.Windows.ImplementationLibrary.targets')" Text="$([System.String]::Format('$(ErrorText)', '..\packages\Microsoft.Windows.ImplementationLibrary.1.0.201120.3\build\native\Microsoft.Windows.ImplementationLibrary.targets'))" />
   </Target>
-  <!-- TODO: TurboModuleManager has no extensibility mechanism yet, so we have to manually inject the call to add the WinRTTurboModule.
-             Until a better solution exists replacing the file is the simplest option (though editing it with a script would be safer). -->
-  <!-- <PropertyGroup>
-    <BeforeClCompileTargets>
-      $(BeforeClCompileTargets);PatchTurboModuleManager;
-    </BeforeClCompileTargets>
-  </PropertyGroup>
-  <Target Name="PatchTurboModuleManager">
-    <Copy SourceFiles=".\Patches\TurboModuleManager.cpp" SkipUnchangedFiles="true" DestinationFolder="..\..\node_modules\react-native-windows\Shared\" />
-  </Target> -->
-  <Target Name="Deploy" />
 </Project>

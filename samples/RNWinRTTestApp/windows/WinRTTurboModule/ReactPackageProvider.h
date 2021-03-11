@@ -7,7 +7,7 @@ namespace winrt::WinRTTurboModule::implementation
     {
     public:
         // IReactPackageProvider
-        void CreatePackage(winrt::Microsoft::ReactNative::IReactPackageBuilder const& packageBuilder) noexcept;
+        void CreatePackage(winrt::Microsoft::ReactNative::IReactPackageBuilder const &packageBuilder) noexcept;
     };
 }
 
