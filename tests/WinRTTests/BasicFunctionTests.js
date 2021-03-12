@@ -122,9 +122,9 @@ function runStaticAppendAll(scenario) {
 function runStaticBoolOutParam(scenario) {
     this.runSync(scenario, () => {
         var run = (lhs, rhs) => {
-            var { returnValue, and, or } = TestComponent.Test.staticBoolOutParam(lhs, rhs);
-            assert.equal(and, lhs && rhs);
-            assert.equal(or, lhs || rhs);
+            var { returnValue, andResult, orResult } = TestComponent.Test.staticBoolOutParam(lhs, rhs);
+            assert.equal(andResult, lhs && rhs);
+            assert.equal(orResult, lhs || rhs);
             assert.equal(returnValue, lhs ^ rhs ? true : false);
         };
         run(false, false);
@@ -322,9 +322,9 @@ function runAppendAll(scenario) {
 function runBoolOutParam(scenario) {
     this.runSync(scenario, () => {
         var run = (lhs, rhs) => {
-            var { returnValue, and, or } = this.test.boolOutParam(lhs, rhs);
-            assert.equal(and, lhs && rhs);
-            assert.equal(or, lhs || rhs);
+            var { returnValue, andResult, orResult } = this.test.boolOutParam(lhs, rhs);
+            assert.equal(andResult, lhs && rhs);
+            assert.equal(orResult, lhs || rhs);
             assert.equal(returnValue, lhs ^ rhs ? true : false);
         };
         run(false, false);

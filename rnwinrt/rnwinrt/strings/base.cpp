@@ -1,7 +1,4 @@
 
-#define NOMINMAX
-#define WIN32_LEAN_AND_MEAN
-
 #include "base.h"
 
 #include <Windows.h>
@@ -65,9 +62,9 @@ jsi::Value object_instance_cache::get_instance(jsi::Runtime& runtime, const winr
         // this would imply that the JS object also got GC'd and would fail to resolve below
         if (supports_weak_object)
         {
-            if (auto value = std::get<0>(itr->second).lock(runtime); !value.isUndefined())
+            if (auto strongValue = std::get<0>(itr->second).lock(runtime); !strongValue.isUndefined())
             {
-                return value;
+                return strongValue;
             }
         }
         else
@@ -248,13 +245,14 @@ jsi::Value projected_statics_class::get(jsi::Runtime& runtime, const jsi::PropNa
         {
             if (name == add_event_name)
             {
-                auto fn = jsi::Function::createFromHostFunction(runtime, id, 0, bind_host_function(add_event_listener));
+                auto fn = jsi::Function::createFromHostFunction(
+                    runtime, id, 0, bind_host_function(&projected_statics_class::add_event_listener));
                 itr = m_functions.emplace(add_event_name, jsi::Value(runtime, std::move(fn))).first;
             }
             else if (name == remove_event_name)
             {
-                auto fn =
-                    jsi::Function::createFromHostFunction(runtime, id, 0, bind_host_function(remove_event_listener));
+                auto fn = jsi::Function::createFromHostFunction(
+                    runtime, id, 0, bind_host_function(&projected_statics_class::remove_event_listener));
                 itr = m_functions.emplace(remove_event_name, jsi::Value(runtime, std::move(fn))).first;
             }
         }
@@ -412,8 +410,8 @@ jsi::Value static_activatable_class_data::create(jsi::Runtime& runtime) const
 
     for (auto&& fn : functions)
     {
-        auto name = make_propid(runtime, fn.name);
-        result.setProperty(runtime, name, jsi::Function::createFromHostFunction(runtime, name, 0, fn.function));
+        auto propId = make_propid(runtime, fn.name);
+        result.setProperty(runtime, propId, jsi::Function::createFromHostFunction(runtime, propId, 0, fn.function));
     }
 
     if (!events.empty())
@@ -423,17 +421,19 @@ jsi::Value static_activatable_class_data::create(jsi::Runtime& runtime) const
         // we return, so this should be okay
         auto evtArray = std::make_unique<event_registration_array>();
 
-        auto name = make_propid(runtime, add_event_name);
-        result.setProperty(runtime, name,
-            jsi::Function::createFromHostFunction(runtime, name, 0,
+        auto propId = make_propid(runtime, add_event_name);
+        result.setProperty(runtime, propId,
+            jsi::Function::createFromHostFunction(runtime, propId, 0,
                 [this, evtArray = evtArray.get()](jsi::Runtime& runtime, const jsi::Value&, const jsi::Value* args,
                     size_t count) { return static_add_event_listener(runtime, args, count, this, *evtArray); }));
 
-        name = make_propid(runtime, remove_event_name);
-        result.setProperty(runtime, name,
-            jsi::Function::createFromHostFunction(runtime, name, 0,
-                [this, evtArray = std::move(evtArray)](jsi::Runtime& runtime, const jsi::Value&, const jsi::Value* args,
-                    size_t count) { return static_remove_event_listener(runtime, args, count, this, *evtArray); }));
+        propId = make_propid(runtime, remove_event_name);
+        result.setProperty(runtime, propId,
+            jsi::Function::createFromHostFunction(runtime, propId, 0,
+                move_only_lambda([this, evtArray = std::move(evtArray)](
+                                     jsi::Runtime& runtime, const jsi::Value&, const jsi::Value* args, size_t count) {
+                    return static_remove_event_listener(runtime, args, count, this, *evtArray);
+                })));
     }
 
     return result;
@@ -611,27 +611,29 @@ jsi::Value projected_object_instance::get(jsi::Runtime& runtime, const jsi::Prop
         // Non-overloaded function, or at least not overloaded with different arities
         auto fn =
             jsi::Function::createFromHostFunction(runtime, id, functions[0]->arity, projected_function{ functions[0] });
-        return m_functions.emplace(functions[0]->name, jsi::Value(runtime, std::move(fn))).first->second;
+        return jsi::Value(runtime, m_functions.emplace(functions[0]->name, std::move(fn)).first->second);
     }
     else if (!functions.empty())
     {
         // TODO: Calculate max arity? Does it matter?
         auto fn = jsi::Function::createFromHostFunction(
             runtime, id, 0, projected_overloaded_function{ std::move(functions) });
-        return m_functions.emplace(functions[0]->name, jsi::Value(runtime, std::move(fn))).first->second;
+        return jsi::Value(runtime, m_functions.emplace(functions[0]->name, std::move(fn)).first->second);
     }
 
     if (hasEvents)
     {
         if (name == add_event_name)
         {
-            auto fn = jsi::Function::createFromHostFunction(runtime, id, 2, bind_host_function(add_event_listener));
-            return m_functions.emplace(add_event_name, jsi::Value(runtime, std::move(fn))).first->second;
+            auto fn = jsi::Function::createFromHostFunction(
+                runtime, id, 2, bind_host_function(&projected_object_instance::add_event_listener));
+            return jsi::Value(runtime, m_functions.emplace(add_event_name, std::move(fn)).first->second);
         }
         else if (name == remove_event_name)
         {
-            auto fn = jsi::Function::createFromHostFunction(runtime, id, 2, bind_host_function(remove_event_listener));
-            return m_functions.emplace(remove_event_name, jsi::Value(runtime, std::move(fn))).first->second;
+            auto fn = jsi::Function::createFromHostFunction(
+                runtime, id, 2, bind_host_function(&projected_object_instance::remove_event_listener));
+            return jsi::Value(runtime, m_functions.emplace(remove_event_name, std::move(fn)).first->second);
         }
     }
 
@@ -826,7 +828,7 @@ winrt::guid projected_value_traits<winrt::guid>::as_native(jsi::Runtime& runtime
 
     winrt::guid result;
     if (::UuidFromStringA(reinterpret_cast<RPC_CSTR>(strBuffer), reinterpret_cast<UUID*>(winrt::put_abi(result))) !=
-        RPC_S_OK)
+        ERROR_SUCCESS)
     {
         throw jsi::JSError(runtime, "TypeError: GUID contains unexpected characters");
     }

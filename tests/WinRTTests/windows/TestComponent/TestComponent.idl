@@ -106,7 +106,7 @@ namespace TestComponent
         static String StaticAppendAll(String[] values);
 
         // Static out params
-        static Boolean StaticBoolOutParam(Boolean lhs, Boolean rhs, out Boolean and, out Boolean or);
+        static Boolean StaticBoolOutParam(Boolean lhs, Boolean rhs, out Boolean andResult, out Boolean orResult);
         static Char StaticCharOutParam(Char value, out Char next, out Char prev);
         static Int32 StaticNumericOutParam(Int32 value, out Int32 doubledValue, out Int32 tripledValue);
         static String StaticStringOutParam(String value, out String lower, out String upper);
@@ -280,7 +280,7 @@ namespace TestComponent
         String AppendAll(String[] values);
 
         // Member out params
-        Boolean BoolOutParam(Boolean lhs, Boolean rhs, out Boolean and, out Boolean or);
+        Boolean BoolOutParam(Boolean lhs, Boolean rhs, out Boolean andResult, out Boolean orResult);
         Char CharOutParam(Char value, out Char next, out Char prev);
         Int32 NumericOutParam(Int32 value, out Int32 doubledValue, out Int32 tripledValue);
         String StringOutParam(String value, out String lower, out String upper);
