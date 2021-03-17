@@ -1,10 +1,10 @@
 #include "pch.h"
 
 #include <TurboModule/Core/TurboModule.h>
-#include <rnwinrt/Projections.g.h>
 
 #include <rnwinrt/base.cpp>
 
+using namespace facebook;
 using namespace jswinrt;
 
 jsi::Value WinRTTurboModuleSpecJSI_initialize(
@@ -59,7 +59,7 @@ private:
     std::shared_ptr<react::CallInvoker> m_invoker;
 };
 
-runtime_context* current_runtime_context()
+runtime_context* jswinrt::current_runtime_context()
 {
     auto result = current_thread_context;
     if (!result)

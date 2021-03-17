@@ -1962,6 +1962,26 @@ namespace jswinrt
     };
 
     template <>
+    struct projected_value_traits<winrt::event_token>
+    {
+        static jsi::Value as_value(jsi::Runtime& runtime, winrt::event_token value)
+        {
+            jsi::Object result(runtime);
+            result.setProperty(runtime, "value", convert_native_to_value(runtime, value.value));
+            return result;
+        }
+
+        static winrt::event_token as_native(jsi::Runtime& runtime, const jsi::Value& value)
+        {
+            winrt::event_token result{};
+            auto obj = value.asObject(runtime);
+            if (auto field = obj.getProperty(runtime, "value"); !field.isUndefined())
+                result.value = convert_value_to_native<int64_t>(runtime, field);
+            return result;
+        }
+    };
+
+    template <>
     struct projected_value_traits<winrt::Windows::Foundation::DateTime>
     {
         static jsi::Value as_value(jsi::Runtime& runtime, winrt::Windows::Foundation::DateTime value);
@@ -1973,6 +1993,55 @@ namespace jswinrt
     {
         static jsi::Value as_value(jsi::Runtime& runtime, winrt::Windows::Foundation::TimeSpan value);
         static winrt::Windows::Foundation::TimeSpan as_native(jsi::Runtime& runtime, const jsi::Value& value);
+    };
+
+    template <>
+    struct projected_value_traits<winrt::Windows::Foundation::Numerics::float3x2>
+    {
+        static jsi::Value as_value(jsi::Runtime& runtime, winrt::Windows::Foundation::Numerics::float3x2 value);
+        static winrt::Windows::Foundation::Numerics::float3x2 as_native(jsi::Runtime& runtime, const jsi::Value& value);
+    };
+
+    template <>
+    struct projected_value_traits<winrt::Windows::Foundation::Numerics::float4x4>
+    {
+        static jsi::Value as_value(jsi::Runtime& runtime, winrt::Windows::Foundation::Numerics::float4x4 value);
+        static winrt::Windows::Foundation::Numerics::float4x4 as_native(jsi::Runtime& runtime, const jsi::Value& value);
+    };
+
+    template <>
+    struct projected_value_traits<winrt::Windows::Foundation::Numerics::plane>
+    {
+        static jsi::Value as_value(jsi::Runtime& runtime, winrt::Windows::Foundation::Numerics::plane value);
+        static winrt::Windows::Foundation::Numerics::plane as_native(jsi::Runtime& runtime, const jsi::Value& value);
+    };
+
+    template <>
+    struct projected_value_traits<winrt::Windows::Foundation::Numerics::quaternion>
+    {
+        static jsi::Value as_value(jsi::Runtime& runtime, winrt::Windows::Foundation::Numerics::quaternion value);
+        static winrt::Windows::Foundation::Numerics::quaternion as_native(jsi::Runtime& runtime, const jsi::Value& value);
+    };
+
+    template <>
+    struct projected_value_traits<winrt::Windows::Foundation::Numerics::float2>
+    {
+        static jsi::Value as_value(jsi::Runtime& runtime, winrt::Windows::Foundation::Numerics::float2 value);
+        static winrt::Windows::Foundation::Numerics::float2 as_native(jsi::Runtime& runtime, const jsi::Value& value);
+    };
+
+    template <>
+    struct projected_value_traits<winrt::Windows::Foundation::Numerics::float3>
+    {
+        static jsi::Value as_value(jsi::Runtime& runtime, winrt::Windows::Foundation::Numerics::float3 value);
+        static winrt::Windows::Foundation::Numerics::float3 as_native(jsi::Runtime& runtime, const jsi::Value& value);
+    };
+
+    template <>
+    struct projected_value_traits<winrt::Windows::Foundation::Numerics::float4>
+    {
+        static jsi::Value as_value(jsi::Runtime& runtime, winrt::Windows::Foundation::Numerics::float4 value);
+        static winrt::Windows::Foundation::Numerics::float4 as_native(jsi::Runtime& runtime, const jsi::Value& value);
     };
 
     template <typename T>
@@ -3095,3 +3164,5 @@ namespace jswinrt
         }
     }
 }
+
+#include "ProjectedValueConverters.g.h"

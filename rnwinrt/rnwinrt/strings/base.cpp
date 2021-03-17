@@ -12,9 +12,10 @@ using namespace std::literals;
 namespace winrt
 {
     using namespace Windows::Foundation;
+    using namespace Windows::Foundation::Numerics;
 }
 
-jsi::String make_string(jsi::Runtime& runtime, std::wstring_view str)
+jsi::String jswinrt::make_string(jsi::Runtime& runtime, std::wstring_view str)
 {
     if (str.empty())
     {
@@ -879,6 +880,208 @@ winrt::TimeSpan projected_value_traits<winrt::TimeSpan>::as_native(jsi::Runtime&
     return std::chrono::duration_cast<winrt::TimeSpan>(ms);
 }
 
+jsi::Value projected_value_traits<winrt::float3x2>::as_value(jsi::Runtime& runtime, winrt::float3x2 value)
+{
+    jsi::Object result(runtime);
+    result.setProperty(runtime, "m11", convert_native_to_value(runtime, value.m11));
+    result.setProperty(runtime, "m12", convert_native_to_value(runtime, value.m12));
+    result.setProperty(runtime, "m21", convert_native_to_value(runtime, value.m21));
+    result.setProperty(runtime, "m22", convert_native_to_value(runtime, value.m22));
+    result.setProperty(runtime, "m31", convert_native_to_value(runtime, value.m31));
+    result.setProperty(runtime, "m32", convert_native_to_value(runtime, value.m32));
+    return result;
+}
+
+winrt::float3x2 projected_value_traits<winrt::float3x2>::as_native(jsi::Runtime& runtime, const jsi::Value& value)
+{
+    winrt::float3x2 result{};
+    auto obj = value.asObject(runtime);
+    if (auto field = obj.getProperty(runtime, "m11"); !field.isUndefined())
+        result.m11 = convert_value_to_native<float>(runtime, field);
+    if (auto field = obj.getProperty(runtime, "m12"); !field.isUndefined())
+        result.m12 = convert_value_to_native<float>(runtime, field);
+    if (auto field = obj.getProperty(runtime, "m21"); !field.isUndefined())
+        result.m21 = convert_value_to_native<float>(runtime, field);
+    if (auto field = obj.getProperty(runtime, "m22"); !field.isUndefined())
+        result.m22 = convert_value_to_native<float>(runtime, field);
+    if (auto field = obj.getProperty(runtime, "m31"); !field.isUndefined())
+        result.m31 = convert_value_to_native<float>(runtime, field);
+    if (auto field = obj.getProperty(runtime, "m32"); !field.isUndefined())
+        result.m32 = convert_value_to_native<float>(runtime, field);
+    return result;
+}
+
+jsi::Value projected_value_traits<winrt::float4x4>::as_value(jsi::Runtime& runtime, winrt::float4x4 value)
+{
+    jsi::Object result(runtime);
+    result.setProperty(runtime, "m11", convert_native_to_value(runtime, value.m11));
+    result.setProperty(runtime, "m12", convert_native_to_value(runtime, value.m12));
+    result.setProperty(runtime, "m13", convert_native_to_value(runtime, value.m13));
+    result.setProperty(runtime, "m14", convert_native_to_value(runtime, value.m14));
+    result.setProperty(runtime, "m21", convert_native_to_value(runtime, value.m21));
+    result.setProperty(runtime, "m22", convert_native_to_value(runtime, value.m22));
+    result.setProperty(runtime, "m23", convert_native_to_value(runtime, value.m23));
+    result.setProperty(runtime, "m24", convert_native_to_value(runtime, value.m24));
+    result.setProperty(runtime, "m31", convert_native_to_value(runtime, value.m31));
+    result.setProperty(runtime, "m32", convert_native_to_value(runtime, value.m32));
+    result.setProperty(runtime, "m33", convert_native_to_value(runtime, value.m33));
+    result.setProperty(runtime, "m34", convert_native_to_value(runtime, value.m34));
+    result.setProperty(runtime, "m41", convert_native_to_value(runtime, value.m41));
+    result.setProperty(runtime, "m42", convert_native_to_value(runtime, value.m42));
+    result.setProperty(runtime, "m43", convert_native_to_value(runtime, value.m43));
+    result.setProperty(runtime, "m44", convert_native_to_value(runtime, value.m44));
+    return result;
+}
+
+winrt::float4x4 projected_value_traits<winrt::float4x4>::as_native(jsi::Runtime& runtime, const jsi::Value& value)
+{
+    winrt::float4x4 result{};
+    auto obj = value.asObject(runtime);
+    if (auto field = obj.getProperty(runtime, "m11"); !field.isUndefined())
+        result.m11 = convert_value_to_native<float>(runtime, field);
+    if (auto field = obj.getProperty(runtime, "m12"); !field.isUndefined())
+        result.m12 = convert_value_to_native<float>(runtime, field);
+    if (auto field = obj.getProperty(runtime, "m13"); !field.isUndefined())
+        result.m13 = convert_value_to_native<float>(runtime, field);
+    if (auto field = obj.getProperty(runtime, "m14"); !field.isUndefined())
+        result.m14 = convert_value_to_native<float>(runtime, field);
+    if (auto field = obj.getProperty(runtime, "m21"); !field.isUndefined())
+        result.m21 = convert_value_to_native<float>(runtime, field);
+    if (auto field = obj.getProperty(runtime, "m22"); !field.isUndefined())
+        result.m22 = convert_value_to_native<float>(runtime, field);
+    if (auto field = obj.getProperty(runtime, "m23"); !field.isUndefined())
+        result.m23 = convert_value_to_native<float>(runtime, field);
+    if (auto field = obj.getProperty(runtime, "m24"); !field.isUndefined())
+        result.m24 = convert_value_to_native<float>(runtime, field);
+    if (auto field = obj.getProperty(runtime, "m31"); !field.isUndefined())
+        result.m31 = convert_value_to_native<float>(runtime, field);
+    if (auto field = obj.getProperty(runtime, "m32"); !field.isUndefined())
+        result.m32 = convert_value_to_native<float>(runtime, field);
+    if (auto field = obj.getProperty(runtime, "m33"); !field.isUndefined())
+        result.m33 = convert_value_to_native<float>(runtime, field);
+    if (auto field = obj.getProperty(runtime, "m34"); !field.isUndefined())
+        result.m34 = convert_value_to_native<float>(runtime, field);
+    if (auto field = obj.getProperty(runtime, "m41"); !field.isUndefined())
+        result.m41 = convert_value_to_native<float>(runtime, field);
+    if (auto field = obj.getProperty(runtime, "m42"); !field.isUndefined())
+        result.m42 = convert_value_to_native<float>(runtime, field);
+    if (auto field = obj.getProperty(runtime, "m43"); !field.isUndefined())
+        result.m43 = convert_value_to_native<float>(runtime, field);
+    if (auto field = obj.getProperty(runtime, "m44"); !field.isUndefined())
+        result.m44 = convert_value_to_native<float>(runtime, field);
+    return result;
+}
+
+jsi::Value projected_value_traits<winrt::plane>::as_value(jsi::Runtime& runtime, winrt::plane value)
+{
+    jsi::Object result(runtime);
+    result.setProperty(runtime, "normal", convert_native_to_value(runtime, value.normal));
+    result.setProperty(runtime, "d", convert_native_to_value(runtime, value.d));
+    return result;
+}
+
+winrt::plane projected_value_traits<winrt::plane>::as_native(jsi::Runtime& runtime, const jsi::Value& value)
+{
+    winrt::plane result{};
+    auto obj = value.asObject(runtime);
+    if (auto field = obj.getProperty(runtime, "normal"); !field.isUndefined())
+        result.normal = convert_value_to_native<winrt::float3>(runtime, field);
+    if (auto field = obj.getProperty(runtime, "d"); !field.isUndefined())
+        result.d = convert_value_to_native<float>(runtime, field);
+    return result;
+}
+
+jsi::Value projected_value_traits<winrt::quaternion>::as_value(jsi::Runtime& runtime, winrt::quaternion value)
+{
+    jsi::Object result(runtime);
+    result.setProperty(runtime, "x", convert_native_to_value(runtime, value.x));
+    result.setProperty(runtime, "y", convert_native_to_value(runtime, value.y));
+    result.setProperty(runtime, "z", convert_native_to_value(runtime, value.z));
+    result.setProperty(runtime, "w", convert_native_to_value(runtime, value.w));
+    return result;
+}
+
+winrt::quaternion projected_value_traits<winrt::quaternion>::as_native(jsi::Runtime& runtime, const jsi::Value& value)
+{
+    winrt::quaternion result{};
+    auto obj = value.asObject(runtime);
+    if (auto field = obj.getProperty(runtime, "x"); !field.isUndefined())
+        result.x = convert_value_to_native<float>(runtime, field);
+    if (auto field = obj.getProperty(runtime, "y"); !field.isUndefined())
+        result.y = convert_value_to_native<float>(runtime, field);
+    if (auto field = obj.getProperty(runtime, "z"); !field.isUndefined())
+        result.z = convert_value_to_native<float>(runtime, field);
+    if (auto field = obj.getProperty(runtime, "w"); !field.isUndefined())
+        result.w = convert_value_to_native<float>(runtime, field);
+    return result;
+}
+
+jsi::Value projected_value_traits<winrt::float2>::as_value(jsi::Runtime& runtime, winrt::float2 value)
+{
+    jsi::Object result(runtime);
+    result.setProperty(runtime, "x", convert_native_to_value(runtime, value.x));
+    result.setProperty(runtime, "y", convert_native_to_value(runtime, value.y));
+    return result;
+}
+
+winrt::float2 projected_value_traits<winrt::float2>::as_native(jsi::Runtime& runtime, const jsi::Value& value)
+{
+    winrt::float2 result{};
+    auto obj = value.asObject(runtime);
+    if (auto field = obj.getProperty(runtime, "x"); !field.isUndefined())
+        result.x = convert_value_to_native<float>(runtime, field);
+    if (auto field = obj.getProperty(runtime, "y"); !field.isUndefined())
+        result.y = convert_value_to_native<float>(runtime, field);
+    return result;
+}
+
+jsi::Value projected_value_traits<winrt::float3>::as_value(jsi::Runtime& runtime, winrt::float3 value)
+{
+    jsi::Object result(runtime);
+    result.setProperty(runtime, "x", convert_native_to_value(runtime, value.x));
+    result.setProperty(runtime, "y", convert_native_to_value(runtime, value.y));
+    result.setProperty(runtime, "z", convert_native_to_value(runtime, value.z));
+    return result;
+}
+
+winrt::float3 projected_value_traits<winrt::float3>::as_native(jsi::Runtime& runtime, const jsi::Value& value)
+{
+    winrt::float3 result{};
+    auto obj = value.asObject(runtime);
+    if (auto field = obj.getProperty(runtime, "x"); !field.isUndefined())
+        result.x = convert_value_to_native<float>(runtime, field);
+    if (auto field = obj.getProperty(runtime, "y"); !field.isUndefined())
+        result.y = convert_value_to_native<float>(runtime, field);
+    if (auto field = obj.getProperty(runtime, "z"); !field.isUndefined())
+        result.z = convert_value_to_native<float>(runtime, field);
+    return result;
+}
+
+jsi::Value projected_value_traits<winrt::float4>::as_value(jsi::Runtime& runtime, winrt::float4 value)
+{
+    jsi::Object result(runtime);
+    result.setProperty(runtime, "x", convert_native_to_value(runtime, value.x));
+    result.setProperty(runtime, "y", convert_native_to_value(runtime, value.y));
+    result.setProperty(runtime, "z", convert_native_to_value(runtime, value.z));
+    result.setProperty(runtime, "w", convert_native_to_value(runtime, value.w));
+    return result;
+}
+
+winrt::float4 projected_value_traits<winrt::float4>::as_native(jsi::Runtime& runtime, const jsi::Value& value)
+{
+    winrt::float4 result{};
+    auto obj = value.asObject(runtime);
+    if (auto field = obj.getProperty(runtime, "x"); !field.isUndefined())
+        result.x = convert_value_to_native<float>(runtime, field);
+    if (auto field = obj.getProperty(runtime, "y"); !field.isUndefined())
+        result.y = convert_value_to_native<float>(runtime, field);
+    if (auto field = obj.getProperty(runtime, "z"); !field.isUndefined())
+        result.z = convert_value_to_native<float>(runtime, field);
+    if (auto field = obj.getProperty(runtime, "w"); !field.isUndefined())
+        result.w = convert_value_to_native<float>(runtime, field);
+    return result;
+}
+
 jsi::Value convert_from_property_value(jsi::Runtime& runtime, const winrt::IPropertyValue& value)
 {
     switch (value.Type())
@@ -1027,7 +1230,7 @@ jsi::Value convert_from_property_value(jsi::Runtime& runtime, const winrt::IProp
     }
 }
 
-winrt::IInspectable convert_to_property_value(jsi::Runtime& runtime, const jsi::Value& value)
+winrt::IInspectable jswinrt::convert_to_property_value(jsi::Runtime& runtime, const jsi::Value& value)
 {
     if (value.isBool())
     {
