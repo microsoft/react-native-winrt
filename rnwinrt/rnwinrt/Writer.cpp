@@ -3,6 +3,142 @@
 
 #include "Writer.h"
 
+static constexpr const std::size_t default_buffer_size = 16 * 1024; // 16 KB
+
+jswinrt_writer::jswinrt_writer()
+{
+    m_buffer.reserve(default_buffer_size);
+}
+
+void jswinrt_writer::flush_to_file(const std::filesystem::path& path)
+{
+    std::ofstream stream(path, std::ios::out | std::ios::binary);
+    stream.write(m_buffer.data(), m_buffer.size());
+    m_buffer.clear();
+}
+
+static void write_cpp_namespace(jswinrt_writer& writer, std::string_view ns)
+{
+    while (true)
+    {
+        auto pos = ns.find_first_of(".");
+        if (pos == std::string_view::npos)
+        {
+            break;
+        }
+
+        writer.write(ns.substr(0, pos));
+        writer.write("::"sv);
+        ns = ns.substr(pos + 1);
+    }
+
+    writer.write(ns);
+}
+
+void jswinrt_writer::write(indent value)
+{
+    for (int i = 0; i < value.level; ++i)
+    {
+        write("    "sv);
+    }
+}
+
+void jswinrt_writer::write(const cpp_namespace& ns)
+{
+    if (!ns.data->base_namespace.empty())
+    {
+        write_cpp_namespace(*this, ns.data->base_namespace);
+        write("::"sv);
+    }
+
+    write(ns.data->name);
+}
+
+void jswinrt_writer::write(const cpp_typename& type)
+{
+    if (type.type_namespace == foundation_namespace)
+    {
+        if (type.type_name == "EventRegistrationToken"sv)
+        {
+            return write("event_token"sv);
+        }
+        else if (type.type_name == "HResult"sv)
+        {
+            return write("hresult"sv);
+        }
+    }
+    else if (type.type_namespace == "Windows.Foundation.Numerics"sv)
+    {
+        auto itr = std::find_if(std::begin(numerics_mappings), std::end(numerics_mappings),
+            [&](auto& pair) { return pair.first == type.type_name; });
+        if (itr != std::end(numerics_mappings))
+        {
+            return write_fmt("Windows::Foundation::Numerics::%", itr->second);
+        }
+    }
+
+    write_cpp_namespace(*this, type.type_namespace);
+    write("::"sv);
+    write(type.type_name);
+}
+
+void jswinrt_writer::write(const camel_case& value)
+{
+    if (value.text.empty())
+        return; // TODO: Assert this is not the case?
+
+    write(static_cast<char>(std::tolower(value.text[0])));
+    write(value.text.substr(1));
+}
+
+void jswinrt_writer::write_fmt_impl(std::string_view fmtString)
+{
+    while (true)
+    {
+        auto pos = fmtString.find_first_of('^');
+        if (pos == std::string_view::npos)
+        {
+            break;
+        }
+
+        assert(pos >= (fmtString.size() - 2));
+        write(fmtString.substr(0, pos));
+        write(fmtString[pos + 1]);
+        fmtString = fmtString.substr(pos + 2);
+    }
+
+    write(fmtString);
+}
+
+std::size_t jswinrt_writer::count_placeholders(std::string_view str)
+{
+    std::size_t result = 0;
+    for (auto itr = str.begin(); itr != str.end(); ++itr)
+    {
+        if (*itr == '%' || *itr == '@')
+        {
+            ++result;
+        }
+        if (*itr == '^') // Escape
+        {
+            ++itr;
+            assert(itr != str.end()); // Should escape something
+        }
+    }
+
+    return result;
+}
+
+
+
+
+
+
+
+
+
+
+#if 1
 constexpr size_t c_reservedSize = 16 * 1024;
 
 Writer::Writer()
@@ -346,3 +482,4 @@ uint32_t Writer::CountSegmentPlaceholders(const std::string_view& format) noexce
 
     return count;
 }
+#endif

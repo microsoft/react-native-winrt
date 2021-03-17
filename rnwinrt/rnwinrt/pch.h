@@ -32,6 +32,16 @@
 
 using namespace std::literals;
 
+template <typename... Fns>
+struct overloaded : Fns...
+{
+    using Fns::operator()...;
+};
+
+template <typename... Fns>
+overloaded(Fns...) -> overloaded<Fns...>;
+
+#if 1
 inline void ThrowInvalidArg(std::string const& message)
 {
     throw std::invalid_argument(message);
@@ -43,3 +53,4 @@ inline void ThrowInvalidArg(std::string message, T const&... args)
     (message.append(args), ...);
     throw std::invalid_argument(message);
 }
+#endif

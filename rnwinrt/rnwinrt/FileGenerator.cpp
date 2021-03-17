@@ -9,6 +9,744 @@
 
 #include <strings.h>
 
+using namespace winmd::reader;
+
+static void write_single_namespace_include(jswinrt_writer& writer, const namespace_projection_data& ns)
+{
+    // We only need includes if the namespace is a root namespace, or if it has interfaces
+    if (ns.base_namespace.empty() || !ns.interface_children.empty())
+    {
+        writer.write_fmt("#include \"%.g.h\"\n", ns.full_name);
+    }
+
+    // We also need the C++/WinRT header if the namespace has interfaces
+    if (!ns.interface_children.empty())
+    {
+        writer.write_fmt("#include <winrt/%.h>\n", ns.full_name);
+    }
+}
+
+static void write_namespace_includes(jswinrt_writer& writer, const namespace_projection_data& ns)
+{
+    write_single_namespace_include(writer, ns);
+
+    for (auto& childNs : ns.namespace_children)
+    {
+        write_namespace_includes(writer, *childNs);
+    }
+}
+
+static void write_namespace_includes(jswinrt_writer& writer, const projection_data& data)
+{
+    for (auto& ns : data.root_namespaces)
+    {
+        write_namespace_includes(writer, *ns);
+    }
+}
+
+static void write_projections_cpp_file(const Settings& settings, const projection_data& data)
+{
+    jswinrt_file_writer writer(settings.OutputFolder / "Projections.g.cpp");
+    writer.write_fmt(R"^-^(#include "%"
+
+#include "base.h"
+
+)^-^", settings.PchFileName);
+
+    write_namespace_includes(writer, data);
+
+    // 'root_namespaces' definition
+    writer.write(R"^-^(
+namespace jswinrt
+{
+    static constexpr const static_namespace_data* const root_namespace_data[] = {
+)^-^");
+
+    for (auto& ns : data.root_namespaces)
+    {
+        writer.write_fmt("        &jswinrt::namespaces::%::data,\n", ns->name);
+    }
+
+    writer.write(R"^-^(    };
+
+    constexpr const span<const static_namespace_data* const> root_namespaces{ root_namespace_data };
+
+)^-^");
+
+    // 'global_interface_map' definition
+    writer.write(
+        R"^-^(    static constexpr const std::pair<winrt::guid, const static_interface_data*> global_interface_map_data[] = {
+)^-^");
+
+    for (auto iface : data.interfaces)
+    {
+        writer.write_fmt("        { winrt::guid_of<winrt::%>(), &jswinrt::interfaces::%::data },\n",
+            cpp_typename{ iface->type_def }, cpp_typename{ iface->type_def });
+    }
+
+    writer.write(R"^-^(    };
+
+    constexpr const span<const std::pair<winrt::guid, const static_interface_data*>> global_interface_map(global_interface_map_data);
+}
+)^-^");
+}
+
+void write_value_converters_decls(jswinrt_writer& writer, const namespace_projection_data& ns)
+{
+    if (!ns.struct_children.empty() || !ns.delegate_children.empty())
+    {
+        // First forward declare the C++/WinRT types
+        writer.write_fmt("namespace winrt::%\n{\n", cpp_namespace{ &ns });
+
+        for (auto& structDef : ns.struct_children)
+        {
+            writer.write_fmt("    struct %;\n", structDef->type_def.TypeName());
+        }
+
+        for (auto& delegateDef : ns.delegate_children)
+        {
+            writer.write_fmt("    struct %;\n", delegateDef->type_def.TypeName());
+        }
+
+        // Now write the specializations
+        writer.write(R"^-^(}
+
+namespace jswinrt
+{)^-^");
+
+        for (auto& structDef : ns.struct_children)
+        {
+            writer.write_fmt(R"^-^(
+    template <>
+    struct projected_value_traits<winrt::%>
+    {
+        static jsi::Value as_value(jsi::Runtime& runtime, const winrt::%& value);
+        static winrt::% as_native(jsi::Runtime& runtime, const jsi::Value& value);
+    };
+)^-^",
+                cpp_typename{ structDef->type_def }, cpp_typename{ structDef->type_def },
+                cpp_typename{ structDef->type_def });
+        }
+
+        for (auto& delegateDef : ns.delegate_children)
+        {
+            writer.write_fmt(R"^-^(
+    template <>
+    struct projected_value_traits<winrt::%>
+    {
+        static jsi::Value as_value(jsi::Runtime& runtime, const winrt::%& value);
+        static winrt::% as_native(jsi::Runtime& runtime, const jsi::Value& value);
+    };
+)^-^",
+                cpp_typename{ delegateDef->type_def }, cpp_typename{ delegateDef->type_def },
+                cpp_typename{ delegateDef->type_def });
+        }
+
+        writer.write("}\n\n");
+    }
+
+    for (auto& childNs : ns.namespace_children)
+    {
+        write_value_converters_decls(writer, *childNs);
+    }
+}
+
+void write_value_converters_decls(jswinrt_writer& writer, const projection_data& data)
+{
+    for (auto& ns : data.root_namespaces)
+    {
+        write_value_converters_decls(writer, *ns);
+    }
+}
+
+void write_value_converters_header(const Settings& settings, const projection_data& data)
+{
+    jswinrt_file_writer writer(settings.OutputFolder / "ProjectedValueConverters.g.h");
+
+    writer.write(R"^-^(#pragma once
+
+#include "base.h"
+
+)^-^");
+
+    write_value_converters_decls(writer, data);
+}
+
+static std::string namespace_filename(const namespace_projection_data& ns)
+{
+    std::string result;
+    if (!ns.base_namespace.empty())
+    {
+        result.append(ns.base_namespace);
+        result.push_back('.');
+    }
+    result.append(ns.name);
+    return result;
+}
+
+void write_namespace_headers(const Settings& settings, const namespace_projection_data& ns)
+{
+    auto fileName = namespace_filename(ns);
+
+    jswinrt_file_writer writer(settings.OutputFolder / (fileName + ".g.h"));
+    writer.write_fmt(R"^-^(#pragma once
+
+#include "base.h"
+
+namespace jswinrt::namespaces::%
+{
+    extern const static_namespace_data data;
+}
+)^-^",
+        cpp_namespace{ &ns });
+
+    // Static enum data
+    if (!ns.enum_children.empty())
+    {
+        writer.write_fmt(R"^-^(
+namespace jswinrt::enums::%
+{)^-^",
+            cpp_namespace{ &ns });
+
+        for (auto& enumDef : ns.enum_children)
+        {
+            writer.write_fmt(R"^-^(
+    namespace %
+    {
+        extern const static_enum_data data;
+    }
+)^-^",
+                enumDef->type_def.TypeName());
+        }
+
+        writer.write("}\n");
+    }
+
+    // Static class data
+    if (!ns.class_children.empty())
+    {
+        writer.write_fmt(R"^-^(
+namespace jswinrt::classes::%
+{)^-^",
+            cpp_namespace{ &ns });
+
+        for (auto& classDef : ns.class_children)
+        {
+            writer.write_fmt(R"^-^(
+    namespace %
+    {
+        extern const % data;
+    }
+)^-^",
+                classDef->type_def.TypeName(),
+                has_attribute(classDef->type_def, metadata_namespace, activatable_attribute) ?
+                    "static_activatable_class_data"sv :
+                    "static_class_data"sv);
+        }
+
+        writer.write("}\n");
+    }
+
+    // Static interface data (TODO? Can this be moved to the cpp file, right?)
+    if (!ns.interface_children.empty())
+    {
+        writer.write_fmt(R"^-^(
+namespace jswinrt::interfaces::%
+{)^-^",
+            cpp_namespace{ &ns });
+
+        for (auto& ifaceDef : ns.interface_children)
+        {
+            writer.write_fmt(R"^-^(
+    namespace %
+    {
+        extern const static_interface_data data;
+    }
+)^-^",
+                ifaceDef->type_def.TypeName());
+        }
+
+        writer.write("}\n");
+    }
+
+    for (auto& childNs : ns.namespace_children)
+    {
+        write_namespace_headers(settings, *childNs);
+    }
+}
+
+void write_namespace_headers(const Settings& settings, const projection_data& data)
+{
+    for (auto& ns : data.root_namespaces)
+    {
+        write_namespace_headers(settings, *ns);
+    }
+}
+
+static void write_cppwinrt_type(jswinrt_writer& writer, ElementType elemType)
+{
+    std::string_view str;
+    switch (elemType)
+    {
+    case ElementType::Boolean:
+        str = "bool"sv;
+        break;
+    case ElementType::Char:
+        str = "char16_t"sv;
+        break;
+    case ElementType::I1:
+        str = "int8_t"sv;
+        break;
+    case ElementType::U1:
+        str = "uint8_t"sv;
+        break;
+    case ElementType::I2:
+        str = "int16_t"sv;
+        break;
+    case ElementType::U2:
+        str = "uint16_t"sv;
+        break;
+    case ElementType::I4:
+        str = "int32_t"sv;
+        break;
+    case ElementType::U4:
+        str = "uint32_t"sv;
+        break;
+    case ElementType::I8:
+        str = "int64_t"sv;
+        break;
+    case ElementType::U8:
+        str = "uint64_t"sv;
+        break;
+    case ElementType::R4:
+        str = "float"sv;
+        break;
+    case ElementType::R8:
+        str = "double"sv;
+        break;
+    case ElementType::String:
+        str = "winrt::hstring"sv;
+        break;
+    case ElementType::Object:
+        str = "winrt::Windows::Foundation::IInspectable"sv;
+        break;
+    default:
+        assert(false);
+        break;
+    }
+    writer.write(str);
+}
+
+static void write_cppwinrt_type(jswinrt_writer& writer, TypeDef typeDef)
+{
+    assert(distance(typeDef.GenericParam()) == 0); // TODO: Maybe we will want to use this code path?
+    writer.write_fmt("winrt::%", cpp_typename{ typeDef });
+}
+
+static void write_cppwinrt_type(jswinrt_writer& writer, winmd::reader::TypeRef typeRef)
+{
+    if ((typeRef.TypeNamespace() == "System"sv) && (typeRef.TypeName() == "Guid"sv))
+    {
+        writer.write("winrt::guid");
+    }
+    else
+    {
+        write_cppwinrt_type(writer, find_required(typeRef));
+    }
+}
+
+static void write_cppwinrt_type(jswinrt_writer& writer, const GenericTypeInstSig& sig)
+{
+    auto [ns, name] = get_type_namespace_and_name(sig.GenericType());
+    writer.write_fmt("winrt::%<", cpp_typename{ ns, remove_tick(name) });
+
+    // TODO
+
+    writer.write(">");
+}
+
+static void write_cppwinrt_type(jswinrt_writer& writer, coded_index<TypeDefOrRef> defOrRef)
+{
+    switch (defOrRef.type())
+    {
+    case TypeDefOrRef::TypeDef:
+        write_cppwinrt_type(writer, defOrRef.TypeDef());
+        break;
+    case TypeDefOrRef::TypeRef:
+        write_cppwinrt_type(writer, defOrRef.TypeRef());
+        break;
+    case TypeDefOrRef::TypeSpec:
+        write_cppwinrt_type(writer, defOrRef.TypeSpec().Signature().GenericTypeInst());
+        break;
+    }
+}
+
+static void write_cppwinrt_type(jswinrt_writer& writer, const TypeSig& sig)
+{
+    if (sig.is_szarray()) __debugbreak(); // TODO: [NOCHECKIN] Just testing
+
+    std::visit(overloaded{
+        [&](ElementType elemType) {
+            write_cppwinrt_type(writer, elemType);
+        },
+        [&](coded_index<TypeDefOrRef> defOrRef) {
+            write_cppwinrt_type(writer, defOrRef);
+        },
+        [](auto&&) {
+            // TODO: Seems this can include generic instances
+            // assert(false);
+        }
+    }, sig.Type());
+}
+
+static void write_cppwinrt_type(jswinrt_writer& writer, const ParamSig& sig)
+{
+    if (sig.ByRef()) __debugbreak(); // TODO: [NOCHECKIN] Just testing
+    write_cppwinrt_type(writer, sig.Type());
+}
+
+static void write_enum_projection_data(jswinrt_writer& writer, const enum_projection_data& enumData)
+{
+    writer.write_fmt(R"^-^(
+namespace jswinrt::enums::%
+{
+static constexpr const static_enum_data::value_mapping mappings[] = {)^-^", cpp_typename{ enumData.type_def });
+
+    for (auto&& field : enumData.type_def.FieldList())
+    {
+        if (!field.Constant())
+            continue;
+
+        writer.write_fmt(R"^-^(
+    { "%"sv, static_cast<double>(winrt::%::%) },)^-^",
+            camel_case{ field.Name() }, cpp_typename{ enumData.type_def }, field.Name());
+    }
+
+    writer.write_fmt(R"^-^(
+};
+
+constexpr const static_enum_data data{ "%"sv, mappings };
+}
+)^-^", enumData.name);
+}
+
+static void write_params_value_to_native(jswinrt_writer& writer, const MethodDefSig& sig, int indentLevel)
+{
+    // NOTE: Assumes variables of the name 'args' and 'runtime'
+    int i = 0;
+    for (auto&& arg : sig.Params())
+    {
+        writer.write_fmt(
+            "\n%auto arg% = convert_value_to_native<%>(runtime, args[%]);", indent{ indentLevel }, i,
+            [&](jswinrt_writer& w) { write_cppwinrt_type(w, arg); }, i);
+        ++i;
+    }
+}
+
+static void write_class_projection_data(jswinrt_writer& writer, const class_projection_data& classData)
+{
+    writer.write_fmt(R"^-^(
+namespace jswinrt::classes::%
+{)^-^",
+        cpp_typename{ classData.type_def });
+
+    bool hasProperties = false, hasEvents = false, hasFunctions = false;
+    // TODO: data
+
+    std::vector<std::pair<int, MethodDef>> ctors;
+    auto addCtor = [&](MethodDef def) {
+        auto sig = def.Signature();
+        auto paramCount = distance(sig.Params());
+
+        auto itr = ctors.begin();
+        for (; itr != ctors.end(); ++itr)
+        {
+            if (itr->first == paramCount)
+                return; // TODO: How to pick overloads
+            else if (itr->first > paramCount)
+                break;
+        }
+
+        ctors.emplace_back(static_cast<int>(paramCount), def);
+    };
+
+    for (auto&& method : classData.type_def.MethodList())
+    {
+        if (!method.SpecialName()) // Normal function
+        {
+            // TODO
+        }
+        else if (method.Name() == ".ctor"sv) // Constructor
+        {
+            addCtor(method);
+        }
+    }
+
+    if (ctors.empty())
+    {
+        writer.write_fmt(R"^-^(
+    constexpr const static_class_data data{ "%"sv, %, %, % };
+}
+)^-^",
+            classData.name, hasProperties ? "propery_data"sv : "{}"sv, hasEvents ? "event_data"sv : "{}"sv,
+            hasFunctions ? "function_data"sv : "{}"sv);
+    }
+    else
+    {
+        // NOTE: We use string concatenation here - instead of embedding the type name - to reduce the impact on
+        // disk footprint. This isn't an expected/common code path, so the impact should hopefully be minimal
+        // TODO: Actually validate this
+        // TODO: Make throwing function a separate non-inlined function? Would also decrease disk footprint
+        writer.write_fmt(R"^-^(
+    static jsi::Value constructor_function(jsi::Runtime& runtime, const jsi::Value&, [[maybe_unused]] const jsi::Value* args, size_t count)
+    {)^-^");
+
+        for (auto& [count, fnDef] : ctors)
+        {
+            writer.write_fmt(R"^-^(
+        if (count == %)
+        {)^-^",
+                count);
+            auto sig = fnDef.Signature();
+            write_params_value_to_native(writer, sig, 3);
+            writer.write_fmt("\n            return convert_native_to_value(runtime, winrt::%(", cpp_typename{ classData.type_def });
+
+            auto paramCount = distance(sig.Params());
+            std::string_view prefix;
+            for (int i = 0; i < paramCount; ++i)
+            {
+                writer.write_fmt("%arg%", prefix, i);
+                prefix = ", "sv;
+            }
+            writer.write("));");
+
+            writer.write("\n        }");
+        }
+
+        writer.write_fmt(R"^-^(
+        throw jsi::JSError(runtime, "TypeError: No constructor overload exists for "s + "%." + "%" +
+            " with " + std::to_string(count) + " args");
+    }
+
+    constexpr const static_activatable_class_data data{ "%"sv, constructor_function, %, %, % };
+}
+)^-^",
+            classData.type_def.TypeNamespace(), classData.type_def.TypeName(), classData.name,
+            hasProperties ? "propery_data"sv : "{}"sv, hasEvents ? "event_data"sv : "{}"sv,
+            hasFunctions ? "function_data"sv : "{}"sv);
+    }
+}
+
+static void write_interface_projection_data(jswinrt_writer& writer, const interface_projection_data& ifaceData)
+{
+    writer.write_fmt(R"^-^(
+namespace jswinrt::interfaces::%
+{)^-^",
+        cpp_typename{ ifaceData.type_def });
+
+    bool hasProperties = false, hasEvents = false, hasFunctions = false;
+    // TODO: data
+
+    writer.write_fmt(R"^-^(
+    constexpr const static_interface_data data{ winrt::guid_of<winrt::%>(), %, %, % };
+}
+)^-^",
+        cpp_typename{ ifaceData.type_def }, hasProperties ? "propery_data"sv : "{}"sv,
+        hasEvents ? "event_data"sv : "{}"sv, hasFunctions ? "function_data"sv : "{}"sv);
+}
+
+void write_namespace_cpp_files(const Settings& settings, const namespace_projection_data& ns)
+{
+    auto fileName = namespace_filename(ns);
+
+    jswinrt_file_writer writer(settings.OutputFolder / (fileName + ".g.cpp"));
+    writer.write_fmt(R"^-^(#include "%"
+
+#include "base.h"
+
+#include "%.g.h"
+)^-^",
+        settings.PchFileName, fileName);
+
+    // We also need the namespace headers for child namespaces
+    for (auto& childNs : ns.namespace_children)
+    {
+        writer.write_fmt(R"^-^(#include "%.g.h"
+)^-^",
+            childNs->full_name);
+    }
+
+    // NOTE: There's only a C++/WinRT header for us to include if there are non-namespace types
+    if ((ns.namespace_children.size() < ns.named_children.size()) || !ns.struct_children.empty() ||
+        !ns.delegate_children.empty() || !ns.interface_children.empty())
+    {
+        writer.write_fmt("\n#include <winrt/%.h>\n", fileName);
+    }
+
+    // Namespace data
+    // TODO: Some namespaces don't have any class/enum/namespace children and therefore could be left out, however we
+    // would need to do this recursively "up the chain". For now we'll avoid this complexity. The net result is that
+    // we'll have some JS objects representing "empty" namespaces, but that's not a huge deal
+    writer.write_fmt(R"^-^(
+namespace jswinrt::namespaces::%
+{)^-^",
+        cpp_namespace{ &ns });
+
+    if (!ns.named_children.empty())
+    {
+        writer.write(R"^-^(
+static constexpr const static_projection_data* const children[] = {
+)^-^");
+
+        for (auto child : ns.named_children)
+        {
+            std::string_view kindNs;
+            switch (child->data_kind)
+            {
+            case named_projection_data::kind::namespace_data:
+                kindNs = "namespaces";
+                break;
+
+            case named_projection_data::kind::enum_data:
+                kindNs = "enums";
+                break;
+
+            case named_projection_data::kind::class_data:
+                kindNs = "classes";
+                break;
+            }
+            writer.write_fmt("        &jswinrt::%::%::%::data,\n", kindNs, cpp_namespace{ &ns }, child->name);
+        }
+
+        writer.write("    };\n");
+    }
+
+        writer.write_fmt(R"^-^(
+    constexpr const static_namespace_data data{ "%"sv, % };
+}
+)^-^",
+            ns.name, ns.named_children.empty() ? "{}" : "children");
+
+    // Static enum data
+    for (auto& enumData : ns.enum_children)
+    {
+        write_enum_projection_data(writer, *enumData);
+    }
+
+    // Static class data
+    for (auto& classData : ns.class_children)
+    {
+        write_class_projection_data(writer, *classData);
+    }
+
+    // Static interface data
+    for (auto& ifaceData : ns.interface_children)
+    {
+        write_interface_projection_data(writer, *ifaceData);
+    }
+
+    // projected_value_traits definitions
+    if (!ns.struct_children.empty() || !ns.delegate_children.empty())
+    {
+        writer.write("\nnamespace jswinrt\n{");
+
+        for (auto& structData : ns.struct_children)
+        {
+            writer.write_fmt(R"^-^(
+    jsi::Value projected_value_traits<winrt::%>::as_value(jsi::Runtime& runtime, const winrt::%& value)
+    {
+        jsi::Object result(runtime);
+)^-^",
+                cpp_typename{ structData->type_def }, cpp_typename{ structData->type_def });
+
+            for (auto&& field : structData->type_def.FieldList())
+            {
+                writer.write_fmt(
+                    R"^-^(        result.setProperty(runtime, "%", convert_native_to_value(runtime, value.%));
+)^-^",
+                    camel_case{ field.Name() }, field.Name());
+            }
+
+            writer.write_fmt(R"^-^(        return result;
+    }
+
+    winrt::% projected_value_traits<winrt::%>::as_native(jsi::Runtime& runtime, const jsi::Value& value)
+    {
+        winrt::% result{};
+        auto obj = value.asObject(runtime);
+)^-^",
+                cpp_typename{ structData->type_def }, cpp_typename{ structData->type_def },
+                cpp_typename{ structData->type_def });
+
+            for (auto&& field : structData->type_def.FieldList())
+            {
+                auto sig = field.Signature();
+                writer.write_fmt(R"^-^(        if (auto field = obj.getProperty(runtime, "%"); !field.isUndefined())
+            result.% = convert_value_to_native<%>(runtime, field);
+)^-^",
+                    camel_case{ field.Name() }, field.Name(), [&](jswinrt_writer& w) { write_cppwinrt_type(w, sig.Type()); });
+            }
+
+            writer.write("        return result;\n    }\n");
+        }
+
+        for (auto& delegateData : ns.delegate_children)
+        {
+            // TODO
+        }
+
+        writer.write("}\n");
+    }
+
+    for (auto& childNs : ns.namespace_children)
+    {
+        write_namespace_cpp_files(settings, *childNs);
+    }
+}
+
+void write_namespace_cpp_files(const Settings& settings, const projection_data& data)
+{
+    for (auto& ns : data.root_namespaces)
+    {
+        write_namespace_cpp_files(settings, *ns);
+    }
+}
+
+void write_files(const Settings& settings, const projection_data& data)
+{
+    // TODO: Write the following files
+    //  Projections.g.h
+    //      TODO: Needed? I think we forward declare all of these necessary things in base.h/base.cpp
+    //  Projections.g.cpp
+    //      * Global array of root namespaces [extern const span<const static_namespace_data* const> root_namespaces]
+    //      * Global array of guid -> interface data mapping [extern const span<const std::pair<winrt::guid, const static_interface_data*>> global_interface_map]
+    write_projections_cpp_file(settings, data);
+    //  ProjectedValueConverters.g.h
+    //      * projected_value_traits specializations for structs/delegates
+    write_value_converters_header(settings, data);
+    //  <Namespace>.g.h
+    //      * Static namespace data
+    //      * Static enum data
+    //      * Static class data
+    //      * Static interface data
+    write_namespace_headers(settings, data);
+    //  <Namespace>.g.cpp
+    //      * projected_value_traits definitions
+    write_namespace_cpp_files(settings, data);
+
+
+    // Write base.h/base.cpp
+    WriteBaseFiles(settings);
+
+    // TODO: Typescript
+}
+
+
+
+
+
+
+#if 1
 constexpr auto c_codegenNamespace = "WinRTTurboModule"sv;
 
 struct ValueConverters
@@ -1517,3 +2255,4 @@ void WriteFiles(const Settings& settings, const std::vector<std::shared_ptr<stat
         }
     }
 }
+#endif

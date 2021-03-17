@@ -75,8 +75,15 @@ int main(int const argc, char** argv)
         }
 
         Settings settings(args);
+
+        projection_data data;
+        parse_metadata(settings, data);
+        write_files(settings, data);
+
+#if 0
         const auto roots = static_namespace_data::ParseMetaData(settings);
         WriteFiles(settings, roots);
+#endif
     }
     catch (std::exception const& e)
     {
