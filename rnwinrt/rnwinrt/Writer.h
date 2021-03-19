@@ -3,7 +3,7 @@
 #include <filesystem>
 #include <string_view>
 
-#include "MetadataHelpers.h"
+#include "MetadataTypes.h"
 
 struct indent
 {
@@ -31,6 +31,11 @@ struct cpp_typename
 };
 
 struct camel_case
+{
+    std::string_view text;
+};
+
+struct event_name
 {
     std::string_view text;
 };
@@ -78,6 +83,7 @@ struct jswinrt_writer
     void write(const cpp_namespace& ns);
     void write(const cpp_typename& type);
     void write(const camel_case& value);
+    void write(const event_name& value);
 
     template <typename... Args>
     void write_fmt(std::string_view fmtString, Args&&... args)

@@ -91,6 +91,14 @@ void jswinrt_writer::write(const camel_case& value)
     write(value.text.substr(1));
 }
 
+void jswinrt_writer::write(const event_name& value)
+{
+    for (auto ch : value.text)
+    {
+        write(static_cast<char>(std::tolower(ch)));
+    }
+}
+
 void jswinrt_writer::write_fmt_impl(std::string_view fmtString)
 {
     while (true)

@@ -2,7 +2,7 @@
 
 #include "CommandReader.h"
 #include "FileGenerator.h"
-#include "MetadataHelpers.h"
+#include "MetadataTypes.h"
 #include "Settings.h"
 
 namespace

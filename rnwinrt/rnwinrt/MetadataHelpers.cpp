@@ -5,77 +5,50 @@
 using namespace std::literals;
 using namespace winmd::reader;
 
-static bool is_type_allowed(const Settings& settings, const TypeDef& typeDef, bool isClass = false)
+std::optional<winmd::reader::TypeDef> exclusiveto_class(TypeDef iface)
 {
-    if (!settings.Filter.Includes(typeDef))
-    {
-        return false;
-    }
+    auto attr = get_attribute(iface, metadata_namespace, "ExclusiveToAttribute"sv);
+    if (!attr)
+        return std::nullopt;
 
-    if (isClass && settings.FilterToAllowForWeb && !is_allow_for_web(typeDef))
-    {
-        return false;
-    }
+    auto sig = attr.Value();
+    assert(sig.FixedArgs().size() == 1);
+    auto sysType = std::get<ElemSig::SystemType>(std::get<ElemSig>(sig.FixedArgs()[0].value).value);
 
-    if (!settings.IncludeDeprecated && is_deprecated(typeDef))
-    {
-        return false;
-    }
-
-    if (!settings.IncludeWebHostHidden && is_web_host_hidden(typeDef))
-    {
-        // Special-case Windows.Foundation.IPropertyValueStatics which should not be WebHostHidden as it breaks basic
-        // language features by omission.
-        if (typeDef.TypeNamespace() == foundation_namespace)
-        {
-            if (isClass ? (typeDef.TypeName() == "PropertyValue"sv) : (typeDef.TypeName() == "IPropertyValueStatics"sv))
-            {
-                return true;
-            }
-        }
-        return false;
-    }
-
-    return true;
+    return iface.get_database().get_cache().find_required(sysType.name);
 }
 
-static bool is_namespace_allowed(const Settings& settings, const cache::namespace_members& members)
+bool is_factory_interface(TypeDef iface)
 {
-    for (const auto& typeDef : members.interfaces)
+    auto classDef = exclusiveto_class(iface);
+    if (!classDef)
     {
-        if (is_type_allowed(settings, typeDef))
-        {
-            return true;
-        }
+        return false;
     }
 
-    for (const auto& typeDef : members.classes)
+    for (auto&& attr : classDef->CustomAttribute())
     {
-        if (is_type_allowed(settings, typeDef, true /*isClass*/))
-        {
-            return true;
-        }
-    }
+        auto [attrNs, attrName] = attr.TypeNamespaceAndName();
+        if (attrNs != metadata_namespace)
+            continue;
 
-    for (const auto& typeDef : members.enums)
-    {
-        if (is_type_allowed(settings, typeDef))
-        {
-            return true;
-        }
-    }
+        if ((attrName != static_attribute) && (attrName != activatable_attribute))
+            continue;
 
-    for (const auto& typeDef : members.structs)
-    {
-        if (is_type_allowed(settings, typeDef))
-        {
-            return true;
-        }
-    }
+        // NOTE: Both static and activatable attribute have the type as the first parameter to the constructor. Also
+        // note that types can be activatable w/ no factory interface (i.e. use IActivationFactory) and therefore the
+        // first parameter may not be a type
+        auto sig = attr.Value();
+        auto& args = sig.FixedArgs();
+        if (args.empty())
+            continue;
 
-    for (const auto& typeDef : members.delegates)
-    {
-        if (is_type_allowed(settings, typeDef))
+        auto type = std::get_if<ElemSig::SystemType>(&std::get<ElemSig>(args[0].value).value);
+        if (!type)
+            continue;
+
+        auto [typeNs, typeName] = separate_typename(type->name);
+        if ((typeNs == iface.TypeNamespace()) && (typeName == iface.TypeName()))
         {
             return true;
         }
@@ -84,181 +57,20 @@ static bool is_namespace_allowed(const Settings& settings, const cache::namespac
     return false;
 }
 
-static std::string_view next_namespace_part(std::string_view& name)
+MethodDef delegate_invoke_function(const TypeDef& typeDef)
 {
-    auto pos = name.find_first_of('.');
-    auto result = name.substr(0, pos);
-    name = (pos == std::string_view::npos) ? std::string_view{} : name.substr(pos + 1);
-    return result;
+    assert(get_category(typeDef) == category::delegate_type);
+    for (auto&& method : typeDef.MethodList())
+    {
+        if (method.Name() == "Invoke"sv)
+        {
+            return method;
+        }
+    }
+
+    throw std::runtime_error("Delegate without Invoke method");
 }
 
-static namespace_projection_data* get_namespace(
-    projection_data& data, std::string_view name, namespace_projection_data* prev)
-{
-    namespace_projection_data* parent = nullptr;
-    auto remainder = name;
-
-    if (prev && is_child_namespace(prev->full_name, name))
-    {
-        // Our optimization worked; we can use the previous namespace as a base
-        parent = prev;
-        remainder = name.substr(prev->full_name.size() + 1);
-    }
-    else
-    {
-        // "Miss" on our optimization; start at a root namespace
-        auto rootName = next_namespace_part(remainder);
-        auto itr = data.root_namespaces.rbegin();
-        for (; itr != data.root_namespaces.rend(); ++itr)
-        {
-            auto cmp = rootName.compare((*itr)->name);
-            if (cmp == 0)
-            {
-                parent = itr->get();
-                break;
-            }
-            else if (cmp > 0)
-            {
-                // We keep the arrays sorted, so this means that the namespace has not yet been added
-                break;
-            }
-        }
-
-        if (!parent)
-        {
-            parent =
-                data.root_namespaces.insert(itr.base(), std::make_unique<namespace_projection_data>(rootName))->get();
-        }
-    }
-
-    while (!remainder.empty())
-    {
-        // NOTE: We keep all of these lists sorted. Since the metadata should be sorted, we should do at most one
-        // comparison in the typical case (inspect the last element) and insertions should be fast as well
-        auto nextName = next_namespace_part(remainder);
-        bool found = false;
-        auto itr = parent->namespace_children.rbegin();
-        for (; itr != parent->namespace_children.rend(); ++itr)
-        {
-            auto cmp = nextName.compare((*itr)->name);
-            if (cmp == 0)
-            {
-                parent = itr->get();
-                found = true;
-                break;
-            }
-            else if (cmp > 0)
-            {
-                break;
-            }
-        }
-
-        if (!found)
-        {
-            auto fullName = remainder.empty() ? name : name.substr(0, name.size() - remainder.size() - 1);
-            auto newNs =
-                parent->namespace_children.insert(itr.base(), std::make_unique<namespace_projection_data>(fullName))
-                    ->get();
-            parent->named_children.push_back(newNs);
-            parent = newNs;
-        }
-    }
-
-    return parent;
-}
-
-template <typename T, typename Func>
-static void parse_typedefs(const Settings& settings, projection_data& data,
-    const std::vector<TypeDef>& typeDefs, std::vector<std::unique_ptr<T>>& list, Func&& callback)
-{
-    bool isFoundationNs = false, isNumericsNs = false;
-    if (!typeDefs.empty())
-    {
-        auto ns = typeDefs[0].TypeNamespace();
-        if (ns == foundation_namespace)
-            isFoundationNs = true;
-        else if (ns == "Windows.Foundation.Numerics"sv)
-            isNumericsNs = true;
-    }
-
-    for (auto&& typeDef : typeDefs)
-    {
-        if (!is_type_allowed(settings, typeDef))
-            continue;
-
-        // Ignore generic type *definitions*. We care about *instantiations*
-        if (is_generic(typeDef))
-            continue;
-
-        if constexpr (std::is_same_v<T, interface_projection_data>)
-        {
-            // Static/activation factory interfaces don't need to be tracked; we handle them differently
-            if (is_factory_interface(typeDef))
-                continue;
-        }
-        else if constexpr (std::is_same_v<T, struct_projection_data>)
-        {
-            // Some types are manually projected
-            if (isFoundationNs)
-            {
-                auto name = typeDef.TypeName();
-                if ((name == "HResult"sv) || (name == "DateTime"sv) || (name == "TimeSpan"sv) ||
-                    (name == "EventRegistrationToken"sv))
-                    continue;
-            }
-            else if (isNumericsNs)
-            {
-                auto name = typeDef.TypeName();
-                auto itr = std::find_if(std::begin(numerics_mappings), std::end(numerics_mappings),
-                    [&](auto& pair) { return pair.first == name; });
-                if (itr != std::end(numerics_mappings))
-                    continue;
-            }
-        }
-
-        list.push_back(std::make_unique<T>(typeDef));
-        callback(list.back().get());
-    }
-}
-
-void parse_metadata(const Settings& settings, projection_data& data)
-{
-    // NOTE: The metadata *should* be sorted, and therefore the probability of one namespace being a "child" of the
-    // previous one is moderately decent, so there's a possible optimization we can do by remembering the previous
-    // namespace we saw
-    namespace_projection_data* currNs = nullptr;
-
-    for (auto&& [fullName, members] : settings.Cache.namespaces())
-    {
-        if (!is_namespace_allowed(settings, members))
-        {
-            continue;
-        }
-
-        currNs = get_namespace(data, fullName, currNs);
-        parse_typedefs(settings, data, members.classes, currNs->class_children, [&](class_projection_data* classData) {
-            currNs->named_children.push_back(classData);
-            // TODO
-        });
-        parse_typedefs(settings, data, members.enums, currNs->enum_children, [&](enum_projection_data* enumData) {
-            currNs->named_children.push_back(enumData);
-        });
-        parse_typedefs(
-            settings, data, members.structs, currNs->struct_children, [&](struct_projection_data* structData) {
-                // NOTE: Structs can have 'IReference<T>' members, so we need to check its fields
-                (void)structData; // TODO
-            });
-        parse_typedefs(
-            settings, data, members.delegates, currNs->delegate_children, [&](delegate_projection_data* delegateData) {
-                (void)delegateData; // TODO
-            });
-        parse_typedefs(
-            settings, data, members.interfaces, currNs->interface_children, [&](interface_projection_data* ifaceData) {
-                data.interfaces.push_back(ifaceData);
-                // TODO
-            });
-    }
-}
 
 
 

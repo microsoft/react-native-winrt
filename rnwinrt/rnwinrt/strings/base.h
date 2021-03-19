@@ -16,6 +16,7 @@
 #include <variant>
 #include <vector>
 #include <winrt/Windows.Foundation.h>
+#include <winrt/Windows.Foundation.Collections.h>
 
 // Common helpers/types
 namespace jswinrt
@@ -203,6 +204,30 @@ namespace jswinrt
                 destroy_buffer();
                 m_capacity = size;
                 m_data.pointer = ptr;
+            }
+        }
+
+        void resize(size_t size)
+        {
+            reserve(size);
+            auto ptr = data() + m_size;
+            while (m_size < size)
+            {
+                ::new (ptr) T();
+                ++m_size;
+                ++ptr;
+            }
+        }
+
+        void resize(size_t size, const T& value)
+        {
+            reserve(size);
+            auto ptr = data() + m_size;
+            while (m_size < size)
+            {
+                ::new (ptr) T(value);
+                ++m_size;
+                ++ptr;
             }
         }
 
@@ -520,7 +545,7 @@ namespace jswinrt
     using static_get_property_t = jsi::Value (*)(jsi::Runtime&);
     using static_set_property_t = void (*)(jsi::Runtime&, const jsi::Value&);
     using static_add_event_t = winrt::event_token (*)(jsi::Runtime&, const jsi::Value&);
-    using static_remove_event_t = void (*)(jsi::Runtime&, winrt::event_token);
+    using static_remove_event_t = void (*)(winrt::event_token);
 
     using instance_get_property_t = jsi::Value (*)(jsi::Runtime&, const winrt::Windows::Foundation::IInspectable&);
     using instance_set_property_t = void (*)(
@@ -585,28 +610,49 @@ namespace jswinrt
         };
     }
 
+    template <typename T>
+    jsi::Value convert_object_instance_to_value(jsi::Runtime& runtime, const T& value);
+
+    template <typename T>
+    T convert_value_to_object_instance(jsi::Runtime& runtime, const jsi::Value& value);
+
     template <typename T, typename Enable = void>
     struct projected_value_traits
     {
-        [[noreturn]] static jsi::Value as_value(jsi::Runtime& runtime, const T&)
+        static jsi::Value as_value(jsi::Runtime& runtime, const T& value)
         {
-            throw jsi::JSError(runtime, "TypeError: Conversion from native to JS not implemented for type '"s +
-                                            typeid(T).name() +
-                                            "'. This is likely caused by the type being in a non-projected namespace");
+            if constexpr (std::is_base_of_v<winrt::Windows::Foundation::IInspectable, T>)
+            {
+                return convert_object_instance_to_value(runtime, value);
+            }
+            else
+            {
+                throw jsi::JSError(
+                    runtime, "TypeError: Conversion from native to JS not implemented for type '"s + typeid(T).name() +
+                                 "'. This is likely caused by the type being in a non-projected namespace");
+            }
         }
 
-        [[noreturn]] static T as_native(jsi::Runtime& runtime, const jsi::Value&)
+        static T as_native(jsi::Runtime& runtime, const jsi::Value& value)
         {
-            throw jsi::JSError(runtime, "TypeError: Conversion from JS to native not implemented for type '"s +
-                                            typeid(T).name() +
-                                            "'. This is likely caused by the type being in a non-projected namespace");
+            if constexpr (std::is_base_of_v<winrt::Windows::Foundation::IInspectable, T>)
+            {
+                return convert_value_to_object_instance<T>(runtime, value);
+            }
+            else
+            {
+                throw jsi::JSError(
+                    runtime, "TypeError: Conversion from JS to native not implemented for type '"s + typeid(T).name() +
+                                 "'. This is likely caused by the type being in a non-projected namespace");
+            }
         }
     };
 
     template <typename T>
     jsi::Value convert_native_to_value(jsi::Runtime& runtime, T&& value)
     {
-        return projected_value_traits<T>::as_value(runtime, std::forward<T>(value));
+        return projected_value_traits<std::remove_const_t<std::remove_reference_t<T>>>::as_value(
+            runtime, std::forward<T>(value));
     }
 
     template <typename T>
@@ -630,7 +676,7 @@ namespace jswinrt
         }
     }
 
-    template <typename T, typename... Args>
+    template <typename... Args>
     jsi::Value make_void_return_struct(jsi::Runtime& runtime, const Args&... args)
     {
         jsi::Object result(runtime);
@@ -638,7 +684,7 @@ namespace jswinrt
         return jsi::Value(runtime, result);
     }
 
-    template <typename T, typename... Args>
+    template <typename... Args>
     jsi::Value make_return_struct(jsi::Runtime& runtime, const Args&... args)
     {
         return make_void_return_struct(runtime, "returnValue", args...);
@@ -1010,7 +1056,7 @@ namespace jswinrt
         {
         }
 
-        void call(std::function<void()> fn)
+        void call(std::function<void()> fn) const
         {
             if (thread_id == std::this_thread::get_id())
             {
@@ -1022,12 +1068,12 @@ namespace jswinrt
             }
         }
 
-        void call_async(std::function<void()> fn)
+        void call_async(std::function<void()> fn) const
         {
             call_invoker(std::move(fn));
         }
 
-        void call_sync(std::function<void()> fn)
+        void call_sync(std::function<void()> fn) const
         {
             if (thread_id == std::this_thread::get_id())
             {
@@ -1484,7 +1530,7 @@ namespace jswinrt
                     ctxt->call([weakThis, &runtime, result = std::move(result)]() {
                         if (auto strongThis = weakThis.lock())
                         {
-                            strongThis->on_completed(runtime, convert_native_to_value(result), true);
+                            strongThis->on_completed(runtime, convert_native_to_value(runtime, result), true);
                         }
                     });
                 }
@@ -1754,7 +1800,7 @@ namespace jswinrt
             return convert_value_to_native<T>(runtime, array.getValueAtIndex(runtime, index));
         }
 
-        std::uint32_t GetMany(std::uint32_t startIndex, winrt::array_view<T> const& items)
+        std::uint32_t GetMany(std::uint32_t startIndex, winrt::array_view<T> items)
         {
             auto size = Size(); // NOTE: Checks thread access
             auto count = std::min(size - startIndex, items.size());
@@ -1802,7 +1848,7 @@ namespace jswinrt
             // NOTE: JSI doesn't currently seem to allow modification of arrays from native
             CheckThread();
             auto spliceFn = array.getPropertyAsFunction(runtime, "splice");
-            spliceFn.callWithThis(runtime, array, index, 0, convert_native_to_value(runtime, value));
+            spliceFn.callWithThis(runtime, array, static_cast<double>(index), 0, convert_native_to_value(runtime, value));
         }
 
         void RemoveAt(std::uint32_t index)
@@ -1810,7 +1856,7 @@ namespace jswinrt
             // NOTE: JSI doesn't currently seem to allow modification of arrays from native
             CheckThread();
             auto spliceFn = array.getPropertyAsFunction(runtime, "splice");
-            spliceFn.callWithThis(runtime, array, index, 1);
+            spliceFn.callWithThis(runtime, array, static_cast<double>(index), 1);
         }
 
         void RemoveAtEnd()
@@ -1825,7 +1871,7 @@ namespace jswinrt
         {
             // NOTE: JSI doesn't currently seem to allow modification of arrays from native
             CheckThread();
-            array.setProperty(runtime, "length", items.size());
+            array.setProperty(runtime, "length", static_cast<double>(items.size()));
 
             for (uint32_t i = 0; i < items.size(); ++i)
             {
@@ -2057,7 +2103,7 @@ namespace jswinrt
             }
             else
             {
-                m_data.reserve(size);
+                m_data.resize(size);
             }
         }
 
@@ -2065,7 +2111,7 @@ namespace jswinrt
         {
             for (std::size_t i = 0; i < m_data.size(); ++i)
             {
-                m_jsArray.setValueAtIndex(m_runtime, i, convert_native_to_value(m_data[i]));
+                m_jsArray.setValueAtIndex(m_runtime, i, convert_native_to_value(m_runtime, m_data[i]));
             }
         }
 
@@ -2165,106 +2211,105 @@ namespace jswinrt
     winrt::Windows::Foundation::IInspectable convert_to_property_value(jsi::Runtime& runtime, const jsi::Value& value);
 
     template <typename T>
-    struct projected_value_traits<T, std::enable_if_t<std::is_base_of_v<winrt::Windows::Foundation::IInspectable, T>>>
+    jsi::Value convert_object_instance_to_value(jsi::Runtime& runtime, const T& value)
     {
-        static jsi::Value as_value(jsi::Runtime& runtime, const T& value)
+        if (!value)
         {
-            if (!value)
-            {
-                return jsi::Value::null();
-            }
+            return jsi::Value::null();
+        }
 
-            if constexpr (std::is_same_v<T, winrt::Windows::Foundation::IPropertyValue>)
+        if constexpr (std::is_same_v<T, winrt::Windows::Foundation::IPropertyValue>)
+        {
+            if (auto result = convert_from_property_value(runtime, value); !result.isUndefined())
             {
-                if (auto result = convert_from_property_value(runtime, value); !result.isUndefined())
+                return result;
+            }
+        }
+        else if constexpr (std::is_same_v<T, winrt::Windows::Foundation::IInspectable>)
+        {
+            if (auto propVal = value.try_as<winrt::Windows::Foundation::IPropertyValue>())
+            {
+                if (auto result = convert_from_property_value(runtime, propVal); !result.isUndefined())
                 {
                     return result;
                 }
             }
-            else if constexpr (std::is_same_v<T, winrt::Windows::Foundation::IInspectable>)
-            {
-                if (auto propVal = value.try_as<winrt::Windows::Foundation::IPropertyValue>())
-                {
-                    if (auto result = convert_from_property_value(runtime, propVal); !result.isUndefined())
-                    {
-                        return result;
-                    }
-                }
-            }
-
-            return current_runtime_context()->instance_cache.get_instance(runtime, value);
         }
 
-        static T as_native(jsi::Runtime& runtime, const jsi::Value& value)
-        {
-            if (value.isNull() || value.isUndefined())
-            {
-                return nullptr;
-            }
+        return current_runtime_context()->instance_cache.get_instance(runtime, value);
+    }
 
+    template <typename T>
+    T convert_value_to_object_instance(jsi::Runtime& runtime, const jsi::Value& value)
+    {
+        if (value.isNull() || value.isUndefined())
+        {
+            return nullptr;
+        }
+
+        if (value.isObject())
+        {
+            auto obj = value.getObject(runtime);
+            if (obj.isHostObject<projected_object_instance>(runtime))
+            {
+                const auto& result = obj.getHostObject<projected_object_instance>(runtime)->instance();
+                if constexpr (std::is_same_v<T, winrt::Windows::Foundation::IInspectable>)
+                {
+                    return result;
+                }
+                else
+                {
+                    return result.as<T>();
+                }
+            }
+        }
+
+        if constexpr (std::is_same_v<T, winrt::Windows::Foundation::IInspectable> ||
+                        std::is_same_v<T, winrt::Windows::Foundation::IPropertyValue>)
+        {
+            if (auto result = convert_to_property_value(runtime, value))
+            {
+                if constexpr (std::is_same_v<T, winrt::Windows::Foundation::IInspectable>)
+                {
+                    return result;
+                }
+                else
+                {
+                    return result.as<winrt::Windows::Foundation::IPropertyValue>();
+                }
+            }
+        }
+
+        if constexpr (pinterface_traits<T>::is_array_convertible)
+        {
             if (value.isObject())
             {
                 auto obj = value.getObject(runtime);
-                if (obj.isHostObject<projected_object_instance>(runtime))
+                if (obj.isArray(runtime))
                 {
-                    const auto& result = obj.getHostObject<projected_object_instance>(runtime)->instance();
-                    if constexpr (std::is_same_v<T, winrt::Windows::Foundation::IInspectable>)
+                    using elem_type = typename pinterface_traits<T>::value_type;
+                    if constexpr (pinterface_traits<T>::is_iterable)
                     {
-                        return result;
+                        return winrt::make<array_iterable<elem_type>>(runtime, obj.getArray(runtime));
                     }
-                    else
+                    else if constexpr (pinterface_traits<T>::is_vector_view)
                     {
-                        return result.as<T>();
+                        return winrt::make<array_vector_view<elem_type>>(runtime, obj.getArray(runtime));
+                    }
+                    else // is_vector
+                    {
+                        static_assert(pinterface_traits<T>::is_vector);
+                        return winrt::make<array_vector<elem_type>>(runtime, obj.getArray(runtime));
                     }
                 }
             }
-
-            if constexpr (std::is_same_v<T, winrt::Windows::Foundation::IInspectable> ||
-                          std::is_same_v<T, winrt::Windows::Foundation::IPropertyValue>)
-            {
-                if (auto result = convert_to_property_value(runtime, value))
-                {
-                    if constexpr (std::is_same_v<T, winrt::Windows::Foundation::IInspectable>)
-                    {
-                        return result;
-                    }
-                    else
-                    {
-                        return result.as<winrt::Windows::Foundation::IPropertyValue>();
-                    }
-                }
-            }
-
-            if constexpr (pinterface_traits<T>::is_array_convertible)
-            {
-                if (value.isObject())
-                {
-                    auto obj = value.getObject(runtime);
-                    if (obj.isArray(runtime))
-                    {
-                        if constexpr (pinterface_traits<T>::is_iterable)
-                        {
-                            return winrt::make<array_iterable<T>>(runtime, obj.getArray(runtime));
-                        }
-                        else if constexpr (pinterface_traits<T>::is_vector_view)
-                        {
-                            return winrt::make<array_vector_view<T>>(runtime, obj.getArray(runtime));
-                        }
-                        else // is_vector
-                        {
-                            static_assert(pinterface_traits<T>::is_vector);
-                            return winrt::make<array_vector<T>>(runtime, obj.getArray(runtime));
-                        }
-                    }
-                }
-            }
-
-            // TODO: Also IMap/IMapView?
-
-            throw jsi::JSError(runtime,
-                "TypeError: Cannot derive a WinRT interface for the JS value. Expecting: "s + typeid(T).name());
         }
-    };
+
+        // TODO: Also IMap/IMapView?
+
+        throw jsi::JSError(runtime,
+            "TypeError: Cannot derive a WinRT interface for the JS value. Expecting: "s + typeid(T).name());
+    }
 
     template <typename T>
     struct projected_value_traits<winrt::Windows::Foundation::IReference<T>>
@@ -2412,12 +2457,13 @@ namespace jswinrt
         static winrt::Windows::Foundation::EventHandler<T> as_native(jsi::Runtime& runtime, const jsi::Value& value)
         {
             return [ctxt = current_runtime_context()->add_reference(),
-                       fn = value.asObject(runtime).asFunction(runtime)](const IInspectable& sender, const T& args) {
+                       fn = value.asObject(runtime).asFunction(runtime)](
+                       const winrt::Windows::Foundation::IInspectable& sender, const T& args) {
                 // TODO: Do we need to call synchronously? One reason might be to propagate errors, but typically event
                 // sources don't care about those.
                 ctxt->call_sync([&]() {
-                    fn.call(ctxt->runtime, convert_native_to_value(runtime, sender),
-                        convert_native_to_value(runtime, args));
+                    fn.call(ctxt->runtime, convert_native_to_value(ctxt->runtime, sender),
+                        convert_native_to_value(ctxt->runtime, args));
                 });
             };
         }

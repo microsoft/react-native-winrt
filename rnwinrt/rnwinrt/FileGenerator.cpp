@@ -11,36 +11,37 @@
 
 using namespace winmd::reader;
 
-static void write_single_namespace_include(jswinrt_writer& writer, const namespace_projection_data& ns)
+static void write_projections_cpp_single_namespace_include(jswinrt_writer& writer, const namespace_projection_data& ns)
 {
-    // We only need includes if the namespace is a root namespace, or if it has interfaces
+    // We only need includes if the namespace is a root namespace (for the global root namespace array), or if it has
+    // interfaces (for the global interface map)
     if (ns.base_namespace.empty() || !ns.interface_children.empty())
     {
         writer.write_fmt("#include \"%.g.h\"\n", ns.full_name);
     }
 
-    // We also need the C++/WinRT header if the namespace has interfaces
+    // We also need the C++/WinRT header if the namespace has interfaces (for 'guid_of' specialization)
     if (!ns.interface_children.empty())
     {
         writer.write_fmt("#include <winrt/%.h>\n", ns.full_name);
     }
 }
 
-static void write_namespace_includes(jswinrt_writer& writer, const namespace_projection_data& ns)
+static void write_projections_cpp_namespace_includes(jswinrt_writer& writer, const namespace_projection_data& ns)
 {
-    write_single_namespace_include(writer, ns);
+    write_projections_cpp_single_namespace_include(writer, ns);
 
     for (auto& childNs : ns.namespace_children)
     {
-        write_namespace_includes(writer, *childNs);
+        write_projections_cpp_namespace_includes(writer, *childNs);
     }
 }
 
-static void write_namespace_includes(jswinrt_writer& writer, const projection_data& data)
+static void write_projections_cpp_namespace_includes(jswinrt_writer& writer, const projection_data& data)
 {
     for (auto& ns : data.root_namespaces)
     {
-        write_namespace_includes(writer, *ns);
+        write_projections_cpp_namespace_includes(writer, *ns);
     }
 }
 
@@ -53,7 +54,7 @@ static void write_projections_cpp_file(const Settings& settings, const projectio
 
 )^-^", settings.PchFileName);
 
-    write_namespace_includes(writer, data);
+    write_projections_cpp_namespace_includes(writer, data);
 
     // 'root_namespaces' definition
     writer.write(R"^-^(
@@ -95,7 +96,7 @@ void write_value_converters_decls(jswinrt_writer& writer, const namespace_projec
 {
     if (!ns.struct_children.empty() || !ns.delegate_children.empty())
     {
-        // First forward declare the C++/WinRT types
+        // Forward declare the C++/WinRT types (because this file gets included in all cpp files)
         writer.write_fmt("namespace winrt::%\n{\n", cpp_namespace{ &ns });
 
         for (auto& structDef : ns.struct_children)
@@ -108,7 +109,7 @@ void write_value_converters_decls(jswinrt_writer& writer, const namespace_projec
             writer.write_fmt("    struct %;\n", delegateDef->type_def.TypeName());
         }
 
-        // Now write the specializations
+        // Now write the specializations; the function definitions will go in each namespace's cpp file
         writer.write(R"^-^(}
 
 namespace jswinrt
@@ -172,23 +173,9 @@ void write_value_converters_header(const Settings& settings, const projection_da
     write_value_converters_decls(writer, data);
 }
 
-static std::string namespace_filename(const namespace_projection_data& ns)
-{
-    std::string result;
-    if (!ns.base_namespace.empty())
-    {
-        result.append(ns.base_namespace);
-        result.push_back('.');
-    }
-    result.append(ns.name);
-    return result;
-}
-
 void write_namespace_headers(const Settings& settings, const namespace_projection_data& ns)
 {
-    auto fileName = namespace_filename(ns);
-
-    jswinrt_file_writer writer(settings.OutputFolder / (fileName + ".g.h"));
+    jswinrt_file_writer writer(settings.OutputFolder / (std::string{ ns.full_name } + ".g.h"));
     writer.write_fmt(R"^-^(#pragma once
 
 #include "base.h"
@@ -200,7 +187,7 @@ namespace jswinrt::namespaces::%
 )^-^",
         cpp_namespace{ &ns });
 
-    // Static enum data
+    // Static enum data declarations
     if (!ns.enum_children.empty())
     {
         writer.write_fmt(R"^-^(
@@ -222,7 +209,7 @@ namespace jswinrt::enums::%
         writer.write("}\n");
     }
 
-    // Static class data
+    // Static class data declarations
     if (!ns.class_children.empty())
     {
         writer.write_fmt(R"^-^(
@@ -239,15 +226,13 @@ namespace jswinrt::classes::%
     }
 )^-^",
                 classDef->type_def.TypeName(),
-                has_attribute(classDef->type_def, metadata_namespace, activatable_attribute) ?
-                    "static_activatable_class_data"sv :
-                    "static_class_data"sv);
+                is_activatable(classDef->type_def) ? "static_activatable_class_data"sv : "static_class_data"sv);
         }
 
         writer.write("}\n");
     }
 
-    // Static interface data (TODO? Can this be moved to the cpp file, right?)
+    // Static interface data declarations (TODO? Can this be moved to the cpp file, right?)
     if (!ns.interface_children.empty())
     {
         writer.write_fmt(R"^-^(
@@ -337,72 +322,216 @@ static void write_cppwinrt_type(jswinrt_writer& writer, ElementType elemType)
     writer.write(str);
 }
 
-static void write_cppwinrt_type(jswinrt_writer& writer, TypeDef typeDef)
+static void write_cppwinrt_type(jswinrt_writer& writer, const TypeDef& typeDef)
 {
-    assert(distance(typeDef.GenericParam()) == 0); // TODO: Maybe we will want to use this code path?
+    assert(distance(typeDef.GenericParam()) == 0);
     writer.write_fmt("winrt::%", cpp_typename{ typeDef });
 }
 
-static void write_cppwinrt_type(jswinrt_writer& writer, winmd::reader::TypeRef typeRef)
+static void write_cppwinrt_type(jswinrt_writer& writer, system_guid_t)
 {
-    if ((typeRef.TypeNamespace() == "System"sv) && (typeRef.TypeName() == "Guid"sv))
-    {
-        writer.write("winrt::guid");
-    }
-    else
-    {
-        write_cppwinrt_type(writer, find_required(typeRef));
-    }
+    writer.write("winrt::guid");
 }
+
+static void write_cppwinrt_type(jswinrt_writer& writer, const TypeSig& sig);
 
 static void write_cppwinrt_type(jswinrt_writer& writer, const GenericTypeInstSig& sig)
 {
     auto [ns, name] = get_type_namespace_and_name(sig.GenericType());
     writer.write_fmt("winrt::%<", cpp_typename{ ns, remove_tick(name) });
 
-    // TODO
+    std::string_view prefix;
+    for (auto&& arg : sig.GenericArgs())
+    {
+        writer.write(prefix);
+        write_cppwinrt_type(writer, arg);
+        prefix = ", ";
+    }
 
     writer.write(">");
 }
 
-static void write_cppwinrt_type(jswinrt_writer& writer, coded_index<TypeDefOrRef> defOrRef)
+static void write_cppwinrt_type(jswinrt_writer& writer, const TypeSig& sig)
 {
-    switch (defOrRef.type())
+    resolve_type(sig, [&](auto&& value, bool isArray) {
+        if (isArray) __debugbreak(); // TODO
+        write_cppwinrt_type(writer, value);
+    });
+}
+
+static void write_cppwinrt_type(jswinrt_writer& writer, const param_iterator& param)
+{
+    resolve_type(param.signature(), [&](auto&& value, bool isArray) {
+        if (isArray)
+        {
+            if (param.is_input())
+            {
+                assert(!param.by_ref());
+                writer.write("winrt::array_view<const ");
+            }
+            else if (!param.by_ref())
+            {
+                // Out, but not ByRef is how fill arrays are indicated
+                writer.write("winrt::array_view<");
+            }
+            else
+            {
+                writer.write("winrt::com_array<");
+            }
+        }
+
+        write_cppwinrt_type(writer, value);
+
+        if (isArray)
+        {
+            writer.write(">");
+        }
+    });
+}
+
+template <typename T>
+static void write_cppwinrt_type_initializer(jswinrt_writer& writer, T&& type)
+{
+    // Classes need to be initialized with 'nullptr' because otherwise it's a constructor invocation
+    resolve_type(type, overloaded{
+                           [&](const TypeDef& type) {
+                               auto c = get_category(type);
+                               if (c == category::class_type)
+                               {
+                                   writer.write("{ nullptr }");
+                               }
+                           },
+                           [&](const TypeDef& type, bool isArray) {
+                               if (isArray)
+                                   return; // TODO: Safe to do this?
+
+                               auto c = get_category(type);
+                               if (c == category::class_type)
+                               {
+                                   writer.write("{ nullptr }");
+                               }
+                           },
+                           [&](auto&&...) {},
+                       });
+}
+
+static void write_params_value_to_native(jswinrt_writer& writer, const function_signature& fn, int indentLevel)
+{
+    auto begin = fn.param_begin();
+    auto end = fn.param_end();
+    for (int argNum = 0; begin != end; ++begin, ++argNum)
     {
-    case TypeDefOrRef::TypeDef:
-        write_cppwinrt_type(writer, defOrRef.TypeDef());
-        break;
-    case TypeDefOrRef::TypeRef:
-        write_cppwinrt_type(writer, defOrRef.TypeRef());
-        break;
-    case TypeDefOrRef::TypeSpec:
-        write_cppwinrt_type(writer, defOrRef.TypeSpec().Signature().GenericTypeInst());
-        break;
+        if (!begin.by_ref())
+        {
+            writer.write_fmt(
+                "\n%auto arg% = convert_value_to_native<%>(runtime, args[%]);", indent{ indentLevel }, argNum,
+                [&](jswinrt_writer& w) { write_cppwinrt_type(w, begin); }, argNum);
+        }
+        else
+        {
+            writer.write_fmt(
+                "\n%% arg%%;", indent{ indentLevel }, [&](jswinrt_writer& w) { write_cppwinrt_type(w, begin); }, argNum,
+                [&](jswinrt_writer& w) { write_cppwinrt_type_initializer(w, begin.type()); });
+        }
     }
 }
 
-static void write_cppwinrt_type(jswinrt_writer& writer, const TypeSig& sig)
+static void write_make_return_struct(jswinrt_writer& writer, const function_signature& fn)
 {
-    if (sig.is_szarray()) __debugbreak(); // TODO: [NOCHECKIN] Just testing
+    if (fn.has_return_value)
+    {
+        writer.write("make_return_struct(runtime, result");
+    }
+    else
+    {
+        writer.write("make_void_return_struct(runtime");
+    }
 
-    std::visit(overloaded{
-        [&](ElementType elemType) {
-            write_cppwinrt_type(writer, elemType);
-        },
-        [&](coded_index<TypeDefOrRef> defOrRef) {
-            write_cppwinrt_type(writer, defOrRef);
-        },
-        [](auto&&) {
-            // TODO: Seems this can include generic instances
-            // assert(false);
+    auto begin = fn.param_begin();
+    auto end = fn.param_end();
+    for (int argNum = 0; begin != end; ++begin, ++argNum)
+    {
+        if (begin.is_output())
+        {
+            writer.write_fmt(R"^-^(, "%", arg%)^-^", camel_case{ begin.name() }, argNum);
         }
-    }, sig.Type());
+    }
+
+    writer.write(")");
 }
 
-static void write_cppwinrt_type(jswinrt_writer& writer, const ParamSig& sig)
+static void write_native_function_params(jswinrt_writer& writer, const function_signature& fn)
 {
-    if (sig.ByRef()) __debugbreak(); // TODO: [NOCHECKIN] Just testing
-    write_cppwinrt_type(writer, sig.Type());
+    auto begin = fn.param_begin();
+    auto end = fn.param_end();
+    std::string_view prefix;
+    for (int argNum = 0; begin != end; ++begin, ++argNum)
+    {
+        writer.write(prefix);
+        prefix = ", ";
+
+        write_cppwinrt_type(writer, begin);
+        if (begin.by_ref())
+        {
+            writer.write("&");
+        }
+        else
+        {
+            resolve_type(begin.signature(), overloaded{
+                                    [&](ElementType type, bool) {
+                                        if ((type == ElementType::String) || (type == ElementType::Object))
+                                        {
+                                            writer.write(" const&");
+                                        }
+                                    },
+                                    [&](const TypeDef& typeDef, bool) {
+                                        auto c = get_category(typeDef);
+                                        if ((c != category::enum_type))
+                                        {
+                                            writer.write(" const&");
+                                        }
+                                    },
+                                    [&](const GenericTypeInstSig&, bool) { writer.write(" const&"); },
+                                    [&](system_guid_t, bool) {},
+                                });
+        }
+
+        writer.write_fmt(" param%", argNum);
+    }
+}
+
+static void write_params_native_to_value(jswinrt_writer& writer, const function_signature& fn, int indentLevel)
+{
+    auto begin = fn.param_begin();
+    auto end = fn.param_end();
+    for (int argNum = 0; begin != end; ++begin, ++argNum)
+    {
+        if (begin.is_input())
+        {
+            writer.write_fmt(
+                "\n%auto arg% = convert_native_to_value(runtime, param%);", indent{ indentLevel }, argNum, argNum);
+        }
+    }
+}
+
+static void write_native_out_params(jswinrt_writer& writer, const function_signature& fn, int indentLevel)
+{
+    assert(fn.has_out_params);
+    writer.write_fmt("\n%auto obj = result.asObject(runtime);", indent{ indentLevel });
+
+    auto begin = fn.param_begin();
+    auto end = fn.param_end();
+    for (int argNum = 0; begin != end; ++begin, ++argNum)
+    {
+        if (begin.is_output())
+        {
+            writer.write_fmt(
+                R"^-^(
+%param% = convert_value_to_native<%>(runtime, obj.getProperty(runtime, "%"));)^-^",
+                indent{ indentLevel }, argNum, [&](jswinrt_writer& w) { write_cppwinrt_type(w, begin); },
+                camel_case{ begin.name() });
+        }
+    }
 }
 
 static void write_enum_projection_data(jswinrt_writer& writer, const enum_projection_data& enumData)
@@ -410,37 +539,24 @@ static void write_enum_projection_data(jswinrt_writer& writer, const enum_projec
     writer.write_fmt(R"^-^(
 namespace jswinrt::enums::%
 {
-static constexpr const static_enum_data::value_mapping mappings[] = {)^-^", cpp_typename{ enumData.type_def });
+    static constexpr const static_enum_data::value_mapping mappings[] = {)^-^", cpp_typename{ enumData.type_def });
 
     for (auto&& field : enumData.type_def.FieldList())
     {
-        if (!field.Constant())
+        if (!field.Constant()) // Enums have a 'value__' data member we need to ignore
             continue;
 
         writer.write_fmt(R"^-^(
-    { "%"sv, static_cast<double>(winrt::%::%) },)^-^",
+        { "%"sv, static_cast<double>(winrt::%::%) },)^-^",
             camel_case{ field.Name() }, cpp_typename{ enumData.type_def }, field.Name());
     }
 
     writer.write_fmt(R"^-^(
-};
+    };
 
-constexpr const static_enum_data data{ "%"sv, mappings };
+    constexpr const static_enum_data data{ "%"sv, mappings };
 }
 )^-^", enumData.name);
-}
-
-static void write_params_value_to_native(jswinrt_writer& writer, const MethodDefSig& sig, int indentLevel)
-{
-    // NOTE: Assumes variables of the name 'args' and 'runtime'
-    int i = 0;
-    for (auto&& arg : sig.Params())
-    {
-        writer.write_fmt(
-            "\n%auto arg% = convert_value_to_native<%>(runtime, args[%]);", indent{ indentLevel }, i,
-            [&](jswinrt_writer& w) { write_cppwinrt_type(w, arg); }, i);
-        ++i;
-    }
 }
 
 static void write_class_projection_data(jswinrt_writer& writer, const class_projection_data& classData)
@@ -450,70 +566,170 @@ namespace jswinrt::classes::%
 {)^-^",
         cpp_typename{ classData.type_def });
 
-    bool hasProperties = false, hasEvents = false, hasFunctions = false;
-    // TODO: data
-
-    std::vector<std::pair<int, MethodDef>> ctors;
-    auto addCtor = [&](MethodDef def) {
-        auto sig = def.Signature();
-        auto paramCount = distance(sig.Params());
-
-        auto itr = ctors.begin();
-        for (; itr != ctors.end(); ++itr)
-        {
-            if (itr->first == paramCount)
-                return; // TODO: How to pick overloads
-            else if (itr->first > paramCount)
-                break;
-        }
-
-        ctors.emplace_back(static_cast<int>(paramCount), def);
-    };
-
-    for (auto&& method : classData.type_def.MethodList())
+    if (!classData.methods.properties.empty())
     {
-        if (!method.SpecialName()) // Normal function
+        writer.write(R"^-^(
+    static constexpr const static_class_data::property_mapping property_data[] = {)^-^");
+
+        for (auto& data : classData.methods.properties)
         {
-            // TODO
+            writer.write_fmt(R"^-^(
+        { "%",)^-^", camel_case{ data.name });
+
+            if (data.has_getter)
+            {
+                writer.write_fmt(R"^-^(
+            [](jsi::Runtime& runtime) {
+                return convert_native_to_value(runtime, winrt::%::%());
+            },)^-^",
+                    cpp_typename{ classData.type_def }, data.name);
+            }
+            else
+            {
+                writer.write("\n            nullptr,");
+            }
+
+            if (data.has_setter)
+            {
+                writer.write_fmt(R"^-^(
+            [](jsi::Runtime& runtime, const jsi::Value& value) {
+                winrt::%::%(convert_value_to_native<%>(runtime, value));
+            },)^-^",
+                    cpp_typename{ classData.type_def }, data.name,
+                    [&](jswinrt_writer& w) { write_cppwinrt_type(w, data.type); });
+            }
+            else
+            {
+                writer.write("\n            nullptr");
+            }
+
+            writer.write(R"^-^(
+        },)^-^");
         }
-        else if (method.Name() == ".ctor"sv) // Constructor
-        {
-            addCtor(method);
-        }
+
+        writer.write("\n    };\n");
     }
 
-    if (ctors.empty())
+    if (!classData.methods.events.empty())
+    {
+        writer.write(R"^-^(
+    static constexpr const static_class_data::event_mapping event_data[] = {)^-^");
+
+        for (auto& data : classData.methods.events)
+        {
+            writer.write_fmt(R"^-^(
+        { "%",
+            [](jsi::Runtime& runtime, const jsi::Value& callback) {
+                return winrt::%::%(convert_value_to_native<%>(runtime, callback));
+            },
+            [](winrt::event_token token) {
+                winrt::%::%(token);
+            }
+        },)^-^",
+                event_name{ data.name }, cpp_typename{ classData.type_def }, data.name,
+                [&](jswinrt_writer& w) { write_cppwinrt_type(w, data.type); }, cpp_typename{ classData.type_def },
+                data.name);
+        }
+
+        writer.write("\n    };\n");
+    }
+
+    if (!classData.methods.functions.empty())
+    {
+        writer.write(R"^-^(
+    static constexpr const static_class_data::function_mapping function_data[] = {)^-^");
+
+        for (auto& data : classData.methods.functions)
+        {
+            writer.write_fmt(R"^-^(
+        { "%",
+            []([[maybe_unused]] jsi::Runtime& runtime, const jsi::Value&, [[maybe_unused]] const jsi::Value* args, size_t count) {)^-^",
+                camel_case{ data.name });
+
+            for (auto& overload : data.overloads)
+            {
+                writer.write_fmt(R"^-^(
+                if (count == %)
+                {)^-^",
+                    overload.arity);
+
+                write_params_value_to_native(writer, overload.method, 5);
+
+                writer.write_fmt(R"^-^(
+                    %winrt::%::%()^-^",
+                    overload.method.has_return_value ? "auto result = " : "", cpp_typename{ classData.type_def },
+                    data.name);
+
+                auto argCount = overload.method.native_param_count();
+                std::string_view prefix;
+                for (int i = 0; i < argCount; ++i)
+                {
+                    writer.write_fmt("%arg%", prefix, i);
+                    prefix = ", ";
+                }
+                writer.write(");");
+
+                if (overload.method.has_out_params)
+                {
+                    writer.write_fmt(R"^-^(
+                    return %;)^-^", [&](jswinrt_writer& w) { write_make_return_struct(w, overload.method); });
+                }
+                else if (overload.method.has_return_value)
+                {
+                    writer.write(R"^-^(
+                    return convert_native_to_value(runtime, result);)^-^");
+                }
+                else
+                {
+                    writer.write(R"^-^(
+                    return jsi::Value::undefined();)^-^");
+                }
+
+                writer.write(R"^-^(
+                })^-^");
+            }
+
+            writer.write_fmt(R"^-^(
+                throw jsi::JSError(runtime, "TypeError: No function overload exists for "s + "%." + "%" +
+                    " with " + std::to_string(count) + " args");
+            }
+        },)^-^", classData.type_def.TypeNamespace(), classData.type_def.TypeName());
+        }
+
+        writer.write("\n    };\n");
+    }
+
+    if (classData.methods.constructors.empty())
     {
         writer.write_fmt(R"^-^(
     constexpr const static_class_data data{ "%"sv, %, %, % };
 }
 )^-^",
-            classData.name, hasProperties ? "propery_data"sv : "{}"sv, hasEvents ? "event_data"sv : "{}"sv,
-            hasFunctions ? "function_data"sv : "{}"sv);
+            classData.name, !classData.methods.properties.empty() ? "property_data"sv : "{}"sv,
+            !classData.methods.events.empty() ? "event_data"sv : "{}"sv,
+            !classData.methods.functions.empty() ? "function_data"sv : "{}"sv);
     }
     else
     {
-        // NOTE: We use string concatenation here - instead of embedding the type name - to reduce the impact on
-        // disk footprint. This isn't an expected/common code path, so the impact should hopefully be minimal
-        // TODO: Actually validate this
-        // TODO: Make throwing function a separate non-inlined function? Would also decrease disk footprint
         writer.write_fmt(R"^-^(
     static jsi::Value constructor_function(jsi::Runtime& runtime, const jsi::Value&, [[maybe_unused]] const jsi::Value* args, size_t count)
     {)^-^");
 
-        for (auto& [count, fnDef] : ctors)
+        for (auto& ctorData : classData.methods.constructors)
         {
             writer.write_fmt(R"^-^(
         if (count == %)
         {)^-^",
-                count);
-            auto sig = fnDef.Signature();
-            write_params_value_to_native(writer, sig, 3);
-            writer.write_fmt("\n            return convert_native_to_value(runtime, winrt::%(", cpp_typename{ classData.type_def });
+                ctorData.method.param_count);
 
-            auto paramCount = distance(sig.Params());
+            write_params_value_to_native(writer, ctorData.method, 3);
+
+            writer.write_fmt(
+                "\n            return convert_native_to_value(runtime, winrt::%(", cpp_typename{ classData.type_def });
+
+            // NOTE: Already asserted no out params
             std::string_view prefix;
-            for (int i = 0; i < paramCount; ++i)
+            for (int i = 0; i < ctorData.method.param_count; ++i)
             {
                 writer.write_fmt("%arg%", prefix, i);
                 prefix = ", "sv;
@@ -523,6 +739,10 @@ namespace jswinrt::classes::%
             writer.write("\n        }");
         }
 
+        // NOTE: We use string concatenation here - instead of embedding the type name - to reduce the impact on
+        // disk footprint. This isn't an expected/common code path, so the impact should hopefully be minimal
+        // TODO: Actually validate this
+        // TODO: Make throwing function a separate non-inlined function? Would also decrease disk footprint
         writer.write_fmt(R"^-^(
         throw jsi::JSError(runtime, "TypeError: No constructor overload exists for "s + "%." + "%" +
             " with " + std::to_string(count) + " args");
@@ -532,8 +752,9 @@ namespace jswinrt::classes::%
 }
 )^-^",
             classData.type_def.TypeNamespace(), classData.type_def.TypeName(), classData.name,
-            hasProperties ? "propery_data"sv : "{}"sv, hasEvents ? "event_data"sv : "{}"sv,
-            hasFunctions ? "function_data"sv : "{}"sv);
+            !classData.methods.properties.empty() ? "property_data"sv : "{}"sv,
+            !classData.methods.events.empty() ? "event_data"sv : "{}"sv,
+            !classData.methods.functions.empty() ? "function_data"sv : "{}"sv);
     }
 }
 
@@ -551,22 +772,20 @@ namespace jswinrt::interfaces::%
     constexpr const static_interface_data data{ winrt::guid_of<winrt::%>(), %, %, % };
 }
 )^-^",
-        cpp_typename{ ifaceData.type_def }, hasProperties ? "propery_data"sv : "{}"sv,
+        cpp_typename{ ifaceData.type_def }, hasProperties ? "property_data"sv : "{}"sv,
         hasEvents ? "event_data"sv : "{}"sv, hasFunctions ? "function_data"sv : "{}"sv);
 }
 
 void write_namespace_cpp_files(const Settings& settings, const namespace_projection_data& ns)
 {
-    auto fileName = namespace_filename(ns);
-
-    jswinrt_file_writer writer(settings.OutputFolder / (fileName + ".g.cpp"));
+    jswinrt_file_writer writer(settings.OutputFolder / (std::string{ ns.full_name } + ".g.cpp"));
     writer.write_fmt(R"^-^(#include "%"
 
 #include "base.h"
 
 #include "%.g.h"
 )^-^",
-        settings.PchFileName, fileName);
+        settings.PchFileName, ns.full_name);
 
     // We also need the namespace headers for child namespaces
     for (auto& childNs : ns.namespace_children)
@@ -580,7 +799,7 @@ void write_namespace_cpp_files(const Settings& settings, const namespace_project
     if ((ns.namespace_children.size() < ns.named_children.size()) || !ns.struct_children.empty() ||
         !ns.delegate_children.empty() || !ns.interface_children.empty())
     {
-        writer.write_fmt("\n#include <winrt/%.h>\n", fileName);
+        writer.write_fmt("\n#include <winrt/%.h>\n", ns.full_name);
     }
 
     // Namespace data
@@ -595,7 +814,7 @@ namespace jswinrt::namespaces::%
     if (!ns.named_children.empty())
     {
         writer.write(R"^-^(
-static constexpr const static_projection_data* const children[] = {
+    static constexpr const static_projection_data* const children[] = {
 )^-^");
 
         for (auto child : ns.named_children)
@@ -692,7 +911,112 @@ static constexpr const static_projection_data* const children[] = {
 
         for (auto& delegateData : ns.delegate_children)
         {
-            // TODO
+            function_signature fn(delegate_invoke_function(delegateData->type_def));
+
+            writer.write_fmt(R"^-^(
+    jsi::Value projected_value_traits<winrt::%>::as_value(jsi::Runtime& runtime, const winrt::%& value)
+    {
+        return jsi::Function::createFromHostFunction(runtime, make_propid(runtime, "%"), %,
+            [value](jsi::Runtime& runtime, const jsi::Value&, [[maybe_unused]] const jsi::Value* args, size_t count) {
+                if (count != %)
+                {
+                    throw jsi::JSError(runtime, "TypeError: Invalid number of arguments to %");
+                }
+)^-^",
+                cpp_typename{ delegateData->type_def }, cpp_typename{ delegateData->type_def },
+                delegateData->type_def.TypeName(), fn.param_count, fn.param_count,
+                delegateData->type_def.TypeName());
+
+            write_params_value_to_native(writer, fn, 4);
+            writer.write_fmt("\n                %value(", fn.has_return_value ? "auto result = " : "");
+
+            auto argCount = fn.native_param_count();
+            std::string_view prefix;
+            for (int i = 0; i < argCount; ++i)
+            {
+                writer.write_fmt("%arg%", prefix, i);
+                prefix = ", ";
+            }
+            writer.write(");");
+
+            if (fn.has_out_params)
+            {
+                writer.write_fmt(R"^-^(
+                return %;)^-^", [&](jswinrt_writer& w) { write_make_return_struct(w, fn); });
+            }
+            else if (fn.has_return_value)
+            {
+                            writer.write("\n                return convert_native_to_value(runtime, result);");
+            }
+            else
+            {
+                            writer.write("\n                return jsi::Value::undefined();");
+            }
+
+            writer.write_fmt(R"^-^(
+            });
+    }
+
+    winrt::% projected_value_traits<winrt::%>::as_native(jsi::Runtime& runtime, const jsi::Value& value)
+    {
+        return [ctxt = current_runtime_context()->add_reference(),
+                   fn = value.asObject(runtime).asFunction(runtime)](%) {)^-^",
+                cpp_typename{ delegateData->type_def }, cpp_typename{ delegateData->type_def },
+                [&](jswinrt_writer& w) { write_native_function_params(w, fn); });
+
+            if (fn.has_return_value)
+            {
+                //
+                writer.write_fmt(R"^-^(
+            % returnValue%;)^-^",
+                    [&](jswinrt_writer& w) { write_cppwinrt_type(w, fn.signature.ReturnType().Type()); },
+                    [&](jswinrt_writer& w) { write_cppwinrt_type_initializer(w, fn.signature.ReturnType().Type()); });
+            }
+
+            writer.write(R"^-^(
+            ctxt->call_sync([&]() {
+                auto& runtime = ctxt->runtime;)^-^");
+
+            write_params_native_to_value(writer, fn, 4);
+
+            writer.write_fmt(R"^-^(
+                %fn.call(runtime)^-^", (fn.has_return_value || fn.has_out_params) ? "auto result = " : "");
+            for (int i = 0; i < fn.param_count; ++i)
+            {
+                writer.write_fmt(", arg%", i);
+            }
+            writer.write_fmt(");");
+
+            if (fn.has_out_params)
+            {
+                write_native_out_params(writer, fn, 4);
+
+                if (fn.has_return_value)
+                {
+                    // This is a bit different than below since we need to "extract" the value
+                    writer.write_fmt(R"^-^(
+                returnValue = convert_value_to_native<%>(runtime, obj.getProperty(runtime, "returnValue"));)^-^",
+                        [&](jswinrt_writer& w) { write_cppwinrt_type(w, fn.signature.ReturnType().Type()); });
+                }
+            }
+            else if (fn.has_return_value)
+            {
+                writer.write_fmt("\n                returnValue = convert_value_to_native<%>(runtime, result);",
+                    [&](jswinrt_writer& w) { write_cppwinrt_type(w, fn.signature.ReturnType().Type()); });
+            }
+
+            writer.write(R"^-^(
+            });)^-^");
+
+            if (fn.has_return_value)
+            {
+                writer.write("\n            return returnValue;");
+            }
+
+            writer.write(R"^-^(
+        };
+    }
+)^-^");
         }
 
         writer.write("}\n");
@@ -709,6 +1033,18 @@ void write_namespace_cpp_files(const Settings& settings, const projection_data& 
     for (auto& ns : data.root_namespaces)
     {
         write_namespace_cpp_files(settings, *ns);
+    }
+}
+
+void write_base_files(const Settings& settings)
+{
+    for (auto& data : file_strings)
+    {
+        FileWriter writer(settings.OutputFolder / data.file_name);
+        for (auto& str : data.file_contents)
+        {
+            writer.Write("%", str);
+        }
     }
 }
 
@@ -736,7 +1072,7 @@ void write_files(const Settings& settings, const projection_data& data)
 
 
     // Write base.h/base.cpp
-    WriteBaseFiles(settings);
+    write_base_files(settings);
 
     // TODO: Typescript
 }

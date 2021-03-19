@@ -218,7 +218,7 @@ static jsi::Value static_remove_event_listener(jsi::Runtime& runtime, const jsi:
     if (auto itr = find_by_name(data->events, name); itr != data->events.end())
     {
         auto token = registrations.remove(runtime, args[1].asObject(runtime), itr->name.data());
-        itr->remove(runtime, token);
+        itr->remove(token);
     }
 
     return jsi::Value::undefined();
@@ -1082,7 +1082,7 @@ winrt::float4 projected_value_traits<winrt::float4>::as_native(jsi::Runtime& run
     return result;
 }
 
-jsi::Value convert_from_property_value(jsi::Runtime& runtime, const winrt::IPropertyValue& value)
+jsi::Value jswinrt::convert_from_property_value(jsi::Runtime& runtime, const winrt::IPropertyValue& value)
 {
     switch (value.Type())
     {

@@ -41,6 +41,35 @@ struct overloaded : Fns...
 template <typename... Fns>
 overloaded(Fns...) -> overloaded<Fns...>;
 
+inline bool starts_with(std::string_view str, std::string_view prefix)
+{
+    return str.substr(0, prefix.size()) == prefix;
+}
+
+template <typename ListT, typename Comp>
+inline auto reverse_sorted_find(ListT&& list, Comp&& compareFn)
+{
+    auto itr = list.rbegin();
+    for (; itr != list.rend(); ++itr)
+    {
+        auto cmp = compareFn(*itr);
+        if (cmp == 0)
+        {
+            return std::pair{ itr.base() - 1, true };
+        }
+        else if (cmp < 0)
+        {
+            return std::pair{ itr.base(), false };
+        }
+    }
+
+    return std::pair{ itr.base(), false };
+}
+
+
+
+
+
 #if 1
 inline void ThrowInvalidArg(std::string const& message)
 {

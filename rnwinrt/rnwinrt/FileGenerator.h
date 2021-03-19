@@ -1,5 +1,6 @@
 #pragma once
-#include "MetadataHelpers.h"
+
+#include "MetadataTypes.h"
 #include "Settings.h"
 
 void write_files(const Settings& settings, const projection_data& data);
