@@ -723,7 +723,7 @@ jsi::Value projected_object_instance::remove_event_listener(jsi::Runtime& runtim
             // TODO: Should we just no-op if the token can't be found?
             auto token = current_runtime_context()->event_cache.remove(
                 runtime, m_instance, args[1].asObject(runtime), itr->name.data());
-            itr->remove(runtime, m_instance, args[1], token);
+            itr->remove(m_instance, token);
             break;
         }
     }
@@ -871,7 +871,7 @@ winrt::DateTime projected_value_traits<winrt::DateTime>::as_native(jsi::Runtime&
 jsi::Value projected_value_traits<winrt::TimeSpan>::as_value(jsi::Runtime& runtime, winrt::TimeSpan value)
 {
     auto ms = std::chrono::duration_cast<std::chrono::milliseconds>(value);
-    return convert_native_to_value<int64_t>(runtime, value.count());
+    return convert_native_to_value<int64_t>(runtime, ms.count());
 }
 
 winrt::TimeSpan projected_value_traits<winrt::TimeSpan>::as_native(jsi::Runtime& runtime, const jsi::Value& value)

@@ -576,27 +576,21 @@ namespace jswinrt::classes::%
             writer.write_fmt(R"^-^(
         { "%",)^-^", camel_case{ data.name });
 
-            if (data.has_getter)
-            {
-                writer.write_fmt(R"^-^(
+            assert(data.getter); // Class properties should always have a getter
+            writer.write_fmt(R"^-^(
             [](jsi::Runtime& runtime) {
                 return convert_native_to_value(runtime, winrt::%::%());
             },)^-^",
-                    cpp_typename{ classData.type_def }, data.name);
-            }
-            else
-            {
-                writer.write("\n            nullptr,");
-            }
+                cpp_typename{ classData.type_def }, data.name);
 
-            if (data.has_setter)
+            if (data.setter)
             {
                 writer.write_fmt(R"^-^(
             [](jsi::Runtime& runtime, const jsi::Value& value) {
                 winrt::%::%(convert_value_to_native<%>(runtime, value));
             },)^-^",
                     cpp_typename{ classData.type_def }, data.name,
-                    [&](jswinrt_writer& w) { write_cppwinrt_type(w, data.type); });
+                    [&](jswinrt_writer& w) { write_cppwinrt_type(w, data.setter->param_begin()); });
             }
             else
             {
@@ -705,9 +699,9 @@ namespace jswinrt::classes::%
     constexpr const static_class_data data{ "%"sv, %, %, % };
 }
 )^-^",
-            classData.name, !classData.methods.properties.empty() ? "property_data"sv : "{}"sv,
-            !classData.methods.events.empty() ? "event_data"sv : "{}"sv,
-            !classData.methods.functions.empty() ? "function_data"sv : "{}"sv);
+            classData.name, classData.methods.properties.empty() ? "{}"sv : "property_data"sv,
+            classData.methods.events.empty() ? "{}"sv : "event_data"sv,
+            classData.methods.functions.empty() ? "{}"sv : "function_data"sv);
     }
     else
     {
@@ -752,9 +746,9 @@ namespace jswinrt::classes::%
 }
 )^-^",
             classData.type_def.TypeNamespace(), classData.type_def.TypeName(), classData.name,
-            !classData.methods.properties.empty() ? "property_data"sv : "{}"sv,
-            !classData.methods.events.empty() ? "event_data"sv : "{}"sv,
-            !classData.methods.functions.empty() ? "function_data"sv : "{}"sv);
+            classData.methods.properties.empty() ? "{}"sv : "property_data"sv,
+            classData.methods.events.empty() ? "{}"sv : "event_data"sv,
+            classData.methods.functions.empty() ? "{}"sv : "function_data"sv);
     }
 }
 
@@ -765,15 +759,136 @@ namespace jswinrt::interfaces::%
 {)^-^",
         cpp_typename{ ifaceData.type_def });
 
-    bool hasProperties = false, hasEvents = false, hasFunctions = false;
-    // TODO: data
+    if (!ifaceData.methods.properties.empty())
+    {
+        writer.write(R"^-^(
+    static constexpr const static_interface_data::property_mapping property_data[] = {)^-^");
+
+        for (auto& data : ifaceData.methods.properties)
+        {
+            writer.write_fmt(R"^-^(
+        { "%",)^-^", camel_case{ data.name });
+
+            if (data.getter)
+            {
+                writer.write_fmt(R"^-^(
+            [](jsi::Runtime& runtime, const winrt::Windows::Foundation::IInspectable& thisValue) {
+                return convert_native_to_value(runtime, thisValue.as<winrt::%>().%());
+            },)^-^",
+                    cpp_typename{ ifaceData.type_def }, data.name);
+            }
+            else
+            {
+                writer.write("\n            nullptr,");
+            }
+
+            if (data.setter)
+            {
+                writer.write_fmt(R"^-^(
+            [](jsi::Runtime& runtime, const winrt::Windows::Foundation::IInspectable& thisValue, const jsi::Value& value) {
+                thisValue.as<winrt::%>().%(convert_value_to_native<%>(runtime, value));
+            },)^-^",
+                    cpp_typename{ ifaceData.type_def }, data.name,
+                    [&](jswinrt_writer& w) { write_cppwinrt_type(w, data.setter->param_begin()); });
+            }
+            else
+            {
+                writer.write("\n            nullptr");
+            }
+
+            writer.write(R"^-^(
+        },)^-^");
+        }
+
+        writer.write("\n    };");
+    }
+
+    if (!ifaceData.methods.events.empty())
+    {
+        writer.write(R"^-^(
+    static constexpr const static_interface_data::event_mapping event_data[] = {)^-^");
+
+        for (auto& data : ifaceData.methods.events)
+        {
+            writer.write_fmt(R"^-^(
+        { "%",
+            [](jsi::Runtime& runtime, const winrt::Windows::Foundation::IInspectable& thisValue, const jsi::Value& callback) {
+                return thisValue.as<winrt::%>().%(convert_value_to_native<%>(runtime, callback));
+            },
+            [](const winrt::Windows::Foundation::IInspectable& thisValue, winrt::event_token token) {
+                thisValue.as<winrt::%>().%(token);
+            }
+        },)^-^",
+                event_name{ data.name }, cpp_typename{ ifaceData.type_def }, data.name,
+                [&](jswinrt_writer& w) { write_cppwinrt_type(w, data.type); }, cpp_typename{ ifaceData.type_def },
+                data.name);
+        }
+
+        writer.write("\n    };\n");
+    }
+
+    if (!ifaceData.methods.functions.empty())
+    {
+        writer.write(R"^-^(
+    static constexpr const static_interface_data::function_mapping function_data[] = {)^-^");
+
+        for (auto& data : ifaceData.methods.functions)
+        {
+            for (auto& overload : data.overloads)
+            {
+                writer.write_fmt(R"^-^(
+        { "%",
+            []([[maybe_unused]] jsi::Runtime& runtime, const winrt::Windows::Foundation::IInspectable& thisValue, [[maybe_unused]] const jsi::Value* args) {)^-^",
+                    camel_case{ data.name });
+
+                write_params_value_to_native(writer, overload.method, 5);
+
+                writer.write_fmt(R"^-^(
+                    %thisValue.as<winrt::%>().%()^-^",
+                    overload.method.has_return_value ? "auto result = " : "", cpp_typename{ ifaceData.type_def },
+                    data.name);
+
+                auto argCount = overload.method.native_param_count();
+                std::string_view prefix;
+                for (int i = 0; i < argCount; ++i)
+                {
+                    writer.write_fmt("%arg%", prefix, i);
+                    prefix = ", ";
+                }
+                writer.write(");");
+
+                if (overload.method.has_out_params)
+                {
+                    writer.write_fmt(R"^-^(
+                    return %;)^-^", [&](jswinrt_writer& w) { write_make_return_struct(w, overload.method); });
+                }
+                else if (overload.method.has_return_value)
+                {
+                    writer.write(R"^-^(
+                    return convert_native_to_value(runtime, result);)^-^");
+                }
+                else
+                {
+                    writer.write(R"^-^(
+                    return jsi::Value::undefined();)^-^");
+                }
+
+                writer.write_fmt(R"^-^(
+                },
+                %, % },)^-^", overload.arity, overload.is_default_overload);
+            }
+        }
+
+        writer.write("\n    };\n");
+    }
 
     writer.write_fmt(R"^-^(
     constexpr const static_interface_data data{ winrt::guid_of<winrt::%>(), %, %, % };
 }
 )^-^",
-        cpp_typename{ ifaceData.type_def }, hasProperties ? "property_data"sv : "{}"sv,
-        hasEvents ? "event_data"sv : "{}"sv, hasFunctions ? "function_data"sv : "{}"sv);
+        cpp_typename{ ifaceData.type_def }, ifaceData.methods.properties.empty() ? "{}"sv : "property_data"sv,
+        ifaceData.methods.events.empty() ? "{}"sv : "event_data"sv,
+        ifaceData.methods.functions.empty() ? "{}"sv : "function_data"sv);
 }
 
 void write_namespace_cpp_files(const Settings& settings, const namespace_projection_data& ns)

@@ -90,7 +90,6 @@ function runBoolProperty(scenario) {
 }
 
 function runDateTimeProperty(scenario) {
-    runSyncPropertyTest.call(this, scenario, 'object', TestValues.dates.valid, TestValues.dates.invalid, () => this.test.dateTimeProperty, (val) => this.test.dateTimeProperty = val);
     this.runSync(scenario, () => {
         for (let i = 0; i < TestValues.dates.valid.length; i++) {
             let assignedValue = TestValues.dates.valid[i];
@@ -103,7 +102,6 @@ function runDateTimeProperty(scenario) {
 }
 
 function runTimeSpanProperty(scenario) {
-    runSyncPropertyTest.call(this, scenario, 'number', TestValues.timeSpans.valid, TestValues.timeSpans.invalid, () => this.test.timeSpanProperty, (val) => this.test.timeSpanProperty = val);
     this.runSync(scenario, () => {
         for (let i = 0; i < TestValues.timeSpans.valid.length; i++) {
             let assignedValue = TestValues.timeSpans.valid[i];
@@ -116,7 +114,6 @@ function runTimeSpanProperty(scenario) {
 }
 
 function runPropertyValueProperty(scenario) {
-    runSyncPropertyTest.call(this, scenario, 'object', TestValues.propertyValues.valid, TestValues.propertyValues.invalid, () => this.test.propertyValue, (val) => this.test.propertyValue = val);
     this.runSync(scenario, () => {
         for (let i = 0; i < TestValues.propertyValues.valid.length; i++) {
             let assignedValue = TestValues.propertyValues.valid[i];

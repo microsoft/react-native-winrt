@@ -261,7 +261,7 @@ export const TestValues = {
     },
     timeSpans: {
         valid: [1726, 0, -218761],
-        cppValuesForValidTimeSpans: ["1726", "0", "-218761"],
+        cppValuesForValidTimeSpans: ["17260000", "0", "-2187610000"],
         invalid: [{duration: 98217}, new Date()]
     },
     hResults: {

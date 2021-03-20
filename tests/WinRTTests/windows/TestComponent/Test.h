@@ -166,6 +166,12 @@ namespace winrt::TestComponent::implementation
         static Windows::Foundation::Collections::IVector<Windows::Foundation::IInspectable> ReturnSameObjectVector(
             Windows::Foundation::Collections::IVector<Windows::Foundation::IInspectable> const& vector);
 
+        static Windows::Foundation::IAsyncAction PauseAsync(int32_t milliseconds);
+        static Windows::Foundation::IAsyncActionWithProgress<int32_t> CountToNumberAsync(int32_t value);
+        static Windows::Foundation::IAsyncOperation<int32_t> AddAsync(int32_t lhs, int32_t rhs);
+        static Windows::Foundation::IAsyncOperationWithProgress<int32_t, int32_t> CountDoubleAsync(int32_t value);
+        static Windows::Foundation::IAsyncAction ThrowAsyncException();
+
         bool BoolProperty();
         void BoolProperty(bool value);
         char16_t CharProperty();
@@ -222,15 +228,6 @@ namespace winrt::TestComponent::implementation
         void HResultProperty(hresult value);
         Windows::Foundation::IPropertyValue PropertyValue();
         void PropertyValue(Windows::Foundation::IPropertyValue value);
-
-        Windows::Foundation::IAsyncAction AppendZeroToIVectorAsync(
-            Windows::Foundation::Collections::IVector<int32_t> vector);
-        Windows::Foundation::IAsyncActionWithProgress<double> FillZeroesToIVectorAsync(
-            Windows::Foundation::Collections::IVector<int32_t> vector);
-        Windows::Foundation::IAsyncOperation<Windows::Foundation::Collections::IVector<int32_t>> CreateIVectorAsync();
-        Windows::Foundation::IAsyncOperationWithProgress<Windows::Foundation::Collections::IVector<int32_t>, double>
-        CreateIVectorWithZeroesAsync();
-        Windows::Foundation::IAsyncAction CreateAsyncException();
 
         com_array<bool> BooleanArrayProperty();
         void BooleanArrayProperty(array_view<bool const> value);

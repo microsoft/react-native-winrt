@@ -552,8 +552,7 @@ namespace jswinrt
         jsi::Runtime&, const winrt::Windows::Foundation::IInspectable&, const jsi::Value&);
     using instance_add_event_t = winrt::event_token (*)(
         jsi::Runtime&, const winrt::Windows::Foundation::IInspectable&, const jsi::Value&);
-    using instance_remove_event_t = void (*)(
-        jsi::Runtime&, const winrt::Windows::Foundation::IInspectable&, const jsi::Value&, winrt::event_token);
+    using instance_remove_event_t = void (*)(const winrt::Windows::Foundation::IInspectable&, winrt::event_token);
     using instance_call_function_t = jsi::Value (*)(
         jsi::Runtime&, const winrt::Windows::Foundation::IInspectable&, const jsi::Value*);
 
@@ -765,7 +764,7 @@ namespace jswinrt
         static promise_wrapper create(jsi::Runtime& runtime)
         {
             // NOTE: The promise callback is called immediately, hence the capture by reference
-            std::optional<jsi::Function> resolve, reject;
+            std::optional<jsi::Function> resolveFn, rejectFn;
             auto callback = jsi::Function::createFromHostFunction(runtime, make_propid(runtime, "callback"), 2,
                 [&](jsi::Runtime& runtime, const jsi::Value&, const jsi::Value* args, size_t count) {
                     if (count < 2)
@@ -773,14 +772,15 @@ namespace jswinrt
                         throw jsi::JSError(runtime, "Promise callback unexpectedly called with insufficient arguments");
                     }
 
-                    resolve = args[0].asObject(runtime).asFunction(runtime);
-                    reject = args[1].asObject(runtime).asFunction(runtime);
+                    resolveFn = args[0].asObject(runtime).asFunction(runtime);
+                    rejectFn = args[1].asObject(runtime).asFunction(runtime);
                     return jsi::Value::undefined();
                 });
 
             auto promise =
                 runtime.global().getPropertyAsFunction(runtime, "Promise").callAsConstructor(runtime, callback);
-            return promise_wrapper(std::move(promise), std::move(*resolve), std::move(*reject));
+            assert(resolveFn && rejectFn);
+            return promise_wrapper(std::move(promise), std::move(*resolveFn), std::move(*rejectFn));
         }
 
         const jsi::Value& get() const noexcept
@@ -803,8 +803,8 @@ namespace jswinrt
         }
 
     private:
-        promise_wrapper(jsi::Value promise, jsi::Function resolve, jsi::Function reject) :
-            m_promise(std::move(promise)), m_resolve(std::move(resolve)), m_reject(std::move(reject))
+        promise_wrapper(jsi::Value promise, jsi::Function resolveFn, jsi::Function rejectFn) :
+            m_promise(std::move(promise)), m_resolve(std::move(resolveFn)), m_reject(std::move(rejectFn))
         {
         }
 
@@ -1017,7 +1017,13 @@ namespace jswinrt
             auto ptr = winrt::get_abi(instance);
             if (auto itr = events.find(ptr); itr != events.end())
             {
-                return itr->second.registrations.remove(runtime, object, eventName);
+                auto result = itr->second.registrations.remove(runtime, object, eventName);
+                if (itr->second.registrations.empty())
+                {
+                    events.erase(itr);
+                }
+
+                return result;
             }
 
             return {};
@@ -1406,25 +1412,39 @@ namespace jswinrt
         public jsi::HostObject,
         public std::enable_shared_from_this<projected_async_instance<IFace>>
     {
+    private:
         using traits = pinterface_traits<IFace>;
 
-        projected_async_instance(IFace instance) : m_instance(std::move(instance))
+        struct tag_t
         {
-            initialize(m_instance);
+        };
+
+    public:
+        static std::shared_ptr<projected_async_instance> create(IFace instance)
+        {
+            auto result = std::make_shared<projected_async_instance>(std::move(instance), tag_t{});
+            result->initialize();
 
             if constexpr (traits::is_async_with_progress) // IAsync*WithProgress
             {
-                m_instance.Progress([weakThis = this->weak_from_this(), ctxt = current_runtime_context()->add_reference()](
+                result->m_instance.Progress([weakThis = std::weak_ptr{ result },
+                                        ctxt = current_runtime_context()->add_reference()](
                                         const auto&, const auto& progress) {
                     ctxt->call([progress, weakThis]() {
                         if (auto strongThis = weakThis.lock())
                         {
-                            strongThis->on_progress(
-                                current_runtime_context()->runtime, convert_native_to_value(progress));
+                            auto& runtime = current_runtime_context()->runtime;
+                            strongThis->on_progress(runtime, convert_native_to_value(runtime, progress));
                         }
                     });
                 });
             }
+
+            return result;
+        }
+
+        projected_async_instance(IFace instance, tag_t) : m_instance(std::move(instance))
+        {
         }
 
         // HostObject functions
@@ -1486,16 +1506,15 @@ namespace jswinrt
         }
 
     private:
+
         struct continuation
         {
-            enum class type
+            enum
             {
-                then, // Covers both .then and .catch
-                finally,
-                done,
-            };
-
-            type kind;
+                then_type, // Covers both .then and .catch
+                finally_type,
+                done_type,
+            } kind;
             std::optional<promise_wrapper> promise;
             jsi::Value data[3]; // Contents depend on 'kind'
         };
@@ -1507,50 +1526,39 @@ namespace jswinrt
             rejected,
         };
 
-        winrt::fire_and_forget initialize(IFace inst)
+        winrt::fire_and_forget initialize()
         {
-            auto weakThis = this->weak_from_this();
+            auto strongThis = this->shared_from_this();
             auto ctxt = current_runtime_context()->add_reference();
             auto& runtime = ctxt->runtime;
+            auto inst = m_instance;
             try
             {
                 if constexpr (!traits::is_async_with_result) // IAsyncAction*
                 {
                     co_await inst;
-                    ctxt->call([weakThis, &runtime]() {
-                        if (auto strongThis = weakThis.lock())
-                        {
-                            strongThis->on_completed(runtime, jsi::Value::undefined(), true);
-                        }
+                    ctxt->call([strongThis, &runtime]() {
+                        strongThis->on_completed(runtime, jsi::Value::undefined(), true);
                     });
                 }
                 else // IAsyncOperation*
                 {
                     auto result = co_await inst;
-                    ctxt->call([weakThis, &runtime, result = std::move(result)]() {
-                        if (auto strongThis = weakThis.lock())
-                        {
-                            strongThis->on_completed(runtime, convert_native_to_value(runtime, result), true);
-                        }
+                    ctxt->call([strongThis, &runtime, result = std::move(result)]() {
+                        strongThis->on_completed(runtime, convert_native_to_value(runtime, result), true);
                     });
                 }
             }
             catch (winrt::hresult_error& err)
             {
-                ctxt->call([weakThis, &runtime, err = std::move(err)]() {
-                    if (auto strongThis = weakThis.lock())
-                    {
-                        strongThis->on_completed(runtime, make_error(runtime, err), false);
-                    }
+                ctxt->call([strongThis, &runtime, err = std::move(err)]() {
+                    strongThis->on_completed(runtime, make_error(runtime, err), false);
                 });
             }
             catch (std::exception& err)
             {
-                ctxt->call([weakThis, &runtime, err = std::move(err)]() {
-                    if (auto strongThis = weakThis.lock())
-                    {
-                        strongThis->on_completed(runtime, make_error(runtime, err), false);
-                    }
+                ctxt->call([strongThis, &runtime, err = std::move(err)]() {
+                    strongThis->on_completed(runtime, make_error(runtime, err), false);
                 });
             }
         }
@@ -1572,7 +1580,7 @@ namespace jswinrt
         jsi::Value on_done(jsi::Runtime& runtime, const jsi::Value* args, size_t count)
         {
             // Prototype: done(resolveCallback, rejectCallback, progressCallback)
-            continuation c{ continuation::type::done, {},
+            continuation c{ continuation::done_type, {},
                 { count >= 1 ? jsi::Value(runtime, args[0]) : jsi::Value::undefined(),
                     count >= 2 ? jsi::Value(runtime, args[1]) : jsi::Value::undefined(),
                     count >= 3 ? jsi::Value(runtime, args[2]) : jsi::Value::undefined() } };
@@ -1584,7 +1592,7 @@ namespace jswinrt
         jsi::Value on_finally(jsi::Runtime& runtime, const jsi::Value* args, size_t count)
         {
             // Prototype: finally(callback) -> Promise
-            continuation c{ continuation::type::finally, promise_wrapper::create(runtime),
+            continuation c{ continuation::finally_type, promise_wrapper::create(runtime),
                 { count >= 1 ? jsi::Value(runtime, args[0]) : jsi::Value::undefined() } };
 
             auto result = jsi::Value(runtime, c.promise->get());
@@ -1603,7 +1611,7 @@ namespace jswinrt
         jsi::Value handle_then(
             jsi::Runtime& runtime, const jsi::Value& resolvedHandler, const jsi::Value& rejectedHandler)
         {
-            continuation c{ continuation::type::then, promise_wrapper::create(runtime),
+            continuation c{ continuation::then_type, promise_wrapper::create(runtime),
                 { jsi::Value(runtime, resolvedHandler), jsi::Value(runtime, rejectedHandler) } };
 
             auto result = jsi::Value(runtime, c.promise->get());
@@ -1632,12 +1640,15 @@ namespace jswinrt
 
         void on_progress(jsi::Runtime& runtime, const jsi::Value& progress)
         {
-            for (auto& cont : m_continuations)
+            for (auto&& cont : m_continuations)
             {
-                if ((cont.kind == continuation::type::done) && cont.data[2].isFunction(runtime))
-                {
-                    cont.data[2].getFunction(runtime).call(runtime, progress);
-                }
+                if (cont.kind != continuation::done_type)
+                    continue;
+
+                if (!cont.data[2].isObject())
+                    continue;
+
+                cont.data[2].getObject(runtime).asFunction(runtime).call(runtime, progress);
             }
         }
 
@@ -1661,32 +1672,59 @@ namespace jswinrt
 
             switch (cont.kind)
             {
-            case continuation::type::then:
-            case continuation::type::done: // Effectively 'then', but with progress and no promise
+            case continuation::then_type:
+            case continuation::done_type: // Effectively 'then', but with progress and no promise
                 if (resolved)
                 {
                     if (cont.data[0].isObject())
                     {
-                        continuationResult =
-                            cont.data[0].getObject(runtime).asFunction(runtime).call(runtime, m_result);
+                        try
+                        {
+                            continuationResult =
+                                cont.data[0].getObject(runtime).asFunction(runtime).call(runtime, m_result);
+                        }
+                        catch (const jsi::JSError& err)
+                        {
+                            resolved = false;
+                            continuationResult = jsi::Value(runtime, err.value());
+                        }
                     }
                 }
+                // NOTE: If the resolve handler of a 'Promise.then' throws, it is *not* passed on to the reject handler
+                // that was passed in the same '.then' call. We mimic that behavior here, hence the 'else' instead of
+                // re-inspecting the value of 'resolved'
                 else // rejected
                 {
                     if (cont.data[1].isObject())
                     {
-                        continuationResult =
-                            cont.data[1].getObject(runtime).asFunction(runtime).call(runtime, m_result);
-                        resolved = true;
+                        try
+                        {
+                            continuationResult =
+                                cont.data[1].getObject(runtime).asFunction(runtime).call(runtime, m_result);
+                            resolved = true;
+                        }
+                        catch (const jsi::JSError& err)
+                        {
+                            // NOTE: 'resolved' already false...
+                            continuationResult = jsi::Value(runtime, err.value());
+                        }
                     }
                 }
                 break;
 
-            case continuation::type::finally:
-                // NOTE: Finally does not change the value, nor the resolved state
+            case continuation::finally_type:
+                // NOTE: Finally does not change the value, nor the resolved state, unless there's an exception
                 if (cont.data[0].isObject())
                 {
-                    cont.data[0].getObject(runtime).asFunction(runtime).call(runtime, m_result);
+                    try
+                    {
+                        cont.data[0].getObject(runtime).asFunction(runtime).call(runtime, m_result);
+                    }
+                    catch (const jsi::JSError& err)
+                    {
+                        resolved = false;
+                        continuationResult = jsi::Value(runtime, err.value());
+                    }
                 }
                 break;
             }
@@ -2371,8 +2409,8 @@ namespace jswinrt
         using interface_type = winrt::Windows::Foundation::IAsyncAction;
         static jsi::Value as_value(jsi::Runtime& runtime, const interface_type& value)
         {
-            return jsi::Value(runtime, jsi::Object::createFromHostObject(
-                                           runtime, std::make_shared<projected_async_instance<interface_type>>(value)));
+            return jsi::Value(runtime,
+                jsi::Object::createFromHostObject(runtime, projected_async_instance<interface_type>::create(value)));
         }
 
         static interface_type as_native(jsi::Runtime& runtime, const jsi::Value&)
@@ -2388,8 +2426,8 @@ namespace jswinrt
         using interface_type = winrt::Windows::Foundation::IAsyncActionWithProgress<TProgress>;
         static jsi::Value as_value(jsi::Runtime& runtime, const interface_type& value)
         {
-            return jsi::Value(runtime, jsi::Object::createFromHostObject(
-                                           runtime, std::make_shared<projected_async_instance<interface_type>>(value)));
+            return jsi::Value(runtime,
+                jsi::Object::createFromHostObject(runtime, projected_async_instance<interface_type>::create(value)));
         }
 
         static interface_type as_native(jsi::Runtime& runtime, const jsi::Value&)
@@ -2406,8 +2444,8 @@ namespace jswinrt
         using interface_type = winrt::Windows::Foundation::IAsyncOperation<TResult>;
         static jsi::Value as_value(jsi::Runtime& runtime, const interface_type& value)
         {
-            return jsi::Value(runtime, jsi::Object::createFromHostObject(
-                                           runtime, std::make_shared<projected_async_instance<interface_type>>(value)));
+            return jsi::Value(runtime,
+                jsi::Object::createFromHostObject(runtime, projected_async_instance<interface_type>::create(value)));
         }
 
         static interface_type as_native(jsi::Runtime& runtime, const jsi::Value&)
@@ -2423,8 +2461,8 @@ namespace jswinrt
         using interface_type = winrt::Windows::Foundation::IAsyncOperationWithProgress<TResult, TProgress>;
         static jsi::Value as_value(jsi::Runtime& runtime, const interface_type& value)
         {
-            return jsi::Value(runtime, jsi::Object::createFromHostObject(
-                                           runtime, std::make_shared<projected_async_instance<interface_type>>(value)));
+            return jsi::Value(runtime,
+                jsi::Object::createFromHostObject(runtime, projected_async_instance<interface_type>::create(value)));
         }
 
         static interface_type as_native(jsi::Runtime& runtime, const jsi::Value&)
@@ -2495,8 +2533,8 @@ namespace jswinrt
             return [ctxt = current_runtime_context()->add_reference(),
                        fn = value.asObject(runtime).asFunction(runtime)](const TSender& sender, const TResult& args) {
                 ctxt->call_sync([&]() {
-                    fn.call(ctxt->runtime, convert_native_to_value(runtime, sender),
-                        convert_native_to_value(runtime, args));
+                    fn.call(ctxt->runtime, convert_native_to_value(ctxt->runtime, sender),
+                        convert_native_to_value(ctxt->runtime, args));
                 });
             };
         }
@@ -2533,8 +2571,8 @@ namespace jswinrt
                     const winrt::Windows::Foundation::Collections::IObservableMap<K, V>& sender,
                     const winrt::Windows::Foundation::Collections::IMapChangedEventArgs<K, V>& args) {
                     ctxt->call_sync([&]() {
-                        fn.call(ctxt->runtime, convert_native_to_value(runtime, sender),
-                            convert_native_to_value(runtime, args));
+                        fn.call(ctxt->runtime, convert_native_to_value(ctxt->runtime, sender),
+                            convert_native_to_value(ctxt->runtime, args));
                     });
                 };
         }
@@ -2572,8 +2610,8 @@ namespace jswinrt
                     const winrt::Windows::Foundation::Collections::IObservableVector<T>& sender,
                     const winrt::Windows::Foundation::Collections::IVectorChangedEventArgs& args) {
                     ctxt->call_sync([&]() {
-                        fn.call(ctxt->runtime, convert_native_to_value(runtime, sender),
-                            convert_native_to_value(runtime, args));
+                        fn.call(ctxt->runtime, convert_native_to_value(ctxt->runtime, sender),
+                            convert_native_to_value(ctxt->runtime, args));
                     });
                 };
         }

@@ -117,10 +117,11 @@ type_method_data<IsClass>::type_method_data(const TypeDef& typeDef)
                 properties, [&](const property_data& data) { return data.name.compare(methodClass.name); });
             if (!found)
             {
-                itr = properties.emplace(itr, methodClass.name, method.Signature().ReturnType().Type());
+                itr = properties.emplace(itr, methodClass.name);
             }
 
-            itr->has_getter = true;
+            assert(!itr->getter);
+            itr->getter = method;
             break;
         }
 
@@ -129,10 +130,11 @@ type_method_data<IsClass>::type_method_data(const TypeDef& typeDef)
                 properties, [&](const property_data& data) { return data.name.compare(methodClass.name); });
             if (!found)
             {
-                itr = properties.emplace(itr, methodClass.name, method.Signature().Params().first->Type());
+                itr = properties.emplace(itr, methodClass.name);
             }
 
-            itr->has_setter = true;
+            assert(!itr->setter);
+            itr->setter = method;
             break;
         }
 

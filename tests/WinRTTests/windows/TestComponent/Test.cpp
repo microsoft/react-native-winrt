@@ -6,14 +6,13 @@
 #include <fstream>
 #include <iostream>
 #include <numeric>
-#include <ppl.h>
-#include <pplawait.h>
-#include <ppltasks.h>
 #include <winrt/Windows.Storage.h>
 
 #include "Test.h"
 
 #include "Test.g.cpp"
+
+using namespace std::literals;
 
 winrt::hstring to_lower(const winrt::hstring& hstr)
 {
@@ -724,6 +723,51 @@ namespace winrt::TestComponent::implementation
         return vector;
     }
 
+    Windows::Foundation::IAsyncAction Test::PauseAsync(int32_t milliseconds)
+    {
+        co_await winrt::resume_background();
+        co_await std::chrono::milliseconds{ milliseconds };
+    }
+
+    Windows::Foundation::IAsyncActionWithProgress<int32_t> Test::CountToNumberAsync(int32_t value)
+    {
+        co_await winrt::resume_background();
+        auto progress = co_await winrt::get_progress_token();
+        for (int32_t i = 0; i <= value; ++i)
+        {
+            co_await 50ms;
+            progress(i);
+        }
+    }
+
+    Windows::Foundation::IAsyncOperation<int32_t> Test::AddAsync(int32_t lhs, int32_t rhs)
+    {
+        co_await winrt::resume_background();
+        co_await 50ms;
+        co_return lhs + rhs;
+    }
+
+    Windows::Foundation::IAsyncOperationWithProgress<int32_t, int32_t> Test::CountDoubleAsync(int32_t value)
+    {
+        co_await winrt::resume_background();
+        auto progress = co_await winrt::get_progress_token();
+        int32_t result = 0;
+        for (; result <= (value * 2); ++result)
+        {
+            co_await 50ms;
+            progress(result);
+        }
+
+        co_return result - 1; // Because of the ending '++'
+    }
+
+    Windows::Foundation::IAsyncAction Test::ThrowAsyncException()
+    {
+        co_await winrt::resume_background();
+        co_await 50ms;
+        throw std::invalid_argument("test");
+    }
+
     bool Test::BoolProperty()
     {
         return m_boolProperty;
@@ -1056,7 +1100,7 @@ namespace winrt::TestComponent::implementation
 
     hstring Test::DateTimePropertyCppValue()
     {
-        return winrt::to_hstring(static_cast<int64_t>(winrt::clock::to_file_time(m_dateTimeProperty).value));
+        return winrt::to_hstring(m_dateTimeProperty.time_since_epoch().count());
     }
 
     Windows::Foundation::TimeSpan Test::TimeSpanProperty()
@@ -1071,8 +1115,7 @@ namespace winrt::TestComponent::implementation
 
     hstring Test::TimeSpanPropertyCppValue()
     {
-        return winrt::to_hstring(
-            std::chrono::duration_cast<std::chrono::duration<int64_t, std::milli>>(m_timeSpanProperty).count());
+        return winrt::to_hstring(m_timeSpanProperty.count());
     }
 
     hresult Test::HResultProperty()
@@ -1083,58 +1126,6 @@ namespace winrt::TestComponent::implementation
     void Test::HResultProperty(hresult value)
     {
         this->m_hresultProperty = value;
-    }
-
-    Windows::Foundation::IAsyncAction Test::AppendZeroToIVectorAsync(
-        Windows::Foundation::Collections::IVector<int32_t> vector)
-    {
-        co_await concurrency::create_task([&vector] { vector.Append(0); });
-    }
-
-    Windows::Foundation::IAsyncActionWithProgress<double> Test::FillZeroesToIVectorAsync(
-        Windows::Foundation::Collections::IVector<int32_t> vector)
-    {
-        co_await winrt::resume_background();
-        co_await std::chrono::milliseconds(10);
-        auto progress{ co_await winrt::get_progress_token() };
-        for (int i = 0; i < 10; i++)
-        {
-            co_await std::chrono::milliseconds(10);
-            vector.Append(0);
-            auto p = (i + 1) * 0.1;
-            progress(p);
-        }
-    }
-
-    Windows::Foundation::IAsyncOperation<Windows::Foundation::Collections::IVector<int32_t>> Test::CreateIVectorAsync()
-    {
-        co_await winrt::resume_background();
-        co_await std::chrono::milliseconds(10);
-        Windows::Foundation::Collections::IVector<int32_t> vector{ winrt::single_threaded_vector<int>() };
-        co_return vector;
-    }
-
-    Windows::Foundation::IAsyncOperationWithProgress<Windows::Foundation::Collections::IVector<int32_t>, double> Test::
-        CreateIVectorWithZeroesAsync()
-    {
-        co_await winrt::resume_background();
-        co_await std::chrono::milliseconds(10);
-        auto progress{ co_await winrt::get_progress_token() };
-        Windows::Foundation::Collections::IVector<int32_t> vector{ winrt::single_threaded_vector<int>() };
-        for (int i = 0; i < 10; i++)
-        {
-            co_await std::chrono::milliseconds(10);
-            vector.Append(0);
-            progress((i + 1) * 0.1);
-        }
-        co_return vector;
-    }
-
-    Windows::Foundation::IAsyncAction Test::CreateAsyncException()
-    {
-        co_await winrt::resume_background();
-        co_await std::chrono::milliseconds(10);
-        throw std::invalid_argument("test");
     }
 
     Windows::Foundation::IPropertyValue Test::PropertyValue()

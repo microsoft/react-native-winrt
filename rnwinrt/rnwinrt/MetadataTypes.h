@@ -22,8 +22,8 @@ struct function_signature
 
     param_iterator param_begin() const
     {
-        auto paramBegin = method_def.ParamList().first;
-        if (has_return_value)
+        auto [paramBegin, paramEnd] = method_def.ParamList();
+        if (has_return_value && (paramBegin != paramEnd))
             ++paramBegin;
         return param_iterator(signature.Params().first, paramBegin);
     }
@@ -70,11 +70,10 @@ struct function_data
 struct property_data
 {
     std::string_view name;
-    bool has_getter = false;
-    bool has_setter = false;
-    winmd::reader::TypeSig type;
+    std::optional<function_signature> getter;
+    std::optional<function_signature> setter;
 
-    property_data(std::string_view name, winmd::reader::TypeSig type) : name(name), type(std::move(type))
+    property_data(std::string_view name) : name(name)
     {
     }
 };
@@ -86,6 +85,24 @@ struct event_data
 
     event_data(std::string_view name, winmd::reader::TypeSig type) : name(name), type(std::move(type))
     {
+#ifdef _DEBUG
+        using namespace winmd::reader;
+        resolve_type(type,
+            overloaded{
+                [&](const TypeDef& typeDef, bool isArray) {
+                    assert(!isArray && (get_category(typeDef) == category::delegate_type));
+                },
+                [&](const GenericTypeInstSig& sig, bool isArray) {
+                    assert(!isArray);
+                    resolve_type(sig.GenericType(),
+                        overloaded{
+                            [](const TypeDef& typeDef) { assert((get_category(typeDef) == category::delegate_type)); },
+                            [](auto&&) { assert(false); },
+                        });
+                },
+                [&](auto&&, bool) { assert(false); },
+            });
+#endif
     }
 };
 
