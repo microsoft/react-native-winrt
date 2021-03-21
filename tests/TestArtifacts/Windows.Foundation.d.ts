@@ -1,17 +1,17 @@
 //tslint:disable
 
 declare namespace Windows.Foundation {
-    type AsyncActionCompletedHandler = (asyncInfo: Windows.Foundation.IAsyncAction, asyncStatus: Windows.Foundation.AsyncStatus) => void;
+    type AsyncActionCompletedHandler = (asyncInfo: Windows.Foundation.WinRTPromise<void, void>, asyncStatus: Windows.Foundation.AsyncStatus) => void;
     
-    type AsyncActionProgressHandler<TProgress> = (asyncInfo: Windows.Foundation.IAsyncActionWithProgress<TProgress>, progressInfo: TProgress) => void;
+    type AsyncActionProgressHandler<TProgress> = (asyncInfo: Windows.Foundation.WinRTPromise<void, TProgress>, progressInfo: TProgress) => void;
     
-    type AsyncActionWithProgressCompletedHandler<TProgress> = (asyncInfo: Windows.Foundation.IAsyncActionWithProgress<TProgress>, asyncStatus: Windows.Foundation.AsyncStatus) => void;
+    type AsyncActionWithProgressCompletedHandler<TProgress> = (asyncInfo: Windows.Foundation.WinRTPromise<void, TProgress>, asyncStatus: Windows.Foundation.AsyncStatus) => void;
     
-    type AsyncOperationCompletedHandler<TResult> = (asyncInfo: Windows.Foundation.IAsyncOperation<TResult>, asyncStatus: Windows.Foundation.AsyncStatus) => void;
+    type AsyncOperationCompletedHandler<TResult> = (asyncInfo: Windows.Foundation.WinRTPromise<TResult, void>, asyncStatus: Windows.Foundation.AsyncStatus) => void;
     
-    type AsyncOperationProgressHandler<TResult, TProgress> = (asyncInfo: Windows.Foundation.IAsyncOperationWithProgress<TResult, TProgress>, progressInfo: TProgress) => void;
+    type AsyncOperationProgressHandler<TResult, TProgress> = (asyncInfo: Windows.Foundation.WinRTPromise<TResult, TProgress>, progressInfo: TProgress) => void;
     
-    type AsyncOperationWithProgressCompletedHandler<TResult, TProgress> = (asyncInfo: Windows.Foundation.IAsyncOperationWithProgress<TResult, TProgress>, asyncStatus: Windows.Foundation.AsyncStatus) => void;
+    type AsyncOperationWithProgressCompletedHandler<TResult, TProgress> = (asyncInfo: Windows.Foundation.WinRTPromise<TResult, TProgress>, asyncStatus: Windows.Foundation.AsyncStatus) => void;
     
     enum AsyncStatus {
         canceled,
@@ -56,11 +56,23 @@ declare namespace Windows.Foundation {
         getResults(): void;
     }
 
-    interface IAsyncActionWithProgress<TProgress> extends Windows.Foundation.IAsyncInfo, Promise<TProgress> {
+    interface IAsyncActionWithProgress<TProgress> extends Windows.Foundation.IAsyncInfo {
         progress: Windows.Foundation.AsyncActionProgressHandler<TProgress>;
         completed: Windows.Foundation.AsyncActionWithProgressCompletedHandler<TProgress>;
         getResults(): void;
     }
+
+    interface WinRTPromiseBase<TResult, TProgress> extends PromiseLike<TResult> {
+        then<U, V>(success?: (value: TResult) => Promise<U>, error?: (error: any) => Promise<U>, progress?: (progress: TProgress) => void): Promise<U>;
+        then<U, V>(success?: (value: TResult) => Promise<U>, error?: (error: any) => U, progress?: (progress: TProgress) => void): Promise<U>;
+        then<U, V>(success?: (value: TResult) => U, error?: (error: any) => Promise<U>, progress?: (progress: TProgress) => void): Promise<U>;
+        then<U, V>(success?: (value: TResult) => U, error?: (error: any) => U, progress?: (progress: TProgress) => void): Promise<U>;
+        done<U, V>(success?: (value: TResult) => any, error?: (error: any) => any, progress?: (progress: TProgress) => void): void;
+        cancel(): void;
+        operation: IAsyncInfo;
+    }
+
+    type WinRTPromise<TResult, TProgress> = WinRTPromiseBase<TResult, TProgress> & Promise<TResult>;
 
     interface IAsyncInfo {
         readonly errorCode: number;
@@ -70,13 +82,13 @@ declare namespace Windows.Foundation {
         close(): void;
     }
 
-    interface IAsyncOperationWithProgress<TResult, TProgress> extends Windows.Foundation.IAsyncInfo, Promise<TResult> {
+    interface IAsyncOperationWithProgress<TResult, TProgress> extends Windows.Foundation.IAsyncInfo {
         progress: Windows.Foundation.AsyncOperationProgressHandler<TResult, TProgress>;
         completed: Windows.Foundation.AsyncOperationWithProgressCompletedHandler<TResult, TProgress>;
         getResults(): TResult;
     }
 
-    interface IAsyncOperation<TResult> extends Windows.Foundation.IAsyncInfo, Promise<TResult> {
+    interface IAsyncOperation<TResult> extends Windows.Foundation.IAsyncInfo {
         completed: Windows.Foundation.AsyncOperationCompletedHandler<TResult>;
         getResults(): TResult;
     }
