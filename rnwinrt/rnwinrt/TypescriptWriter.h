@@ -87,6 +87,22 @@ public:
             [&]() // Format: ['abstract?' 'class/interface' 'name' 'extends baseclass' 'implements interface1,
                   // interface2' {classcontents}]
             {
+                if (type.TypeNamespace() == "Windows.Foundation" && type.TypeName() == "IAsyncInfo")
+                {
+                    textWriter.Write("%", R"(interface WinRTPromiseBase<TResult, TProgress> extends PromiseLike<TResult> {
+        then<U, V>(success?: (value: TResult) => Promise<U>, error?: (error: any) => Promise<U>, progress?: (progress: TProgress) => void): Promise<U>;
+        then<U, V>(success?: (value: TResult) => Promise<U>, error?: (error: any) => U, progress?: (progress: TProgress) => void): Promise<U>;
+        then<U, V>(success?: (value: TResult) => U, error?: (error: any) => Promise<U>, progress?: (progress: TProgress) => void): Promise<U>;
+        then<U, V>(success?: (value: TResult) => U, error?: (error: any) => U, progress?: (progress: TProgress) => void): Promise<U>;
+        done<U, V>(success?: (value: TResult) => any, error?: (error: any) => any, progress?: (progress: TProgress) => void): void;
+        cancel(): void;
+        operation: IAsyncInfo;
+    }
+
+    type WinRTPromise<TResult, TProgress> = WinRTPromiseBase<TResult, TProgress> & Promise<TResult>;
+)");
+                    textWriter.WriteIndentedLine();
+                }
                 if (type.Flags().Abstract() && get_category(type) != winmd::reader::category::interface_type)
                 {
                     textWriter.Write("abstract ");
@@ -140,20 +156,6 @@ public:
                     textWriter.Write(", ");
                 }
                 textWriter.DeleteLast(2);
-                if (type.TypeNamespace() == "Windows.Foundation" && type.TypeName() == "IAsyncInfo")
-                {
-                    textWriter.Write(", Promise<any>");
-                }
-                else if (type.TypeNamespace() == "Windows.Foundation" &&
-                         type.TypeName() == "IAsyncActionWithProgress`1")
-                {
-                    textWriter.Write(", Promise<TProgress>");
-                }
-                else if (type.TypeNamespace() == "Windows.Foundation" &&
-                         (type.TypeName() == "IAsyncOperationWithProgress`2" || type.TypeName() == "IAsyncOperation`1"))
-                {
-                    textWriter.Write(", Promise<TResult>");
-                }
             },
             [&]() {
                 textWriter.AddIndent();
@@ -367,6 +369,11 @@ public:
                 textWriter.Write("number");
                 return;
             }
+            if (typeDef.TypeNamespace() == "Windows.Foundation" && typeDef.TypeName() == "IAsyncAction")
+            {
+                textWriter.Write("Windows.Foundation.WinRTPromise<void, void>");
+                return;
+            }
             bool isStruct = get_category(typeDef) == winmd::reader::category::struct_type;
             textWriter.Write("%.%%%", typeDef.TypeNamespace(), typeDef.TypeName(), isArray ? "[]" : "",
                 isNullable && !isArray && !isStruct ? " | null" : "");
@@ -417,6 +424,33 @@ public:
             {
                 WriteTypeSemantics(generic_type_instance.generic_args[0], containerType, textWriter, false, isNullable);
                 textWriter.Write("% | null", isArray ? "[]"sv : ""sv);
+                return;
+            }
+            if (generic_type_instance.generic_type.TypeNamespace() == "Windows.Foundation" &&
+                generic_type_instance.generic_type.TypeName() == "IAsyncOperationWithProgress`2")
+            {
+                textWriter.Write("%<", "Windows.Foundation.WinRTPromise");
+                WriteTypeSemantics(generic_type_instance.generic_args[0], containerType, textWriter, false, isNullable);
+                textWriter.Write(", ");
+                WriteTypeSemantics(generic_type_instance.generic_args[1], containerType, textWriter, false, isNullable);
+                textWriter.Write(">");
+                return;
+            }
+            if (generic_type_instance.generic_type.TypeNamespace() == "Windows.Foundation" &&
+                generic_type_instance.generic_type.TypeName() == "IAsyncOperation`1")
+            {
+                textWriter.Write("%<", "Windows.Foundation.WinRTPromise");
+                WriteTypeSemantics(generic_type_instance.generic_args[0], containerType, textWriter, false, isNullable);
+                textWriter.Write(", void>");
+                return;
+            }
+            if (generic_type_instance.generic_type.TypeNamespace() == "Windows.Foundation" &&
+                generic_type_instance.generic_type.TypeName() == "IAsyncActionWithProgress`1")
+            {
+                textWriter.Write("%<", "Windows.Foundation.WinRTPromise");
+                textWriter.Write("void, ");
+                WriteTypeSemantics(generic_type_instance.generic_args[0], containerType, textWriter, false, isNullable);
+                textWriter.Write(">");
                 return;
             }
             textWriter.Write("%.%<", generic_type_instance.generic_type.TypeNamespace(),

@@ -41,7 +41,7 @@ declare namespace Windows.Foundation.Diagnostics {
         readonly description: string;
         readonly helpUri: Windows.Foundation.Uri;
         readonly longDescription: string;
-        static createFromHResultAsync(errorCode: number): Windows.Foundation.IAsyncOperation<Windows.Foundation.Diagnostics.ErrorDetails>;
+        static createFromHResultAsync(errorCode: number): Windows.Foundation.WinRTPromise<Windows.Foundation.Diagnostics.ErrorDetails, void>;
     }
 
     enum ErrorOptions {
@@ -58,7 +58,7 @@ declare namespace Windows.Foundation.Diagnostics {
         addLoggingChannel(loggingChannel: Windows.Foundation.Diagnostics.ILoggingChannel): void;
         addLoggingChannel(loggingChannel: Windows.Foundation.Diagnostics.ILoggingChannel, maxLevel: Windows.Foundation.Diagnostics.LoggingLevel): void;
         removeLoggingChannel(loggingChannel: Windows.Foundation.Diagnostics.ILoggingChannel): void;
-        closeAndSaveToFileAsync(): Windows.Foundation.IAsyncOperation<any>;
+        closeAndSaveToFileAsync(): Windows.Foundation.WinRTPromise<any, void>;
         close(): void;
         addEventListener(type: "logfilegenerated", listener: Windows.Foundation.TypedEventHandler<Windows.Foundation.Diagnostics.IFileLoggingSession, Windows.Foundation.Diagnostics.LogFileGeneratedEventArgs>): void
         removeEventListener(type: "logfilegenerated", listener: Windows.Foundation.TypedEventHandler<Windows.Foundation.Diagnostics.IFileLoggingSession, Windows.Foundation.Diagnostics.LogFileGeneratedEventArgs>): void
@@ -81,7 +81,7 @@ declare namespace Windows.Foundation.Diagnostics {
     }
 
     interface IErrorDetailsStatics {
-        createFromHResultAsync(errorCode: number): Windows.Foundation.IAsyncOperation<Windows.Foundation.Diagnostics.ErrorDetails>;
+        createFromHResultAsync(errorCode: number): Windows.Foundation.WinRTPromise<Windows.Foundation.Diagnostics.ErrorDetails, void>;
     }
 
     interface IErrorReportingSettings {
@@ -94,7 +94,7 @@ declare namespace Windows.Foundation.Diagnostics {
         addLoggingChannel(loggingChannel: Windows.Foundation.Diagnostics.ILoggingChannel): void;
         addLoggingChannel(loggingChannel: Windows.Foundation.Diagnostics.ILoggingChannel, maxLevel: Windows.Foundation.Diagnostics.LoggingLevel): void;
         removeLoggingChannel(loggingChannel: Windows.Foundation.Diagnostics.ILoggingChannel): void;
-        closeAndSaveToFileAsync(): Windows.Foundation.IAsyncOperation<any>;
+        closeAndSaveToFileAsync(): Windows.Foundation.WinRTPromise<any, void>;
         addEventListener(type: "logfilegenerated", listener: Windows.Foundation.TypedEventHandler<Windows.Foundation.Diagnostics.IFileLoggingSession, Windows.Foundation.Diagnostics.LogFileGeneratedEventArgs>): void
         removeEventListener(type: "logfilegenerated", listener: Windows.Foundation.TypedEventHandler<Windows.Foundation.Diagnostics.IFileLoggingSession, Windows.Foundation.Diagnostics.LogFileGeneratedEventArgs>): void
     }
@@ -289,7 +289,7 @@ declare namespace Windows.Foundation.Diagnostics {
 
     interface ILoggingSession extends Windows.Foundation.IClosable {
         readonly name: string;
-        saveToFileAsync(folder: any, fileName: string): Windows.Foundation.IAsyncOperation<any>;
+        saveToFileAsync(folder: any, fileName: string): Windows.Foundation.WinRTPromise<any, void>;
         addLoggingChannel(loggingChannel: Windows.Foundation.Diagnostics.ILoggingChannel): void;
         addLoggingChannel(loggingChannel: Windows.Foundation.Diagnostics.ILoggingChannel, maxLevel: Windows.Foundation.Diagnostics.LoggingLevel): void;
         removeLoggingChannel(loggingChannel: Windows.Foundation.Diagnostics.ILoggingChannel): void;
@@ -551,7 +551,7 @@ declare namespace Windows.Foundation.Diagnostics {
     class LoggingSession implements Windows.Foundation.Diagnostics.ILoggingSession, Windows.Foundation.IClosable {
         readonly name: string;
         constructor(name: string);
-        saveToFileAsync(folder: any, fileName: string): Windows.Foundation.IAsyncOperation<any>;
+        saveToFileAsync(folder: any, fileName: string): Windows.Foundation.WinRTPromise<any, void>;
         addLoggingChannel(loggingChannel: Windows.Foundation.Diagnostics.ILoggingChannel): void;
         addLoggingChannel(loggingChannel: Windows.Foundation.Diagnostics.ILoggingChannel, maxLevel: Windows.Foundation.Diagnostics.LoggingLevel): void;
         removeLoggingChannel(loggingChannel: Windows.Foundation.Diagnostics.ILoggingChannel): void;
