@@ -13,10 +13,6 @@ jobs:
     cancelTimeoutInMinutes: 5 # how much time to give 'run always even if cancelled tasks' before killing them
 
     steps:
-      - checkout: self
-        clean: true
-        submodules: false
-
       - task: NuGetToolInstaller@1
 
       - task: CmdLine@2
