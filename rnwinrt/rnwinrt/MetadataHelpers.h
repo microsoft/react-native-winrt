@@ -49,45 +49,53 @@ inline void for_each_attribute(const T& type, std::string_view expectNs, std::st
 }
 
 template <typename T>
-bool has_attribute(const T& row, std::string_view attributeNamespace, std::string_view attributeName)
+inline bool has_attribute(const T& row, std::string_view attributeNamespace, std::string_view attributeName)
 {
     return static_cast<bool>(winmd::reader::get_attribute(row, attributeNamespace, attributeName));
 }
 
 template <typename T>
-bool is_allow_for_web(const T& row)
+inline bool is_allow_for_web(const T& row)
 {
     using namespace std::literals;
     return has_attribute(row, metadata_namespace, "AllowForWebAttribute"sv);
 }
 
 template <typename T>
-bool is_deprecated(const T& row)
+inline bool is_deprecated(const T& row)
 {
     using namespace std::literals;
     return has_attribute(row, metadata_namespace, "DeprecatedAttribute"sv);
 }
 
 template <typename T>
-bool is_web_host_hidden(const T& row)
+inline bool is_web_host_hidden(const T& row)
 {
     using namespace std::literals;
     return has_attribute(row, metadata_namespace, "WebHostHiddenAttribute"sv);
 }
 
 template <typename T>
-bool is_activatable(const T& row)
+inline bool is_activatable(const T& row)
 {
     return has_attribute(row, metadata_namespace, activatable_attribute);
 }
 
 template <typename T>
-bool is_default_overload(const T& row)
+inline bool is_default_overload(const T& row)
 {
+    using namespace std::literals;
     return has_attribute(row, metadata_namespace, "DefaultOverloadAttribute"sv);
 }
 
-std::optional<winmd::reader::TypeDef> exclusiveto_class(winmd::reader::TypeDef iface);
+inline bool is_default_interface(const winmd::reader::InterfaceImpl& ifaceImpl)
+{
+    using namespace std::literals;
+    return has_attribute(ifaceImpl, metadata_namespace, "DefaultAttribute"sv);
+}
+
+winmd::reader::coded_index<winmd::reader::TypeDefOrRef> default_interface(const winmd::reader::TypeDef& classType);
+winmd::reader::TypeDef exclusiveto_class(winmd::reader::TypeDef iface);
 
 bool is_factory_interface(winmd::reader::TypeDef iface);
 
@@ -108,14 +116,32 @@ inline constexpr bool is_child_namespace(std::string_view expectedChild, std::st
 
 inline bool is_generic(winmd::reader::TypeDef typeDef)
 {
-    auto pair = typeDef.GenericParam();
-    return std::distance(pair.first, pair.second) != 0;
+    using namespace winmd::reader;
+    return distance(typeDef.GenericParam()) != 0;
 }
+
+winmd::reader::TypeDef generic_type_def(const winmd::reader::GenericTypeInstSig& sig);
 
 winmd::reader::MethodDef delegate_invoke_function(const winmd::reader::TypeDef& typeDef);
 
+inline winmd::reader::ElementType underlying_enum_type(const winmd::reader::TypeDef& type)
+{
+    return std::get<winmd::reader::ElementType>(type.FieldList().first.Signature().Type().Type());
+}
+
+inline std::array<char, 37> guid_to_string(const GUID& guid)
+{
+    std::array<char, 37> data;
+    std::snprintf(data.data(), data.size(), "%08X-%04X-%04X-%02X%02X-%02X%02X%02X%02X%02X%02X", guid.Data1, guid.Data2,
+        guid.Data3, guid.Data4[0], guid.Data4[1], guid.Data4[2], guid.Data4[3], guid.Data4[4], guid.Data4[5],
+        guid.Data4[6], guid.Data4[7]);
+    return data;
+}
+
+GUID get_interface_guid(const winmd::reader::TypeDef& typeDef);
+
 // .NET metadata is a pretty poor solution for representing WinRT metadata, and the complexity of parameters is one
-// place where this is obvious.
+// place where this is obvious as the data about parameters is split up into two separate, and diferently sized lists
 struct param_iterator
 {
     using sig_iterator_t = std::vector<winmd::reader::ParamSig>::const_iterator;
@@ -299,28 +325,104 @@ struct param_iterator
     winmd::reader::Param param;
 };
 
-// NOTE: All of the below 'resolve_type' calls will get you one of:
-//      * ElementType
-//      * system_guid_t
-//      * TypeDef
-//      * GenericTypeInstSig
+inline param_iterator begin(const std::pair<param_iterator, param_iterator>& pair)
+{
+    return pair.first;
+}
+
+inline param_iterator end(const std::pair<param_iterator, param_iterator>& pair)
+{
+    return pair.second;
+}
+
+// Tag type used to represent the 'System.Guid' a.k.a. 'Windows.Foundation.Guid' type, which has no 'TypeDef'
 struct system_guid_t {};
 inline constexpr system_guid_t system_guid{};
 
+using resolved_type =
+    std::variant<winmd::reader::ElementType, winmd::reader::TypeDef, winmd::reader::GenericTypeInstSig, system_guid_t>;
+
+// Generic instantiations is another place where WinRT metadata fails to provide simplicity, instead making things far
+// more complex and difficult to deal with. This attempts to unwind some of that so that instantiations can be
+// stored/observed separately, instead of requiring full state of some "root" instantiation
+struct generic_param_stack
+{
+    // NOTE: Generic params need to be represented as a "stack" since individual params may may need to reference
+    // earlier params. E.g. for the type 'IIterable<IKeyValuePair<String, String>>', the 'IIterable' type has a single
+    // generic param, which itself is another generic instantiation. Instead of doing the sane, obvious thing and have
+    // that second instantiation reference the two types it needs - [ String, String ] - it may be the case that these
+    // two types reference previous generic params, before the representation of 'IIterable'. E.g. 'IMapView<K, V>',
+    // which derives from 'IIterable<IKeyValuePair<K, V>>'
+    std::vector<std::vector<resolved_type>> values;
+#if 0
+    using value_type = std::variant<winmd::reader::ElementType, winmd::reader::TypeDef,
+        winmd::reader::GenericTypeInstSig, winmd::reader::GenericTypeIndex, system_guid_t>;
+    std::vector<std::vector<value_type>> values;
+
+    // Helper for accessing a param by index
+    template <typename Visitor>
+    auto visit(uint32_t index, Visitor&& visitor)
+    {
+        using namespace winmd::reader;
+        for (auto itr = values.rbegin(); itr != values.rend(); ++itr)
+        {
+            auto& list = *itr;
+            if (index >= list.size())
+                throw std::range_error("GenericTypeIndex out of range");
+
+            auto& elem = list[index];
+            if (std::holds_alternative<GenericTypeIndex>(elem))
+            {
+                index = std::get<GenericTypeIndex>(elem).index;
+            }
+            else
+            {
+                return std::visit(overloaded{
+                                      [&](auto&& value) { return visitor(std::forward<decltype(value)>(value)); },
+                                      [](GenericTypeIndex) { std::terminate(); }, // Unreachable
+                                  },
+                    elem);
+            }
+        }
+
+        throw std::runtime_error("GenericTypeIndex reference a type that does not exist");
+    }
+
+    template <typename Visitor>
+    auto visit(winmd::reader::GenericTypeIndex index, Visitor&& visitor)
+    {
+        return visit(index.index, std::forward<Visitor>(visitor));
+    }
+#endif
+};
+
+struct generic_instantiation
+{
+    winmd::reader::GenericTypeInstSig signature;
+    generic_param_stack params;
+
+    generic_instantiation(winmd::reader::GenericTypeInstSig signature, const generic_param_stack& parentStack);
+};
+
+// NOTE: All of the below 'resolve_type' calls will get you one of:
+//      * ElementType
+//      * TypeDef
+//      * generic_instantiation
+//      * system_guid_t
 template <typename Func>
-inline void resolve_type(winmd::reader::ElementType type, Func&& fn)
+inline void resolve_type(winmd::reader::ElementType type, const generic_param_stack&, Func&& fn)
 {
     fn(type);
 }
 
 template <typename Func>
-inline void resolve_type(const winmd::reader::TypeDef& typeDef, Func&& fn)
+inline void resolve_type(const winmd::reader::TypeDef& typeDef, const generic_param_stack&, Func&& fn)
 {
     fn(typeDef);
 }
 
 template <typename Func>
-inline void resolve_type(const winmd::reader::TypeRef& typeRef, Func&& fn)
+inline void resolve_type(const winmd::reader::TypeRef& typeRef, const generic_param_stack& genericParamStack, Func&& fn)
 {
     if ((typeRef.TypeNamespace() == "System") && (typeRef.TypeName() == "Guid"))
     {
@@ -328,60 +430,81 @@ inline void resolve_type(const winmd::reader::TypeRef& typeRef, Func&& fn)
     }
     else
     {
-        resolve_type(winmd::reader::find_required(typeRef), std::forward<Func>(fn));
+        resolve_type(winmd::reader::find_required(typeRef), genericParamStack, std::forward<Func>(fn));
     }
 }
 
 template <typename Func>
-inline void resolve_type(const winmd::reader::GenericTypeInstSig& sig, Func&& fn)
+inline void resolve_type(
+    const winmd::reader::GenericTypeInstSig& sig, const generic_param_stack& parentStack, Func&& fn)
 {
-    fn(sig);
+    fn(generic_instantiation(sig, parentStack));
 }
 
 template <typename Func>
-inline void resolve_type(const winmd::reader::coded_index<winmd::reader::TypeDefOrRef>& defOrRef, Func&& fn)
+inline void resolve_type(const winmd::reader::coded_index<winmd::reader::TypeDefOrRef>& defOrRef,
+    const generic_param_stack& parentStack, Func&& fn)
 {
     using namespace winmd::reader;
     switch (defOrRef.type())
     {
     case TypeDefOrRef::TypeDef:
-        resolve_type(defOrRef.TypeDef(), std::forward<Func>(fn));
+        resolve_type(defOrRef.TypeDef(), parentStack, std::forward<Func>(fn));
         break;
     case TypeDefOrRef::TypeRef:
-        resolve_type(defOrRef.TypeRef(), std::forward<Func>(fn));
+        resolve_type(defOrRef.TypeRef(), parentStack, std::forward<Func>(fn));
         break;
     case TypeDefOrRef::TypeSpec:
-        resolve_type(defOrRef.TypeSpec().Signature().GenericTypeInst(), std::forward<Func>(fn));
+        resolve_type(defOrRef.TypeSpec().Signature().GenericTypeInst(), parentStack, std::forward<Func>(fn));
         break;
     }
 }
 
 template <typename Func>
-inline void resolve_type(const winmd::reader::GenericTypeIndex&, Func&&)
+inline void resolve_type(
+    const winmd::reader::GenericTypeIndex& idx, const generic_param_stack& genericParamStack, Func&& fn)
 {
-    throw std::runtime_error("Unexpected GenericTypeIndex");
+    auto& paramList = genericParamStack.values.back();
+    if (idx.index >= paramList.size())
+    {
+        __debugbreak();
+        throw std::runtime_error("GenericTypeIndex out of range");
+    }
+
+    std::visit(overloaded{
+                   [&](const winmd::reader::GenericTypeInstSig& sig) {
+                       __debugbreak();
+                       auto stack = genericParamStack;
+                       stack.values.pop_back();
+                       fn(generic_instantiation(sig, std::move(stack)));
+                   },
+                   [&](auto&& value) { fn(value); },
+               },
+        paramList[idx.index]);
 }
 
 template <typename Func>
-inline void resolve_type(const winmd::reader::GenericMethodTypeIndex&, Func&&)
+inline void resolve_type(const winmd::reader::GenericMethodTypeIndex&, const generic_param_stack&, Func&&)
 {
     throw std::runtime_error("Unexpected GenericMethodTypeIndex");
 }
 
 template <typename Func>
-inline void resolve_type(const winmd::reader::TypeSig& sig, Func&& fn)
+inline void resolve_type(const winmd::reader::TypeSig& sig, const generic_param_stack& genericParamStack, Func&& fn)
 {
-    std::visit([&](auto&& value) {
-        resolve_type(value, [&](auto&& resolvedValue) {
-            fn(std::forward<decltype(resolvedValue)>(resolvedValue), sig.is_szarray());
-        });
-    }, sig.Type());
+    std::visit(
+        [&](auto&& value) {
+            resolve_type(value, genericParamStack, [&](auto&& resolvedValue) {
+                fn(std::forward<decltype(resolvedValue)>(resolvedValue), sig.is_szarray());
+            });
+        },
+        sig.Type());
 }
 
 template <typename Func>
-inline void resolve_type(const winmd::reader::ParamSig& sig, Func&& fn)
+inline void resolve_type(const winmd::reader::ParamSig& sig, const generic_param_stack& genericParamStack, Func&& fn)
 {
-    resolve_type(sig.Type(), std::forward<Func>(fn));
+    resolve_type(sig.Type(), genericParamStack, std::forward<Func>(fn));
 }
 
 

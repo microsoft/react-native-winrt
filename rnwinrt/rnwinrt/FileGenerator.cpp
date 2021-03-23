@@ -76,16 +76,20 @@ namespace jswinrt
 
     // 'global_interface_map' definition
     writer.write(
-        R"^-^(    static constexpr const std::pair<winrt::guid, const static_interface_data*> global_interface_map_data[] = {
-)^-^");
+        R"^-^(    static constexpr const std::pair<winrt::guid, const static_interface_data*> global_interface_map_data[] = {)^-^");
 
     for (auto iface : data.interfaces)
     {
-        writer.write_fmt("        { winrt::guid_of<winrt::%>(), &jswinrt::interfaces::%::data },\n",
-            cpp_typename{ iface->type_def }, cpp_typename{ iface->type_def });
+        auto writeName = [&](jswinrt_writer& w) { iface->write_cpp_name(w); };
+        writer.write_fmt(
+            "\n        { winrt::guid_of<winrt::%>(), &jswinrt::interfaces::%::data },", writeName, writeName);
+#if 1 // For IID gen validation
+        writer.write_fmt(" // %", fmt_guid{ iface->iid });
+#endif
     }
 
-    writer.write(R"^-^(    };
+    writer.write(R"^-^(
+    };
 
     constexpr const span<const std::pair<winrt::guid, const static_interface_data*>> global_interface_map(global_interface_map_data);
 }
@@ -335,13 +339,16 @@ static void write_cppwinrt_type(jswinrt_writer& writer, system_guid_t)
 
 static void write_cppwinrt_type(jswinrt_writer& writer, const TypeSig& sig);
 
-static void write_cppwinrt_type(jswinrt_writer& writer, const GenericTypeInstSig& sig)
+static void write_cppwinrt_type(jswinrt_writer& writer, const generic_instantiation& inst)
 {
-    auto [ns, name] = get_type_namespace_and_name(sig.GenericType());
+    // This function is currently intended to be used for "root" instantiations
+    assert(inst.params.values.size() == 1);
+
+    auto [ns, name] = get_type_namespace_and_name(inst.signature.GenericType());
     writer.write_fmt("winrt::%<", cpp_typename{ ns, remove_tick(name) });
 
     std::string_view prefix;
-    for (auto&& arg : sig.GenericArgs())
+    for (auto&& arg : inst.signature.GenericArgs())
     {
         writer.write(prefix);
         write_cppwinrt_type(writer, arg);
@@ -353,15 +360,16 @@ static void write_cppwinrt_type(jswinrt_writer& writer, const GenericTypeInstSig
 
 static void write_cppwinrt_type(jswinrt_writer& writer, const TypeSig& sig)
 {
-    resolve_type(sig, [&](auto&& value, bool isArray) {
-        if (isArray) __debugbreak(); // TODO
+    resolve_type(sig, {}, [&](auto&& value, bool isArray) {
+        if (isArray)
+            __debugbreak(); // TODO
         write_cppwinrt_type(writer, value);
     });
 }
 
 static void write_cppwinrt_type(jswinrt_writer& writer, const param_iterator& param)
 {
-    resolve_type(param.signature(), [&](auto&& value, bool isArray) {
+    resolve_type(param.signature(), {}, [&](auto&& value, bool isArray) {
         if (isArray)
         {
             if (param.is_input())
@@ -389,11 +397,10 @@ static void write_cppwinrt_type(jswinrt_writer& writer, const param_iterator& pa
     });
 }
 
-template <typename T>
-static void write_cppwinrt_type_initializer(jswinrt_writer& writer, T&& type)
+static void write_cppwinrt_type_initializer(jswinrt_writer& writer, const TypeSig& type)
 {
     // Classes need to be initialized with 'nullptr' because otherwise it's a constructor invocation
-    resolve_type(type, overloaded{
+    resolve_type(type, {}, overloaded{
                            [&](const TypeDef& type) {
                                auto c = get_category(type);
                                if (c == category::class_type)
@@ -477,23 +484,24 @@ static void write_native_function_params(jswinrt_writer& writer, const function_
         }
         else
         {
-            resolve_type(begin.signature(), overloaded{
-                                    [&](ElementType type, bool) {
-                                        if ((type == ElementType::String) || (type == ElementType::Object))
-                                        {
-                                            writer.write(" const&");
-                                        }
-                                    },
-                                    [&](const TypeDef& typeDef, bool) {
-                                        auto c = get_category(typeDef);
-                                        if ((c != category::enum_type))
-                                        {
-                                            writer.write(" const&");
-                                        }
-                                    },
-                                    [&](const GenericTypeInstSig&, bool) { writer.write(" const&"); },
-                                    [&](system_guid_t, bool) {},
-                                });
+            resolve_type(begin.signature(), {},
+                overloaded{
+                    [&](ElementType type, bool) {
+                        if ((type == ElementType::String) || (type == ElementType::Object))
+                        {
+                            writer.write(" const&");
+                        }
+                    },
+                    [&](const TypeDef& typeDef, bool) {
+                        auto c = get_category(typeDef);
+                        if ((c != category::enum_type))
+                        {
+                            writer.write(" const&");
+                        }
+                    },
+                    [&](generic_instantiation&&, bool) { writer.write(" const&"); },
+                    [&](system_guid_t, bool) {},
+                });
         }
 
         writer.write_fmt(" param%", argNum);
@@ -1190,6 +1198,85 @@ void write_files(const Settings& settings, const projection_data& data)
     write_base_files(settings);
 
     // TODO: Typescript
+}
+
+static void write_cpp_namespace(jswinrt_writer& writer, std::string_view ns)
+{
+    while (true)
+    {
+        auto pos = ns.find_first_of(".");
+        if (pos == std::string_view::npos)
+        {
+            break;
+        }
+
+        writer.write(ns.substr(0, pos));
+        writer.write("::"sv);
+        ns = ns.substr(pos + 1);
+    }
+
+    writer.write(ns);
+}
+
+void cpp_namespace::operator()(jswinrt_writer& writer) const
+{
+    if (!data->base_namespace.empty())
+    {
+        write_cpp_namespace(writer, data->base_namespace);
+        writer.write("::"sv);
+    }
+
+    writer.write(data->name);
+}
+
+void cpp_typename::operator()(jswinrt_writer& writer) const
+{
+    if (type_namespace == foundation_namespace)
+    {
+        if (type_name == "EventRegistrationToken"sv)
+        {
+            return writer.write("event_token"sv);
+        }
+        else if (type_name == "HResult"sv)
+        {
+            return writer.write("hresult"sv);
+        }
+    }
+    else if (type_namespace == "Windows.Foundation.Numerics"sv)
+    {
+        auto itr = std::find_if(std::begin(numerics_mappings), std::end(numerics_mappings),
+            [&](auto& pair) { return pair.first == type_name; });
+        if (itr != std::end(numerics_mappings))
+        {
+            return writer.write_fmt("Windows::Foundation::Numerics::%", itr->second);
+        }
+    }
+
+    write_cpp_namespace(writer, type_namespace);
+    writer.write("::"sv);
+    writer.write(type_name);
+}
+
+void interface_projection_data::write_cpp_name(jswinrt_writer& writer)
+{
+    cpp_typename{ type_def }(writer);
+}
+
+void generic_interface_instantiation::write_cpp_name(jswinrt_writer& writer)
+{
+#if 0
+    writer.write_fmt("%<", cpp_typename{ type_def.TypeNamespace(), remove_tick(type_def.TypeName()) });
+
+    std::string_view prefix;
+    for (auto&& genericParam : params.params)
+    {
+        writer.write(prefix);
+        prefix = ", "sv;
+        std::visit([&](auto&& value) { write_cppwinrt_type(writer, value); }, genericParam);
+    }
+
+    writer.write(">");
+#endif
 }
 
 

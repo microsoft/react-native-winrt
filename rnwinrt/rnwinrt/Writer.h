@@ -5,41 +5,6 @@
 
 #include "MetadataTypes.h"
 
-struct indent
-{
-    int level;
-};
-
-struct cpp_namespace
-{
-    const namespace_projection_data* data;
-};
-
-struct cpp_typename
-{
-    cpp_typename(std::string_view ns, std::string_view name) : type_namespace(ns), type_name(name)
-    {
-    }
-
-    cpp_typename(winmd::reader::TypeDef typeDef) :
-        type_namespace(typeDef.TypeNamespace()), type_name(typeDef.TypeName())
-    {
-    }
-
-    std::string_view type_namespace;
-    std::string_view type_name;
-};
-
-struct camel_case
-{
-    std::string_view text;
-};
-
-struct event_name
-{
-    std::string_view text;
-};
-
 struct jswinrt_writer
 {
     jswinrt_writer();
@@ -79,12 +44,6 @@ struct jswinrt_writer
         fn(*this);
     }
 
-    void write(indent value);
-    void write(const cpp_namespace& ns);
-    void write(const cpp_typename& type);
-    void write(const camel_case& value);
-    void write(const event_name& value);
-
     template <typename... Args>
     void write_fmt(std::string_view fmtString, Args&&... args)
     {
@@ -112,7 +71,7 @@ private:
     template <typename T, typename... Args>
     void write_fmt_impl(std::string_view fmtString, T&& value, Args&&... args)
     {
-        auto pos = fmtString.find_first_of("^%@");
+        auto pos = fmtString.find_first_of("^%");
         assert(pos != std::string_view::npos);
         write(fmtString.substr(0, pos));
 
@@ -125,12 +84,6 @@ private:
         else if (ch == '%')
         {
             write(std::forward<T>(value));
-            write_fmt_impl(fmtString.substr(pos + 1), std::forward<Args>(args)...);
-        }
-        else if (ch == '@')
-        {
-            // TODO: Do we need to write code?
-            assert(false);
             write_fmt_impl(fmtString.substr(pos + 1), std::forward<Args>(args)...);
         }
     }
@@ -155,6 +108,35 @@ private:
 
     std::filesystem::path m_path;
 };
+
+struct indent
+{
+    int level;
+
+    void operator()(jswinrt_writer& writer) const;
+};
+
+struct camel_case
+{
+    std::string_view text;
+
+    void operator()(jswinrt_writer& writer) const;
+};
+
+struct event_name
+{
+    std::string_view text;
+
+    void operator()(jswinrt_writer& writer) const;
+};
+
+struct fmt_guid
+{
+    const GUID& value;
+
+    void operator()(jswinrt_writer& writer) const;
+};
+
 
 
 

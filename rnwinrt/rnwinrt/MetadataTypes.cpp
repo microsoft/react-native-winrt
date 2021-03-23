@@ -1,6 +1,7 @@
 #include "pch.h"
 
 #include "MetadataTypes.h"
+#include "sha1.h"
 
 using namespace std::literals;
 using namespace winmd::reader;
@@ -175,6 +176,17 @@ type_method_data<IsClass>::type_method_data(const TypeDef& typeDef)
         }
     }
 }
+
+// generic_interface_instantiation::generic_interface_instantiation(const GenericTypeInstSig& sig)
+// {
+//     GUID baseIid;
+//     // TODO: I'm pretty sure that 'GenericType' can be something like a GenericTypeIndex or something
+//     resolve_type(sig.GenericType(), overloaded{
+//                                         [&](const TypeDef& typeDef) { baseIid = get_interface_guid(typeDef); },
+//                                         [](auto&&) { throw std::runtime_error("Invalid generic type"); },
+//                                     });
+
+// }
 
 static bool is_type_allowed(const Settings& settings, const TypeDef& typeDef, bool isClass = false)
 {
@@ -383,6 +395,253 @@ static void parse_typedefs(const Settings& settings, projection_data& data,
     }
 }
 
+#ifndef _WIN32
+static_assert(false, "Compilation requires a little-endian target");
+#endif
+
+#if 0
+static void append_signature(sha1& hash, ElementType elemType, const generic_params&)
+{
+    std::string_view sig;
+    switch (elemType)
+    {
+    case ElementType::Boolean: sig = "b1"sv; break;
+    case ElementType::Char: sig = "c2"sv; break;
+    case ElementType::U1: sig = "u1"sv; break;
+    case ElementType::I2: sig = "i2"sv; break;
+    case ElementType::U2: sig = "u2"sv; break;
+    case ElementType::I4: sig = "i4"sv; break;
+    case ElementType::U4: sig = "u4"sv; break;
+    case ElementType::I8: sig = "i8"sv; break;
+    case ElementType::U8: sig = "u8"sv; break;
+    case ElementType::R4: sig = "f4"sv; break;
+    case ElementType::R8: sig = "f8"sv; break;
+    case ElementType::String: sig = "string"sv; break;
+    case ElementType::Object: sig = "cinterface(IInspectable)"sv; break;
+    default: throw std::runtime_error("Unexpected ElementType");
+    }
+
+    hash.append(sig);
+}
+
+static void append_signature(sha1& hash, system_guid_t, const generic_params&)
+{
+    hash.append("g16"sv);
+}
+
+static void append_signature(sha1& hash, const TypeSig& sig, const generic_params& genericParams);
+
+static void append_interface_guid(sha1& hash, const TypeDef& typeDef)
+{
+    auto guid = get_interface_guid(typeDef);
+    auto data = guid_to_string(guid);
+    hash.append(std::string_view{ data.data(), data.size() - 1 });
+}
+
+static void append_signature(sha1& hash, const TypeDef& typeDef, const generic_params& genericParams)
+{
+    assert(distance(typeDef.GenericParam()) == 0);
+    switch (get_category(typeDef))
+    {
+    case category::class_type: { // 'rc(name;defaultIface)'
+        auto defaultIface = default_interface(typeDef);
+        if (!defaultIface)
+        {
+            throw std::runtime_error("Class with no default interface can't be used as a generic parameter");
+        }
+
+        hash.append("rc("sv);
+        hash.append(typeDef.TypeNamespace());
+        hash.append("."sv);
+        hash.append(typeDef.TypeName());
+        hash.append(";"sv);
+        resolve_type(defaultIface, [&](auto&& value) { append_signature(hash, value, genericParams); }, genericParams);
+        hash.append(")"sv);
+        break;
+    }
+
+    case category::delegate_type: // 'delegate({iid})'
+        hash.append("delegate({"sv);
+        append_interface_guid(hash, typeDef);
+        hash.append("})"sv);
+        break;
+
+    case category::enum_type: // 'enum(name;type)'
+        hash.append("enum("sv);
+        hash.append(typeDef.TypeNamespace());
+        hash.append("."sv);
+        hash.append(typeDef.TypeName());
+        hash.append(";"sv);
+        append_signature(hash, underlying_enum_type(typeDef), genericParams);
+        hash.append(")"sv);
+        break;
+
+    case category::interface_type: // '{iid}'
+        hash.append("{"sv);
+        append_interface_guid(hash, typeDef);
+        hash.append("}"sv);
+        break;
+
+    case category::struct_type: { // 'struct(name;types...)'
+        hash.append("struct("sv);
+        hash.append(typeDef.TypeNamespace());
+        hash.append("."sv);
+        hash.append(typeDef.TypeName());
+        for (auto&& field : typeDef.FieldList())
+        {
+            hash.append(";"sv);
+            append_signature(hash, field.Signature().Type(), genericParams);
+        }
+        hash.append(")"sv);
+        break;
+    }
+    }
+}
+
+static void append_signature(sha1& hash, const GenericTypeInstSig& sig, const generic_params& parentParams)
+{
+    // 'pinterface({guid};params...)'
+    hash.append("pinterface({"sv);
+
+    resolve_type(sig.GenericType(),
+        overloaded{
+            [&](const TypeDef& typeDef) { append_interface_guid(hash, typeDef); },
+            [](auto&&) {
+                assert(false);
+                throw std::runtime_error("Generic type must be a TypeDef");
+            },
+        },
+        parentParams);
+
+    auto currParams = parentParams.create(sig);
+    for (auto&& param : sig.GenericArgs())
+    {
+        hash.append(";"sv);
+        resolve_type(
+            param,
+            [&](auto&& value, bool isArray) {
+                assert(!isArray);
+                append_signature(hash, value, currParams);
+            },
+            currParams);
+    }
+
+    hash.append(")"sv);
+}
+
+static void append_signature(sha1& hash, const TypeSig& sig, const generic_params& genericParams)
+{
+    resolve_type(
+        sig,
+        [&](auto&& value, bool isArray) {
+            assert(!isArray);
+            append_signature(hash, value, genericParams);
+        },
+        genericParams);
+}
+
+static GUID get_interface_guid(const GenericTypeInstSig& sig, const generic_params& genericParams)
+{
+    sha1 hash;
+    static constexpr std::uint8_t namespaceGuidBytes[] = { 0x11, 0xf4, 0x7a, 0xd5, 0x7b, 0x73, 0x42, 0xc0, 0xab, 0xae,
+        0x87, 0x8b, 0x1e, 0x16, 0xad, 0xee };
+    hash.append(namespaceGuidBytes);
+
+    append_signature(hash, sig, genericParams);
+
+    auto iidHash = hash.finalize();
+    iidHash[6] = (iidHash[6] & 0x0F) | 0x50;
+    iidHash[8] = (iidHash[8] & 0x3F) | 0x80;
+
+    // Bytes 0-15 are the guid, however the data is in big-endian
+    std::swap(iidHash[0], iidHash[3]);
+    std::swap(iidHash[1], iidHash[2]);
+    std::swap(iidHash[4], iidHash[5]);
+    std::swap(iidHash[6], iidHash[7]);
+    return *reinterpret_cast<const GUID*>(iidHash.data());
+}
+
+static void handle_generic_instantiation(
+    projection_data& data, const GenericTypeInstSig& sig, const generic_params& parentParams);
+
+static void check_generic_base_types(projection_data& data, const TypeDef& typeDef, const generic_params& genericParams)
+{
+    for (auto&& type : typeDef.InterfaceImpl())
+    {
+        resolve_type(type.Interface(),
+            overloaded{
+                [&](const GenericTypeInstSig& sig) {
+                    // NOTE: This will follow base types
+                    handle_generic_instantiation(data, sig, genericParams);
+                },
+                [&](const TypeDef& baseType) { check_generic_base_types(data, baseType, genericParams); },
+                [](auto&&) {},
+            },
+            genericParams);
+    }
+}
+
+static void check_generic_function_outputs(
+    projection_data& data, const TypeDef& typeDef, const generic_params& genericParams)
+{
+    auto checkType = [&](auto&& type) {
+        resolve_type(type,
+            overloaded{
+                [&](const GenericTypeInstSig& sig, bool) { handle_generic_instantiation(data, sig, genericParams); },
+                [](auto&&, bool) {},
+            },
+            genericParams);
+    };
+
+    for (auto&& method : typeDef.MethodList())
+    {
+        // We don't care about function inputs since they need to be provided by the caller, and even if this is coming
+        // from JS (e.g. array-to-vector conversion), the created object does not need to be observable by JS
+        function_signature fn(method);
+        if (fn.has_return_value)
+        {
+            checkType(fn.signature.ReturnType().Type());
+        }
+
+        for (auto&& param : fn.params())
+        {
+            if (param.is_output())
+            {
+                checkType(param.type());
+            }
+        }
+    }
+}
+
+static void handle_generic_instantiation(
+    projection_data& data, const GenericTypeInstSig& sig, const generic_params& parentParams)
+{
+    // First check to see if we've handled this type before
+    auto guid = get_interface_guid(sig, parentParams);
+    if (data.generic_instantiations.find(guid) != data.generic_instantiations.end())
+        return;
+
+    data.generic_instantiations.insert(guid);
+    auto currParams = parentParams.create(sig);
+
+    // The generic params could, themselves, be generic. E.g. an 'IVector<IReference<T>>'
+    // TODO: Probably not actually necessary? We only care if one of these appears as an output, which we catch later
+#if 0
+    for (auto&& param : currParams.params)
+    {
+        if (auto paramSig = std::get_if<GenericTypeInstSig>(&param))
+        {
+            handle_generic_instantiation(data, *paramSig, {}); // TODO: parentParams, right?
+        }
+    }
+#endif
+
+    auto typeDef = generic_type_def(sig);
+    check_generic_base_types(data, typeDef, currParams);
+    check_generic_function_outputs(data, typeDef, currParams);
+}
+#endif
+
 void parse_metadata(const Settings& settings, projection_data& data)
 {
     // NOTE: The metadata *should* be sorted, and therefore the probability of one namespace being a "child" of the
@@ -400,24 +659,37 @@ void parse_metadata(const Settings& settings, projection_data& data)
         currNs = get_namespace(data, fullName, currNs);
         parse_typedefs(settings, data, members.classes, currNs->class_children, [&](class_projection_data* classData) {
             currNs->named_children.push_back(classData);
-            // TODO
+            // check_generic_base_types(data, classData->type_def, {});
+            // check_generic_function_outputs(data, classData->type_def, {});
         });
         parse_typedefs(settings, data, members.enums, currNs->enum_children, [&](enum_projection_data* enumData) {
             currNs->named_children.push_back(enumData);
         });
         parse_typedefs(
             settings, data, members.structs, currNs->struct_children, [&](struct_projection_data* structData) {
-                // NOTE: Structs can have 'IReference<T>' members, so we need to check its fields
-                (void)structData; // TODO
+                // Structs can have 'IReference<T>' members, so we need to check their fields
+                // for (auto&& field : structData->type_def.FieldList())
+                // {
+                //     auto sig = field.Signature();
+                //     resolve_type(sig.Type(), overloaded{
+                //                                  [&](const GenericTypeInstSig& inst, bool isArray) {
+                //                                      assert(!isArray);
+                //                                      handle_generic_instantiation(data, inst, {});
+                //                                  },
+                //                                  [](auto&&, bool) {},
+                //                              });
+                // }
             });
         parse_typedefs(
             settings, data, members.delegates, currNs->delegate_children, [&](delegate_projection_data* delegateData) {
-                (void)delegateData; // TODO
+                // Delegates can have out/return values for the Invoke function
+                // check_generic_function_outputs(data, delegateData->type_def, {});
             });
         parse_typedefs(
             settings, data, members.interfaces, currNs->interface_children, [&](interface_projection_data* ifaceData) {
                 data.interfaces.push_back(ifaceData);
-                // TODO
+                // check_generic_base_types(data, ifaceData->type_def, {});
+                // check_generic_function_outputs(data, ifaceData->type_def, {});
             });
     }
 }

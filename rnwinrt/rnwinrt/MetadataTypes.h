@@ -1,6 +1,24 @@
 #pragma once
 
+#include <unordered_set>
+
 #include "MetadataHelpers.h"
+
+namespace std
+{
+    template <>
+    struct hash<GUID>
+    {
+        std::size_t operator()(const GUID& value) const noexcept
+        {
+            using array_type = std::array<std::uint64_t, 2>;
+            std::hash<std::uint64_t> hasher;
+
+            auto& array = reinterpret_cast<const array_type&>(value);
+            return hasher(array[0]) ^ (hasher(array[1]) << 1);
+        }
+    };
+}
 
 struct function_signature
 {
@@ -33,14 +51,9 @@ struct function_signature
         return param_iterator(signature.Params().second, method_def.ParamList().second);
     }
 
-    // For whatever reason, the metadata puts the return value name in the ParamList (which is conditionally present...)
-    // and for whatever reason it is *first* in the list!?!
-    std::pair<winmd::reader::Param, winmd::reader::Param> param_list() const
+    std::pair<param_iterator, param_iterator> params() const
     {
-        auto result = method_def.ParamList();
-        if (has_return_value)
-            ++result.first;
-        return result;
+        return { param_begin(), param_end() };
     }
 };
 
@@ -87,18 +100,15 @@ struct event_data
     {
 #ifdef _DEBUG
         using namespace winmd::reader;
-        resolve_type(type,
+        resolve_type(type, {},
             overloaded{
                 [&](const TypeDef& typeDef, bool isArray) {
                     assert(!isArray && (get_category(typeDef) == category::delegate_type));
                 },
-                [&](const GenericTypeInstSig& sig, bool isArray) {
+                [&](generic_instantiation&& inst, bool isArray) {
                     assert(!isArray);
-                    resolve_type(sig.GenericType(),
-                        overloaded{
-                            [](const TypeDef& typeDef) { assert((get_category(typeDef) == category::delegate_type)); },
-                            [](auto&&) { assert(false); },
-                        });
+                    auto genericType = generic_type_def(inst.signature);
+                    assert(get_category(genericType) == category::delegate_type);
                 },
                 [&](auto&&, bool) { assert(false); },
             });
@@ -195,14 +205,40 @@ struct class_projection_data : named_projection_data
     class_method_data methods;
 };
 
-struct interface_projection_data
+struct jswinrt_writer;
+
+struct interface_instance
 {
-    interface_projection_data(const winmd::reader::TypeDef& typeDef) : type_def(typeDef), methods(typeDef)
+    GUID iid;
+
+    interface_instance(const GUID& iid) : iid(iid)
     {
     }
 
+    virtual void write_cpp_name(jswinrt_writer& writer) = 0;
+};
+
+struct interface_projection_data : interface_instance
+{
+    interface_projection_data(const winmd::reader::TypeDef& typeDef) :
+        interface_instance(get_interface_guid(typeDef)), type_def(typeDef), methods(typeDef)
+    {
+    }
+
+    virtual void write_cpp_name(jswinrt_writer& writer) override;
+
     winmd::reader::TypeDef type_def;
     interface_method_data methods;
+};
+
+struct generic_interface_instantiation : interface_instance
+{
+    // generic_interface_instantiation(const winmd::reader::GenericTypeInstSig& sig);
+
+    virtual void write_cpp_name(jswinrt_writer& writer) override;
+
+    generic_instantiation instantiation;
+    // TODO: ? winmd::reader::TypeDef type_def;
 };
 
 struct struct_projection_data
@@ -256,9 +292,12 @@ struct namespace_projection_data : named_projection_data
 struct projection_data
 {
     std::vector<std::unique_ptr<namespace_projection_data>> root_namespaces;
+    std::vector<interface_instance*> interfaces;
 
-    // Global lists
-    std::vector<interface_projection_data*> interfaces;
+    // In theory, having to go all the way and calculate each instantiation's GUID is potentially inefficient - e.g.
+    // compared to just generating a string representing the type - however it's only just one more step, and arguably
+    // the hash function is faster.
+    std::unordered_set<GUID> generic_instantiations;
 };
 
 void parse_metadata(const Settings& settings, projection_data& data);

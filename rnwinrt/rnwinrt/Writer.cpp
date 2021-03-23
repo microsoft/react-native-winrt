@@ -17,88 +17,6 @@ void jswinrt_writer::flush_to_file(const std::filesystem::path& path)
     m_buffer.clear();
 }
 
-static void write_cpp_namespace(jswinrt_writer& writer, std::string_view ns)
-{
-    while (true)
-    {
-        auto pos = ns.find_first_of(".");
-        if (pos == std::string_view::npos)
-        {
-            break;
-        }
-
-        writer.write(ns.substr(0, pos));
-        writer.write("::"sv);
-        ns = ns.substr(pos + 1);
-    }
-
-    writer.write(ns);
-}
-
-void jswinrt_writer::write(indent value)
-{
-    for (int i = 0; i < value.level; ++i)
-    {
-        write("    "sv);
-    }
-}
-
-void jswinrt_writer::write(const cpp_namespace& ns)
-{
-    if (!ns.data->base_namespace.empty())
-    {
-        write_cpp_namespace(*this, ns.data->base_namespace);
-        write("::"sv);
-    }
-
-    write(ns.data->name);
-}
-
-void jswinrt_writer::write(const cpp_typename& type)
-{
-    if (type.type_namespace == foundation_namespace)
-    {
-        if (type.type_name == "EventRegistrationToken"sv)
-        {
-            return write("event_token"sv);
-        }
-        else if (type.type_name == "HResult"sv)
-        {
-            return write("hresult"sv);
-        }
-    }
-    else if (type.type_namespace == "Windows.Foundation.Numerics"sv)
-    {
-        auto itr = std::find_if(std::begin(numerics_mappings), std::end(numerics_mappings),
-            [&](auto& pair) { return pair.first == type.type_name; });
-        if (itr != std::end(numerics_mappings))
-        {
-            return write_fmt("Windows::Foundation::Numerics::%", itr->second);
-        }
-    }
-
-    write_cpp_namespace(*this, type.type_namespace);
-    write("::"sv);
-    write(type.type_name);
-}
-
-void jswinrt_writer::write(const camel_case& value)
-{
-    if (value.text.empty())
-        return; // TODO: Assert this is not the case?
-
-    write(static_cast<char>(std::tolower(value.text[0])));
-    write(value.text.substr(1));
-}
-
-void jswinrt_writer::write(const event_name& value)
-{
-    for (auto ch : value.text)
-    {
-        write(static_cast<char>(std::tolower(ch)));
-    }
-}
-
 void jswinrt_writer::write_fmt_impl(std::string_view fmtString)
 {
     while (true)
@@ -123,7 +41,7 @@ std::size_t jswinrt_writer::count_placeholders(std::string_view str)
     std::size_t result = 0;
     for (auto itr = str.begin(); itr != str.end(); ++itr)
     {
-        if (*itr == '%' || *itr == '@')
+        if (*itr == '%')
         {
             ++result;
         }
@@ -135,6 +53,37 @@ std::size_t jswinrt_writer::count_placeholders(std::string_view str)
     }
 
     return result;
+}
+
+void indent::operator()(jswinrt_writer& writer) const
+{
+    for (int i = 0; i < level; ++i)
+    {
+        writer.write("    "sv);
+    }
+}
+
+void camel_case::operator()(jswinrt_writer& writer) const
+{
+    if (text.empty())
+        return; // TODO: Assert this is not the case?
+
+    writer.write(static_cast<char>(std::tolower(text[0])));
+    writer.write(text.substr(1));
+}
+
+void event_name::operator()(jswinrt_writer& writer) const
+{
+    for (auto ch : text)
+    {
+        writer.write(static_cast<char>(std::tolower(ch)));
+    }
+}
+
+void fmt_guid::operator()(jswinrt_writer& writer) const
+{
+    auto data = guid_to_string(value);
+    writer.write(std::string_view{ data.data(), data.size() - 1 });
 }
 
 

@@ -5,11 +5,26 @@
 using namespace std::literals;
 using namespace winmd::reader;
 
-std::optional<winmd::reader::TypeDef> exclusiveto_class(TypeDef iface)
+coded_index<TypeDefOrRef> default_interface(const TypeDef& classType)
+{
+    assert(get_category(classType) == category::class_type);
+
+    for (auto&& iface : classType.InterfaceImpl())
+    {
+        if (is_default_interface(iface))
+        {
+            return iface.Interface();
+        }
+    }
+
+    return {};
+}
+
+TypeDef exclusiveto_class(TypeDef iface)
 {
     auto attr = get_attribute(iface, metadata_namespace, "ExclusiveToAttribute"sv);
     if (!attr)
-        return std::nullopt;
+        return {};
 
     auto sig = attr.Value();
     assert(sig.FixedArgs().size() == 1);
@@ -26,7 +41,7 @@ bool is_factory_interface(TypeDef iface)
         return false;
     }
 
-    for (auto&& attr : classDef->CustomAttribute())
+    for (auto&& attr : classDef.CustomAttribute())
     {
         auto [attrNs, attrName] = attr.TypeNamespaceAndName();
         if (attrNs != metadata_namespace)
@@ -57,6 +72,17 @@ bool is_factory_interface(TypeDef iface)
     return false;
 }
 
+TypeDef generic_type_def(const GenericTypeInstSig& sig)
+{
+    TypeDef result;
+    resolve_type(sig.GenericType(), {},
+        overloaded{
+            [&](const TypeDef& typeDef) { result = typeDef; },
+            [](auto&&) { throw std::invalid_argument("Generic type must be a TypeDef"); },
+        });
+    return result;
+}
+
 MethodDef delegate_invoke_function(const TypeDef& typeDef)
 {
     assert(get_category(typeDef) == category::delegate_type);
@@ -71,11 +97,41 @@ MethodDef delegate_invoke_function(const TypeDef& typeDef)
     throw std::runtime_error("Delegate without Invoke method");
 }
 
+GUID get_interface_guid(const TypeDef& typeDef)
+{
+    auto attr = get_attribute(typeDef, metadata_namespace, "GuidAttribute"sv);
+    if (!attr)
+    {
+        throw std::runtime_error("Interface with no guid attribute");
+    }
 
+    auto value = attr.Value();
+    auto& args = value.FixedArgs();
+    return {
+        std::get<uint32_t>(std::get<ElemSig>(args[0].value).value),
+        std::get<uint16_t>(std::get<ElemSig>(args[1].value).value),
+        std::get<uint16_t>(std::get<ElemSig>(args[2].value).value),
+        {
+            std::get<uint8_t>(std::get<ElemSig>(args[3].value).value),
+            std::get<uint8_t>(std::get<ElemSig>(args[4].value).value),
+            std::get<uint8_t>(std::get<ElemSig>(args[5].value).value),
+            std::get<uint8_t>(std::get<ElemSig>(args[6].value).value),
+            std::get<uint8_t>(std::get<ElemSig>(args[7].value).value),
+            std::get<uint8_t>(std::get<ElemSig>(args[8].value).value),
+            std::get<uint8_t>(std::get<ElemSig>(args[9].value).value),
+            std::get<uint8_t>(std::get<ElemSig>(args[10].value).value),
+        },
+    };
+}
 
+generic_instantiation::generic_instantiation(GenericTypeInstSig signature, const generic_param_stack& parentStack) :
+    signature(std::move(signature)), params(std::move(parentStack))
+{
+    std::vector<resolved_type> currParams;
+    // TODO
 
-
-
+    params.values.push_back(std::move(currParams));
+}
 
 #if 1
 std::vector<std::shared_ptr<static_projection_data>> _interfaces;

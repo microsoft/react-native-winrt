@@ -182,6 +182,7 @@ function runAsyncActionWithException(scenario) {
                 .catch(err => {
                     assert.equal(-2147024809, err.number);
                     assert.equal("test", err.message);
+                    return 42;
                 }),
             TestComponent.Test.throwAsyncException()
                 .catch (err => {
@@ -207,7 +208,9 @@ function runAsyncActionWithException(scenario) {
                 .finally(() => { throw 42; }) // Throwing, on the other hand, should overwrite the failure
                 .then(() => { throw new Error('Resolve handler ran when it should not have'); })
                 .catch(val => assert.equal(42, val)),
-        ]).then(() => {
+        ]).then(values => {
+            assert.equal(42, values[0]);
+
             TestComponent.Test.throwAsyncException().done(
                 () => reject(new Error('Expected an exception')),
                 err => {
