@@ -1,6 +1,8 @@
 #
 jobs:
   - job: E2ETest
+    dependsOn:
+      - ${{ parameters.dependsOn }}
     displayName: E2E Test
     strategy:
       matrix:
