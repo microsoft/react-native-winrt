@@ -471,14 +471,14 @@ inline const winmd::reader::TypeSig& get_generic_param_signature(
 {
     if (genericParamStack.empty())
     {
-        __debugbreak();
+        assert(false);
         throw std::runtime_error("Generic param stack empty");
     }
 
     auto& genericTypeSig = *genericParamStack.first_parent;
     if (idx.index >= genericTypeSig.GenericArgCount())
     {
-        __debugbreak();
+        assert(false);
         throw std::range_error("GenericTypeIndex out of range");
     }
 

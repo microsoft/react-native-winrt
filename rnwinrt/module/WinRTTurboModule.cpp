@@ -27,7 +27,6 @@ WinRTTurboModule::WinRTTurboModule(std::shared_ptr<react::CallInvoker> invoker) 
 
 WinRTTurboModule::~WinRTTurboModule()
 {
-    assert(current_thread_context);
     current_thread_context->release();
     current_thread_context = nullptr;
 }
@@ -56,12 +55,9 @@ runtime_context* jswinrt::current_runtime_context()
     auto result = current_thread_context;
     if (!result)
     {
-        // TODO: Fail fast here? This is indicitave of a bug in our code...
-        assert(false);
-        throw std::runtime_error(
-            "WinRT module not initialized for the current thread. This is likely because of a "
-            "logic error in the runtime where we are trying to access data from a background thread instead of caching "
-            "the context on creation");
+        // WinRT module not initialized for the current thread. This is likely because of a logic error in the runtime
+        // where we are trying to access data from a background thread instead of caching the context on creation
+        std::terminate();
     }
 
     return result;

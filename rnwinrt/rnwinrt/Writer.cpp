@@ -19,6 +19,7 @@ void jswinrt_writer::flush_to_file(const std::filesystem::path& path)
 
 void jswinrt_writer::write_fmt_impl(std::string_view fmtString)
 {
+    // There could still be escapes (e.g. '^%') that we need to handle
     while (true)
     {
         auto pos = fmtString.find_first_of('^');

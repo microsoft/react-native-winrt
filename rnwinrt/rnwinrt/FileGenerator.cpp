@@ -321,7 +321,7 @@ static void write_cppwinrt_type(jswinrt_writer& writer, ElementType elemType)
         break;
     default:
         assert(false);
-        break;
+        throw std::runtime_error("Unexpected ElementType");
     }
     writer.write(str);
 }
@@ -363,13 +363,11 @@ static void write_cppwinrt_type(
     resolve_type(sig, genericParamStack,
         overloaded{
             [&](const GenericTypeInstSig& genericSig, const generic_param_stack& newStack, bool isArray) {
-                if (isArray)
-                    __debugbreak(); // TODO
+                assert(!isArray);
                 write_cppwinrt_type(writer, genericSig, newStack);
             },
             [&](auto&& value, bool isArray) {
-                if (isArray)
-                    __debugbreak(); // TODO
+                assert(!isArray);
                 write_cppwinrt_type(writer, value);
             },
         });
@@ -382,7 +380,7 @@ static void write_cppwinrt_type(jswinrt_writer& writer, const param_iterator& pa
         {
             if (param.is_input())
             {
-                assert(!param.by_ref());
+                assert(!param.by_ref()); // What would the semantics of this even be?
                 writer.write("winrt::array_view<const ");
             }
             else if (!param.by_ref())
@@ -606,15 +604,19 @@ namespace jswinrt::classes::%
 
         for (auto& data : classData.methods.properties)
         {
-            writer.write_fmt(R"^-^(
-        { "%",)^-^", camel_case{ data.name });
+            // Class properties should always have a getter
+            if (!data.getter)
+            {
+                assert(false);
+                throw std::runtime_error("Static class property with no getter");
+            }
 
-            assert(data.getter); // Class properties should always have a getter
             writer.write_fmt(R"^-^(
+        { "%",
             [](jsi::Runtime& runtime) {
                 return convert_native_to_value(runtime, winrt::%::%());
             },)^-^",
-                cpp_typename{ classData.type_def }, data.name);
+                camel_case{ data.name }, cpp_typename{ classData.type_def }, data.name);
 
             if (data.setter)
             {

@@ -28,7 +28,7 @@ function_signature::function_signature(const MethodDef& def) :
 #ifdef _DEBUG
         if (begin.is_output() && !begin.by_ref())
         {
-            // The only time we should have a discrepency between being 'OutByRef', but not 'ByRef' is for fill arays
+            // The only time we should have a discrepency between being 'Out', but not 'ByRef' is for fill arays
             assert(begin.type().is_szarray());
         }
 #endif
@@ -110,7 +110,7 @@ type_method_data<IsClass>::type_method_data(const Settings& settings, const Type
             }
             else if (fn.is_default_overload)
             {
-                assert(!fnItr->is_default_overload);
+                assert(!fnItr->is_default_overload); // Two default overloads of the same arity
                 *fnItr = std::move(fn);
             }
             break;
@@ -161,19 +161,15 @@ type_method_data<IsClass>::type_method_data(const Settings& settings, const Type
         case method_class::constructor: {
             assert(IsClass);
             function_signature fn(method);
+
+            // TODO: Validate that MIDLRT dis-allows constructors of the same arity
+#ifdef _DEBUG
             auto itr = std::find_if(constructors.begin(), constructors.end(),
                 [&](const constructor_data& data) { return data.method.param_count == fn.param_count; });
+            assert(itr == constructors.end());
+#endif
 
-            if (itr == constructors.end())
-            {
-                constructors.emplace_back(std::move(fn));
-            }
-            else
-            {
-                // TODO: Validate if this is allowed. If not, the 'std::find_if' above is not needed
-                // TODO: If not, then we need to figure out how to select the correct one
-                assert(false);
-            }
+            constructors.emplace_back(std::move(fn));
             break;
         }
         }
@@ -336,7 +332,6 @@ static void append_signature(sha1& hash, const TypeDef& typeDef)
             overloaded{
                 [&](const TypeDef& ifaceDef) { append_signature(hash, ifaceDef); },
                 [&](const GenericTypeInstSig& sig, const generic_param_stack& genericParamStack) {
-                    assert(genericParamStack.empty());
                     append_signature(hash, sig, genericParamStack);
                 },
                 [&](system_guid_t) { append_signature(hash, system_guid); },
