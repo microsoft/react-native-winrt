@@ -46,6 +46,8 @@ inline bool starts_with(std::string_view str, std::string_view prefix)
     return str.substr(0, prefix.size()) == prefix;
 }
 
+// NOTE: The compare function is supposed to return a value less than zero if the passed in value sorts before the value
+// you are testing against
 template <typename ListT, typename Comp>
 inline auto reverse_sorted_find(ListT&& list, Comp&& compareFn)
 {
@@ -64,6 +66,35 @@ inline auto reverse_sorted_find(ListT&& list, Comp&& compareFn)
     }
 
     return std::pair{ itr.base(), false };
+}
+
+inline int camel_case_compare(std::string_view lhs, std::string_view rhs)
+{
+    if (lhs.empty() || rhs.empty())
+        return lhs.compare(rhs);
+
+    auto lhsFirst = std::tolower(lhs[0]);
+    auto rhsFirst = std::tolower(rhs[0]);
+    if (lhsFirst != rhsFirst)
+        return lhsFirst - rhsFirst;
+
+    return lhs.substr(1).compare(rhs.substr(1));
+}
+
+inline int lower_case_compare(std::string_view lhs, std::string_view rhs)
+{
+    while (!lhs.empty() && !rhs.empty())
+    {
+        auto lhsFirst = std::tolower(lhs[0]);
+        auto rhsFirst = std::tolower(rhs[0]);
+        if (lhsFirst != rhsFirst)
+            return lhsFirst - rhsFirst;
+
+        lhs = lhs.substr(1);
+        rhs = rhs.substr(1);
+    }
+
+    return lhs.compare(rhs);
 }
 
 inline void ThrowInvalidArg(std::string const& message)

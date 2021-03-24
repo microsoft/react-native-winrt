@@ -92,7 +92,7 @@ type_method_data<IsClass>::type_method_data(const Settings& settings, const Type
         case method_class::function: {
             // We can resolve functions of the same arity on the same type here, instead of at runtime
             auto [nameItr, nameFound] = reverse_sorted_find(
-                functions, [&](const function_data& data) { return data.name.compare(methodClass.name); });
+                functions, [&](const function_data& data) { return camel_case_compare(data.name, methodClass.name); });
             if (!nameFound)
             {
                 nameItr = functions.emplace(nameItr, methodClass.name);
@@ -115,7 +115,7 @@ type_method_data<IsClass>::type_method_data(const Settings& settings, const Type
 
         case method_class::property_getter: {
             auto [itr, found] = reverse_sorted_find(
-                properties, [&](const property_data& data) { return data.name.compare(methodClass.name); });
+                properties, [&](const property_data& data) { return camel_case_compare(data.name, methodClass.name); });
             if (!found)
             {
                 itr = properties.emplace(itr, methodClass.name);
@@ -128,7 +128,7 @@ type_method_data<IsClass>::type_method_data(const Settings& settings, const Type
 
         case method_class::property_setter: {
             auto [itr, found] = reverse_sorted_find(
-                properties, [&](const property_data& data) { return data.name.compare(methodClass.name); });
+                properties, [&](const property_data& data) { return camel_case_compare(data.name, methodClass.name); });
             if (!found)
             {
                 itr = properties.emplace(itr, methodClass.name);
@@ -141,7 +141,7 @@ type_method_data<IsClass>::type_method_data(const Settings& settings, const Type
 
         case method_class::event_add: {
             auto [itr, found] = reverse_sorted_find(
-                events, [&](const event_data& data) { return data.name.compare(methodClass.name); });
+                events, [&](const event_data& data) { return lower_case_compare(data.name, methodClass.name); });
             assert(!found);
             if (!found)
             {
