@@ -4,6 +4,10 @@
 
 #include "MetadataHelpers.h"
 
+#ifndef _WIN32
+static_assert(false, "Compilation requires a little-endian target");
+#endif
+
 namespace std
 {
     template <>
@@ -18,6 +22,21 @@ namespace std
             return hasher(array[0]) ^ (hasher(array[1]) << 1);
         }
     };
+}
+
+// NOTE: Must be kept in-sync with the copy in base.cpp
+inline int compare_guid(const GUID& lhs, const GUID& rhs)
+{
+    // NOTE: This method of comparison needs to remain consistant with how we sort the static array
+    auto lhsPtr = reinterpret_cast<const std::int64_t*>(&lhs);
+    auto rhsPtr = reinterpret_cast<const std::int64_t*>(&rhs);
+    if (auto diff = lhsPtr[0] - rhsPtr[0])
+    {
+        return (diff < 0) ? -1 : 1;
+    }
+
+    auto diff = lhsPtr[1] - rhsPtr[1];
+    return (diff == 0) ? 0 : (diff < 0) ? -1 : 1;
 }
 
 struct function_signature

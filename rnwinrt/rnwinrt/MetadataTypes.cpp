@@ -247,10 +247,6 @@ static namespace_projection_data* get_namespace(
     return parent;
 }
 
-#ifndef _WIN32
-static_assert(false, "Compilation requires a little-endian target");
-#endif
-
 static void append_signature(sha1& hash, ElementType elemType)
 {
     std::string_view sig;
@@ -606,4 +602,11 @@ void parse_metadata(const Settings& settings, projection_data& data)
                 check_generic_function_outputs(data, ifaceData->type_def, {});
             });
     }
+
+    // We sort most everything as we go (since most should be sorted anyway), but we wait until the end to sort
+    // interfaces, which we sort by guid
+    std::sort(data.interfaces.begin(), data.interfaces.end(),
+        [](const interface_instance* lhs, const interface_instance* rhs) {
+            return compare_guid(lhs->iid, rhs->iid) < 0;
+        });
 }

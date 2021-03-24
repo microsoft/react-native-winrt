@@ -440,6 +440,11 @@ jsi::Value static_activatable_class_data::create(jsi::Runtime& runtime) const
     return result;
 }
 
+#ifndef _WIN32
+static_assert(false, "Compilation requires a little-endian target");
+#endif
+
+// NOTE: Must be kept in-sync with the copy in MetadataTypes.h
 static int compare_guid(const winrt::guid& lhs, const winrt::guid& rhs)
 {
     // NOTE: This method of comparison needs to remain consistant with how we sort the static array
@@ -460,27 +465,23 @@ static const static_interface_data* find_interface(const winrt::guid& guid)
     auto end = global_interface_map.end();
     static constexpr std::ptrdiff_t linear_search_size = 16; // TODO: Find a good value
 
-#if 0 // TODO: Currently the list of interfaces is not assumed to be sorted because of generic types, so always fall
-      // back to linear search. It might be good to change this to a non-static array that we sort on DLL load for the
-      // time being, since the interface array is likely to be pretty big
     while ((end - begin) > linear_search_size)
     {
         auto mid = begin + (end - begin) / 2;
         auto cmp = compare_guid(guid, mid->first);
         if (cmp < 0)
         {
-            begin = mid + 1;
+            end = mid;
         }
         else if (cmp > 0)
         {
-            end = mid;
+            begin = mid + 1;
         }
         else
         {
             return mid->second;
         }
     }
-#endif
 
     for (; begin != end; ++begin)
     {
