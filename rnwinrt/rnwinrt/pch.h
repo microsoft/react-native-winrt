@@ -66,11 +66,6 @@ inline auto reverse_sorted_find(ListT&& list, Comp&& compareFn)
     return std::pair{ itr.base(), false };
 }
 
-
-
-
-
-#if 1
 inline void ThrowInvalidArg(std::string const& message)
 {
     throw std::invalid_argument(message);
@@ -82,4 +77,3 @@ inline void ThrowInvalidArg(std::string message, T const&... args)
     (message.append(args), ...);
     throw std::invalid_argument(message);
 }
-#endif

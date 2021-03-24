@@ -73,10 +73,10 @@ bool TypeFilter::Match(
 {
     if (match.size() <= typeNamespace.size())
     {
-        return StartsWith(typeNamespace, match);
+        return starts_with(typeNamespace, match);
     }
 
-    if (!StartsWith(match, typeNamespace))
+    if (!starts_with(match, typeNamespace))
     {
         return false;
     }
@@ -86,5 +86,5 @@ bool TypeFilter::Match(
         return false;
     }
 
-    return StartsWith(typeName, match.substr(typeNamespace.size() + 1));
+    return starts_with(typeName, match.substr(typeNamespace.size() + 1));
 }

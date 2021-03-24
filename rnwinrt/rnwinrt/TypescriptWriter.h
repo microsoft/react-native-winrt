@@ -194,13 +194,13 @@ public:
                 std::map<std::string_view, winmd::reader::MethodDef> eventListeners;
                 for (auto&& method : type.MethodList())
                 {
-                    if (!IsMethodAllowed(settings, method))
+                    if (!is_method_allowed(settings, method))
                         continue;
                     if (method.SpecialName() &&
-                        (StartsWith(method.Name(), "get_") || StartsWith(method.Name(), "put_")))
+                        (starts_with(method.Name(), "get_") || starts_with(method.Name(), "put_")))
                         continue;
                     if (method.SpecialName() &&
-                        (StartsWith(method.Name(), "add_") || StartsWith(method.Name(), "remove_")))
+                        (starts_with(method.Name(), "add_") || starts_with(method.Name(), "remove_")))
                     {
                         eventListeners[method.Name()] = method;
                     }
@@ -213,7 +213,7 @@ public:
                 // Event Listeners:
                 for (auto const& [name, method] : eventListeners)
                 {
-                    if (!IsMethodAllowed(settings, method))
+                    if (!is_method_allowed(settings, method))
                         continue;
                     textWriter.WriteIndentedLine();
                     if (name._Starts_with("add_"))
@@ -538,7 +538,7 @@ public:
 
     bool IsTypeDefAllowed(winmd::reader::TypeDef const& type)
     {
-        return IsTypeAllowed(settings, type, get_category(type) == winmd::reader::category::class_type);
+        return is_type_allowed(settings, type, get_category(type) == winmd::reader::category::class_type);
     }
 
     static bool IsGeneric(std::string_view name)

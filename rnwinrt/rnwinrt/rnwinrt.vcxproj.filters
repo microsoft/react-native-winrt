@@ -8,7 +8,6 @@
     <ClCompile Include="Settings.cpp" />
     <ClCompile Include="Writer.cpp" />
     <ClCompile Include="FileGenerator.cpp" />
-    <ClCompile Include="ValueConverters.cpp" />
     <ClCompile Include="TypeFilter.cpp" />
     <ClCompile Include="TextWriter.cpp" />
     <ClCompile Include="MetadataTypes.cpp" />
@@ -20,7 +19,6 @@
     <ClInclude Include="MetadataHelpers.h" />
     <ClInclude Include="Writer.h" />
     <ClInclude Include="FileGenerator.h" />
-    <ClInclude Include="ValueConverters.h" />
     <ClInclude Include="TypeFilter.h" />
     <ClInclude Include="TextWriter.h" />
     <ClInclude Include="TypescriptWriter.h" />

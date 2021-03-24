@@ -53,7 +53,6 @@
     <ClInclude Include="TypeFilter.h" />
     <ClInclude Include="TextWriter.h" />
     <ClInclude Include="TypescriptWriter.h" />
-    <ClInclude Include="ValueConverters.h" />
     <ClInclude Include="Writer.h" />
     <ClInclude Include="FileGenerator.h" />
     <ClInclude Include="pch.h" />
@@ -71,7 +70,6 @@
     <ClCompile Include="Settings.cpp" />
     <ClCompile Include="TypeFilter.cpp" />
     <ClCompile Include="TextWriter.cpp" />
-    <ClCompile Include="ValueConverters.cpp" />
     <ClCompile Include="Writer.cpp" />
   </ItemGroup>
   <ItemGroup>
