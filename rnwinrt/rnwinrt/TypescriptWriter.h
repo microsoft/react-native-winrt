@@ -13,15 +13,18 @@ public:
     {
     }
 
-    void Write(Namespace const& node, TextWriter& textWriter)
+    void Write(const namespace_projection_data& ns, TextWriter& textWriter)
     {
         textWriter.Write("%"sv, "//tslint:disable"sv);
         textWriter.WriteBlankLine();
-        textWriter.WriteIndentedLine("declare namespace % {%}"sv, node.FullName(), [&]() {
+        textWriter.WriteIndentedLine("declare namespace % {%}"sv, ns.full_name, [&]() {
             textWriter.AddIndent();
-            for (auto const& type : node.Members().types)
+            if (ns.members)
             {
-                WriteTypeDefiniton(type.second, textWriter);
+                for (auto const& type : ns.members->types)
+                {
+                    WriteTypeDefiniton(type.second, textWriter);
+                }
             }
             textWriter.ReduceIndent();
             textWriter.WriteIndentedLine();

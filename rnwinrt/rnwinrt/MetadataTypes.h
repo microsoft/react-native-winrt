@@ -280,6 +280,7 @@ struct namespace_projection_data : named_projection_data
     }
 
     std::string_view full_name;
+    const winmd::reader::cache::namespace_members* members = nullptr;
 
     std::vector<named_projection_data*> named_children;
     std::vector<std::unique_ptr<namespace_projection_data>> namespace_children;

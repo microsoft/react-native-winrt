@@ -1198,6 +1198,35 @@ void write_base_files(const Settings& settings)
     }
 }
 
+void write_typescript_file(const Settings& settings, const namespace_projection_data& ns)
+{
+    TextWriter textWriter;
+    TypescriptWriter typescriptWriter(settings);
+    typescriptWriter.Write(ns, textWriter);
+    textWriter.FlushToFile(settings.TypescriptOutputFolder / (std::string(ns.full_name) + ".d.ts"));
+
+    for (auto& childNs : ns.namespace_children)
+    {
+        write_typescript_file(settings, *childNs);
+    }
+}
+
+void write_typescript_files(const Settings& settings, const projection_data& data)
+{
+    if (settings.TypescriptOutputFolder.empty())
+    {
+        return;
+    }
+
+    std::filesystem::remove_all(settings.TypescriptOutputFolder);
+    std::filesystem::create_directory(settings.TypescriptOutputFolder);
+
+    for (auto& ns : data.root_namespaces)
+    {
+        write_typescript_file(settings, *ns);
+    }
+}
+
 void write_files(const Settings& settings, const projection_data& data)
 {
     // TODO: Write the following files
@@ -1220,11 +1249,11 @@ void write_files(const Settings& settings, const projection_data& data)
     //      * projected_value_traits definitions
     write_namespace_cpp_files(settings, data);
 
-
     // Write base.h/base.cpp
     write_base_files(settings);
 
-    // TODO: Typescript
+    // Write TS files, if necessary
+    write_typescript_files(settings, data);
 }
 
 static void write_cpp_namespace(jswinrt_writer& writer, std::string_view ns)
@@ -2554,19 +2583,19 @@ namespace %
 void WriteTypescriptDefinitions(
     const Settings& settings, const std::map<std::string_view, std::shared_ptr<Namespace>>& roots)
 {
-    if (settings.TypescriptOutputFolder.empty())
-    {
-        return;
-    }
-    std::filesystem::remove_all(settings.TypescriptOutputFolder);
-    std::filesystem::create_directory(settings.TypescriptOutputFolder);
-    Namespace::EnumerateAll(roots, [&](const Namespace& node) {
-        TextWriter textWriter;
-        TypescriptWriter typescriptWriter(settings);
-        typescriptWriter.Write(node, textWriter);
-        textWriter.FlushToFile(settings.TypescriptOutputFolder / (node.FullName() + ".d.ts"));
-        return true;
-    });
+    // if (settings.TypescriptOutputFolder.empty())
+    // {
+    //     return;
+    // }
+    // std::filesystem::remove_all(settings.TypescriptOutputFolder);
+    // std::filesystem::create_directory(settings.TypescriptOutputFolder);
+    // Namespace::EnumerateAll(roots, [&](const Namespace& node) {
+    //     TextWriter textWriter;
+    //     TypescriptWriter typescriptWriter(settings);
+    //     typescriptWriter.Write(node, textWriter);
+    //     textWriter.FlushToFile(settings.TypescriptOutputFolder / (node.FullName() + ".d.ts"));
+    //     return true;
+    // });
 }
 
 std::map<std::string, ValueConverters> WriteProjectedValueConvertersGeneratedH(

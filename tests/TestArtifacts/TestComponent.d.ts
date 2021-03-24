@@ -69,18 +69,13 @@ declare namespace TestComponent {
         u8Property: number;
         dateTimePropertyCppValue(): string;
         timeSpanPropertyCppValue(): string;
-        appendZeroToIVectorAsync(vector: Windows.Foundation.Collections.IVector<number>): Windows.Foundation.WinRTPromise<void, void>;
-        fillZeroesToIVectorAsync(vector: Windows.Foundation.Collections.IVector<number>): Windows.Foundation.WinRTPromise<void, number>;
-        createIVectorAsync(): Windows.Foundation.WinRTPromise<Windows.Foundation.Collections.IVector<number>, void>;
-        createIVectorWithZeroesAsync(): Windows.Foundation.WinRTPromise<Windows.Foundation.Collections.IVector<number>, number>;
-        createAsyncException(): Windows.Foundation.WinRTPromise<void, void>;
         or(lhs: boolean, rhs: boolean): boolean;
         orAll(values: boolean[]): boolean;
         add(lhs: number, rhs: number): number;
         addAll(values: number[]): number;
         append(a: string, b: string, c: string): string;
         appendAll(values: string[]): string;
-        boolOutParam(lhs: boolean, rhs: boolean): { and: boolean; or: boolean; returnValue: boolean };
+        boolOutParam(lhs: boolean, rhs: boolean): { andResult: boolean; orResult: boolean; returnValue: boolean };
         charOutParam(value: string): { next: string; prev: string; returnValue: string };
         numericOutParam(value: number): { doubledValue: number; tripledValue: number; returnValue: number };
         stringOutParam(value: string): { lower: string; upper: string; returnValue: string };
@@ -152,7 +147,7 @@ declare namespace TestComponent {
         staticAddAll(values: number[]): number;
         staticAppend(a: string, b: string, c: string): string;
         staticAppendAll(values: string[]): string;
-        staticBoolOutParam(lhs: boolean, rhs: boolean): { and: boolean; or: boolean; returnValue: boolean };
+        staticBoolOutParam(lhs: boolean, rhs: boolean): { andResult: boolean; orResult: boolean; returnValue: boolean };
         staticCharOutParam(value: string): { next: string; prev: string; returnValue: string };
         staticNumericOutParam(value: number): { doubledValue: number; tripledValue: number; returnValue: number };
         staticStringOutParam(value: string): { lower: string; upper: string; returnValue: string };
@@ -195,7 +190,29 @@ declare namespace TestComponent {
         staticInvokeCompositeStructDelegate(inputValue: TestComponent.CompositeType, targetFn: TestComponent.CompositeStructDelegate): TestComponent.CompositeType;
         staticInvokeRefDelegate(inputValue: number | null, targetFn: TestComponent.RefDelegate): number | null;
         staticInvokeObjectDelegate(inputValue: Windows.Foundation.Collections.IVector<number>, targetFn: TestComponent.ObjectDelegate): Windows.Foundation.Collections.IVector<number>;
-        makeNumericVector(values: number[]): Windows.Foundation.Collections.IVector<number>;
+        copyBoolsToVector(values: boolean[]): Windows.Foundation.Collections.IVector<boolean>;
+        copyCharsToVector(values: string[]): Windows.Foundation.Collections.IVector<string>;
+        copyNumericsToVector(values: number[]): Windows.Foundation.Collections.IVector<number>;
+        copyStringsToVector(values: string[]): Windows.Foundation.Collections.IVector<string>;
+        copyGuidsToVector(values: string[]): Windows.Foundation.Collections.IVector<string>;
+        copyEnumValuesToVector(values: TestComponent.TestEnum[]): Windows.Foundation.Collections.IVector<TestComponent.TestEnum>;
+        copyCompositeStructsToVector(values: TestComponent.CompositeType[]): Windows.Foundation.Collections.IVector<TestComponent.CompositeType>;
+        copyRefsToVector(values: number[] | null): Windows.Foundation.Collections.IVector<number | null>;
+        copyObjectsToVector(values: any): Windows.Foundation.Collections.IVector<any>;
+        returnSameBoolVector(vector: Windows.Foundation.Collections.IVector<boolean>): Windows.Foundation.Collections.IVector<boolean>;
+        returnSameCharVector(vector: Windows.Foundation.Collections.IVector<string>): Windows.Foundation.Collections.IVector<string>;
+        returnSameNumericVector(vector: Windows.Foundation.Collections.IVector<number>): Windows.Foundation.Collections.IVector<number>;
+        returnSameStringVector(vector: Windows.Foundation.Collections.IVector<string>): Windows.Foundation.Collections.IVector<string>;
+        returnSameGuidVector(vector: Windows.Foundation.Collections.IVector<string>): Windows.Foundation.Collections.IVector<string>;
+        returnSameEnumVector(vector: Windows.Foundation.Collections.IVector<TestComponent.TestEnum>): Windows.Foundation.Collections.IVector<TestComponent.TestEnum>;
+        returnSameCompositeStructVector(vector: Windows.Foundation.Collections.IVector<TestComponent.CompositeType>): Windows.Foundation.Collections.IVector<TestComponent.CompositeType>;
+        returnSameRefVector(vector: Windows.Foundation.Collections.IVector<number | null>): Windows.Foundation.Collections.IVector<number | null>;
+        returnSameObjectVector(vector: Windows.Foundation.Collections.IVector<any>): Windows.Foundation.Collections.IVector<any>;
+        pauseAsync(milliseconds: number): Windows.Foundation.WinRTPromise<void, void>;
+        countToNumberAsync(value: number): Windows.Foundation.WinRTPromise<void, number>;
+        addAsync(lhs: number, rhs: number): Windows.Foundation.WinRTPromise<number, void>;
+        countDoubleAsync(value: number): Windows.Foundation.WinRTPromise<number, number>;
+        throwAsyncException(): Windows.Foundation.WinRTPromise<void, void>;
         addEventListener(type: "staticbooleventhandler", listener: Windows.Foundation.EventHandler<boolean>): void
         addEventListener(type: "staticchareventhandler", listener: Windows.Foundation.EventHandler<string>): void
         addEventListener(type: "staticcompositestructeventhandler", listener: Windows.Foundation.EventHandler<TestComponent.CompositeType>): void
@@ -291,18 +308,13 @@ declare namespace TestComponent {
         constructor();
         dateTimePropertyCppValue(): string;
         timeSpanPropertyCppValue(): string;
-        appendZeroToIVectorAsync(vector: Windows.Foundation.Collections.IVector<number>): Windows.Foundation.WinRTPromise<void, void>;
-        fillZeroesToIVectorAsync(vector: Windows.Foundation.Collections.IVector<number>): Windows.Foundation.WinRTPromise<void, number>;
-        createIVectorAsync(): Windows.Foundation.WinRTPromise<Windows.Foundation.Collections.IVector<number>, void>;
-        createIVectorWithZeroesAsync(): Windows.Foundation.WinRTPromise<Windows.Foundation.Collections.IVector<number>, number>;
-        createAsyncException(): Windows.Foundation.WinRTPromise<void, void>;
         or(lhs: boolean, rhs: boolean): boolean;
         orAll(values: boolean[]): boolean;
         add(lhs: number, rhs: number): number;
         addAll(values: number[]): number;
         append(a: string, b: string, c: string): string;
         appendAll(values: string[]): string;
-        boolOutParam(lhs: boolean, rhs: boolean): { and: boolean; or: boolean; returnValue: boolean };
+        boolOutParam(lhs: boolean, rhs: boolean): { andResult: boolean; orResult: boolean; returnValue: boolean };
         charOutParam(value: string): { next: string; prev: string; returnValue: string };
         numericOutParam(value: number): { doubledValue: number; tripledValue: number; returnValue: number };
         stringOutParam(value: string): { lower: string; upper: string; returnValue: string };
@@ -352,7 +364,7 @@ declare namespace TestComponent {
         static staticAddAll(values: number[]): number;
         static staticAppend(a: string, b: string, c: string): string;
         static staticAppendAll(values: string[]): string;
-        static staticBoolOutParam(lhs: boolean, rhs: boolean): { and: boolean; or: boolean; returnValue: boolean };
+        static staticBoolOutParam(lhs: boolean, rhs: boolean): { andResult: boolean; orResult: boolean; returnValue: boolean };
         static staticCharOutParam(value: string): { next: string; prev: string; returnValue: string };
         static staticNumericOutParam(value: number): { doubledValue: number; tripledValue: number; returnValue: number };
         static staticStringOutParam(value: string): { lower: string; upper: string; returnValue: string };
@@ -395,7 +407,29 @@ declare namespace TestComponent {
         static staticInvokeCompositeStructDelegate(inputValue: TestComponent.CompositeType, targetFn: TestComponent.CompositeStructDelegate): TestComponent.CompositeType;
         static staticInvokeRefDelegate(inputValue: number | null, targetFn: TestComponent.RefDelegate): number | null;
         static staticInvokeObjectDelegate(inputValue: Windows.Foundation.Collections.IVector<number>, targetFn: TestComponent.ObjectDelegate): Windows.Foundation.Collections.IVector<number>;
-        static makeNumericVector(values: number[]): Windows.Foundation.Collections.IVector<number>;
+        static copyBoolsToVector(values: boolean[]): Windows.Foundation.Collections.IVector<boolean>;
+        static copyCharsToVector(values: string[]): Windows.Foundation.Collections.IVector<string>;
+        static copyNumericsToVector(values: number[]): Windows.Foundation.Collections.IVector<number>;
+        static copyStringsToVector(values: string[]): Windows.Foundation.Collections.IVector<string>;
+        static copyGuidsToVector(values: string[]): Windows.Foundation.Collections.IVector<string>;
+        static copyEnumValuesToVector(values: TestComponent.TestEnum[]): Windows.Foundation.Collections.IVector<TestComponent.TestEnum>;
+        static copyCompositeStructsToVector(values: TestComponent.CompositeType[]): Windows.Foundation.Collections.IVector<TestComponent.CompositeType>;
+        static copyRefsToVector(values: number[] | null): Windows.Foundation.Collections.IVector<number | null>;
+        static copyObjectsToVector(values: any): Windows.Foundation.Collections.IVector<any>;
+        static returnSameBoolVector(vector: Windows.Foundation.Collections.IVector<boolean>): Windows.Foundation.Collections.IVector<boolean>;
+        static returnSameCharVector(vector: Windows.Foundation.Collections.IVector<string>): Windows.Foundation.Collections.IVector<string>;
+        static returnSameNumericVector(vector: Windows.Foundation.Collections.IVector<number>): Windows.Foundation.Collections.IVector<number>;
+        static returnSameStringVector(vector: Windows.Foundation.Collections.IVector<string>): Windows.Foundation.Collections.IVector<string>;
+        static returnSameGuidVector(vector: Windows.Foundation.Collections.IVector<string>): Windows.Foundation.Collections.IVector<string>;
+        static returnSameEnumVector(vector: Windows.Foundation.Collections.IVector<TestComponent.TestEnum>): Windows.Foundation.Collections.IVector<TestComponent.TestEnum>;
+        static returnSameCompositeStructVector(vector: Windows.Foundation.Collections.IVector<TestComponent.CompositeType>): Windows.Foundation.Collections.IVector<TestComponent.CompositeType>;
+        static returnSameRefVector(vector: Windows.Foundation.Collections.IVector<number | null>): Windows.Foundation.Collections.IVector<number | null>;
+        static returnSameObjectVector(vector: Windows.Foundation.Collections.IVector<any>): Windows.Foundation.Collections.IVector<any>;
+        static pauseAsync(milliseconds: number): Windows.Foundation.WinRTPromise<void, void>;
+        static countToNumberAsync(value: number): Windows.Foundation.WinRTPromise<void, number>;
+        static addAsync(lhs: number, rhs: number): Windows.Foundation.WinRTPromise<number, void>;
+        static countDoubleAsync(value: number): Windows.Foundation.WinRTPromise<number, number>;
+        static throwAsyncException(): Windows.Foundation.WinRTPromise<void, void>;
         addEventListener(type: "booleventhandler", listener: Windows.Foundation.EventHandler<boolean>): void
         addEventListener(type: "chareventhandler", listener: Windows.Foundation.EventHandler<string>): void
         addEventListener(type: "compositestructeventhandler", listener: Windows.Foundation.EventHandler<TestComponent.CompositeType>): void

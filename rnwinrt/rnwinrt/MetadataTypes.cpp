@@ -652,6 +652,8 @@ void parse_metadata(const Settings& settings, projection_data& data)
         }
 
         currNs = get_namespace(data, fullName, currNs);
+        currNs->members = &members;
+
         parse_typedefs(settings, data, members.classes, currNs->class_children, [&](class_projection_data* classData) {
             currNs->named_children.push_back(classData);
             check_generic_base_types(data, classData->type_def, {});
