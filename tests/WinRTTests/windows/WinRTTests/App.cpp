@@ -20,15 +20,10 @@ using namespace Windows::ApplicationModel;
 /// </summary>
 App::App() noexcept
 {
-#if BUNDLE
-    JavaScriptBundleFile(L"index.windows");
-    InstanceSettings().UseWebDebugger(false);
-    InstanceSettings().UseFastRefresh(false);
-#else
     JavaScriptMainModuleName(L"index");
     InstanceSettings().UseWebDebugger(false);
+    InstanceSettings().UseDirectDebugger(true);
     InstanceSettings().UseFastRefresh(true);
-#endif
 
 #if _DEBUG
     InstanceSettings().UseDeveloperSupport(true);
