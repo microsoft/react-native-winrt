@@ -150,7 +150,7 @@ struct type_method_data
     std::vector<event_data> events;
     std::vector<constructor_data> constructors;
 
-    type_method_data(const winmd::reader::TypeDef& typeDef);
+    type_method_data(const Settings& settings, const winmd::reader::TypeDef& typeDef);
 };
 
 using interface_method_data = type_method_data<false>;
@@ -184,7 +184,7 @@ struct named_projection_data
 
 struct enum_projection_data : named_projection_data
 {
-    enum_projection_data(const winmd::reader::TypeDef& typeDef) :
+    enum_projection_data(const Settings&, const winmd::reader::TypeDef& typeDef) :
         named_projection_data(kind::enum_data, typeDef.TypeName(), typeDef.TypeNamespace()),
         type_def(typeDef)
     {
@@ -195,9 +195,9 @@ struct enum_projection_data : named_projection_data
 
 struct class_projection_data : named_projection_data
 {
-    class_projection_data(const winmd::reader::TypeDef& typeDef) :
+    class_projection_data(const Settings& settings, const winmd::reader::TypeDef& typeDef) :
         named_projection_data(kind::class_data, typeDef.TypeName(), typeDef.TypeNamespace()), type_def(typeDef),
-        methods(typeDef)
+        methods(settings, typeDef)
     {
     }
 
@@ -220,8 +220,8 @@ struct interface_instance
 
 struct interface_projection_data : interface_instance
 {
-    interface_projection_data(const winmd::reader::TypeDef& typeDef) :
-        interface_instance(get_interface_guid(typeDef)), type_def(typeDef), methods(typeDef)
+    interface_projection_data(const Settings& settings, const winmd::reader::TypeDef& typeDef) :
+        interface_instance(get_interface_guid(typeDef)), type_def(typeDef), methods(settings, typeDef)
     {
     }
 
@@ -245,7 +245,7 @@ struct generic_interface_instantiation : interface_instance
 
 struct struct_projection_data
 {
-    struct_projection_data(winmd::reader::TypeDef typeDef) : type_def(typeDef)
+    struct_projection_data(const Settings&, winmd::reader::TypeDef typeDef) : type_def(typeDef)
     {
     }
 
@@ -254,7 +254,7 @@ struct struct_projection_data
 
 struct delegate_projection_data
 {
-    delegate_projection_data(const winmd::reader::TypeDef& typeDef) :
+    delegate_projection_data(const Settings&, const winmd::reader::TypeDef& typeDef) :
         type_def(typeDef), invoke(delegate_invoke_function(typeDef))
     {
     }

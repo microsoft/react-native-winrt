@@ -69,10 +69,13 @@ method_class classify_method(const MethodDef& def)
 }
 
 template <bool IsClass>
-type_method_data<IsClass>::type_method_data(const TypeDef& typeDef)
+type_method_data<IsClass>::type_method_data(const Settings& settings, const TypeDef& typeDef)
 {
     for (auto&& method : typeDef.MethodList())
     {
+        if (!is_method_allowed(settings, method))
+            continue;
+
         auto methodClass = classify_method(method);
         if constexpr (IsClass)
         {
@@ -249,60 +252,6 @@ static namespace_projection_data* get_namespace(
     }
 
     return parent;
-}
-
-template <typename T, typename Func>
-static void parse_typedefs(const Settings& settings, projection_data& data,
-    const std::vector<TypeDef>& typeDefs, std::vector<std::unique_ptr<T>>& list, Func&& callback)
-{
-    bool isFoundationNs = false, isNumericsNs = false;
-    if (!typeDefs.empty())
-    {
-        auto ns = typeDefs[0].TypeNamespace();
-        if (ns == foundation_namespace)
-            isFoundationNs = true;
-        else if (ns == "Windows.Foundation.Numerics"sv)
-            isNumericsNs = true;
-    }
-
-    for (auto&& typeDef : typeDefs)
-    {
-        if (!is_type_allowed(settings, typeDef))
-            continue;
-
-        // Ignore generic type *definitions*. We care about *instantiations*
-        if (is_generic(typeDef))
-            continue;
-
-        if constexpr (std::is_same_v<T, interface_projection_data>)
-        {
-            // Static/activation factory interfaces don't need to be tracked; we handle them differently
-            if (is_factory_interface(typeDef))
-                continue;
-        }
-        else if constexpr (std::is_same_v<T, struct_projection_data>)
-        {
-            // Some types are manually projected
-            if (isFoundationNs)
-            {
-                auto name = typeDef.TypeName();
-                if ((name == "HResult"sv) || (name == "DateTime"sv) || (name == "TimeSpan"sv) ||
-                    (name == "EventRegistrationToken"sv))
-                    continue;
-            }
-            else if (isNumericsNs)
-            {
-                auto name = typeDef.TypeName();
-                auto itr = std::find_if(std::begin(numerics_mappings), std::end(numerics_mappings),
-                    [&](auto& pair) { return pair.first == name; });
-                if (itr != std::end(numerics_mappings))
-                    continue;
-            }
-        }
-
-        list.push_back(std::make_unique<T>(typeDef));
-        callback(list.back().get());
-    }
 }
 
 #ifndef _WIN32
@@ -556,6 +505,60 @@ static void handle_generic_instantiation(projection_data& data, generic_instanti
 
     itr->second = std::make_unique<generic_interface_instantiation>(std::move(inst), guid);
     data.interfaces.push_back(itr->second.get());
+}
+
+template <typename T, typename Func>
+static void parse_typedefs(const Settings& settings, projection_data& data,
+    const std::vector<TypeDef>& typeDefs, std::vector<std::unique_ptr<T>>& list, Func&& callback)
+{
+    bool isFoundationNs = false, isNumericsNs = false;
+    if (!typeDefs.empty())
+    {
+        auto ns = typeDefs[0].TypeNamespace();
+        if (ns == foundation_namespace)
+            isFoundationNs = true;
+        else if (ns == "Windows.Foundation.Numerics"sv)
+            isNumericsNs = true;
+    }
+
+    for (auto&& typeDef : typeDefs)
+    {
+        if (!is_type_allowed(settings, typeDef))
+            continue;
+
+        // Ignore generic type *definitions*. We care about *instantiations*
+        if (is_generic(typeDef))
+            continue;
+
+        if constexpr (std::is_same_v<T, interface_projection_data>)
+        {
+            // Static/activation factory interfaces don't need to be tracked; we handle them differently
+            if (is_factory_interface(typeDef))
+                continue;
+        }
+        else if constexpr (std::is_same_v<T, struct_projection_data>)
+        {
+            // Some types are manually projected
+            if (isFoundationNs)
+            {
+                auto name = typeDef.TypeName();
+                if ((name == "HResult"sv) || (name == "DateTime"sv) || (name == "TimeSpan"sv) ||
+                    (name == "EventRegistrationToken"sv))
+                    continue;
+            }
+            else if (isNumericsNs)
+            {
+                auto name = typeDef.TypeName();
+                auto itr = std::find_if(std::begin(numerics_mappings), std::end(numerics_mappings),
+                    [&](auto& pair) { return pair.first == name; });
+                if (itr != std::end(numerics_mappings))
+                    continue;
+            }
+        }
+
+        list.push_back(std::make_unique<T>(settings, typeDef));
+        callback(list.back().get());
+    }
 }
 
 void parse_metadata(const Settings& settings, projection_data& data)
