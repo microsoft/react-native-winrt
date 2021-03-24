@@ -1,6 +1,6 @@
 #include "pch.h"
 
-#include <TurboModule/Core/TurboModule.h>
+#include "WinRTTurboModule.h"
 
 #include <rnwinrt/base.cpp>
 

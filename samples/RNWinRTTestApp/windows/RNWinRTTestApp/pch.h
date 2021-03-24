@@ -29,3 +29,5 @@
 #include <winrt/Microsoft.UI.Xaml.XamlTypeInfo.h>
 
 #include "AutolinkedNativeModules.g.h"
+
+#include <winrt\WinRTTurboModule.h>
