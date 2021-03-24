@@ -12,52 +12,44 @@ jsi::Value WinRTTurboModuleSpecJSI_initialize(
 
 thread_local runtime_context* current_thread_context = nullptr;
 
-class WinRTTurboModule final : public react::TurboModule
+WinRTTurboModule::WinRTTurboModule(std::shared_ptr<react::CallInvoker> invoker) :
+    TurboModule("WinRTTurboModule", invoker), m_invoker(std::move(invoker))
 {
-public:
-    WinRTTurboModule(std::shared_ptr<react::CallInvoker> invoker) :
-        TurboModule("WinRTTurboModule", invoker), m_invoker(std::move(invoker))
-    {
-        methodMap_["initialize"] = MethodMetadata{ 0, WinRTTurboModuleSpecJSI_initialize };
+    methodMap_["initialize"] = MethodMetadata{ 0, WinRTTurboModuleSpecJSI_initialize };
 
-        APTTYPE type;
-        APTTYPEQUALIFIER typeQualifier;
-        if (::CoGetApartmentType(&type, &typeQualifier) == CO_E_NOTINITIALIZED)
+    APTTYPE type;
+    APTTYPEQUALIFIER typeQualifier;
+    if (::CoGetApartmentType(&type, &typeQualifier) == CO_E_NOTINITIALIZED)
+    {
+        winrt::terminate();
+    }
+}
+
+WinRTTurboModule::~WinRTTurboModule()
+{
+    assert(current_thread_context);
+    current_thread_context->release();
+    current_thread_context = nullptr;
+}
+
+// Functions exposed to JS
+void WinRTTurboModule::initialize(jsi::Runtime& runtime)
+{
+    if (!m_initialized)
+    {
+        m_initialized = true;
+
+        assert(!current_thread_context);
+        current_thread_context = new runtime_context(
+            runtime, [invoker = m_invoker](std::function<void()> fn) { invoker->invokeAsync(std::move(fn)); });
+
+        auto global = runtime.global();
+        for (auto data : root_namespaces)
         {
-            winrt::terminate();
+            global.setProperty(runtime, make_string(runtime, data->name), data->create(runtime));
         }
     }
-
-    ~WinRTTurboModule()
-    {
-        assert(current_thread_context);
-        current_thread_context->release();
-        current_thread_context = nullptr;
-    }
-
-    // Functions exposed to JS
-    void initialize(jsi::Runtime& runtime)
-    {
-        if (!m_initialized)
-        {
-            m_initialized = true;
-
-            assert(!current_thread_context);
-            current_thread_context = new runtime_context(
-                runtime, [invoker = m_invoker](std::function<void()> fn) { invoker->invokeAsync(std::move(fn)); });
-
-            auto global = runtime.global();
-            for (auto data : root_namespaces)
-            {
-                global.setProperty(runtime, make_string(runtime, data->name), data->create(runtime));
-            }
-        }
-    }
-
-private:
-    bool m_initialized = false;
-    std::shared_ptr<react::CallInvoker> m_invoker;
-};
+}
 
 runtime_context* jswinrt::current_runtime_context()
 {

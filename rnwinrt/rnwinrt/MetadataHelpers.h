@@ -276,6 +276,7 @@ struct param_iterator
         return itr;
     }
 
+#if 0 // TODO: Until https://github.com/microsoft/winmd/pull/20 is available via NuGet
     param_iterator& operator--()
     {
         --sig_iterator;
@@ -289,6 +290,7 @@ struct param_iterator
         --(*this);
         return copy;
     }
+#endif
 
     param_iterator& operator-=(difference_type count)
     {
