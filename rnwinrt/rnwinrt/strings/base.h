@@ -2170,7 +2170,7 @@ namespace jswinrt
     struct projected_value_traits<winrt::array_view<T>>
     {
         // NOTE: Non-const 'T' - this is specific to 'fill array' scenarios
-        static jsi::Value as_value(jsi::Runtime& runtime, winrt::array_view<T>& value)
+        static jsi::Value as_value(jsi::Runtime& runtime, const winrt::array_view<T>&)
         {
             // TODO: We could see this when implementing interfaces (currently not supported) or for delegates that use
             // the fill array pattern (also currently not supported, but maybe we should?)
@@ -2210,7 +2210,7 @@ namespace jswinrt
     struct projected_value_traits<winrt::array_view<const T>>
     {
         // NOTE: Const 'T' - this is specific to 'pass array' scenarios
-        static jsi::Value as_value(jsi::Runtime& runtime, winrt::array_view<const T>& value)
+        static jsi::Value as_value(jsi::Runtime& runtime, const winrt::array_view<const T>&)
         {
             // TODO: We could see this when implementing interfaces (currently not supported) or for delegates that use
             // the pass array pattern (also currently not supported, but maybe we should?)
