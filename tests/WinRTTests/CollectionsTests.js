@@ -237,31 +237,31 @@ function runNumericVectorCopyTest(scenario) {
 
 function runStringVectorCopyTest(scenario) {
     this.runSync(scenario, () => {
-        doVectorCopyTest(TestComponent.Test.copyNumericsToVector(stringVectorContents), stringVectorContents, stringValuesToAdd);
+        doVectorCopyTest(TestComponent.Test.copyStringsToVector(stringVectorContents), stringVectorContents, stringValuesToAdd);
     });
 }
 
 function runGuidVectorCopyTest(scenario) {
     this.runSync(scenario, () => {
-        doVectorCopyTest(TestComponent.Test.copyNumericsToVector(guidVectorContents), guidVectorContents, guidValuesToAdd);
+        doVectorCopyTest(TestComponent.Test.copyGuidsToVector(guidVectorContents), guidVectorContents, guidValuesToAdd);
     });
 }
 
 function runEnumVectorCopyTest(scenario) {
     this.runSync(scenario, () => {
-        doVectorCopyTest(TestComponent.Test.copyNumericsToVector(enumVectorContents), enumVectorContents, enumValuesToAdd);
+        doVectorCopyTest(TestComponent.Test.copyEnumValuesToVector(enumVectorContents), enumVectorContents, enumValuesToAdd);
     });
 }
 
 function runCompositeStructVectorCopyTest(scenario) {
     this.runSync(scenario, () => {
-        doVectorCopyTest(TestComponent.Test.copyNumericsToVector(compositeVectorContents), compositeVectorContents, compositeValuesToAdd);
+        doVectorCopyTest(TestComponent.Test.copyCompositeStructsToVector(compositeVectorContents), compositeVectorContents, compositeValuesToAdd);
     });
 }
 
 function runRefVectorCopyTest(scenario) {
     this.runSync(scenario, () => {
-        doVectorCopyTest(TestComponent.Test.copyNumericsToVector(refVectorContents), refVectorContents, refValuesToAdd);
+        doVectorCopyTest(TestComponent.Test.copyRefsToVector(refVectorContents), refVectorContents, refValuesToAdd);
     });
 }
 
@@ -284,7 +284,6 @@ function doArrayAsVectorTest(vector, array, valuesToAdd) {
     // Modify values
     vector.setAt(1, valuesToAdd[2]);
     expected[1] = valuesToAdd[2];
-    expected.splice(2, 0, valuesToAdd[1]);
     verifyArraysAreSame(array, expected);
 
     // TODO: operator[]
@@ -299,7 +298,7 @@ function doArrayAsVectorTest(vector, array, valuesToAdd) {
     verifyArraysAreSame(array, expected);
 
     vector.replaceAll(expectedInitial);
-    verifyArraysAreSame(array, expected);
+    verifyArraysAreSame(array, expectedInitial);
 
     vector.clear();
     verifyArraysAreSame(array, []);

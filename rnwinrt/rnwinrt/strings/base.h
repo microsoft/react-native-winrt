@@ -1763,7 +1763,7 @@ namespace jswinrt
     struct array_iterator :
         winrt::implements<array_iterator<D, T>, winrt::Windows::Foundation::Collections::IIterator<T>>
     {
-        array_iterator(D* target) : target(target)
+        array_iterator(D* target) : target(target, winrt::take_ownership_from_abi)
         {
         }
 
@@ -1943,7 +1943,8 @@ namespace jswinrt
 
     template <typename T>
     struct array_vector_view :
-        winrt::implements<array_vector_view<T>, winrt::Windows::Foundation::Collections::IVectorView<T>>,
+        winrt::implements<array_vector_view<T>, winrt::Windows::Foundation::Collections::IVectorView<T>,
+            winrt::Windows::Foundation::Collections::IIterable<T>>,
         array_vector_base<array_vector_view<T>, T>
     {
         using array_vector_base<array_vector_view<T>, T>::array_vector_base;
@@ -1951,7 +1952,8 @@ namespace jswinrt
 
     template <typename T>
     struct array_vector :
-        winrt::implements<array_vector<T>, winrt::Windows::Foundation::Collections::IVector<T>>,
+        winrt::implements<array_vector<T>, winrt::Windows::Foundation::Collections::IVector<T>,
+            winrt::Windows::Foundation::Collections::IIterable<T>>,
         array_vector_base<array_vector<T>, T>
     {
         using array_vector_base<array_vector<T>, T>::array_vector_base;
