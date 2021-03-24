@@ -2627,6 +2627,7 @@ namespace jswinrt
     {
         using winrt::Windows::Foundation::IInspectable;
 
+        // TODO: Comment on this
 #if 0
         namespace IAsyncActionWithProgress
         {

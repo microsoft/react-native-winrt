@@ -53,7 +53,10 @@ struct function_signature
 
     std::pair<param_iterator, param_iterator> params() const
     {
-        return { param_begin(), param_end() };
+        auto begin = param_begin();
+        auto end = param_end();
+        assert(std::distance(begin.sig_iterator, end.sig_iterator) == std::distance(begin.param, end.param));
+        return { begin, end };
     }
 };
 

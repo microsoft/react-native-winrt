@@ -447,21 +447,20 @@ static void write_cppwinrt_type_initializer(jswinrt_writer& writer, const TypeSi
 
 static void write_params_value_to_native(jswinrt_writer& writer, const function_signature& fn, int indentLevel)
 {
-    auto begin = fn.param_begin();
-    auto end = fn.param_end();
-    for (int argNum = 0; begin != end; ++begin, ++argNum)
+    auto params = fn.params();
+    for (int argNum = 0; params.first != params.second; ++params.first, ++argNum)
     {
-        if (!begin.by_ref())
+        if (!params.first.by_ref())
         {
             writer.write_fmt(
                 "\n%auto arg% = convert_value_to_native<%>(runtime, args[%]);", indent{ indentLevel }, argNum,
-                [&](jswinrt_writer& w) { write_cppwinrt_type(w, begin); }, argNum);
+                [&](jswinrt_writer& w) { write_cppwinrt_type(w, params.first); }, argNum);
         }
         else
         {
             writer.write_fmt(
-                "\n%% arg%%;", indent{ indentLevel }, [&](jswinrt_writer& w) { write_cppwinrt_type(w, begin); }, argNum,
-                [&](jswinrt_writer& w) { write_cppwinrt_type_initializer(w, begin.type()); });
+                "\n%% arg%%;", indent{ indentLevel }, [&](jswinrt_writer& w) { write_cppwinrt_type(w, params.first); }, argNum,
+                [&](jswinrt_writer& w) { write_cppwinrt_type_initializer(w, params.first.type()); });
         }
     }
 }
@@ -477,14 +476,14 @@ static void write_make_return_struct(jswinrt_writer& writer, const function_sign
         writer.write("make_void_return_struct(runtime");
     }
 
-    auto begin = fn.param_begin();
-    auto end = fn.param_end();
-    for (int argNum = 0; begin != end; ++begin, ++argNum)
+    int argNum = 0;
+    for (auto&& param : fn.params())
     {
-        if (begin.is_output())
+        if (param.is_output())
         {
-            writer.write_fmt(R"^-^(, "%", arg%)^-^", camel_case{ begin.name() }, argNum);
+            writer.write_fmt(R"^-^(, "%", arg%)^-^", camel_case{ param.name() }, argNum);
         }
+        ++argNum;
     }
 
     writer.write(")");
@@ -492,22 +491,21 @@ static void write_make_return_struct(jswinrt_writer& writer, const function_sign
 
 static void write_native_function_params(jswinrt_writer& writer, const function_signature& fn)
 {
-    auto begin = fn.param_begin();
-    auto end = fn.param_end();
     std::string_view prefix;
-    for (int argNum = 0; begin != end; ++begin, ++argNum)
+    int argNum = 0;
+    for (auto&& param : fn.params())
     {
         writer.write(prefix);
         prefix = ", ";
 
-        write_cppwinrt_type(writer, begin);
-        if (begin.by_ref())
+        write_cppwinrt_type(writer, param);
+        if (param.by_ref())
         {
             writer.write("&");
         }
         else
         {
-            resolve_type(begin.signature(), {},
+            resolve_type(param.signature(), {},
                 overloaded{
                     [&](ElementType type, bool) {
                         if ((type == ElementType::String) || (type == ElementType::Object))
@@ -528,20 +526,21 @@ static void write_native_function_params(jswinrt_writer& writer, const function_
         }
 
         writer.write_fmt(" param%", argNum);
+        ++argNum;
     }
 }
 
 static void write_params_native_to_value(jswinrt_writer& writer, const function_signature& fn, int indentLevel)
 {
-    auto begin = fn.param_begin();
-    auto end = fn.param_end();
-    for (int argNum = 0; begin != end; ++begin, ++argNum)
+    int argNum = 0;
+    for (auto&& param : fn.params())
     {
-        if (begin.is_input())
+        if (param.is_input())
         {
             writer.write_fmt(
                 "\n%auto arg% = convert_native_to_value(runtime, param%);", indent{ indentLevel }, argNum, argNum);
         }
+        ++argNum;
     }
 }
 
@@ -550,18 +549,18 @@ static void write_native_out_params(jswinrt_writer& writer, const function_signa
     assert(fn.has_out_params);
     writer.write_fmt("\n%auto obj = result.asObject(runtime);", indent{ indentLevel });
 
-    auto begin = fn.param_begin();
-    auto end = fn.param_end();
-    for (int argNum = 0; begin != end; ++begin, ++argNum)
+    int argNum = 0;
+    for (auto&& param : fn.params())
     {
-        if (begin.is_output())
+        if (param.is_output())
         {
             writer.write_fmt(
                 R"^-^(
 %param% = convert_value_to_native<%>(runtime, obj.getProperty(runtime, "%"));)^-^",
-                indent{ indentLevel }, argNum, [&](jswinrt_writer& w) { write_cppwinrt_type(w, begin); },
-                camel_case{ begin.name() });
+                indent{ indentLevel }, argNum, [&](jswinrt_writer& w) { write_cppwinrt_type(w, param); },
+                camel_case{ param.name() });
         }
+        ++argNum;
     }
 }
 
@@ -625,7 +624,7 @@ namespace jswinrt::classes::%
                 winrt::%::%(convert_value_to_native<%>(runtime, value));
             },)^-^",
                     cpp_typename{ classData.type_def }, data.name,
-                    [&](jswinrt_writer& w) { write_cppwinrt_type(w, data.setter->param_begin()); });
+                    [&](jswinrt_writer& w) { write_cppwinrt_type(w, data.setter->params().first); });
             }
             else
             {
@@ -824,7 +823,7 @@ namespace jswinrt::interfaces::%
                 thisValue.as<winrt::%>().%(convert_value_to_native<%>(runtime, value));
             },)^-^",
                     cpp_typename{ ifaceData.type_def }, data.name,
-                    [&](jswinrt_writer& w) { write_cppwinrt_type(w, data.setter->param_begin()); });
+                    [&](jswinrt_writer& w) { write_cppwinrt_type(w, data.setter->params().first); });
             }
             else
             {

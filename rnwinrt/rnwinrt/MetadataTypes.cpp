@@ -11,12 +11,9 @@ function_signature::function_signature(const MethodDef& def) :
 {
     has_return_value = static_cast<bool>(signature.ReturnType());
 
-    auto begin = param_begin();
-    auto end = param_end();
-    assert(std::distance(begin.sig_iterator, end.sig_iterator) == std::distance(begin.param, end.param));
-    for (; begin != end; ++begin)
+    for (auto&& param : params())
     {
-        if (begin.is_output() && begin.by_ref())
+        if (param.is_output() && param.by_ref())
         {
             has_out_params = true;
         }
@@ -26,10 +23,10 @@ function_signature::function_signature(const MethodDef& def) :
         }
 
 #ifdef _DEBUG
-        if (begin.is_output() && !begin.by_ref())
+        if (param.is_output() && !param.by_ref())
         {
             // The only time we should have a discrepency between being 'Out', but not 'ByRef' is for fill arays
-            assert(begin.type().is_szarray());
+            assert(param.type().is_szarray());
         }
 #endif
     }
