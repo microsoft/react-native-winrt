@@ -78,7 +78,7 @@ TypeDef generic_type_def(const GenericTypeInstSig& sig)
     resolve_type(sig.GenericType(), {},
         overloaded{
             [&](const TypeDef& typeDef) { result = typeDef; },
-            [](auto&&) { throw std::invalid_argument("Generic type must be a TypeDef"); },
+            [](auto&&...) { throw std::invalid_argument("Generic type must be a TypeDef"); },
         });
     return result;
 }
@@ -122,15 +122,6 @@ GUID get_interface_guid(const TypeDef& typeDef)
             std::get<uint8_t>(std::get<ElemSig>(args[10].value).value),
         },
     };
-}
-
-generic_instantiation::generic_instantiation(GenericTypeInstSig signature, const generic_param_stack& parentStack) :
-    signature(std::move(signature)), params(std::move(parentStack))
-{
-    std::vector<resolved_type> currParams;
-    // TODO
-
-    params.values.push_back(std::move(currParams));
 }
 
 #if 1

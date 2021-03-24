@@ -177,17 +177,6 @@ type_method_data<IsClass>::type_method_data(const TypeDef& typeDef)
     }
 }
 
-// generic_interface_instantiation::generic_interface_instantiation(const GenericTypeInstSig& sig)
-// {
-//     GUID baseIid;
-//     // TODO: I'm pretty sure that 'GenericType' can be something like a GenericTypeIndex or something
-//     resolve_type(sig.GenericType(), overloaded{
-//                                         [&](const TypeDef& typeDef) { baseIid = get_interface_guid(typeDef); },
-//                                         [](auto&&) { throw std::runtime_error("Invalid generic type"); },
-//                                     });
-
-// }
-
 static bool is_type_allowed(const Settings& settings, const TypeDef& typeDef, bool isClass = false)
 {
     if (!settings.Filter.Includes(typeDef))
@@ -399,8 +388,7 @@ static void parse_typedefs(const Settings& settings, projection_data& data,
 static_assert(false, "Compilation requires a little-endian target");
 #endif
 
-#if 0
-static void append_signature(sha1& hash, ElementType elemType, const generic_params&)
+static void append_signature(sha1& hash, ElementType elemType)
 {
     std::string_view sig;
     switch (elemType)
@@ -424,12 +412,10 @@ static void append_signature(sha1& hash, ElementType elemType, const generic_par
     hash.append(sig);
 }
 
-static void append_signature(sha1& hash, system_guid_t, const generic_params&)
+static void append_signature(sha1& hash, system_guid_t)
 {
     hash.append("g16"sv);
 }
-
-static void append_signature(sha1& hash, const TypeSig& sig, const generic_params& genericParams);
 
 static void append_interface_guid(sha1& hash, const TypeDef& typeDef)
 {
@@ -438,9 +424,30 @@ static void append_interface_guid(sha1& hash, const TypeDef& typeDef)
     hash.append(std::string_view{ data.data(), data.size() - 1 });
 }
 
-static void append_signature(sha1& hash, const TypeDef& typeDef, const generic_params& genericParams)
+static void append_signature(sha1& hash, const TypeSig& sig, const generic_param_stack& genericParamStack);
+
+static void append_signature(sha1& hash, const GenericTypeInstSig& sig, const generic_param_stack& genericParamStack)
 {
-    assert(distance(typeDef.GenericParam()) == 0);
+    // 'pinterface({guid};params...)'
+    hash.append("pinterface({"sv);
+
+    auto typeDef = generic_type_def(sig);
+    append_interface_guid(hash, typeDef);
+    hash.append("}"sv);
+
+    for (auto&& param : sig.GenericArgs())
+    {
+        hash.append(";"sv);
+        append_signature(hash, param, genericParamStack);
+    }
+
+    hash.append(")"sv);
+}
+
+static void append_signature(sha1& hash, const TypeDef& typeDef)
+{
+    assert(!is_generic(typeDef));
+
     switch (get_category(typeDef))
     {
     case category::class_type: { // 'rc(name;defaultIface)'
@@ -455,7 +462,15 @@ static void append_signature(sha1& hash, const TypeDef& typeDef, const generic_p
         hash.append("."sv);
         hash.append(typeDef.TypeName());
         hash.append(";"sv);
-        resolve_type(defaultIface, [&](auto&& value) { append_signature(hash, value, genericParams); }, genericParams);
+        resolve_type(defaultIface, {},
+            overloaded{
+                [&](const TypeDef& ifaceDef) { append_signature(hash, ifaceDef); },
+                [&](const GenericTypeInstSig& sig, const generic_param_stack& genericParamStack) {
+                    assert(genericParamStack.empty());
+                    append_signature(hash, sig, genericParamStack);
+                },
+                [&](system_guid_t) { append_signature(hash, system_guid); },
+            });
         hash.append(")"sv);
         break;
     }
@@ -472,7 +487,7 @@ static void append_signature(sha1& hash, const TypeDef& typeDef, const generic_p
         hash.append("."sv);
         hash.append(typeDef.TypeName());
         hash.append(";"sv);
-        append_signature(hash, underlying_enum_type(typeDef), genericParams);
+        append_signature(hash, underlying_enum_type(typeDef));
         hash.append(")"sv);
         break;
 
@@ -490,7 +505,7 @@ static void append_signature(sha1& hash, const TypeDef& typeDef, const generic_p
         for (auto&& field : typeDef.FieldList())
         {
             hash.append(";"sv);
-            append_signature(hash, field.Signature().Type(), genericParams);
+            append_signature(hash, field.Signature().Type(), {});
         }
         hash.append(")"sv);
         break;
@@ -498,56 +513,29 @@ static void append_signature(sha1& hash, const TypeDef& typeDef, const generic_p
     }
 }
 
-static void append_signature(sha1& hash, const GenericTypeInstSig& sig, const generic_params& parentParams)
+static void append_signature(sha1& hash, const TypeSig& sig, const generic_param_stack& genericParamStack)
 {
-    // 'pinterface({guid};params...)'
-    hash.append("pinterface({"sv);
-
-    resolve_type(sig.GenericType(),
+    resolve_type(sig, genericParamStack,
         overloaded{
-            [&](const TypeDef& typeDef) { append_interface_guid(hash, typeDef); },
-            [](auto&&) {
-                assert(false);
-                throw std::runtime_error("Generic type must be a TypeDef");
-            },
-        },
-        parentParams);
-
-    auto currParams = parentParams.create(sig);
-    for (auto&& param : sig.GenericArgs())
-    {
-        hash.append(";"sv);
-        resolve_type(
-            param,
-            [&](auto&& value, bool isArray) {
+            [&](const GenericTypeInstSig& genericSig, const generic_param_stack& newStack, bool isArray) {
                 assert(!isArray);
-                append_signature(hash, value, currParams);
+                append_signature(hash, genericSig, newStack);
             },
-            currParams);
-    }
-
-    hash.append(")"sv);
+            [&](const auto& value, bool isArray) {
+                assert(!isArray);
+                append_signature(hash, value);
+            },
+        });
 }
 
-static void append_signature(sha1& hash, const TypeSig& sig, const generic_params& genericParams)
-{
-    resolve_type(
-        sig,
-        [&](auto&& value, bool isArray) {
-            assert(!isArray);
-            append_signature(hash, value, genericParams);
-        },
-        genericParams);
-}
-
-static GUID get_interface_guid(const GenericTypeInstSig& sig, const generic_params& genericParams)
+static GUID get_interface_guid(const generic_instantiation& inst)
 {
     sha1 hash;
     static constexpr std::uint8_t namespaceGuidBytes[] = { 0x11, 0xf4, 0x7a, 0xd5, 0x7b, 0x73, 0x42, 0xc0, 0xab, 0xae,
         0x87, 0x8b, 0x1e, 0x16, 0xad, 0xee };
     hash.append(namespaceGuidBytes);
 
-    append_signature(hash, sig, genericParams);
+    append_signature(hash, inst.signature(), inst.parent_stack());
 
     auto iidHash = hash.finalize();
     iidHash[6] = (iidHash[6] & 0x0F) | 0x50;
@@ -561,36 +549,42 @@ static GUID get_interface_guid(const GenericTypeInstSig& sig, const generic_para
     return *reinterpret_cast<const GUID*>(iidHash.data());
 }
 
-static void handle_generic_instantiation(
-    projection_data& data, const GenericTypeInstSig& sig, const generic_params& parentParams);
+static void handle_generic_instantiation(projection_data& data, generic_instantiation&& inst);
 
-static void check_generic_base_types(projection_data& data, const TypeDef& typeDef, const generic_params& genericParams)
+static void check_generic_base_types(
+    projection_data& data, const TypeDef& typeDef, const generic_param_stack& genericParamStack)
 {
     for (auto&& type : typeDef.InterfaceImpl())
     {
-        resolve_type(type.Interface(),
+        resolve_type(type.Interface(), genericParamStack,
             overloaded{
-                [&](const GenericTypeInstSig& sig) {
+                [&](const GenericTypeInstSig& sig, const generic_param_stack& newStack) {
                     // NOTE: This will follow base types
-                    handle_generic_instantiation(data, sig, genericParams);
+                    handle_generic_instantiation(data, generic_instantiation(sig, newStack));
                 },
-                [&](const TypeDef& baseType) { check_generic_base_types(data, baseType, genericParams); },
+                [&](const TypeDef& baseType) {
+                    // NOTE: Deriving from non-generic type, so param stack irrelevant
+                    check_generic_base_types(data, baseType, {});
+                },
                 [](auto&&) {},
-            },
-            genericParams);
+            });
     }
 }
 
 static void check_generic_function_outputs(
-    projection_data& data, const TypeDef& typeDef, const generic_params& genericParams)
+    projection_data& data, const TypeDef& typeDef, const generic_param_stack& genericParamStack)
 {
-    auto checkType = [&](auto&& type) {
-        resolve_type(type,
+    auto checkType = [&](const TypeSig& sig) {
+        resolve_type(sig, genericParamStack,
             overloaded{
-                [&](const GenericTypeInstSig& sig, bool) { handle_generic_instantiation(data, sig, genericParams); },
+                [&](const GenericTypeInstSig& sig, const generic_param_stack& newStack, bool) {
+                    handle_generic_instantiation(data, generic_instantiation(sig, newStack));
+                },
+                // TODO: In theory, we could be returning a non-projected type that derives from a generic type. In that
+                // case, it would be ideal if those methods were still visible to JS, but that might be too much work to
+                // do here for the benefit
                 [](auto&&, bool) {},
-            },
-            genericParams);
+            });
     };
 
     for (auto&& method : typeDef.MethodList())
@@ -613,34 +607,35 @@ static void check_generic_function_outputs(
     }
 }
 
-static void handle_generic_instantiation(
-    projection_data& data, const GenericTypeInstSig& sig, const generic_params& parentParams)
+static void handle_generic_instantiation(projection_data& data, generic_instantiation&& inst)
 {
+    // Some generic interfaces are projected away or handled differently
+    auto typeDef = generic_type_def(inst.signature());
+    if (get_category(typeDef) == category::delegate_type)
+        return;
+
+    if (typeDef.TypeNamespace() == foundation_namespace)
+    {
+        if ((typeDef.TypeName() == "IReference`1"sv) || (typeDef.TypeName() == "IAsyncActionWithProgress`1"sv) ||
+            (typeDef.TypeName() == "IAsyncOperationWithProgress`2"sv))
+            return;
+    }
+
     // First check to see if we've handled this type before
-    auto guid = get_interface_guid(sig, parentParams);
+    auto guid = get_interface_guid(inst);
     if (data.generic_instantiations.find(guid) != data.generic_instantiations.end())
         return;
 
-    data.generic_instantiations.insert(guid);
-    auto currParams = parentParams.create(sig);
+    auto itr = data.generic_instantiations.emplace(guid, nullptr).first;
 
-    // The generic params could, themselves, be generic. E.g. an 'IVector<IReference<T>>'
-    // TODO: Probably not actually necessary? We only care if one of these appears as an output, which we catch later
-#if 0
-    for (auto&& param : currParams.params)
-    {
-        if (auto paramSig = std::get_if<GenericTypeInstSig>(&param))
-        {
-            handle_generic_instantiation(data, *paramSig, {}); // TODO: parentParams, right?
-        }
-    }
-#endif
+    // NOTE: The generic params could, themselves, be generic. E.g. an 'IVector<IReference<T>>', however we don't
+    // actually care about that unless that fact is actually observable in JS, which the following will catch
+    check_generic_base_types(data, typeDef, inst.stack());
+    check_generic_function_outputs(data, typeDef, inst.stack());
 
-    auto typeDef = generic_type_def(sig);
-    check_generic_base_types(data, typeDef, currParams);
-    check_generic_function_outputs(data, typeDef, currParams);
+    itr->second = std::make_unique<generic_interface_instantiation>(std::move(inst), guid);
+    data.interfaces.push_back(itr->second.get());
 }
-#endif
 
 void parse_metadata(const Settings& settings, projection_data& data)
 {
@@ -659,8 +654,8 @@ void parse_metadata(const Settings& settings, projection_data& data)
         currNs = get_namespace(data, fullName, currNs);
         parse_typedefs(settings, data, members.classes, currNs->class_children, [&](class_projection_data* classData) {
             currNs->named_children.push_back(classData);
-            // check_generic_base_types(data, classData->type_def, {});
-            // check_generic_function_outputs(data, classData->type_def, {});
+            check_generic_base_types(data, classData->type_def, {});
+            check_generic_function_outputs(data, classData->type_def, {});
         });
         parse_typedefs(settings, data, members.enums, currNs->enum_children, [&](enum_projection_data* enumData) {
             currNs->named_children.push_back(enumData);
@@ -668,28 +663,29 @@ void parse_metadata(const Settings& settings, projection_data& data)
         parse_typedefs(
             settings, data, members.structs, currNs->struct_children, [&](struct_projection_data* structData) {
                 // Structs can have 'IReference<T>' members, so we need to check their fields
-                // for (auto&& field : structData->type_def.FieldList())
-                // {
-                //     auto sig = field.Signature();
-                //     resolve_type(sig.Type(), overloaded{
-                //                                  [&](const GenericTypeInstSig& inst, bool isArray) {
-                //                                      assert(!isArray);
-                //                                      handle_generic_instantiation(data, inst, {});
-                //                                  },
-                //                                  [](auto&&, bool) {},
-                //                              });
-                // }
+                for (auto&& field : structData->type_def.FieldList())
+                {
+                    auto sig = field.Signature();
+                    resolve_type(sig.Type(), {},
+                        overloaded{
+                            [&](const GenericTypeInstSig& sig, const generic_param_stack&, bool isArray) {
+                                assert(!isArray);
+                                handle_generic_instantiation(data, generic_instantiation(sig));
+                            },
+                            [](auto&&, bool) {},
+                        });
+                }
             });
         parse_typedefs(
             settings, data, members.delegates, currNs->delegate_children, [&](delegate_projection_data* delegateData) {
                 // Delegates can have out/return values for the Invoke function
-                // check_generic_function_outputs(data, delegateData->type_def, {});
+                check_generic_function_outputs(data, delegateData->type_def, {});
             });
         parse_typedefs(
             settings, data, members.interfaces, currNs->interface_children, [&](interface_projection_data* ifaceData) {
                 data.interfaces.push_back(ifaceData);
-                // check_generic_base_types(data, ifaceData->type_def, {});
-                // check_generic_function_outputs(data, ifaceData->type_def, {});
+                check_generic_base_types(data, ifaceData->type_def, {});
+                check_generic_function_outputs(data, ifaceData->type_def, {});
             });
     }
 }

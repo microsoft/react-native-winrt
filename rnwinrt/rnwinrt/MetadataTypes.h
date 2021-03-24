@@ -1,6 +1,6 @@
 #pragma once
 
-#include <unordered_set>
+#include <unordered_map>
 
 #include "MetadataHelpers.h"
 
@@ -41,7 +41,7 @@ struct function_signature
     param_iterator param_begin() const
     {
         auto [paramBegin, paramEnd] = method_def.ParamList();
-        if (has_return_value && (paramBegin != paramEnd))
+        if (has_return_value && (paramBegin != paramEnd) && (paramBegin.Sequence() == 0))
             ++paramBegin;
         return param_iterator(signature.Params().first, paramBegin);
     }
@@ -105,9 +105,9 @@ struct event_data
                 [&](const TypeDef& typeDef, bool isArray) {
                     assert(!isArray && (get_category(typeDef) == category::delegate_type));
                 },
-                [&](generic_instantiation&& inst, bool isArray) {
+                [&](const GenericTypeInstSig& sig, const generic_param_stack&, bool isArray) {
                     assert(!isArray);
-                    auto genericType = generic_type_def(inst.signature);
+                    auto genericType = generic_type_def(sig);
                     assert(get_category(genericType) == category::delegate_type);
                 },
                 [&](auto&&, bool) { assert(false); },
@@ -215,7 +215,7 @@ struct interface_instance
     {
     }
 
-    virtual void write_cpp_name(jswinrt_writer& writer) = 0;
+    virtual void write_cpp_name(jswinrt_writer& writer, std::string_view typeNameMod) = 0;
 };
 
 struct interface_projection_data : interface_instance
@@ -225,7 +225,7 @@ struct interface_projection_data : interface_instance
     {
     }
 
-    virtual void write_cpp_name(jswinrt_writer& writer) override;
+    virtual void write_cpp_name(jswinrt_writer& writer, std::string_view typeNameMod) override;
 
     winmd::reader::TypeDef type_def;
     interface_method_data methods;
@@ -233,12 +233,14 @@ struct interface_projection_data : interface_instance
 
 struct generic_interface_instantiation : interface_instance
 {
-    // generic_interface_instantiation(const winmd::reader::GenericTypeInstSig& sig);
+    generic_interface_instantiation(generic_instantiation inst, const GUID& iid) :
+        interface_instance(iid), instantiation(std::move(inst))
+    {
+    }
 
-    virtual void write_cpp_name(jswinrt_writer& writer) override;
+    virtual void write_cpp_name(jswinrt_writer& writer, std::string_view typeNameMod) override;
 
     generic_instantiation instantiation;
-    // TODO: ? winmd::reader::TypeDef type_def;
 };
 
 struct struct_projection_data
@@ -297,7 +299,7 @@ struct projection_data
     // In theory, having to go all the way and calculate each instantiation's GUID is potentially inefficient - e.g.
     // compared to just generating a string representing the type - however it's only just one more step, and arguably
     // the hash function is faster.
-    std::unordered_set<GUID> generic_instantiations;
+    std::unordered_map<GUID, std::unique_ptr<generic_interface_instantiation>> generic_instantiations;
 };
 
 void parse_metadata(const Settings& settings, projection_data& data);

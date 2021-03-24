@@ -80,9 +80,10 @@ namespace jswinrt
 
     for (auto iface : data.interfaces)
     {
-        auto writeName = [&](jswinrt_writer& w) { iface->write_cpp_name(w); };
         writer.write_fmt(
-            "\n        { winrt::guid_of<winrt::%>(), &jswinrt::interfaces::%::data },", writeName, writeName);
+            "\n        { winrt::guid_of<winrt::%>(), &jswinrt::interfaces::% },",
+            [&](jswinrt_writer& w) { iface->write_cpp_name(w, ""sv); },
+            [&](jswinrt_writer& w) { iface->write_cpp_name(w, "::data"sv); });
 #if 1 // For IID gen validation
         writer.write_fmt(" // %", fmt_guid{ iface->iid });
 #endif
@@ -328,7 +329,7 @@ static void write_cppwinrt_type(jswinrt_writer& writer, ElementType elemType)
 
 static void write_cppwinrt_type(jswinrt_writer& writer, const TypeDef& typeDef)
 {
-    assert(distance(typeDef.GenericParam()) == 0);
+    assert(!is_generic(typeDef));
     writer.write_fmt("winrt::%", cpp_typename{ typeDef });
 }
 
@@ -337,39 +338,47 @@ static void write_cppwinrt_type(jswinrt_writer& writer, system_guid_t)
     writer.write("winrt::guid");
 }
 
-static void write_cppwinrt_type(jswinrt_writer& writer, const TypeSig& sig);
+static void write_cppwinrt_type(
+    jswinrt_writer& writer, const TypeSig& sig, const generic_param_stack& genericParamStack);
 
-static void write_cppwinrt_type(jswinrt_writer& writer, const generic_instantiation& inst)
+static void write_cppwinrt_type(
+    jswinrt_writer& writer, const GenericTypeInstSig& sig, const generic_param_stack& genericParamStack)
 {
-    // This function is currently intended to be used for "root" instantiations
-    assert(inst.params.values.size() == 1);
-
-    auto [ns, name] = get_type_namespace_and_name(inst.signature.GenericType());
+    auto [ns, name] = get_type_namespace_and_name(sig.GenericType());
     writer.write_fmt("winrt::%<", cpp_typename{ ns, remove_tick(name) });
 
     std::string_view prefix;
-    for (auto&& arg : inst.signature.GenericArgs())
+    for (auto&& arg : sig.GenericArgs())
     {
         writer.write(prefix);
-        write_cppwinrt_type(writer, arg);
+        write_cppwinrt_type(writer, arg, genericParamStack);
         prefix = ", ";
     }
 
     writer.write(">");
 }
 
-static void write_cppwinrt_type(jswinrt_writer& writer, const TypeSig& sig)
+static void write_cppwinrt_type(
+    jswinrt_writer& writer, const TypeSig& sig, const generic_param_stack& genericParamStack)
 {
-    resolve_type(sig, {}, [&](auto&& value, bool isArray) {
-        if (isArray)
-            __debugbreak(); // TODO
-        write_cppwinrt_type(writer, value);
-    });
+    resolve_type(sig, genericParamStack,
+        overloaded{
+            [&](const GenericTypeInstSig& genericSig, const generic_param_stack& newStack, bool isArray) {
+                if (isArray)
+                    __debugbreak(); // TODO
+                write_cppwinrt_type(writer, genericSig, newStack);
+            },
+            [&](auto&& value, bool isArray) {
+                if (isArray)
+                    __debugbreak(); // TODO
+                write_cppwinrt_type(writer, value);
+            },
+        });
 }
 
 static void write_cppwinrt_type(jswinrt_writer& writer, const param_iterator& param)
 {
-    resolve_type(param.signature(), {}, [&](auto&& value, bool isArray) {
+    auto writeArrayBegin = [&](bool isArray) {
         if (isArray)
         {
             if (param.is_input())
@@ -387,39 +396,56 @@ static void write_cppwinrt_type(jswinrt_writer& writer, const param_iterator& pa
                 writer.write("winrt::com_array<");
             }
         }
+    };
 
-        write_cppwinrt_type(writer, value);
-
+    auto writeArrayEnd = [&](bool isArray) {
         if (isArray)
         {
             writer.write(">");
         }
-    });
+    };
+
+    // NOTE: We don't manually project generic types, so we can ge away with assuming an empty generic param stack
+    resolve_type(param.signature(), {},
+        overloaded{
+            [&](const GenericTypeInstSig& sig, const generic_param_stack& newStack, bool isArray) {
+                writeArrayBegin(isArray);
+                write_cppwinrt_type(writer, sig, newStack);
+                writeArrayEnd(isArray);
+            },
+            [&](auto&& value, bool isArray) {
+                writeArrayBegin(isArray);
+                write_cppwinrt_type(writer, value);
+                writeArrayEnd(isArray);
+            },
+        });
 }
 
 static void write_cppwinrt_type_initializer(jswinrt_writer& writer, const TypeSig& type)
 {
     // Classes need to be initialized with 'nullptr' because otherwise it's a constructor invocation
-    resolve_type(type, {}, overloaded{
-                           [&](const TypeDef& type) {
-                               auto c = get_category(type);
-                               if (c == category::class_type)
-                               {
-                                   writer.write("{ nullptr }");
-                               }
-                           },
-                           [&](const TypeDef& type, bool isArray) {
-                               if (isArray)
-                                   return; // TODO: Safe to do this?
+    // NOTE: Similar to the above, we aren't projecting generic types, so we can get away with an empty param stack
+    resolve_type(type, {},
+        overloaded{
+            [&](const TypeDef& type) {
+                auto c = get_category(type);
+                if (c == category::class_type)
+                {
+                    writer.write("{ nullptr }");
+                }
+            },
+            [&](const TypeDef& type, bool isArray) {
+                if (isArray)
+                    return; // TODO: Safe to do this?
 
-                               auto c = get_category(type);
-                               if (c == category::class_type)
-                               {
-                                   writer.write("{ nullptr }");
-                               }
-                           },
-                           [&](auto&&...) {},
-                       });
+                auto c = get_category(type);
+                if (c == category::class_type)
+                {
+                    writer.write("{ nullptr }");
+                }
+            },
+            [&](auto&&...) {},
+        });
 }
 
 static void write_params_value_to_native(jswinrt_writer& writer, const function_signature& fn, int indentLevel)
@@ -499,7 +525,7 @@ static void write_native_function_params(jswinrt_writer& writer, const function_
                             writer.write(" const&");
                         }
                     },
-                    [&](generic_instantiation&&, bool) { writer.write(" const&"); },
+                    [&](const GenericTypeInstSig&, const generic_param_stack&, bool) { writer.write(" const&"); },
                     [&](system_guid_t, bool) {},
                 });
         }
@@ -629,7 +655,7 @@ namespace jswinrt::classes::%
             }
         },)^-^",
                 event_name{ data.name }, cpp_typename{ classData.type_def }, data.name,
-                [&](jswinrt_writer& w) { write_cppwinrt_type(w, data.type); }, cpp_typename{ classData.type_def },
+                [&](jswinrt_writer& w) { write_cppwinrt_type(w, data.type, {}); }, cpp_typename{ classData.type_def },
                 data.name);
         }
 
@@ -828,7 +854,7 @@ namespace jswinrt::interfaces::%
             }
         },)^-^",
                 event_name{ data.name }, cpp_typename{ ifaceData.type_def }, data.name,
-                [&](jswinrt_writer& w) { write_cppwinrt_type(w, data.type); }, cpp_typename{ ifaceData.type_def },
+                [&](jswinrt_writer& w) { write_cppwinrt_type(w, data.type, {}); }, cpp_typename{ ifaceData.type_def },
                 data.name);
         }
 
@@ -1026,7 +1052,8 @@ namespace jswinrt::namespaces::%
                 writer.write_fmt(R"^-^(        if (auto field = obj.getProperty(runtime, "%"); !field.isUndefined())
             result.% = convert_value_to_native<%>(runtime, field);
 )^-^",
-                    camel_case{ field.Name() }, field.Name(), [&](jswinrt_writer& w) { write_cppwinrt_type(w, sig.Type()); });
+                    camel_case{ field.Name() }, field.Name(),
+                    [&](jswinrt_writer& w) { write_cppwinrt_type(w, sig.Type(), {}); });
             }
 
             writer.write("        return result;\n    }\n");
@@ -1092,7 +1119,7 @@ namespace jswinrt::namespaces::%
                 //
                 writer.write_fmt(R"^-^(
             % returnValue%;)^-^",
-                    [&](jswinrt_writer& w) { write_cppwinrt_type(w, fn.signature.ReturnType().Type()); },
+                    [&](jswinrt_writer& w) { write_cppwinrt_type(w, fn.signature.ReturnType().Type(), {}); },
                     [&](jswinrt_writer& w) { write_cppwinrt_type_initializer(w, fn.signature.ReturnType().Type()); });
             }
 
@@ -1119,13 +1146,13 @@ namespace jswinrt::namespaces::%
                     // This is a bit different than below since we need to "extract" the value
                     writer.write_fmt(R"^-^(
                 returnValue = convert_value_to_native<%>(runtime, obj.getProperty(runtime, "returnValue"));)^-^",
-                        [&](jswinrt_writer& w) { write_cppwinrt_type(w, fn.signature.ReturnType().Type()); });
+                        [&](jswinrt_writer& w) { write_cppwinrt_type(w, fn.signature.ReturnType().Type(), {}); });
                 }
             }
             else if (fn.has_return_value)
             {
                 writer.write_fmt("\n                returnValue = convert_value_to_native<%>(runtime, result);",
-                    [&](jswinrt_writer& w) { write_cppwinrt_type(w, fn.signature.ReturnType().Type()); });
+                    [&](jswinrt_writer& w) { write_cppwinrt_type(w, fn.signature.ReturnType().Type(), {}); });
             }
 
             writer.write(R"^-^(
@@ -1257,26 +1284,27 @@ void cpp_typename::operator()(jswinrt_writer& writer) const
     writer.write(type_name);
 }
 
-void interface_projection_data::write_cpp_name(jswinrt_writer& writer)
+void interface_projection_data::write_cpp_name(jswinrt_writer& writer, std::string_view typeNameMod)
 {
     cpp_typename{ type_def }(writer);
+    writer.write(typeNameMod);
 }
 
-void generic_interface_instantiation::write_cpp_name(jswinrt_writer& writer)
+void generic_interface_instantiation::write_cpp_name(jswinrt_writer& writer, std::string_view typeNameMod)
 {
-#if 0
-    writer.write_fmt("%<", cpp_typename{ type_def.TypeNamespace(), remove_tick(type_def.TypeName()) });
+    auto& sig = instantiation.signature();
+    auto typeDef = generic_type_def(sig);
+    writer.write_fmt("%%<", cpp_typename{ typeDef.TypeNamespace(), remove_tick(typeDef.TypeName()) }, typeNameMod);
 
     std::string_view prefix;
-    for (auto&& genericParam : params.params)
+    auto genericParamStack = instantiation.parent_stack();
+    for (auto&& param : sig.GenericArgs())
     {
-        writer.write(prefix);
+        writer.write_fmt("%%", prefix, [&](jswinrt_writer& w) { write_cppwinrt_type(w, param, genericParamStack); });
         prefix = ", "sv;
-        std::visit([&](auto&& value) { write_cppwinrt_type(writer, value); }, genericParam);
     }
 
     writer.write(">");
-#endif
 }
 
 

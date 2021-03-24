@@ -2569,7 +2569,7 @@ namespace jswinrt
             return
                 [ctxt = current_runtime_context()->add_reference(), fn = value.asObject(runtime).asFunction(runtime)](
                     const winrt::Windows::Foundation::Collections::IObservableMap<K, V>& sender,
-                    const winrt::Windows::Foundation::Collections::IMapChangedEventArgs<K, V>& args) {
+                    const winrt::Windows::Foundation::Collections::IMapChangedEventArgs<K>& args) {
                     ctxt->call_sync([&]() {
                         fn.call(ctxt->runtime, convert_native_to_value(ctxt->runtime, sender),
                             convert_native_to_value(ctxt->runtime, args));
@@ -2621,10 +2621,11 @@ namespace jswinrt
 // Static data for generic types
 namespace jswinrt
 {
-    namespace Windows::Foundation
+    namespace interfaces::Windows::Foundation
     {
         using winrt::Windows::Foundation::IInspectable;
 
+#if 0
         namespace IAsyncActionWithProgress
         {
             template <typename TProgress>
@@ -2670,8 +2671,9 @@ namespace jswinrt
             };
 
             template <typename TProgress>
-            constexpr const static_interface_data* data = &data_t<TProgress>::value;
+            constexpr const static_interface_data& data = data_t<TProgress>::value;
         }
+#endif
 
         namespace IAsyncOperation
         {
@@ -2693,7 +2695,7 @@ namespace jswinrt
 
                 static constexpr const static_interface_data::function_mapping functions[] = {
                     { "getResults",
-                        [](jsi::Runtime& runtime, const IInspectable thisValue, const jsi::Value*) {
+                        [](jsi::Runtime& runtime, const IInspectable& thisValue, const jsi::Value*) {
                             return convert_native_to_value(runtime, thisValue.as<native_type>().GetResults());
                         },
                         0, false },
@@ -2709,9 +2711,10 @@ namespace jswinrt
             };
 
             template <typename TResult>
-            constexpr const static_interface_data* data = &data_t<TResult>::value;
+            constexpr const static_interface_data& data = data_t<TResult>::value;
         }
 
+#if 0
         namespace IAsyncOperationWithProgress
         {
             template <typename TResult, typename TProgress>
@@ -2757,11 +2760,12 @@ namespace jswinrt
             };
 
             template <typename TResult, typename TProgress>
-            constexpr const static_interface_data* data = &data_t<TResult, TProgress>::value;
+            constexpr const static_interface_data& data = data_t<TResult, TProgress>::value;
         }
+#endif
     }
 
-    namespace Windows::Foundation::Collections
+    namespace interfaces::Windows::Foundation::Collections
     {
         using winrt::Windows::Foundation::IInspectable;
 
@@ -2789,7 +2793,7 @@ namespace jswinrt
             };
 
             template <typename T>
-            constexpr const static_interface_data* data = &data_t<T>::value;
+            constexpr const static_interface_data& data = data_t<T>::value;
         }
 
         namespace IIterator
@@ -2836,7 +2840,7 @@ namespace jswinrt
             };
 
             template <typename T>
-            constexpr const static_interface_data* data = &data_t<T>::value;
+            constexpr const static_interface_data& data = data_t<T>::value;
         }
 
         namespace IKeyValuePair
@@ -2869,7 +2873,7 @@ namespace jswinrt
             };
 
             template <typename K, typename V>
-            constexpr const static_interface_data* data = &data_t<K, V>::value;
+            constexpr const static_interface_data& data = data_t<K, V>::value;
         }
 
         namespace IMap
@@ -2914,13 +2918,13 @@ namespace jswinrt
                         2, false },
                     { "lookup",
                         [](jsi::Runtime& runtime, const IInspectable& thisValue, const jsi::Value* args) {
-                            auto key = convert_value_to_native<K>(args[0]);
+                            auto key = convert_value_to_native<K>(runtime, args[0]);
                             return convert_native_to_value(runtime, thisValue.as<native_type>().Lookup(key));
                         },
                         1, false },
                     { "remove",
                         [](jsi::Runtime& runtime, const IInspectable& thisValue, const jsi::Value* args) {
-                            auto key = convert_value_to_native<K>(args[0]);
+                            auto key = convert_value_to_native<K>(runtime, args[0]);
                             thisValue.as<native_type>().Remove(key);
                             return jsi::Value::undefined();
                         },
@@ -2937,7 +2941,7 @@ namespace jswinrt
             };
 
             template <typename K, typename V>
-            constexpr const static_interface_data* data = &data_t<K, V>::value;
+            constexpr const static_interface_data& data = data_t<K, V>::value;
         }
 
         namespace IMapChangedEventArgs
@@ -2970,7 +2974,7 @@ namespace jswinrt
             };
 
             template <typename K>
-            constexpr const static_interface_data* data = &data_t<K>::value;
+            constexpr const static_interface_data& data = data_t<K>::value;
         }
 
         namespace IMapView
@@ -2997,7 +3001,7 @@ namespace jswinrt
                         1, false },
                     { "lookup",
                         [](jsi::Runtime& runtime, const IInspectable& thisValue, const jsi::Value* args) {
-                            auto key = convert_value_to_native<K>(args[0]);
+                            auto key = convert_value_to_native<K>(runtime, args[0]);
                             return convert_native_to_value(runtime, thisValue.as<native_type>().Lookup(key));
                         },
                         1, false },
@@ -3021,7 +3025,7 @@ namespace jswinrt
             };
 
             template <typename K, typename V>
-            constexpr const static_interface_data* data = &data_t<K, V>::value;
+            constexpr const static_interface_data& data = data_t<K, V>::value;
         }
 
         namespace IObservableMap
@@ -3039,8 +3043,9 @@ namespace jswinrt
                                 runtime, callback);
                             return thisValue.as<native_type>().MapChanged(handler);
                         },
-                        [](jsi::Runtime& runtime, const IInspectable& thisValue, const jsi::Value& callback,
-                            winrt::event_token token) { thisValue.as<native_type>().MapChanged(token); } },
+                        [](const IInspectable& thisValue, winrt::event_token token) {
+                            thisValue.as<native_type>().MapChanged(token);
+                        } },
                 };
             };
 
@@ -3053,7 +3058,7 @@ namespace jswinrt
             };
 
             template <typename K, typename V>
-            constexpr const static_interface_data* data = &data_t<K, V>::value;
+            constexpr const static_interface_data& data = data_t<K, V>::value;
         }
 
         namespace IObservableVector
@@ -3071,8 +3076,9 @@ namespace jswinrt
                                 runtime, callback);
                             return thisValue.as<native_type>().VectorChanged(handler);
                         },
-                        [](jsi::Runtime& runtime, const IInspectable& thisValue, const jsi::Value& callback,
-                            winrt::event_token token) { thisValue.as<native_type>().VectorChanged(token); } },
+                        [](const IInspectable& thisValue, winrt::event_token token) {
+                            thisValue.as<native_type>().VectorChanged(token);
+                        } },
                 };
             };
 
@@ -3085,7 +3091,7 @@ namespace jswinrt
             };
 
             template <typename T>
-            constexpr const static_interface_data* data = &data_t<T>::value;
+            constexpr const static_interface_data& data = data_t<T>::value;
         }
 
         namespace IVector
@@ -3138,7 +3144,7 @@ namespace jswinrt
                         0, false },
                     { "indexOf",
                         [](jsi::Runtime& runtime, const IInspectable& thisValue, const jsi::Value* args) {
-                            auto value = convert_value_to_native<T>(args[0]);
+                            auto value = convert_value_to_native<T>(runtime, args[0]);
                             uint32_t index;
                             auto returnValue = thisValue.as<native_type>().IndexOf(value, index);
                             return make_return_struct(runtime, returnValue, "index", index);
@@ -3160,7 +3166,7 @@ namespace jswinrt
                         },
                         1, false },
                     { "removeAtEnd",
-                        [](jsi::Runtime& runtime, const IInspectable& thisValue, const jsi::Value*) {
+                        [](jsi::Runtime&, const IInspectable& thisValue, const jsi::Value*) {
                             thisValue.as<native_type>().RemoveAtEnd();
                             return jsi::Value::undefined();
                         },
@@ -3168,7 +3174,8 @@ namespace jswinrt
                     { "replaceAll",
                         [](jsi::Runtime& runtime, const IInspectable& thisValue, const jsi::Value* args) {
                             auto items = convert_value_to_native<winrt::array_view<const T>>(runtime, args[0]);
-                            return convert_native_to_value(runtime, thisValue.as<native_type>().ReplaceAll(items));
+                            thisValue.as<native_type>().ReplaceAll(items);
+                            return jsi::Value::undefined();
                         },
                         1, false },
                     { "setAt",
@@ -3191,7 +3198,7 @@ namespace jswinrt
             };
 
             template <typename T>
-            constexpr const static_interface_data* data = &data_t<T>::value;
+            constexpr const static_interface_data& data = data_t<T>::value;
         }
 
         namespace IVectorView
@@ -3226,7 +3233,7 @@ namespace jswinrt
                         2, false },
                     { "indexOf",
                         [](jsi::Runtime& runtime, const IInspectable& thisValue, const jsi::Value* args) {
-                            auto value = convert_value_to_native<T>(args[0]);
+                            auto value = convert_value_to_native<T>(runtime, args[0]);
                             uint32_t index;
                             auto returnValue = thisValue.as<native_type>().IndexOf(value, index);
                             return make_return_struct(runtime, returnValue, "index", index);
@@ -3244,7 +3251,7 @@ namespace jswinrt
             };
 
             template <typename T>
-            constexpr const static_interface_data* data = &data_t<T>::value;
+            constexpr const static_interface_data& data = data_t<T>::value;
         }
     }
 }
