@@ -30,51 +30,51 @@ const enumValuesToAdd = [2, 3, 4, 1];
 
 const compositeVectorContents = [
     {
-        numerics: { u8: 0, u16: 0, u32: 0, u64: 0, s16: 0, s32: 0, s64: 0, f32: 0, f64: 0, e: 1 },
-        strings: { ch: 'a', str: 'aaa', guid: guidVectorContents[0] },
-        bools: { b: true }
+        numerics: { u8: 0, u16: 0, u32: 0, u64: 0, s16: 0, s32: 0, s64: 0, f32: 0, f64: 0, enum: 1 },
+        strings: { char: 'a', string: 'aaa', guid: guidVectorContents[0] },
+        bools: { value: true }
     },
     {
-        numerics: { u8: 1, u16: 1, u32: 1, u64: 1, s16: 1, s32: 1, s64: 1, f32: 1, f64: 1, e: 2 },
-        strings: { ch: 'b', str: 'bbb', guid: guidVectorContents[1] },
-        bools: { b: false }
+        numerics: { u8: 1, u16: 1, u32: 1, u64: 1, s16: 1, s32: 1, s64: 1, f32: 1, f64: 1, enum: 2 },
+        strings: { char: 'b', string: 'bbb', guid: guidVectorContents[1] },
+        bools: { value: false }
     },
     {
-        numerics: { u8: 2, u16: 2, u32: 2, u64: 2, s16: 2, s32: 2, s64: 2, f32: 2, f64: 2, e: 3 },
-        strings: { ch: 'c', str: 'ccc', guid: guidVectorContents[2] },
-        bools: { b: true }
+        numerics: { u8: 2, u16: 2, u32: 2, u64: 2, s16: 2, s32: 2, s64: 2, f32: 2, f64: 2, enum: 3 },
+        strings: { char: 'c', string: 'ccc', guid: guidVectorContents[2] },
+        bools: { value: true }
     },
     {
-        numerics: { u8: 3, u16: 3, u32: 3, u64: 3, s16: 3, s32: 3, s64: 3, f32: 3, f64: 3, e: 4 },
-        strings: { ch: 'd', str: 'ddd', guid: guidVectorContents[3] },
-        bools: { b: false }
+        numerics: { u8: 3, u16: 3, u32: 3, u64: 3, s16: 3, s32: 3, s64: 3, f32: 3, f64: 3, enum: 4 },
+        strings: { char: 'd', string: 'ddd', guid: guidVectorContents[3] },
+        bools: { value: false }
     },
     {
-        numerics: { u8: 4, u16: 4, u32: 4, u64: 4, s16: 4, s32: 4, s64: 4, f32: 4, f64: 4, e: 1 },
-        strings: { ch: 'e', str: 'eee', guid: guidVectorContents[4] },
-        bools: { b: true }
+        numerics: { u8: 4, u16: 4, u32: 4, u64: 4, s16: 4, s32: 4, s64: 4, f32: 4, f64: 4, enum: 1 },
+        strings: { char: 'e', string: 'eee', guid: guidVectorContents[4] },
+        bools: { value: true }
     },
 ];
 const compositeValuesToAdd = [
     {
-        numerics: { u8: 5, u16: 5, u32: 5, u64: 5, s16: 5, s32: 5, s64: 5, f32: 5, f64: 5, e: 2 },
-        strings: { ch: 'f', str: 'fff', guid: guidValuesToAdd[0] },
-        bools: { b: false }
+        numerics: { u8: 5, u16: 5, u32: 5, u64: 5, s16: 5, s32: 5, s64: 5, f32: 5, f64: 5, enum: 2 },
+        strings: { char: 'f', string: 'fff', guid: guidValuesToAdd[0] },
+        bools: { value: false }
     },
     {
-        numerics: { u8: 6, u16: 6, u32: 6, u64: 6, s16: 6, s32: 6, s64: 6, f32: 6, f64: 6, e: 3 },
-        strings: { ch: 'g', str: 'ggg', guid: guidValuesToAdd[1] },
-        bools: { b: true }
+        numerics: { u8: 6, u16: 6, u32: 6, u64: 6, s16: 6, s32: 6, s64: 6, f32: 6, f64: 6, enum: 3 },
+        strings: { char: 'g', string: 'ggg', guid: guidValuesToAdd[1] },
+        bools: { value: true }
     },
     {
-        numerics: { u8: 6, u16: 6, u32: 6, u64: 6, s16: 6, s32: 6, s64: 6, f32: 6, f64: 6, e: 4 },
-        strings: { ch: 'h', str: 'hhh', guid: guidValuesToAdd[2] },
-        bools: { b: false }
+        numerics: { u8: 6, u16: 6, u32: 6, u64: 6, s16: 6, s32: 6, s64: 6, f32: 6, f64: 6, enum: 4 },
+        strings: { char: 'h', string: 'hhh', guid: guidValuesToAdd[2] },
+        bools: { value: false }
     },
     {
-        numerics: { u8: 7, u16: 7, u32: 7, u64: 7, s16: 7, s32: 7, s64: 7, f32: 7, f64: 7, e: 1 },
-        strings: { ch: 'i', str: 'iii', guid: guidValuesToAdd[3] },
-        bools: { b: true }
+        numerics: { u8: 7, u16: 7, u32: 7, u64: 7, s16: 7, s32: 7, s64: 7, f32: 7, f64: 7, enum: 1 },
+        strings: { char: 'i', string: 'iii', guid: guidValuesToAdd[3] },
+        bools: { value: true }
     },
 ];
 

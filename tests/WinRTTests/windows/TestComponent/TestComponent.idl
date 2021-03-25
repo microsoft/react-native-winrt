@@ -21,16 +21,16 @@ namespace TestComponent
     [contract(TestContract, 1)]
     struct NumericTypes
     {
-        UInt8 u8;
-        UInt16 u16;
-        UInt32 u32;
-        UInt64 u64;
-        Int16 s16;
-        Int32 s32;
-        Int64 s64;
-        Single f32;
-        Double f64;
-        TestEnum e;
+        UInt8 U8;
+        UInt16 U16;
+        UInt32 U32;
+        UInt64 U64;
+        Int16 S16;
+        Int32 S32;
+        Int64 S64;
+        Single F32;
+        Double F64;
+        TestEnum Enum;
 
         // TODO: IReference here and elsewhere? Or as its own?
     };
@@ -39,24 +39,24 @@ namespace TestComponent
     [contract(TestContract, 1)]
     struct StringTypes
     {
-        Char ch;
-        String str;
-        Guid guid;
+        Char Char;
+        String String;
+        Guid Guid;
     };
 
     // All of these are represented as 'boolean' in JavaScript
     [contract(TestContract, 1)]
     struct BooleanTypes
     {
-        Boolean b;
+        Boolean Value;
     };
 
     [contract(TestContract, 1)]
     struct CompositeType
     {
-        NumericTypes numerics;
-        StringTypes strings;
-        BooleanTypes bools;
+        NumericTypes Numerics;
+        StringTypes Strings;
+        BooleanTypes Bools;
     };
 
     // Delegates

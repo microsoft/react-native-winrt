@@ -163,21 +163,21 @@ namespace winrt::TestComponent::implementation
     CompositeType Test::StaticCompositeStructOutParam(
         CompositeType const& input, CompositeType& first, CompositeType& second)
     {
-        auto& num = input.numerics;
-        auto& str = input.strings;
+        auto& num = input.Numerics;
+        auto& str = input.Strings;
 
-        first.numerics = { static_cast<uint8_t>(num.u8 + 1), static_cast<uint16_t>(num.u16 + 1), num.u32 + 1,
-            num.u64 + 1, num.s16 + 1, num.s32 + 1, num.s64 + 1, num.f32 + 1, num.f64 + 1,
-            static_cast<TestEnum>(static_cast<int>(num.e) + 1) };
-        first.strings = { static_cast<char16_t>(str.ch + 1), to_lower(str.str), {} };
-        first.bools = { !input.bools.b };
+        first.Numerics = { static_cast<uint8_t>(num.U8 + 1), static_cast<uint16_t>(num.U16 + 1), num.U32 + 1,
+            num.U64 + 1, num.S16 + 1, num.S32 + 1, num.S64 + 1, num.F32 + 1, num.F64 + 1,
+            static_cast<TestEnum>(static_cast<int>(num.Enum) + 1) };
+        first.Strings = { static_cast<char16_t>(str.Char + 1), to_lower(str.String), {} };
+        first.Bools = { !input.Bools.Value };
 
-        second.numerics = { static_cast<uint8_t>(num.u8 - 1), static_cast<uint16_t>(num.u16 - 1), num.u32 - 1,
-            num.u64 - 1, num.s16 - 1, num.s32 - 1, num.s64 - 1, num.f32 - 1, num.f64 - 1,
-            static_cast<TestEnum>(static_cast<int>(num.e) - 1) };
-        second.strings = { static_cast<char16_t>(str.ch - 1), to_upper(str.str),
+        second.Numerics = { static_cast<uint8_t>(num.U8 - 1), static_cast<uint16_t>(num.U16 - 1), num.U32 - 1,
+            num.U64 - 1, num.S16 - 1, num.S32 - 1, num.S64 - 1, num.F32 - 1, num.F64 - 1,
+            static_cast<TestEnum>(static_cast<int>(num.Enum) - 1) };
+        second.Strings = { static_cast<char16_t>(str.Char - 1), to_upper(str.String),
             { 0xFFFFFFFF, 0xFFFF, 0xFFFF, { 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF } } };
-        second.bools = { input.bools.b };
+        second.Bools = { input.Bools.Value };
 
         return input;
     }
@@ -332,24 +332,24 @@ namespace winrt::TestComponent::implementation
         for (auto& val : values)
         {
             val = next;
-            ++next.numerics.u8;
-            ++next.numerics.u16;
-            ++next.numerics.u32;
-            ++next.numerics.u64;
-            ++next.numerics.s16;
-            ++next.numerics.s32;
-            ++next.numerics.s64;
-            ++next.numerics.f32;
-            ++next.numerics.f64;
-            next.numerics.e = static_cast<TestEnum>(static_cast<int>(next.numerics.e) + 1);
-            ++next.strings.ch;
-            next.strings.str = std::wstring(next.strings.str.c_str(), next.strings.str.size()) + L"a";
-            ++next.strings.guid.Data1;
-            ++next.strings.guid.Data2;
-            ++next.strings.guid.Data3;
-            for (auto& byte : next.strings.guid.Data4)
+            ++next.Numerics.U8;
+            ++next.Numerics.U16;
+            ++next.Numerics.U32;
+            ++next.Numerics.U64;
+            ++next.Numerics.S16;
+            ++next.Numerics.S32;
+            ++next.Numerics.S64;
+            ++next.Numerics.F32;
+            ++next.Numerics.F64;
+            next.Numerics.Enum = static_cast<TestEnum>(static_cast<int>(next.Numerics.Enum) + 1);
+            ++next.Strings.Char;
+            next.Strings.String = std::wstring(next.Strings.String.c_str(), next.Strings.String.size()) + L"a";
+            ++next.Strings.Guid.Data1;
+            ++next.Strings.Guid.Data2;
+            ++next.Strings.Guid.Data3;
+            for (auto& byte : next.Strings.Guid.Data4)
                 ++byte;
-            next.bools.b = !next.bools.b;
+            next.Bools.Value = !next.Bools.Value;
         }
     }
 
@@ -1373,24 +1373,24 @@ namespace winrt::TestComponent::implementation
         for (auto& val : values)
         {
             val = next;
-            ++next.numerics.u8;
-            ++next.numerics.u16;
-            ++next.numerics.u32;
-            ++next.numerics.u64;
-            ++next.numerics.s16;
-            ++next.numerics.s32;
-            ++next.numerics.s64;
-            ++next.numerics.f32;
-            ++next.numerics.f64;
-            next.numerics.e = static_cast<TestEnum>(static_cast<int>(next.numerics.e) + 1);
-            ++next.strings.ch;
-            next.strings.str = std::wstring(next.strings.str.c_str(), next.strings.str.size()) + L"a";
-            ++next.strings.guid.Data1;
-            ++next.strings.guid.Data2;
-            ++next.strings.guid.Data3;
-            for (auto& byte : next.strings.guid.Data4)
+            ++next.Numerics.U8;
+            ++next.Numerics.U16;
+            ++next.Numerics.U32;
+            ++next.Numerics.U64;
+            ++next.Numerics.S16;
+            ++next.Numerics.S32;
+            ++next.Numerics.S64;
+            ++next.Numerics.F32;
+            ++next.Numerics.F64;
+            next.Numerics.Enum = static_cast<TestEnum>(static_cast<int>(next.Numerics.Enum) + 1);
+            ++next.Strings.Char;
+            next.Strings.String = std::wstring(next.Strings.String.c_str(), next.Strings.String.size()) + L"a";
+            ++next.Strings.Guid.Data1;
+            ++next.Strings.Guid.Data2;
+            ++next.Strings.Guid.Data3;
+            for (auto& byte : next.Strings.Guid.Data4)
                 ++byte;
-            next.bools.b = !next.bools.b;
+            next.Bools.Value = !next.Bools.Value;
         }
     }
 

@@ -205,22 +205,22 @@ function runStaticEnumOutParam(scenario) {
 function runStaticCompositeStructOutParam(scenario) {
     this.runSync(scenario, () => {
         var testVal = {
-            numerics: { u8: 8, u16: 16, u32: 32, u64: 64, s16: -16, s32: -32, s64: -64, f32: 32.5, f64: 64.64, e: TestComponent.TestEnum.second },
-            strings: { ch: 'F', str: 'Hello, world!', guid: '01234567-89AB-CDEF-0123-456789ABCDEF' },
-            bools: { b: true }
+            numerics: { u8: 8, u16: 16, u32: 32, u64: 64, s16: -16, s32: -32, s64: -64, f32: 32.5, f64: 64.64, enum: TestComponent.TestEnum.second },
+            strings: { char: 'F', string: 'Hello, world!', guid: '01234567-89AB-CDEF-0123-456789ABCDEF' },
+            bools: { value: true }
         };
 
         var { returnValue, first, second } = TestComponent.Test.staticCompositeStructOutParam(testVal);
         assert.equal(returnValue, testVal);
         assert.equal(first, {
-            numerics: { u8: 9, u16: 17, u32: 33, u64: 65, s16: -15, s32: -31, s64: -63, f32: 33.5, f64: 65.64, e: TestComponent.TestEnum.third },
-            strings: { ch: 'G', str: 'hello, world!', guid: zeroGuid },
-            bools: { b: false }
+            numerics: { u8: 9, u16: 17, u32: 33, u64: 65, s16: -15, s32: -31, s64: -63, f32: 33.5, f64: 65.64, enum: TestComponent.TestEnum.third },
+            strings: { char: 'G', string: 'hello, world!', guid: zeroGuid },
+            bools: { value: false }
         });
         assert.equal(second, {
-            numerics: { u8: 7, u16: 15, u32: 31, u64: 63, s16: -17, s32: -33, s64: -65, f32: 31.5, f64: 63.64, e: TestComponent.TestEnum.first },
-            strings: { ch: 'E', str: 'HELLO, WORLD!', guid: allSetGuid },
-            bools: { b: true }
+            numerics: { u8: 7, u16: 15, u32: 31, u64: 63, s16: -17, s32: -33, s64: -65, f32: 31.5, f64: 63.64, enum: TestComponent.TestEnum.first },
+            strings: { char: 'E', string: 'HELLO, WORLD!', guid: allSetGuid },
+            bools: { value: true }
         });
     });
 }
@@ -405,22 +405,22 @@ function runEnumOutParam(scenario) {
 function runCompositeStructOutParam(scenario) {
     this.runSync(scenario, () => {
         var testVal = {
-            numerics: { u8: 8, u16: 16, u32: 32, u64: 64, s16: -16, s32: -32, s64: -64, f32: 32.5, f64: 64.64, e: TestComponent.TestEnum.second },
-            strings: { ch: 'F', str: 'Hello, world!', guid: '01234567-89AB-CDEF-0123-456789ABCDEF' },
-            bools: { b: true }
+            numerics: { u8: 8, u16: 16, u32: 32, u64: 64, s16: -16, s32: -32, s64: -64, f32: 32.5, f64: 64.64, enum: TestComponent.TestEnum.second },
+            strings: { char: 'F', string: 'Hello, world!', guid: '01234567-89AB-CDEF-0123-456789ABCDEF' },
+            bools: { value: true }
         };
 
         var { returnValue, first, second } = this.test.compositeStructOutParam(testVal);
         assert.equal(returnValue, testVal);
         assert.equal(first, {
-            numerics: { u8: 9, u16: 17, u32: 33, u64: 65, s16: -15, s32: -31, s64: -63, f32: 33.5, f64: 65.64, e: TestComponent.TestEnum.third },
-            strings: { ch: 'G', str: 'hello, world!', guid: zeroGuid },
-            bools: { b: false }
+            numerics: { u8: 9, u16: 17, u32: 33, u64: 65, s16: -15, s32: -31, s64: -63, f32: 33.5, f64: 65.64, enum: TestComponent.TestEnum.third },
+            strings: { char: 'G', string: 'hello, world!', guid: zeroGuid },
+            bools: { value: false }
         });
         assert.equal(second, {
-            numerics: { u8: 7, u16: 15, u32: 31, u64: 63, s16: -17, s32: -33, s64: -65, f32: 31.5, f64: 63.64, e: TestComponent.TestEnum.first },
-            strings: { ch: 'E', str: 'HELLO, WORLD!', guid: allSetGuid },
-            bools: { b: true }
+            numerics: { u8: 7, u16: 15, u32: 31, u64: 63, s16: -17, s32: -33, s64: -65, f32: 31.5, f64: 63.64, enum: TestComponent.TestEnum.first },
+            strings: { char: 'E', string: 'HELLO, WORLD!', guid: allSetGuid },
+            bools: { value: true }
         });
     });
 }

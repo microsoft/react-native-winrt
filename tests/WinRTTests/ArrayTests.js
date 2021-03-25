@@ -270,10 +270,10 @@ function runStaticCompositeStructFillParam(scenario) {
             for (var val of arr) {
                 assert.equal(val, {
                     numerics: { u8: expectNumeric, u16: expectNumeric, u32: expectNumeric, u64: expectNumeric, s16: expectNumeric,
-                            s32: expectNumeric, s64: expectNumeric, f32: expectNumeric, f64: expectNumeric, e: expectNumeric },
-                    strings: { ch: String.fromCharCode(expectNumeric), str: expectString,
+                            s32: expectNumeric, s64: expectNumeric, f32: expectNumeric, f64: expectNumeric, enum: expectNumeric },
+                    strings: { char: String.fromCharCode(expectNumeric), string: expectString,
                         guid: makeGuid(expectNumeric, expectNumeric, expectNumeric, [expectNumeric, expectNumeric, expectNumeric, expectNumeric, expectNumeric, expectNumeric, expectNumeric, expectNumeric]) },
-                    bools: { b: expectBool }
+                    bools: { value: expectBool }
                 });
                 ++expectNumeric;
                 expectString += 'a';
@@ -498,10 +498,10 @@ function runCompositeStructFillParam(scenario) {
             for (var val of arr) {
                 assert.equal(val, {
                     numerics: { u8: expectNumeric, u16: expectNumeric, u32: expectNumeric, u64: expectNumeric, s16: expectNumeric,
-                            s32: expectNumeric, s64: expectNumeric, f32: expectNumeric, f64: expectNumeric, e: expectNumeric },
-                    strings: { ch: String.fromCharCode(expectNumeric), str: expectString,
+                            s32: expectNumeric, s64: expectNumeric, f32: expectNumeric, f64: expectNumeric, enum: expectNumeric },
+                    strings: { char: String.fromCharCode(expectNumeric), string: expectString,
                         guid: makeGuid(expectNumeric, expectNumeric, expectNumeric, [expectNumeric, expectNumeric, expectNumeric, expectNumeric, expectNumeric, expectNumeric, expectNumeric, expectNumeric]) },
-                    bools: { b: expectBool }
+                    bools: { value: expectBool }
                 });
                 ++expectNumeric;
                 expectString += 'a';

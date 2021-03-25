@@ -228,31 +228,31 @@ export const TestValues = {
     },
     numericTypes: {
         valid: [
-            { u8: 8, u16: 16, u32: 32, u64: 64, s16: -16, s32: -32, s64: -64, f32: 3.141590118408203125, f64: 6.02e23, e: TestComponent.TestEnum.first },
-            { u8: 255, u16: 65535, u32: 0xFFFFFFFF, u64: 0xFFFFFFFFFFFFF800, s16: -32768, s32: -0x80000000, s64: -0x7FFFFFFFFFFFFC00, f32: 9.80000019073486328125, f64: 6.67408e-11, e: TestComponent.TestEnum.second },
+            { u8: 8, u16: 16, u32: 32, u64: 64, s16: -16, s32: -32, s64: -64, f32: 3.141590118408203125, f64: 6.02e23, enum: TestComponent.TestEnum.first },
+            { u8: 255, u16: 65535, u32: 0xFFFFFFFF, u64: 0xFFFFFFFFFFFFF800, s16: -32768, s32: -0x80000000, s64: -0x7FFFFFFFFFFFFC00, f32: 9.80000019073486328125, f64: 6.67408e-11, enum: TestComponent.TestEnum.second },
         ],
         invalid: [
             {},
-            { u8: '8', u16: 16, u32: 32, u64: 64, s16: -16, s32: -32, s64: -64, f32: 3.14159, f64: 6.02e23, e: TestComponent.TestEnum.first },
-            { u8: 8, u16: 16, u32: 32, u64: 64, s16: -16, s32: -32, s64: -64, f32: 3.14159, f64: 6.02e23, e: TestComponent.TestEnum.first, extraProperty: 'This should not be here' },
+            { u8: '8', u16: 16, u32: 32, u64: 64, s16: -16, s32: -32, s64: -64, f32: 3.14159, f64: 6.02e23, enum: TestComponent.TestEnum.first },
+            { u8: 8, u16: 16, u32: 32, u64: 64, s16: -16, s32: -32, s64: -64, f32: 3.14159, f64: 6.02e23, enum: TestComponent.TestEnum.first, extraProperty: 'This should not be here' },
             { u8: 8, u16: 16, u32: 32, u64: 64, s16: -16, s32: -32, s64: -64, f32: 3.14159, f64: 6.02e23 },
         ],
     },
     stringTypes: {
         valid: [
-            { ch: '\0', str: '\0', guid: zeroGuid },
-            { ch: 'F', str: 'Hello, world!', guid: '01234567-89AB-CDEF-0123-456789ABCDEF' }
+            { char: '\0', string: '\0', guid: zeroGuid },
+            { char: 'F', string: 'Hello, world!', guid: '01234567-89AB-CDEF-0123-456789ABCDEF' }
         ],
         invalid: [
             {},
-            { ch: 65, str: 'Test', guid: zeroGuid },
-            { ch: 'A', str: 'Test', guid: zeroGuid, extraProperty: 42 },
-            { ch: 'A', str: 'Test' }
+            { char: 65, string: 'Test', guid: zeroGuid },
+            { char: 'A', string: 'Test', guid: zeroGuid, extraProperty: 42 },
+            { char: 'A', string: 'Test' }
         ],
     },
     boolTypes: {
-        valid: [ { b: true }, { b: false } ],
-        invalid: [ {}, { b: 'true' }, { b: 1 }, { b: true, extraProperty: 42 } ],
+        valid: [ { value: true }, { value: false } ],
+        invalid: [ {}, { value: 'true' }, { value: 1 }, { value: true, extraProperty: 42 } ],
     },
     dates: {
         valid: [new Date(2020, 2, 3, 4, 5, 6, 7)],
@@ -275,92 +275,92 @@ export const TestValues = {
     composite: {
         valid: [
             {
-                numerics: { u8: 8, u16: 16, u32: 32, u64: 64, s16: -16, s32: -32, s64: -64, f32: 3.141590118408203125, f64: 6.02e23, e: TestComponent.TestEnum.first },
-                strings: { ch: '\0', str: '\0', guid: zeroGuid },
-                bools: { b: true }
+                numerics: { u8: 8, u16: 16, u32: 32, u64: 64, s16: -16, s32: -32, s64: -64, f32: 3.141590118408203125, f64: 6.02e23, enum: TestComponent.TestEnum.first },
+                strings: { char: '\0', string: '\0', guid: zeroGuid },
+                bools: { value: true }
             },
             {
-                numerics: { u8: 255, u16: 65535, u32: 0xFFFFFFFF, u64: 0xFFFFFFFFFFFFF800, s16: -32768, s32: -0x80000000, s64: -0x7FFFFFFFFFFFFC00, f32: 9.80000019073486328125, f64: 6.67408e-11, e: TestComponent.TestEnum.second },
-                strings: { ch: 'F', str: 'Hello, world!', guid: allSetGuid },
-                bools: { b: false }
+                numerics: { u8: 255, u16: 65535, u32: 0xFFFFFFFF, u64: 0xFFFFFFFFFFFFF800, s16: -32768, s32: -0x80000000, s64: -0x7FFFFFFFFFFFFC00, f32: 9.80000019073486328125, f64: 6.67408e-11, enum: TestComponent.TestEnum.second },
+                strings: { char: 'F', string: 'Hello, world!', guid: allSetGuid },
+                bools: { value: false }
             },
             {
-                numerics: { u8: 0, u16: 0, u32: 0, u64: 0, s16: 0, s32: 0, s64: 0, f32: 0, f64: 0, e: TestComponent.TestEnum.third },
-                strings: { ch: '⚾', str: 'foo\0bar', guid: '01234567-89AB-CDEF-0123-456789ABCDEF' },
-                bools: { b: true }
+                numerics: { u8: 0, u16: 0, u32: 0, u64: 0, s16: 0, s32: 0, s64: 0, f32: 0, f64: 0, enum: TestComponent.TestEnum.third },
+                strings: { char: '⚾', string: 'foo\0bar', guid: '01234567-89AB-CDEF-0123-456789ABCDEF' },
+                bools: { value: true }
             }
         ],
         invalid: [
             {}, { numerics: {}, strings: {}, bools: {} },
             {
-                numerics: { u8: 8, u16: 16, u32: 32, u64: 64, s16: -16, s32: -32, s64: -64, f32: 3.141590118408203125, f64: 6.02e23, e: TestComponent.TestEnum.first },
-                strings: { ch: '\0', str: '\0', guid: zeroGuid }
+                numerics: { u8: 8, u16: 16, u32: 32, u64: 64, s16: -16, s32: -32, s64: -64, f32: 3.141590118408203125, f64: 6.02e23, enum: TestComponent.TestEnum.first },
+                strings: { char: '\0', string: '\0', guid: zeroGuid }
             },
             {
-                numerics: { u8: 8, u16: 16, u32: 32, u64: 64, s16: -16, s32: -32, s64: -64, f32: 3.141590118408203125, f64: 6.02e23, e: TestComponent.TestEnum.first },
-                strings: { ch: '\0', str: '\0', guid: zeroGuid },
-                bools: { b: true },
+                numerics: { u8: 8, u16: 16, u32: 32, u64: 64, s16: -16, s32: -32, s64: -64, f32: 3.141590118408203125, f64: 6.02e23, enum: TestComponent.TestEnum.first },
+                strings: { char: '\0', string: '\0', guid: zeroGuid },
+                bools: { value: true },
                 extraProperty: 'This should not be here'
             },
             {
-                numerics: { u8: 8, u16: 16, u32: 32, u64: 64, s16: -16, s32: -32, s64: -64, f32: 3.141590118408203125, f64: 6.02e23, e: TestComponent.TestEnum.first },
-                strings: { ch: '\0', str: '\0', guid: zeroGuid },
-                bools: { b: true, extraProperty: 'This should not be here' }
+                numerics: { u8: 8, u16: 16, u32: 32, u64: 64, s16: -16, s32: -32, s64: -64, f32: 3.141590118408203125, f64: 6.02e23, enum: TestComponent.TestEnum.first },
+                strings: { char: '\0', string: '\0', guid: zeroGuid },
+                bools: { value: true, extraProperty: 'This should not be here' }
             }
         ],
         validArrays: [
             [],
             [{
-                numerics: { u8: 8, u16: 16, u32: 32, u64: 64, s16: -16, s32: -32, s64: -64, f32: 3.141590118408203125, f64: 6.02e23, e: TestComponent.TestEnum.first },
-                strings: { ch: '\0', str: '\0', guid: zeroGuid },
-                bools: { b: true }
+                numerics: { u8: 8, u16: 16, u32: 32, u64: 64, s16: -16, s32: -32, s64: -64, f32: 3.141590118408203125, f64: 6.02e23, enum: TestComponent.TestEnum.first },
+                strings: { char: '\0', string: '\0', guid: zeroGuid },
+                bools: { value: true }
             }],
             [
                 {
-                    numerics: { u8: 8, u16: 16, u32: 32, u64: 64, s16: -16, s32: -32, s64: -64, f32: 3.141590118408203125, f64: 6.02e23, e: TestComponent.TestEnum.first },
-                    strings: { ch: '\0', str: '\0', guid: zeroGuid },
-                    bools: { b: true }
+                    numerics: { u8: 8, u16: 16, u32: 32, u64: 64, s16: -16, s32: -32, s64: -64, f32: 3.141590118408203125, f64: 6.02e23, enum: TestComponent.TestEnum.first },
+                    strings: { char: '\0', string: '\0', guid: zeroGuid },
+                    bools: { value: true }
                 },
                 {
-                    numerics: { u8: 255, u16: 65535, u32: 0xFFFFFFFF, u64: 0xFFFFFFFFFFFFF800, s16: -32768, s32: -0x80000000, s64: -0x7FFFFFFFFFFFFC00, f32: 9.80000019073486328125, f64: 6.67408e-11, e: TestComponent.TestEnum.second },
-                    strings: { ch: 'F', str: 'Hello, world!', guid: allSetGuid },
-                    bools: { b: false }
+                    numerics: { u8: 255, u16: 65535, u32: 0xFFFFFFFF, u64: 0xFFFFFFFFFFFFF800, s16: -32768, s32: -0x80000000, s64: -0x7FFFFFFFFFFFFC00, f32: 9.80000019073486328125, f64: 6.67408e-11, enum: TestComponent.TestEnum.second },
+                    strings: { char: 'F', string: 'Hello, world!', guid: allSetGuid },
+                    bools: { value: false }
                 },
                 {
-                    numerics: { u8: 0, u16: 0, u32: 0, u64: 0, s16: 0, s32: 0, s64: 0, f32: 0, f64: 0, e: TestComponent.TestEnum.third },
-                    strings: { ch: '⚾', str: 'foo\0bar', guid: '01234567-89AB-CDEF-0123-456789ABCDEF' },
-                    bools: { b: true }
+                    numerics: { u8: 0, u16: 0, u32: 0, u64: 0, s16: 0, s32: 0, s64: 0, f32: 0, f64: 0, enum: TestComponent.TestEnum.third },
+                    strings: { char: '⚾', string: 'foo\0bar', guid: '01234567-89AB-CDEF-0123-456789ABCDEF' },
+                    bools: { value: true }
                 }
             ]
         ],
         invalidArrays: [
             {
-                numerics: { u8: 8, u16: 16, u32: 32, u64: 64, s16: -16, s32: -32, s64: -64, f32: 3.141590118408203125, f64: 6.02e23, e: TestComponent.TestEnum.first },
-                strings: { ch: '\0', str: '\0', guid: zeroGuid },
-                bools: { b: true }
+                numerics: { u8: 8, u16: 16, u32: 32, u64: 64, s16: -16, s32: -32, s64: -64, f32: 3.141590118408203125, f64: 6.02e23, enum: TestComponent.TestEnum.first },
+                strings: { char: '\0', string: '\0', guid: zeroGuid },
+                bools: { value: true }
             },
             [{
-                numerics: { u8: 8, u16: 16, u32: 32, u64: 64, s16: -16, s32: -32, s64: -64, f32: 3.141590118408203125, f64: 6.02e23, e: TestComponent.TestEnum.first },
-                strings: { ch: '\0', str: '\0', guid: zeroGuid },
-                bools: { b: true },
+                numerics: { u8: 8, u16: 16, u32: 32, u64: 64, s16: -16, s32: -32, s64: -64, f32: 3.141590118408203125, f64: 6.02e23, enum: TestComponent.TestEnum.first },
+                strings: { char: '\0', string: '\0', guid: zeroGuid },
+                bools: { value: true },
                 extraProperty: 'This should not be here'
             }],
             [
                 {}, { numerics: {}, strings: {}, bools: {} },
                 {
-                    numerics: { u8: 8, u16: 16, u32: 32, u64: 64, s16: -16, s32: -32, s64: -64, f32: 3.141590118408203125, f64: 6.02e23, e: TestComponent.TestEnum.first },
-                    strings: { ch: '\0', str: '\0', guid: zeroGuid }
+                    numerics: { u8: 8, u16: 16, u32: 32, u64: 64, s16: -16, s32: -32, s64: -64, f32: 3.141590118408203125, f64: 6.02e23, enum: TestComponent.TestEnum.first },
+                    strings: { char: '\0', string: '\0', guid: zeroGuid }
                 },
                 {
-                    numerics: { u8: 8, u16: 16, u32: 32, u64: 64, s16: -16, s32: -32, s64: -64, f32: 3.141590118408203125, f64: 6.02e23, e: TestComponent.TestEnum.first },
-                    strings: { ch: '\0', str: '\0', guid: zeroGuid },
-                    bools: { b: true },
+                    numerics: { u8: 8, u16: 16, u32: 32, u64: 64, s16: -16, s32: -32, s64: -64, f32: 3.141590118408203125, f64: 6.02e23, enum: TestComponent.TestEnum.first },
+                    strings: { char: '\0', string: '\0', guid: zeroGuid },
+                    bools: { value: true },
                     extraProperty: 'This should not be here'
                 },
                 {
-                    numerics: { u8: 8, u16: 16, u32: 32, u64: 64, s16: -16, s32: -32, s64: -64, f32: 3.141590118408203125, f64: 6.02e23, e: TestComponent.TestEnum.first },
-                    strings: { ch: '\0', str: '\0', guid: zeroGuid },
-                    bools: { b: true, extraProperty: 'This should not be here' }
+                    numerics: { u8: 8, u16: 16, u32: 32, u64: 64, s16: -16, s32: -32, s64: -64, f32: 3.141590118408203125, f64: 6.02e23, enum: TestComponent.TestEnum.first },
+                    strings: { char: '\0', string: '\0', guid: zeroGuid },
+                    bools: { value: true, extraProperty: 'This should not be here' }
                 }
             ]
         ],
