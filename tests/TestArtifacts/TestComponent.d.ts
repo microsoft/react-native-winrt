@@ -6,7 +6,7 @@ declare namespace TestComponent {
     type BoolDelegateWithOutParam = (inputValue: boolean) => boolean;
     
     interface BooleanTypes {
-         b: boolean;
+         value: boolean;
     }
 
     type CharDelegate = (inputValue: string) => string;
@@ -247,7 +247,7 @@ declare namespace TestComponent {
          s64: number;
          f32: number;
          f64: number;
-         e: TestComponent.TestEnum;
+         enum: TestComponent.TestEnum;
     }
 
     type ObjectDelegate = (inputValue: Windows.Foundation.Collections.IVector<number>) => Windows.Foundation.Collections.IVector<number>;
@@ -263,8 +263,8 @@ declare namespace TestComponent {
     type StringDelegateWithOutParam = (inputValue: string) => string;
     
     interface StringTypes {
-         ch: string;
-         str: string;
+         char: string;
+         string: string;
          guid: string;
     }
 

@@ -1762,7 +1762,7 @@ namespace jswinrt
     struct array_iterator :
         winrt::implements<array_iterator<D, T>, winrt::Windows::Foundation::Collections::IIterator<T>>
     {
-        array_iterator(D* target) : target(target, winrt::take_ownership_from_abi)
+        array_iterator(D* target) : target(target->get_strong())
         {
         }
 
