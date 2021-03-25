@@ -140,8 +140,9 @@ inline std::array<char, 37> guid_to_string(const GUID& guid)
 
 GUID get_interface_guid(const winmd::reader::TypeDef& typeDef);
 
-// .NET metadata is a pretty poor solution for representing WinRT metadata, and the complexity of parameters is one
-// place where this is obvious as the data about parameters is split up into two separate, and diferently sized lists
+// Function parameters in metadata can be quite annoying to deal with since info is split into two lists, when really we
+// want it to behave as one. This is an iterator type that makes it appear as though the two are represented as one,
+// though the responsibility of constructing it correctly falls on the consumer.
 struct param_iterator
 {
     using sig_iterator_t = std::vector<winmd::reader::ParamSig>::const_iterator;
@@ -338,6 +339,12 @@ inline param_iterator end(const std::pair<param_iterator, param_iterator>& pair)
 struct system_guid_t {};
 inline constexpr system_guid_t system_guid{};
 
+// Genric types can reference types that consume the generic arguments in semi-non-direct ways, which makes resolving
+// each a bit tricky. E.g. 'IMapView<K, V>' derives from 'IIterable<IKeyValuePair<K, V>>', which has the function
+// 'First' which returns an 'IIterator<IKeyValuePair<K, V>>'. From the 'First' function's perspective, it just returns
+// an 'IIterator<T>' where the 'T' is the one provided to 'IIterable<T>'. In order to resolve that that 'T' is
+// 'IKeyValuePair<K, V>', we have to "walk backwards" all the way back to the original 'IMapView<K, V>' to understand
+// what 'K' and 'V' are.
 struct generic_param_stack
 {
     const winmd::reader::GenericTypeInstSig* first_parent;

@@ -33,6 +33,10 @@ jsi::String jswinrt::make_string(jsi::Runtime& runtime, std::wstring_view str)
     return jsi::String::createFromUtf8(runtime, reinterpret_cast<const uint8_t*>(buffer.get()), bytes);
 }
 
+// NOTE: Most lists are sorted, so in theory this could be a binary search-turns to linear search. The only thing
+// blocking this are enums, where their values are not currently sorted by name. Note however, that if this happens,
+// there can still be duplicates in a list (e.g. function overloads), so this would have to act more like
+// std::lower_bound (or std::equal_range) since callers expect the result to be the first.
 template <typename ThingWithName>
 static auto find_by_name(span<const ThingWithName* const> list, std::string_view name) noexcept
 {

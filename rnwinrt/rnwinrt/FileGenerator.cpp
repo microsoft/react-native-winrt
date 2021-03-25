@@ -236,7 +236,7 @@ namespace jswinrt::classes::%
         writer.write("}\n");
     }
 
-    // Static interface data declarations (TODO? Can this be moved to the cpp file, right?)
+    // Static interface data declarations
     if (!ns.interface_children.empty())
     {
         writer.write_fmt(R"^-^(
