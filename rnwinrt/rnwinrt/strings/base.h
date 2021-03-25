@@ -1960,7 +1960,6 @@ namespace jswinrt
 
         winrt::Windows::Foundation::Collections::IVectorView<T> GetView()
         {
-            // TODO: It seems like there should be a cleaner way of duplicating the array reference...
             return winrt::make<array_vector_view<T>>(this->runtime, this->array.getArray(this->runtime));
         }
     };
@@ -2415,10 +2414,10 @@ namespace jswinrt
                 jsi::Object::createFromHostObject(runtime, projected_async_instance<interface_type>::create(value)));
         }
 
-        static interface_type as_native(jsi::Runtime& runtime, const jsi::Value&)
+        static interface_type as_native(jsi::Runtime& runtime, const jsi::Value& value)
         {
-            // TODO: Any chance this will ever be necessary?
-            throw jsi::JSError(runtime, "TypeError: Conversion from JS value to IAsyncAction is not supported");
+            // Assume that the caller got the value from calling 'operation' on the projected_async_instance
+            return convert_value_to_object_instance<interface_type>(runtime, value);
         }
     };
 
@@ -2432,11 +2431,10 @@ namespace jswinrt
                 jsi::Object::createFromHostObject(runtime, projected_async_instance<interface_type>::create(value)));
         }
 
-        static interface_type as_native(jsi::Runtime& runtime, const jsi::Value&)
+        static interface_type as_native(jsi::Runtime& runtime, const jsi::Value& value)
         {
-            // TODO: Any chance this will ever be necessary?
-            throw jsi::JSError(
-                runtime, "TypeError: Conversion from JS value to IAsyncActionWithProgress is not supported");
+            // Assume that the caller got the value from calling 'operation' on the projected_async_instance
+            return convert_value_to_object_instance<interface_type>(runtime, value);
         }
     };
 
@@ -2450,10 +2448,10 @@ namespace jswinrt
                 jsi::Object::createFromHostObject(runtime, projected_async_instance<interface_type>::create(value)));
         }
 
-        static interface_type as_native(jsi::Runtime& runtime, const jsi::Value&)
+        static interface_type as_native(jsi::Runtime& runtime, const jsi::Value& value)
         {
-            // TODO: Any chance this will ever be necessary?
-            throw jsi::JSError(runtime, "TypeError: Conversion from JS value to IAsyncOperation is not supported");
+            // Assume that the caller got the value from calling 'operation' on the projected_async_instance
+            return convert_value_to_object_instance<interface_type>(runtime, value);
         }
     };
 
@@ -2467,11 +2465,10 @@ namespace jswinrt
                 jsi::Object::createFromHostObject(runtime, projected_async_instance<interface_type>::create(value)));
         }
 
-        static interface_type as_native(jsi::Runtime& runtime, const jsi::Value&)
+        static interface_type as_native(jsi::Runtime& runtime, const jsi::Value& value)
         {
-            // TODO: Any chance this will ever be necessary?
-            throw jsi::JSError(
-                runtime, "TypeError: Conversion from JS value to IAsyncOperationWithProgress is not supported");
+            // Assume that the caller got the value from calling 'operation' on the projected_async_instance
+            return convert_value_to_object_instance<interface_type>(runtime, value);
         }
     };
 
@@ -2539,6 +2536,197 @@ namespace jswinrt
                         convert_native_to_value(ctxt->runtime, args));
                 });
             };
+        }
+    };
+
+    template <typename TProgress>
+    struct projected_value_traits<winrt::Windows::Foundation::AsyncActionProgressHandler<TProgress>>
+    {
+        static jsi::Value as_value(
+            jsi::Runtime& runtime, const winrt::Windows::Foundation::AsyncActionProgressHandler<TProgress>& value)
+        {
+            return jsi::Function::createFromHostFunction(runtime, make_propid(runtime, "AsyncActionProgressHandler"), 2,
+                [value](jsi::Runtime& runtime, const jsi::Value&, const jsi::Value* args, size_t count) {
+                    if (count != 2)
+                    {
+                        throw jsi::JSError(
+                            runtime, "TypeError: Invalid number of arguments to AsyncActionProgressHandler");
+                    }
+
+                    auto arg0 =
+                        convert_value_to_native<winrt::Windows::Foundation::IAsyncActionWithProgress<TProgress>>(
+                            runtime, args[0]);
+                    auto arg1 = convert_value_to_native<TProgress>(runtime, args[1]);
+                    value(arg0, arg1);
+                    return jsi::Value::undefined();
+                });
+        }
+
+        static winrt::Windows::Foundation::AsyncActionProgressHandler<TProgress> as_native(
+            jsi::Runtime& runtime, const jsi::Value& value)
+        {
+            return
+                [ctxt = current_runtime_context()->add_reference(), fn = value.asObject(runtime).asFunction(runtime)](
+                    const winrt::Windows::Foundation::IAsyncActionWithProgress<TProgress>& asyncInfo,
+                    const TProgress& progressInfo) {
+                    ctxt->call_sync([&]() {
+                        fn.call(ctxt->runtime, convert_native_to_value(ctxt->runtime, asyncInfo),
+                            convert_native_to_value(ctxt->runtime, progressInfo));
+                    });
+                };
+        }
+    };
+
+    template <typename TProgress>
+    struct projected_value_traits<winrt::Windows::Foundation::AsyncActionWithProgressCompletedHandler<TProgress>>
+    {
+        static jsi::Value as_value(jsi::Runtime& runtime,
+            const winrt::Windows::Foundation::AsyncActionWithProgressCompletedHandler<TProgress>& value)
+        {
+            return jsi::Function::createFromHostFunction(runtime,
+                make_propid(runtime, "AsyncActionWithProgressCompletedHandler"), 2,
+                [value](jsi::Runtime& runtime, const jsi::Value&, const jsi::Value* args, size_t count) {
+                    if (count != 2)
+                    {
+                        throw jsi::JSError(runtime,
+                            "TypeError: Invalid number of arguments to AsyncActionWithProgressCompletedHandler");
+                    }
+
+                    auto arg0 =
+                        convert_value_to_native<winrt::Windows::Foundation::IAsyncActionWithProgress<TProgress>>(
+                            runtime, args[0]);
+                    auto arg1 = convert_value_to_native<winrt::Windows::Foundation::AsyncStatus>(runtime, args[1]);
+                    value(arg0, arg1);
+                    return jsi::Value::undefined();
+                });
+        }
+
+        static winrt::Windows::Foundation::AsyncActionWithProgressCompletedHandler<TProgress> as_native(
+            jsi::Runtime& runtime, const jsi::Value& value)
+        {
+            return
+                [ctxt = current_runtime_context()->add_reference(), fn = value.asObject(runtime).asFunction(runtime)](
+                    const winrt::Windows::Foundation::IAsyncActionWithProgress<TProgress>& asyncInfo,
+                    winrt::Windows::Foundation::AsyncStatus asyncStatus) {
+                    ctxt->call_sync([&]() {
+                        fn.call(ctxt->runtime, convert_native_to_value(ctxt->runtime, asyncInfo),
+                            convert_native_to_value(ctxt->runtime, asyncStatus));
+                    });
+                };
+        }
+    };
+
+    template <typename TResult>
+    struct projected_value_traits<winrt::Windows::Foundation::AsyncOperationCompletedHandler<TResult>>
+    {
+        static jsi::Value as_value(
+            jsi::Runtime& runtime, const winrt::Windows::Foundation::AsyncOperationCompletedHandler<TResult>& value)
+        {
+            return jsi::Function::createFromHostFunction(runtime,
+                make_propid(runtime, "AsyncOperationCompletedHandler"), 2,
+                [value](jsi::Runtime& runtime, const jsi::Value&, const jsi::Value* args, size_t count) {
+                    if (count != 2)
+                    {
+                        throw jsi::JSError(
+                            runtime, "TypeError: Invalid number of arguments to AsyncOperationCompletedHandler");
+                    }
+
+                    auto arg0 =
+                        convert_value_to_native<winrt::Windows::Foundation::IAsyncOperation<TResult>>(runtime, args[0]);
+                    auto arg1 = convert_value_to_native<winrt::Windows::Foundation::AsyncStatus>(runtime, args[1]);
+                    value(arg0, arg1);
+                    return jsi::Value::undefined();
+                });
+        }
+
+        static winrt::Windows::Foundation::AsyncOperationCompletedHandler<TResult> as_native(
+            jsi::Runtime& runtime, const jsi::Value& value)
+        {
+            return
+                [ctxt = current_runtime_context()->add_reference(), fn = value.asObject(runtime).asFunction(runtime)](
+                    const winrt::Windows::Foundation::IAsyncOperation<TResult>& asyncInfo,
+                    winrt::Windows::Foundation::AsyncStatus asyncStatus) {
+                    ctxt->call_sync([&]() {
+                        fn.call(ctxt->runtime, convert_native_to_value(ctxt->runtime, asyncInfo),
+                            convert_native_to_value(ctxt->runtime, asyncStatus));
+                    });
+                };
+        }
+    };
+
+    template <typename TResult, typename TProgress>
+    struct projected_value_traits<winrt::Windows::Foundation::AsyncOperationProgressHandler<TResult, TProgress>>
+    {
+        static jsi::Value as_value(jsi::Runtime& runtime,
+            const winrt::Windows::Foundation::AsyncOperationProgressHandler<TResult, TProgress>& value)
+        {
+            return jsi::Function::createFromHostFunction(runtime, make_propid(runtime, "AsyncOperationProgressHandler"),
+                2, [value](jsi::Runtime& runtime, const jsi::Value&, const jsi::Value* args, size_t count) {
+                    if (count != 2)
+                    {
+                        throw jsi::JSError(
+                            runtime, "TypeError: Invalid number of arguments to AsyncOperationProgressHandler");
+                    }
+
+                    auto arg0 = convert_value_to_native<
+                        winrt::Windows::Foundation::IAsyncOperationWithProgress<TResult, TProgress>>(runtime, args[0]);
+                    auto arg1 = convert_value_to_native<TProgress>(runtime, args[1]);
+                    value(arg0, arg1);
+                    return jsi::Value::undefined();
+                });
+        }
+
+        static winrt::Windows::Foundation::AsyncOperationProgressHandler<TResult, TProgress> as_native(
+            jsi::Runtime& runtime, const jsi::Value& value)
+        {
+            return
+                [ctxt = current_runtime_context()->add_reference(), fn = value.asObject(runtime).asFunction(runtime)](
+                    const winrt::Windows::Foundation::IAsyncOperationWithProgress<TResult, TProgress>& asyncInfo,
+                    const TProgress& progressInfo) {
+                    ctxt->call_sync([&]() {
+                        fn.call(ctxt->runtime, convert_native_to_value(ctxt->runtime, asyncInfo),
+                            convert_native_to_value(ctxt->runtime, progressInfo));
+                    });
+                };
+        }
+    };
+
+    template <typename TResult, typename TProgress>
+    struct projected_value_traits<
+        winrt::Windows::Foundation::AsyncOperationWithProgressCompletedHandler<TResult, TProgress>>
+    {
+        static jsi::Value as_value(jsi::Runtime& runtime,
+            const winrt::Windows::Foundation::AsyncOperationWithProgressCompletedHandler<TResult, TProgress>& value)
+        {
+            return jsi::Function::createFromHostFunction(runtime,
+                make_propid(runtime, "AsyncOperationWithProgressCompletedHandler"), 2,
+                [value](jsi::Runtime& runtime, const jsi::Value&, const jsi::Value* args, size_t count) {
+                    if (count != 2)
+                    {
+                        throw jsi::JSError(runtime,
+                            "TypeError: Invalid number of arguments to AsyncOperationWithProgressCompletedHandler");
+                    }
+
+                    auto arg0 = convert_value_to_native<
+                        winrt::Windows::Foundation::IAsyncOperationWithProgress<TResult, TProgress>>(runtime, args[0]);
+                    auto arg1 = convert_value_to_native<winrt::Windows::Foundation::AsyncStatus>(runtime, args[1]);
+                    value(arg0, arg1);
+                    return jsi::Value::undefined();
+                });
+        }
+
+        static winrt::Windows::Foundation::AsyncOperationWithProgressCompletedHandler<TResult, TProgress> as_native(
+            jsi::Runtime& runtime, const jsi::Value& value)
+        {
+            return
+                [ctxt = current_runtime_context()->add_reference(), fn = value.asObject(runtime).asFunction(runtime)](
+                    const winrt::Windows::Foundation::IAsyncOperationWithProgress<TResult, TProgress>& asyncInfo,
+                    winrt::Windows::Foundation::AsyncStatus asyncStatus) {
+                    ctxt->call_sync([&]() {
+                        fn.call(ctxt->runtime, convert_native_to_value(ctxt->runtime, asyncInfo),
+                            convert_native_to_value(ctxt->runtime, asyncStatus));
+                    });
+                };
         }
     };
 
@@ -2627,8 +2815,6 @@ namespace jswinrt
     {
         using winrt::Windows::Foundation::IInspectable;
 
-        // TODO: Comment on this
-#if 0
         namespace IAsyncActionWithProgress
         {
             template <typename TProgress>
@@ -2643,7 +2829,8 @@ namespace jswinrt
                         },
                         [](jsi::Runtime& runtime, const IInspectable& thisValue, const jsi::Value& value) {
                             thisValue.as<native_type>().Completed(convert_value_to_native<
-                                winrt::Windows::Foundation::AsyncActionWithProgressCompletedHandler<TProgress>>(value));
+                                winrt::Windows::Foundation::AsyncActionWithProgressCompletedHandler<TProgress>>(
+                                runtime, value));
                         } },
                     { "progress",
                         [](jsi::Runtime& runtime, const IInspectable& thisValue) {
@@ -2676,7 +2863,6 @@ namespace jswinrt
             template <typename TProgress>
             constexpr const static_interface_data& data = data_t<TProgress>::value;
         }
-#endif
 
         namespace IAsyncOperation
         {
@@ -2717,7 +2903,6 @@ namespace jswinrt
             constexpr const static_interface_data& data = data_t<TResult>::value;
         }
 
-#if 0
         namespace IAsyncOperationWithProgress
         {
             template <typename TResult, typename TProgress>
@@ -2732,7 +2917,7 @@ namespace jswinrt
                         },
                         [](jsi::Runtime& runtime, const IInspectable& thisValue, const jsi::Value& value) {
                             thisValue.as<native_type>().Completed(convert_value_to_native<winrt::Windows::Foundation::
-                                    AsyncOperationWithProgressCompletedHandler<TResult, TProgress>>(value));
+                                    AsyncOperationWithProgressCompletedHandler<TResult, TProgress>>(runtime, value));
                         } },
                     { "progress",
                         [](jsi::Runtime& runtime, const IInspectable& thisValue) {
@@ -2765,7 +2950,6 @@ namespace jswinrt
             template <typename TResult, typename TProgress>
             constexpr const static_interface_data& data = data_t<TResult, TProgress>::value;
         }
-#endif
     }
 
     namespace interfaces::Windows::Foundation::Collections

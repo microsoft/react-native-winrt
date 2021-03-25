@@ -66,8 +66,9 @@ void indent::operator()(jswinrt_writer& writer) const
 
 void camel_case::operator()(jswinrt_writer& writer) const
 {
+    assert(!text.empty());
     if (text.empty())
-        return; // TODO: Assert this is not the case?
+        return;
 
     writer.write(static_cast<char>(std::tolower(text[0])));
     writer.write(text.substr(1));

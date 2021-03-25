@@ -395,7 +395,8 @@ private:
 
 jsi::Value static_activatable_class_data::create(jsi::Runtime& runtime) const
 {
-    // TODO: param count? Seems to not matter?
+    // TODO: param count? Seems to not matter? It would be rather simple to calculate when generating the constructor
+    // function, but would also be more data...
     auto result = jsi::Function::createFromHostFunction(runtime, make_propid(runtime, name), 0, constructor);
 
     // JSI does not allow us to create a 'Function' that is also a 'HostObject' and therefore cannot provide virtual

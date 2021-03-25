@@ -433,7 +433,7 @@ static void write_cppwinrt_type_initializer(jswinrt_writer& writer, const TypeSi
             },
             [&](const TypeDef& type, bool isArray) {
                 if (isArray)
-                    return; // TODO: Safe to do this?
+                    return;
 
                 auto c = get_category(type);
                 if (c == category::class_type)
@@ -479,7 +479,7 @@ static void write_make_return_struct(jswinrt_writer& writer, const function_sign
     int argNum = 0;
     for (auto&& param : fn.params())
     {
-        if (param.is_output())
+        if (param.is_output() && param.by_ref())
         {
             writer.write_fmt(R"^-^(, "%", arg%)^-^", camel_case{ param.name() }, argNum);
         }
@@ -552,7 +552,7 @@ static void write_native_out_params(jswinrt_writer& writer, const function_signa
     int argNum = 0;
     for (auto&& param : fn.params())
     {
-        if (param.is_output())
+        if (param.is_output() && param.by_ref())
         {
             writer.write_fmt(
                 R"^-^(
@@ -1229,30 +1229,19 @@ void write_typescript_files(const Settings& settings, const projection_data& dat
 
 void write_files(const Settings& settings, const projection_data& data)
 {
-    // TODO: Write the following files
-    //  Projections.g.h
-    //      TODO: Needed? I think we forward declare all of these necessary things in base.h/base.cpp
-    //  Projections.g.cpp
-    //      * Global array of root namespaces [extern const span<const static_namespace_data* const> root_namespaces]
-    //      * Global array of guid -> interface data mapping [extern const span<const std::pair<winrt::guid, const static_interface_data*>> global_interface_map]
+    // Projections.g.cpp
     write_projections_cpp_file(settings, data);
-    //  ProjectedValueConverters.g.h
-    //      * projected_value_traits specializations for structs/delegates
+    // ProjectedValueConverters.g.h
     write_value_converters_header(settings, data);
-    //  <Namespace>.g.h
-    //      * Static namespace data
-    //      * Static enum data
-    //      * Static class data
-    //      * Static interface data
+    // <Namespace>.g.h
     write_namespace_headers(settings, data);
-    //  <Namespace>.g.cpp
-    //      * projected_value_traits definitions
+    // <Namespace>.g.cpp
     write_namespace_cpp_files(settings, data);
 
-    // Write base.h/base.cpp
+    // base.h/base.cpp
     write_base_files(settings);
 
-    // Write TS files, if necessary
+    // TypeScript files, if necessary
     write_typescript_files(settings, data);
 }
 

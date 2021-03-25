@@ -457,6 +457,7 @@ static void check_generic_function_outputs(
 
         for (auto&& param : fn.params())
         {
+            // NOTE: Purposefully not checking by_ref since fill arrays still produce observable output
             if (param.is_output())
             {
                 checkType(param.type());
@@ -474,8 +475,7 @@ static void handle_generic_instantiation(projection_data& data, generic_instanti
 
     if (typeDef.TypeNamespace() == foundation_namespace)
     {
-        if ((typeDef.TypeName() == "IReference`1"sv) || (typeDef.TypeName() == "IAsyncActionWithProgress`1"sv) ||
-            (typeDef.TypeName() == "IAsyncOperationWithProgress`2"sv))
+        if (typeDef.TypeName() == "IReference`1"sv)
             return;
     }
 
