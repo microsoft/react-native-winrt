@@ -16,6 +16,6 @@ namespace local
 void local::impl::ReactPackageProvider::CreatePackage(
     const winrt::Microsoft::ReactNative::IReactPackageBuilder& packageBuilder) noexcept
 {
-    winrt::Microsoft::ReactNative::AddTurboModuleProvider<::WinRTTurboModule::WinRTTurboModule>(
+    winrt::Microsoft::ReactNative::AddTurboModuleProvider<::WinRTTurboModule>(
         packageBuilder, L"WinRTTurboModule");
 }
