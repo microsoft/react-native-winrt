@@ -103,7 +103,6 @@ struct sha1
     }
 
 private:
-
     constexpr void append_byte(std::uint8_t byte) noexcept
     {
         auto index = static_cast<std::size_t>(m_nextChunkByte / 4);
@@ -120,7 +119,8 @@ private:
         auto chunkState = m_state;
 
         std::array<std::uint32_t, 80> w = {};
-        for (auto i = 0; i < 16; ++i) w[i] = m_currentChunk[i];
+        for (auto i = 0; i < 16; ++i)
+            w[i] = m_currentChunk[i];
         for (auto i = 16; i < 80; ++i)
         {
             w[i] = lrot(w[i - 3] ^ w[i - 8] ^ w[i - 14] ^ w[i - 16], 1);
@@ -138,7 +138,8 @@ private:
         }
         for (auto i = 40; i < 60; ++i)
         {
-            auto f = (chunkState[1] & chunkState[2]) | (chunkState[1] & chunkState[3]) | (chunkState[2] & chunkState[3]);
+            auto f =
+                (chunkState[1] & chunkState[2]) | (chunkState[1] & chunkState[3]) | (chunkState[2] & chunkState[3]);
             rotate(chunkState, w[i], f, 0x8F1BBCDC);
         }
         for (auto i = 60; i < 80; ++i)
@@ -164,7 +165,8 @@ private:
         return result;
     }
 
-    static constexpr void rotate(std::array<std::uint32_t, 5>& state, std::uint32_t value, std::uint32_t f, std::uint32_t k) noexcept
+    static constexpr void rotate(
+        std::array<std::uint32_t, 5>& state, std::uint32_t value, std::uint32_t f, std::uint32_t k) noexcept
     {
         auto temp = lrot(state[0], 5) + state[4] + f + k + value;
         state[4] = state[3];

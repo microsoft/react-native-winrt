@@ -196,7 +196,9 @@ struct named_projection_data
     {
     }
 
-    virtual ~named_projection_data() {}
+    virtual ~named_projection_data()
+    {
+    }
 
     // E.g. if the name is 'Foo.Bar.Baz':
     kind data_kind;
@@ -207,8 +209,7 @@ struct named_projection_data
 struct enum_projection_data : named_projection_data
 {
     enum_projection_data(const Settings&, const winmd::reader::TypeDef& typeDef) :
-        named_projection_data(kind::enum_data, typeDef.TypeName(), typeDef.TypeNamespace()),
-        type_def(typeDef)
+        named_projection_data(kind::enum_data, typeDef.TypeName(), typeDef.TypeNamespace()), type_def(typeDef)
     {
     }
 

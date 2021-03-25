@@ -336,7 +336,9 @@ inline param_iterator end(const std::pair<param_iterator, param_iterator>& pair)
 }
 
 // Tag type used to represent the 'System.Guid' a.k.a. 'Windows.Foundation.Guid' type, which has no 'TypeDef'
-struct system_guid_t {};
+struct system_guid_t
+{
+};
 inline constexpr system_guid_t system_guid{};
 
 // Genric types can reference types that consume the generic arguments in semi-non-direct ways, which makes resolving

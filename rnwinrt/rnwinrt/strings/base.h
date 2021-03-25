@@ -16,8 +16,8 @@
 #include <unordered_map>
 #include <variant>
 #include <vector>
-#include <winrt/Windows.Foundation.h>
 #include <winrt/Windows.Foundation.Collections.h>
+#include <winrt/Windows.Foundation.h>
 
 // Common helpers/types
 namespace jswinrt
@@ -1428,17 +1428,17 @@ namespace jswinrt
 
             if constexpr (traits::is_async_with_progress) // IAsync*WithProgress
             {
-                result->m_instance.Progress([weakThis = std::weak_ptr{ result },
-                                        ctxt = current_runtime_context()->add_reference()](
-                                        const auto&, const auto& progress) {
-                    ctxt->call([progress, weakThis]() {
-                        if (auto strongThis = weakThis.lock())
-                        {
-                            auto& runtime = current_runtime_context()->runtime;
-                            strongThis->on_progress(runtime, convert_native_to_value(runtime, progress));
-                        }
+                result->m_instance.Progress(
+                    [weakThis = std::weak_ptr{ result }, ctxt = current_runtime_context()->add_reference()](
+                        const auto&, const auto& progress) {
+                        ctxt->call([progress, weakThis]() {
+                            if (auto strongThis = weakThis.lock())
+                            {
+                                auto& runtime = current_runtime_context()->runtime;
+                                strongThis->on_progress(runtime, convert_native_to_value(runtime, progress));
+                            }
+                        });
                     });
-                });
             }
 
             return result;
@@ -1507,7 +1507,6 @@ namespace jswinrt
         }
 
     private:
-
         struct continuation
         {
             enum
@@ -1538,9 +1537,8 @@ namespace jswinrt
                 if constexpr (!traits::is_async_with_result) // IAsyncAction*
                 {
                     co_await inst;
-                    ctxt->call([strongThis, &runtime]() {
-                        strongThis->on_completed(runtime, jsi::Value::undefined(), true);
-                    });
+                    ctxt->call(
+                        [strongThis, &runtime]() { strongThis->on_completed(runtime, jsi::Value::undefined(), true); });
                 }
                 else // IAsyncOperation*
                 {
@@ -1887,7 +1885,8 @@ namespace jswinrt
             // NOTE: JSI doesn't currently seem to allow modification of arrays from native
             CheckThread();
             auto spliceFn = array.getPropertyAsFunction(runtime, "splice");
-            spliceFn.callWithThis(runtime, array, static_cast<double>(index), 0, convert_native_to_value(runtime, value));
+            spliceFn.callWithThis(
+                runtime, array, static_cast<double>(index), 0, convert_native_to_value(runtime, value));
         }
 
         void RemoveAt(std::uint32_t index)
@@ -2106,7 +2105,8 @@ namespace jswinrt
     struct projected_value_traits<winrt::Windows::Foundation::Numerics::quaternion>
     {
         static jsi::Value as_value(jsi::Runtime& runtime, winrt::Windows::Foundation::Numerics::quaternion value);
-        static winrt::Windows::Foundation::Numerics::quaternion as_native(jsi::Runtime& runtime, const jsi::Value& value);
+        static winrt::Windows::Foundation::Numerics::quaternion as_native(
+            jsi::Runtime& runtime, const jsi::Value& value);
     };
 
     template <>
@@ -2305,7 +2305,7 @@ namespace jswinrt
         }
 
         if constexpr (std::is_same_v<T, winrt::Windows::Foundation::IInspectable> ||
-                        std::is_same_v<T, winrt::Windows::Foundation::IPropertyValue>)
+                      std::is_same_v<T, winrt::Windows::Foundation::IPropertyValue>)
         {
             if (auto result = convert_to_property_value(runtime, value))
             {
@@ -2347,8 +2347,8 @@ namespace jswinrt
 
         // TODO: Also IMap/IMapView?
 
-        throw jsi::JSError(runtime,
-            "TypeError: Cannot derive a WinRT interface for the JS value. Expecting: "s + typeid(T).name());
+        throw jsi::JSError(
+            runtime, "TypeError: Cannot derive a WinRT interface for the JS value. Expecting: "s + typeid(T).name());
     }
 
     template <typename T>
@@ -2494,16 +2494,16 @@ namespace jswinrt
 
         static winrt::Windows::Foundation::EventHandler<T> as_native(jsi::Runtime& runtime, const jsi::Value& value)
         {
-            return [ctxt = current_runtime_context()->add_reference(),
-                       fn = value.asObject(runtime).asFunction(runtime)](
-                       const winrt::Windows::Foundation::IInspectable& sender, const T& args) {
-                // TODO: Do we need to call synchronously? One reason might be to propagate errors, but typically event
-                // sources don't care about those.
-                ctxt->call_sync([&]() {
-                    fn.call(ctxt->runtime, convert_native_to_value(ctxt->runtime, sender),
-                        convert_native_to_value(ctxt->runtime, args));
-                });
-            };
+            return
+                [ctxt = current_runtime_context()->add_reference(), fn = value.asObject(runtime).asFunction(runtime)](
+                    const winrt::Windows::Foundation::IInspectable& sender, const T& args) {
+                    // TODO: Do we need to call synchronously? One reason might be to propagate errors, but typically
+                    // event sources don't care about those.
+                    ctxt->call_sync([&]() {
+                        fn.call(ctxt->runtime, convert_native_to_value(ctxt->runtime, sender),
+                            convert_native_to_value(ctxt->runtime, args));
+                    });
+                };
         }
     };
 

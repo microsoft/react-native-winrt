@@ -51,7 +51,8 @@ static void write_projections_cpp_file(const Settings& settings, const projectio
 
 #include "base.h"
 
-)^-^", settings.PchFileName);
+)^-^",
+        settings.PchFileName);
 
     write_projections_cpp_namespace_includes(writer, data);
 
@@ -459,8 +460,8 @@ static void write_params_value_to_native(jswinrt_writer& writer, const function_
         else
         {
             writer.write_fmt(
-                "\n%% arg%%;", indent{ indentLevel }, [&](jswinrt_writer& w) { write_cppwinrt_type(w, params.first); }, argNum,
-                [&](jswinrt_writer& w) { write_cppwinrt_type_initializer(w, params.first.type()); });
+                "\n%% arg%%;", indent{ indentLevel }, [&](jswinrt_writer& w) { write_cppwinrt_type(w, params.first); },
+                argNum, [&](jswinrt_writer& w) { write_cppwinrt_type_initializer(w, params.first.type()); });
         }
     }
 }
@@ -569,7 +570,8 @@ static void write_enum_projection_data(jswinrt_writer& writer, const enum_projec
     writer.write_fmt(R"^-^(
 namespace jswinrt::enums::%
 {
-    static constexpr const static_enum_data::value_mapping mappings[] = {)^-^", cpp_typename{ enumData.type_def });
+    static constexpr const static_enum_data::value_mapping mappings[] = {)^-^",
+        cpp_typename{ enumData.type_def });
 
     for (auto&& field : enumData.type_def.FieldList())
     {
@@ -586,7 +588,8 @@ namespace jswinrt::enums::%
 
     constexpr const static_enum_data data{ "%"sv, mappings };
 }
-)^-^", enumData.name);
+)^-^",
+        enumData.name);
 }
 
 static void write_class_projection_data(jswinrt_writer& writer, const class_projection_data& classData)
@@ -700,7 +703,8 @@ namespace jswinrt::classes::%
                 if (overload.method.has_out_params)
                 {
                     writer.write_fmt(R"^-^(
-                    return %;)^-^", [&](jswinrt_writer& w) { write_make_return_struct(w, overload.method); });
+                    return %;)^-^",
+                        [&](jswinrt_writer& w) { write_make_return_struct(w, overload.method); });
                 }
                 else if (overload.method.has_return_value)
                 {
@@ -721,7 +725,8 @@ namespace jswinrt::classes::%
                 throw jsi::JSError(runtime, "TypeError: No function overload exists for "s + "%." + "%" +
                     " with " + std::to_string(count) + " args");
             }
-        },)^-^", classData.type_def.TypeNamespace(), classData.type_def.TypeName());
+        },)^-^",
+                classData.type_def.TypeNamespace(), classData.type_def.TypeName());
         }
 
         writer.write("\n    };\n");
@@ -801,7 +806,8 @@ namespace jswinrt::interfaces::%
         for (auto& data : ifaceData.methods.properties)
         {
             writer.write_fmt(R"^-^(
-        { "%",)^-^", camel_case{ data.name });
+        { "%",)^-^",
+                camel_case{ data.name });
 
             if (data.getter)
             {
@@ -894,7 +900,8 @@ namespace jswinrt::interfaces::%
                 if (overload.method.has_out_params)
                 {
                     writer.write_fmt(R"^-^(
-                    return %;)^-^", [&](jswinrt_writer& w) { write_make_return_struct(w, overload.method); });
+                    return %;)^-^",
+                        [&](jswinrt_writer& w) { write_make_return_struct(w, overload.method); });
                 }
                 else if (overload.method.has_return_value)
                 {
@@ -909,7 +916,8 @@ namespace jswinrt::interfaces::%
 
                 writer.write_fmt(R"^-^(
                 },
-                %, % },)^-^", overload.arity, overload.is_default_overload);
+                %, % },)^-^",
+                    overload.arity, overload.is_default_overload);
             }
         }
 
@@ -989,11 +997,11 @@ namespace jswinrt::namespaces::%
         writer.write("    };\n");
     }
 
-        writer.write_fmt(R"^-^(
+    writer.write_fmt(R"^-^(
     constexpr const static_namespace_data data{ "%"sv, % };
 }
 )^-^",
-            ns.name, ns.named_children.empty() ? "{}" : "children");
+        ns.name, ns.named_children.empty() ? "{}" : "children");
 
     // Static enum data
     for (auto& enumData : ns.enum_children)
@@ -1074,8 +1082,7 @@ namespace jswinrt::namespaces::%
                 }
 )^-^",
                 cpp_typename{ delegateData->type_def }, cpp_typename{ delegateData->type_def },
-                delegateData->type_def.TypeName(), fn.param_count, fn.param_count,
-                delegateData->type_def.TypeName());
+                delegateData->type_def.TypeName(), fn.param_count, fn.param_count, delegateData->type_def.TypeName());
 
             write_params_value_to_native(writer, fn, 4);
             writer.write_fmt("\n                %value(", fn.has_return_value ? "auto result = " : "");
@@ -1092,15 +1099,16 @@ namespace jswinrt::namespaces::%
             if (fn.has_out_params)
             {
                 writer.write_fmt(R"^-^(
-                return %;)^-^", [&](jswinrt_writer& w) { write_make_return_struct(w, fn); });
+                return %;)^-^",
+                    [&](jswinrt_writer& w) { write_make_return_struct(w, fn); });
             }
             else if (fn.has_return_value)
             {
-                            writer.write("\n                return convert_native_to_value(runtime, result);");
+                writer.write("\n                return convert_native_to_value(runtime, result);");
             }
             else
             {
-                            writer.write("\n                return jsi::Value::undefined();");
+                writer.write("\n                return jsi::Value::undefined();");
             }
 
             writer.write_fmt(R"^-^(
@@ -1130,7 +1138,8 @@ namespace jswinrt::namespaces::%
             write_params_native_to_value(writer, fn, 4);
 
             writer.write_fmt(R"^-^(
-                %fn.call(runtime)^-^", (fn.has_return_value || fn.has_out_params) ? "auto result = " : "");
+                %fn.call(runtime)^-^",
+                (fn.has_return_value || fn.has_out_params) ? "auto result = " : "");
             for (int i = 0; i < fn.param_count; ++i)
             {
                 writer.write_fmt(", arg%", i);

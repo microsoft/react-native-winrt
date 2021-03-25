@@ -92,7 +92,8 @@ public:
             {
                 if (type.TypeNamespace() == "Windows.Foundation" && type.TypeName() == "IAsyncInfo")
                 {
-                    textWriter.Write("%", R"(interface WinRTPromiseBase<TResult, TProgress> extends PromiseLike<TResult> {
+                    textWriter.Write(
+                        "%", R"(interface WinRTPromiseBase<TResult, TProgress> extends PromiseLike<TResult> {
         then<U, V>(success?: (value: TResult) => Promise<U>, error?: (error: any) => Promise<U>, progress?: (progress: TProgress) => void): Promise<U>;
         then<U, V>(success?: (value: TResult) => Promise<U>, error?: (error: any) => U, progress?: (progress: TProgress) => void): Promise<U>;
         then<U, V>(success?: (value: TResult) => U, error?: (error: any) => Promise<U>, progress?: (progress: TProgress) => void): Promise<U>;

@@ -1,9 +1,10 @@
 #include "pch.h"
+
 #include "ReactPackageProvider.h"
 
-#include <WinRTTurboModule.h>
 #include <ReactPackageProvider.g.cpp>
 #include <TurboModuleProvider.h>
+#include <WinRTTurboModule.h>
 
 namespace local
 {
@@ -14,7 +15,8 @@ namespace local
     }
 }
 
-void local::impl::ReactPackageProvider::CreatePackage(const winrt::Microsoft::ReactNative::IReactPackageBuilder& packageBuilder) noexcept
+void local::impl::ReactPackageProvider::CreatePackage(
+    const winrt::Microsoft::ReactNative::IReactPackageBuilder& packageBuilder) noexcept
 {
     winrt::Microsoft::ReactNative::AddTurboModuleProvider<::WinRTTurboModule>(packageBuilder, L"WinRTTurboModule");
 }

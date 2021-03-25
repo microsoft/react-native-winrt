@@ -6,8 +6,7 @@
 using namespace std::literals;
 using namespace winmd::reader;
 
-function_signature::function_signature(const MethodDef& def) :
-    method_def(def), signature(def.Signature())
+function_signature::function_signature(const MethodDef& def) : method_def(def), signature(def.Signature())
 {
     has_return_value = static_cast<bool>(signature.ReturnType());
 
@@ -197,9 +196,8 @@ static namespace_projection_data* get_namespace(
     {
         // "Miss" on our optimization; start at a root namespace
         auto rootName = next_namespace_part(remainder);
-        auto [itr, found] = reverse_sorted_find(data.root_namespaces, [&](auto&& nsData) {
-            return nsData->name.compare(rootName);
-        });
+        auto [itr, found] =
+            reverse_sorted_find(data.root_namespaces, [&](auto&& nsData) { return nsData->name.compare(rootName); });
 
         if (found)
         {
@@ -252,20 +250,47 @@ static void append_signature(sha1& hash, ElementType elemType)
     std::string_view sig;
     switch (elemType)
     {
-    case ElementType::Boolean: sig = "b1"sv; break;
-    case ElementType::Char: sig = "c2"sv; break;
-    case ElementType::U1: sig = "u1"sv; break;
-    case ElementType::I2: sig = "i2"sv; break;
-    case ElementType::U2: sig = "u2"sv; break;
-    case ElementType::I4: sig = "i4"sv; break;
-    case ElementType::U4: sig = "u4"sv; break;
-    case ElementType::I8: sig = "i8"sv; break;
-    case ElementType::U8: sig = "u8"sv; break;
-    case ElementType::R4: sig = "f4"sv; break;
-    case ElementType::R8: sig = "f8"sv; break;
-    case ElementType::String: sig = "string"sv; break;
-    case ElementType::Object: sig = "cinterface(IInspectable)"sv; break;
-    default: throw std::runtime_error("Unexpected ElementType");
+    case ElementType::Boolean:
+        sig = "b1"sv;
+        break;
+    case ElementType::Char:
+        sig = "c2"sv;
+        break;
+    case ElementType::U1:
+        sig = "u1"sv;
+        break;
+    case ElementType::I2:
+        sig = "i2"sv;
+        break;
+    case ElementType::U2:
+        sig = "u2"sv;
+        break;
+    case ElementType::I4:
+        sig = "i4"sv;
+        break;
+    case ElementType::U4:
+        sig = "u4"sv;
+        break;
+    case ElementType::I8:
+        sig = "i8"sv;
+        break;
+    case ElementType::U8:
+        sig = "u8"sv;
+        break;
+    case ElementType::R4:
+        sig = "f4"sv;
+        break;
+    case ElementType::R8:
+        sig = "f8"sv;
+        break;
+    case ElementType::String:
+        sig = "string"sv;
+        break;
+    case ElementType::Object:
+        sig = "cinterface(IInspectable)"sv;
+        break;
+    default:
+        throw std::runtime_error("Unexpected ElementType");
     }
 
     hash.append(sig);
@@ -496,8 +521,8 @@ static void handle_generic_instantiation(projection_data& data, generic_instanti
 }
 
 template <typename T, typename Func>
-static void parse_typedefs(const Settings& settings, projection_data& data,
-    const std::vector<TypeDef>& typeDefs, std::vector<std::unique_ptr<T>>& list, Func&& callback)
+static void parse_typedefs(const Settings& settings, projection_data& data, const std::vector<TypeDef>& typeDefs,
+    std::vector<std::unique_ptr<T>>& list, Func&& callback)
 {
     bool isFoundationNs = false, isNumericsNs = false;
     if (!typeDefs.empty())
@@ -571,9 +596,8 @@ void parse_metadata(const Settings& settings, projection_data& data)
             check_generic_base_types(data, classData->type_def, {});
             check_generic_function_outputs(data, classData->type_def, {});
         });
-        parse_typedefs(settings, data, members.enums, currNs->enum_children, [&](enum_projection_data* enumData) {
-            currNs->named_children.push_back(enumData);
-        });
+        parse_typedefs(settings, data, members.enums, currNs->enum_children,
+            [&](enum_projection_data* enumData) { currNs->named_children.push_back(enumData); });
         parse_typedefs(
             settings, data, members.structs, currNs->struct_children, [&](struct_projection_data* structData) {
                 // Structs can have 'IReference<T>' members, so we need to check their fields

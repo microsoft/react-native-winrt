@@ -65,7 +65,6 @@ struct jswinrt_writer
     }
 
 private:
-
     void write_fmt_impl(std::string_view fmtString);
 
     template <typename T, typename... Args>
@@ -105,7 +104,6 @@ struct jswinrt_file_writer : jswinrt_writer
     }
 
 private:
-
     std::filesystem::path m_path;
 };
 

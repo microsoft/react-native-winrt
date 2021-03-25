@@ -623,11 +623,11 @@ namespace winrt::TestComponent::implementation
     }
     */
 
-   template <typename T>
-   static Windows::Foundation::Collections::IVector<T> CopyToVector(array_view<T const> values)
-   {
-       return single_threaded_vector(std::vector<T>(values.begin(), values.end()));
-   }
+    template <typename T>
+    static Windows::Foundation::Collections::IVector<T> CopyToVector(array_view<T const> values)
+    {
+        return single_threaded_vector(std::vector<T>(values.begin(), values.end()));
+    }
 
     Windows::Foundation::Collections::IVector<bool> Test::CopyBoolsToVector(array_view<bool const> values)
     {
