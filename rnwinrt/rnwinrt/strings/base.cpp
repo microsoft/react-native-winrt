@@ -572,6 +572,12 @@ jsi::Value projected_object_instance::get(jsi::Runtime& runtime, const jsi::Prop
         if (auto dataItr = find_by_name(iface->functions, name); dataItr != iface->functions.end())
         {
             functions.push_back(&*dataItr);
+
+            // NOTE: Functions are sorted, so this should be the first of N consecutive functions with the same name
+            for (++dataItr; (dataItr != iface->functions.end()) && (dataItr->name == name); ++dataItr)
+            {
+                functions.push_back(&*dataItr);
+            }
         }
 
         hasEvents = hasEvents || !iface->events.empty();
@@ -619,9 +625,10 @@ jsi::Value projected_object_instance::get(jsi::Runtime& runtime, const jsi::Prop
     else if (!functions.empty())
     {
         // TODO: Calculate max arity? Does it matter?
+        auto functionName = functions[0]->name;
         auto fn = jsi::Function::createFromHostFunction(
             runtime, id, 0, projected_overloaded_function{ std::move(functions) });
-        return jsi::Value(runtime, m_functions.emplace(functions[0]->name, std::move(fn)).first->second);
+        return jsi::Value(runtime, m_functions.emplace(functionName, std::move(fn)).first->second);
     }
 
     if (hasEvents)
@@ -823,6 +830,7 @@ winrt::guid projected_value_traits<winrt::guid>::as_native(jsi::Runtime& runtime
     if (str.size() == guid_length)
     {
         ++strBuffer; // Move past the '{'
+        strBuffer[uuid_length] = 0; // UuidFromString expects null termination
     }
     else if (str.size() != uuid_length)
     {

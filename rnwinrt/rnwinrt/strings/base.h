@@ -12,6 +12,7 @@
 #include <atomic>
 #include <jsi/jsi.h>
 #include <string_view>
+#include <thread>
 #include <unordered_map>
 #include <variant>
 #include <vector>
