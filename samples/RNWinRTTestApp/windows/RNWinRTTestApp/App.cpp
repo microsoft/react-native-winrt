@@ -14,21 +14,11 @@ using namespace winrt::RNWinRTTestApp::implementation;
 App::App() noexcept
 {    
     const auto settings = InstanceSettings();
-#if BUNDLE
-    JavaScriptBundleFile(L"index.windows");
-    settings.UseWebDebugger(false);
-    settings.UseFastRefresh(false);
 
-#if _DEBUG
-    settings.UseWebDebugger(false);
-    settings.UseDirectDebugger(true);
-#endif
-
-#else
     JavaScriptMainModuleName(L"index");
     settings.UseWebDebugger(false);
+    settings.UseDirectDebugger(true);
     settings.UseFastRefresh(true);
-#endif
 
 #if _DEBUG
     settings.UseDeveloperSupport(true);
