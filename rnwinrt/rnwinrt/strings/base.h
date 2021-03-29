@@ -10,6 +10,7 @@
 
 #include <WeakReference.h>
 #include <atomic>
+#include <charconv>
 #include <jsi/jsi.h>
 #include <string_view>
 #include <thread>
@@ -533,6 +534,20 @@ namespace jswinrt
     {
         return [fn, pThis](Args... args) { return (pThis->*fn)(std::forward<Args>(args)...); };
     }
+
+    inline std::optional<uint32_t> index_from_name(std::string_view name)
+    {
+        auto begin = name.data();
+        auto end = begin + name.size();
+        uint32_t index;
+        auto [ptr, ec] = std::from_chars(begin, end, index);
+        if ((ptr == end) && (ec == std::errc{}))
+        {
+            return index;
+        }
+
+        return std::nullopt;
+    }
 }
 
 // Generic helpers
@@ -556,6 +571,10 @@ namespace jswinrt
     using instance_remove_event_t = void (*)(const winrt::Windows::Foundation::IInspectable&, winrt::event_token);
     using instance_call_function_t = jsi::Value (*)(
         jsi::Runtime&, const winrt::Windows::Foundation::IInspectable&, const jsi::Value*);
+    using instance_runtime_get_property_t = std::optional<jsi::Value> (*)(
+        jsi::Runtime&, const winrt::Windows::Foundation::IInspectable&, std::string_view);
+    using instance_runtime_set_property_t = bool (*)(
+        jsi::Runtime&, const winrt::Windows::Foundation::IInspectable&, std::string_view, const jsi::Value&);
 
     inline constexpr std::string_view add_event_name = "addEventListener"sv;
     inline constexpr std::string_view remove_event_name = "removeEventListener"sv;
@@ -1309,9 +1328,12 @@ namespace jswinrt
         };
 
         constexpr static_interface_data(const winrt::guid& guid, span<const property_mapping> properties,
-            span<const event_mapping> events, span<const function_mapping> functions) :
+            span<const event_mapping> events, span<const function_mapping> functions,
+            instance_runtime_get_property_t runtimeGetProperty = nullptr,
+            instance_runtime_set_property_t runtimeSetProperty = nullptr) :
             guid(guid),
-            properties(properties), events(events), functions(functions)
+            properties(properties), events(events), functions(functions), runtime_get_property(runtimeGetProperty),
+            runtime_set_property(runtimeSetProperty)
         {
         }
 
@@ -1319,6 +1341,10 @@ namespace jswinrt
         span<const property_mapping> properties;
         span<const event_mapping> events;
         span<const function_mapping> functions;
+
+        // Some projected types want the ability to expose functions beyond what's
+        instance_runtime_get_property_t runtime_get_property;
+        instance_runtime_set_property_t runtime_set_property;
     };
 
     extern const span<const std::pair<winrt::guid, const static_interface_data*>> global_interface_map;
