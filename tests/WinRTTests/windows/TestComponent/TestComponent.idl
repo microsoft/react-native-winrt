@@ -210,6 +210,18 @@ namespace TestComponent
             Windows.Foundation.IReference<Int32>[] values);
         static Windows.Foundation.Collections.IVector<Object> CopyObjectsToVector(Object[] values);
 
+        // TODO: These exist mostly because C++/WinRT's 'GetView' implementation currently returns the 'this' object
+        static Windows.Foundation.Collections.IVectorView<Boolean> CopyBoolsToVectorView(Boolean[] values);
+        static Windows.Foundation.Collections.IVectorView<Char> CopyCharsToVectorView(Char[] values);
+        static Windows.Foundation.Collections.IVectorView<Int32> CopyNumericsToVectorView(Int32[] values);
+        static Windows.Foundation.Collections.IVectorView<String> CopyStringsToVectorView(String[] values);
+        static Windows.Foundation.Collections.IVectorView<Guid> CopyGuidsToVectorView(Guid[] values);
+        static Windows.Foundation.Collections.IVectorView<TestEnum> CopyEnumValuesToVectorView(TestEnum[] values);
+        static Windows.Foundation.Collections.IVectorView<CompositeType> CopyCompositeStructsToVectorView(CompositeType[] values);
+        static Windows.Foundation.Collections.IVectorView<Windows.Foundation.IReference<Int32> > CopyRefsToVectorView(
+            Windows.Foundation.IReference<Int32>[] values);
+        static Windows.Foundation.Collections.IVectorView<Object> CopyObjectsToVectorView(Object[] values);
+
         // Convert array to IVector
         static Windows.Foundation.Collections.IVector<Boolean> ReturnSameBoolVector(Windows.Foundation.Collections.IVector<Boolean> vector);
         static Windows.Foundation.Collections.IVector<Char> ReturnSameCharVector(Windows.Foundation.Collections.IVector<Char> vector);
