@@ -25,7 +25,24 @@ function checkEquals(lhs, rhs) {
         };
     }
 
-    if (typeof(lhs) === 'object') {
+    if (Array.isArray(lhs) && Array.isArray(rhs)) {
+        // console.log(lhs, ' -> ', rhs);
+        if (lhs.length != rhs.length) {
+            return {
+                success: false,
+                msg: 'Arrays have different length. ' + lhs.length + ' =/= ' + rhs.length
+            };
+        }
+
+        // TODO: This technically won't work for sparse arrays
+        for (var i = 0; i < lhs.length; ++i) {
+            var result = checkEquals(lhs[i], rhs[i]);
+            if (!result.success) {
+                result.msg = 'Mismatched array elements at index ' + i + ': ' + result.msg;
+                return result;
+            }
+        }
+    } else if (typeof(lhs) === 'object') {
         for (var prop in lhs) {
             if (!rhs.hasOwnProperty(prop)) {
                 return {
@@ -79,21 +96,16 @@ export const assert = {
         }
     },
 
-    throwsError(functionToExecute, errorName, errorMessage) {
-        let isFunctionExecuted = false;
+    throwsException(fn) {
+        var threw = false;
         try {
-            functionToExecute();
-            isFunctionExecuted = true;
-        } catch (error) {
-            if (errorName && error.name !== errorName) {
-                throw new Error('throwsError failed! Actual error name: ' + error.name + '. Expected error name: ' + errorName);
-            }
-            if (errorMessage && error.message !== errorMessage) {
-                throw new Error('throwsError failed! Actual error message: ' + error.message + '. Expected error message: ' + errorMessage);
-            }
+            fn();
+        } catch {
+            threw = true;
         }
-        if (isFunctionExecuted) {
-            throw new Error('throwsError failed! Function did not throw any error.')
+
+        if (!threw) {
+            throw new Error('Assertion failed! Expected an exception, but none was thrown');
         }
     }
 };
