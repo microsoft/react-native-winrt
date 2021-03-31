@@ -671,17 +671,20 @@ jsi::Value projected_object_instance::get(jsi::Runtime& runtime, const jsi::Prop
     }
 
     // If we've made it this far, check to see if any interface wants to handle the call (e.g. operator[] etc.)
+    jsi::Value fallbackValue;
     for (auto iface : m_interfaces)
     {
         if (!iface->runtime_get_property)
             continue;
 
-        auto result = iface->runtime_get_property(runtime, m_instance, name);
+        auto [result, fallback] = iface->runtime_get_property(runtime, m_instance, name);
         if (result)
             return std::move(*result);
+        else if (fallback)
+            fallbackValue = std::move(*fallback);
     }
 
-    return jsi::Value::undefined();
+    return std::move(fallbackValue);
 }
 
 void projected_object_instance::set(jsi::Runtime& runtime, const jsi::PropNameID& id, const jsi::Value& value)
