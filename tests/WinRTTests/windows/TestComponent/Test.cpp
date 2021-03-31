@@ -189,8 +189,7 @@ namespace winrt::TestComponent::implementation
     }
 
     IReference<int32_t> Test::StaticRefOutParam(
-        IReference<int32_t> const& value, IReference<int32_t>& doubledValue,
-        IReference<int32_t>& tripledValue)
+        IReference<int32_t> const& value, IReference<int32_t>& doubledValue, IReference<int32_t>& tripledValue)
     {
         doubledValue = value.Value() * 2;
         tripledValue = value.Value() * 3;
@@ -198,9 +197,7 @@ namespace winrt::TestComponent::implementation
     }
 
     IVector<int32_t> Test::StaticObjectOutParam(
-        IVector<int32_t> const& values,
-        IVector<int32_t>& doubledValues,
-        IVector<int32_t>& tripledValues)
+        IVector<int32_t> const& values, IVector<int32_t>& doubledValues, IVector<int32_t>& tripledValues)
     {
         doubledValues = single_threaded_vector<int32_t>();
         tripledValues = single_threaded_vector<int32_t>();
@@ -280,9 +277,7 @@ namespace winrt::TestComponent::implementation
     }
 
     com_array<IVector<int32_t>> Test::StaticObjectArrayOutParam(
-        array_view<IVector<int32_t> const> values,
-        com_array<IVector<int32_t>>& rot1,
-        com_array<IVector<int32_t>>& rot2)
+        array_view<IVector<int32_t> const> values, com_array<IVector<int32_t>>& rot1, com_array<IVector<int32_t>>& rot2)
     {
         rot1 = rotate_array(values, 1);
         rot2 = rotate_array(values, 2);
@@ -765,20 +760,17 @@ namespace winrt::TestComponent::implementation
         return CopyToVector(values);
     }
 
-    IVector<CompositeType> Test::CopyCompositeStructsToVector(
-        array_view<CompositeType const> values)
+    IVector<CompositeType> Test::CopyCompositeStructsToVector(array_view<CompositeType const> values)
     {
         return CopyToVector(values);
     }
 
-    IVector<IReference<int32_t>> Test::CopyRefsToVector(
-        array_view<IReference<int32_t> const> values)
+    IVector<IReference<int32_t>> Test::CopyRefsToVector(array_view<IReference<int32_t> const> values)
     {
         return CopyToVector(values);
     }
 
-    IVector<IInspectable> Test::CopyObjectsToVector(
-        array_view<IInspectable const> values)
+    IVector<IInspectable> Test::CopyObjectsToVector(array_view<IInspectable const> values)
     {
         return CopyToVector(values);
     }
@@ -872,48 +864,39 @@ namespace winrt::TestComponent::implementation
         return CopyToVectorView(values);
     }
 
-    IVector<bool> Test::ReturnSameBoolVector(
-        IVector<bool> const& vector)
+    IVector<bool> Test::ReturnSameBoolVector(IVector<bool> const& vector)
     {
         return vector;
     }
-    IVector<char16_t> Test::ReturnSameCharVector(
-        IVector<char16_t> const& vector)
+    IVector<char16_t> Test::ReturnSameCharVector(IVector<char16_t> const& vector)
     {
         return vector;
     }
-    IVector<int32_t> Test::ReturnSameNumericVector(
-        IVector<int32_t> const& vector)
+    IVector<int32_t> Test::ReturnSameNumericVector(IVector<int32_t> const& vector)
     {
         return vector;
     }
-    IVector<hstring> Test::ReturnSameStringVector(
-        IVector<hstring> const& vector)
+    IVector<hstring> Test::ReturnSameStringVector(IVector<hstring> const& vector)
     {
         return vector;
     }
-    IVector<winrt::guid> Test::ReturnSameGuidVector(
-        IVector<winrt::guid> const& vector)
+    IVector<winrt::guid> Test::ReturnSameGuidVector(IVector<winrt::guid> const& vector)
     {
         return vector;
     }
-    IVector<TestEnum> Test::ReturnSameEnumVector(
-        IVector<TestEnum> const& vector)
+    IVector<TestEnum> Test::ReturnSameEnumVector(IVector<TestEnum> const& vector)
     {
         return vector;
     }
-    IVector<CompositeType> Test::ReturnSameCompositeStructVector(
-        IVector<CompositeType> const& vector)
+    IVector<CompositeType> Test::ReturnSameCompositeStructVector(IVector<CompositeType> const& vector)
     {
         return vector;
     }
-    IVector<IReference<int32_t>> Test::ReturnSameRefVector(
-        IVector<IReference<int32_t>> const& vector)
+    IVector<IReference<int32_t>> Test::ReturnSameRefVector(IVector<IReference<int32_t>> const& vector)
     {
         return vector;
     }
-    IVector<IInspectable> Test::ReturnSameObjectVector(
-        IVector<IInspectable> const& vector)
+    IVector<IInspectable> Test::ReturnSameObjectVector(IVector<IInspectable> const& vector)
     {
         return vector;
     }
@@ -1420,8 +1403,8 @@ namespace winrt::TestComponent::implementation
         return StaticCompositeStructOutParam(input, first, second);
     }
 
-    IReference<int32_t> Test::RefOutParam(IReference<int32_t> const& value,
-        IReference<int32_t>& doubledValue, IReference<int32_t>& tripledValue)
+    IReference<int32_t> Test::RefOutParam(
+        IReference<int32_t> const& value, IReference<int32_t>& doubledValue, IReference<int32_t>& tripledValue)
     {
         doubledValue = value.Value() * 2;
         tripledValue = value.Value() * 3;
@@ -1429,9 +1412,7 @@ namespace winrt::TestComponent::implementation
     }
 
     IVector<int32_t> Test::ObjectOutParam(
-        IVector<int32_t> const& values,
-        IVector<int32_t>& doubledValues,
-        IVector<int32_t>& tripledValues)
+        IVector<int32_t> const& values, IVector<int32_t>& doubledValues, IVector<int32_t>& tripledValues)
     {
         doubledValues = single_threaded_vector<int32_t>();
         tripledValues = single_threaded_vector<int32_t>();
@@ -1510,9 +1491,7 @@ namespace winrt::TestComponent::implementation
     }
 
     com_array<IVector<int32_t>> Test::ObjectArrayOutParam(
-        array_view<IVector<int32_t> const> values,
-        com_array<IVector<int32_t>>& rot1,
-        com_array<IVector<int32_t>>& rot2)
+        array_view<IVector<int32_t> const> values, com_array<IVector<int32_t>>& rot1, com_array<IVector<int32_t>>& rot2)
     {
         rot1 = rotate_array(values, 1);
         rot2 = rotate_array(values, 2);
@@ -1686,8 +1665,7 @@ namespace winrt::TestComponent::implementation
         m_compositeStructEventSource.remove(token);
     }
 
-    winrt::event_token Test::RefEventHandler(
-        Windows::Foundation::EventHandler<IReference<int32_t>> const& handler)
+    winrt::event_token Test::RefEventHandler(Windows::Foundation::EventHandler<IReference<int32_t>> const& handler)
     {
         return m_refEventSource.add(handler);
     }
@@ -1697,8 +1675,7 @@ namespace winrt::TestComponent::implementation
         m_refEventSource.remove(token);
     }
 
-    winrt::event_token Test::ObjectEventHandler(
-        Windows::Foundation::EventHandler<IVector<int32_t>> const& handler)
+    winrt::event_token Test::ObjectEventHandler(Windows::Foundation::EventHandler<IVector<int32_t>> const& handler)
     {
         return m_objectEventSource.add(handler);
     }

@@ -3930,7 +3930,7 @@ namespace jswinrt
                     jsi::Runtime& runtime, const jsi::Value& thisValue, const jsi::Value* args, size_t count)
                 {
                     auto vector = convert_value_to_native<native_type>(runtime, thisValue);
-                    for (size_t i = count; i-- > 0; )
+                    for (size_t i = count; i-- > 0;)
                     {
                         vector.InsertAt(0, convert_value_to_native<T>(runtime, args[i]));
                     }
@@ -3956,27 +3956,31 @@ namespace jswinrt
                     {
                         // NOTE: Cannot use Array.prototype.concat since we cannot satisfy 'IsConcatSpreadable'
                         return { jsi::Function::createFromHostFunction(
-                            runtime, make_propid(runtime, name), 1, &vector_concat<native_type>), std::nullopt };
+                                     runtime, make_propid(runtime, name), 1, &vector_concat<native_type>),
+                            std::nullopt };
                     }
                     else if (name == "copyWithin"sv)
                     {
                         // NOTE: Cannot use Array.prototype.copyWithin since we cannot satisfy 'HasProperty'
                         return { jsi::Function::createFromHostFunction(
-                            runtime, make_propid(runtime, name), 2, &copyWithin), std::nullopt };
+                                     runtime, make_propid(runtime, name), 2, &copyWithin),
+                            std::nullopt };
                     }
                     // NOTE: Forward to Array.prototype.entries since we satisfy 'CreateArrayIterator' requirements
                     else if (name == "every"sv)
                     {
                         // NOTE: Cannot use Array.prototype.every since we cannot satisfy 'HasProperty'
                         return { jsi::Function::createFromHostFunction(
-                            runtime, make_propid(runtime, name), 1, &vector_every<native_type>), std::nullopt };
+                                     runtime, make_propid(runtime, name), 1, &vector_every<native_type>),
+                            std::nullopt };
                     }
                     // NOTE: Forward to Array.prototype.fill since we satisfy all requirements
                     else if (name == "filter"sv)
                     {
                         // NOTE: Cannot use Array.prototype.filter since we cannot satisfy 'HasProperty'
                         return { jsi::Function::createFromHostFunction(
-                            runtime, make_propid(runtime, name), 1, &vector_filter<native_type>), std::nullopt };
+                                     runtime, make_propid(runtime, name), 1, &vector_filter<native_type>),
+                            std::nullopt };
                     }
                     // NOTE: Forward to Array.prototype.find since we satisfy all requirements
                     // NOTE: Forward to Array.prototype.findIndex since we satisfy all requirements
@@ -3985,7 +3989,8 @@ namespace jswinrt
                     {
                         // NOTE: Cannot use Array.prototype.forEach since we cannot satisfy 'HasProperty'
                         return { jsi::Function::createFromHostFunction(
-                            runtime, make_propid(runtime, name), 1, &vector_forEach<native_type>), std::nullopt };
+                                     runtime, make_propid(runtime, name), 1, &vector_forEach<native_type>),
+                            std::nullopt };
                     }
                     // NOTE: Forward to Array.prototype.includes since we satisfy all requirements
                     // NOTE: 'indexOf' is a function that exists on IVector, so that takes precedence
@@ -3995,13 +4000,15 @@ namespace jswinrt
                     {
                         // NOTE: Cannot use Array.prototype.lastIndexOf since we cannot satisfy 'HasProperty'
                         return { jsi::Function::createFromHostFunction(
-                            runtime, make_propid(runtime, name), 1, &vector_lastIndexOf<native_type>), std::nullopt };
+                                     runtime, make_propid(runtime, name), 1, &vector_lastIndexOf<native_type>),
+                            std::nullopt };
                     }
                     else if (name == "map"sv)
                     {
                         // NOTE: Cannot use Array.prototype.map since we cannot satisfy 'HasProperty'
                         return { jsi::Function::createFromHostFunction(
-                            runtime, make_propid(runtime, name), 1, &vector_map<native_type>), std::nullopt };
+                                     runtime, make_propid(runtime, name), 1, &vector_map<native_type>),
+                            std::nullopt };
                     }
                     else if (name == "pop"sv)
                     {
@@ -4019,13 +4026,15 @@ namespace jswinrt
                     {
                         // NOTE: Cannot use Array.prototype.reduce since we cannot satisfy 'HasProperty'
                         return { jsi::Function::createFromHostFunction(
-                            runtime, make_propid(runtime, name), 1, &vector_reduce<native_type>), std::nullopt };
+                                     runtime, make_propid(runtime, name), 1, &vector_reduce<native_type>),
+                            std::nullopt };
                     }
                     else if (name == "reduceRight"sv)
                     {
                         // NOTE: Cannot use Array.prototype.reduceRight since we cannot satisfy 'HasProperty'
                         return { jsi::Function::createFromHostFunction(
-                            runtime, make_propid(runtime, name), 1, &vector_reduceRight<native_type>), std::nullopt };
+                                     runtime, make_propid(runtime, name), 1, &vector_reduceRight<native_type>),
+                            std::nullopt };
                     }
                     else if (name == "reverse"sv)
                     {
@@ -4044,13 +4053,15 @@ namespace jswinrt
                     {
                         // NOTE: Cannot use Array.prototype.slice since we cannot satisfy 'HasProperty'
                         return { jsi::Function::createFromHostFunction(
-                            runtime, make_propid(runtime, name), 1, &vector_slice<native_type>), std::nullopt };
+                                     runtime, make_propid(runtime, name), 1, &vector_slice<native_type>),
+                            std::nullopt };
                     }
                     else if (name == "some"sv)
                     {
                         // NOTE: Cannot use Array.prototype.some since we cannot satisfy 'HasProperty'
                         return { jsi::Function::createFromHostFunction(
-                            runtime, make_propid(runtime, name), 1, &vector_some<native_type>), std::nullopt };
+                                     runtime, make_propid(runtime, name), 1, &vector_some<native_type>),
+                            std::nullopt };
                     }
                     else if (name == "sort"sv)
                     {
@@ -4178,7 +4189,8 @@ namespace jswinrt
                     {
                         // NOTE: Cannot use Array.prototype.concat since we cannot satisfy 'IsConcatSpreadable'
                         return { jsi::Function::createFromHostFunction(
-                            runtime, make_propid(runtime, name), 1, &vector_concat<native_type>), std::nullopt };
+                                     runtime, make_propid(runtime, name), 1, &vector_concat<native_type>),
+                            std::nullopt };
                     }
                     // NOTE: Array.prototype.copyWithin is a modify operation. Let this fall through
                     // NOTE: Forward to Array.prototype.entries since we satisfy 'CreateArrayIterator' requirements
@@ -4186,14 +4198,16 @@ namespace jswinrt
                     {
                         // NOTE: Cannot use Array.prototype.every since we cannot satisfy 'HasProperty'
                         return { jsi::Function::createFromHostFunction(
-                            runtime, make_propid(runtime, name), 1, &vector_every<native_type>), std::nullopt };
+                                     runtime, make_propid(runtime, name), 1, &vector_every<native_type>),
+                            std::nullopt };
                     }
                     // NOTE: Forward to Array.prototype.fill since we satisfy all requirements
                     else if (name == "filter"sv)
                     {
                         // NOTE: Cannot use Array.prototype.filter since we cannot satisfy 'HasProperty'
                         return { jsi::Function::createFromHostFunction(
-                            runtime, make_propid(runtime, name), 1, &vector_filter<native_type>), std::nullopt };
+                                     runtime, make_propid(runtime, name), 1, &vector_filter<native_type>),
+                            std::nullopt };
                     }
                     // NOTE: Forward to Array.prototype.find since we satisfy all requirements
                     // NOTE: Forward to Array.prototype.findIndex since we satisfy all requirements
@@ -4202,7 +4216,8 @@ namespace jswinrt
                     {
                         // NOTE: Cannot use Array.prototype.forEach since we cannot satisfy 'HasProperty'
                         return { jsi::Function::createFromHostFunction(
-                            runtime, make_propid(runtime, name), 1, &vector_forEach<native_type>), std::nullopt };
+                                     runtime, make_propid(runtime, name), 1, &vector_forEach<native_type>),
+                            std::nullopt };
                     }
                     // NOTE: Forward to Array.prototype.includes since we satisfy all requirements
                     // NOTE: 'indexOf' is a function that exists on IVector, so that takes precedence
@@ -4212,13 +4227,15 @@ namespace jswinrt
                     {
                         // NOTE: Cannot use Array.prototype.lastIndexOf since we cannot satisfy 'HasProperty'
                         return { jsi::Function::createFromHostFunction(
-                            runtime, make_propid(runtime, name), 1, &vector_lastIndexOf<native_type>), std::nullopt };
+                                     runtime, make_propid(runtime, name), 1, &vector_lastIndexOf<native_type>),
+                            std::nullopt };
                     }
                     else if (name == "map"sv)
                     {
                         // NOTE: Cannot use Array.prototype.map since we cannot satisfy 'HasProperty'
                         return { jsi::Function::createFromHostFunction(
-                            runtime, make_propid(runtime, name), 1, &vector_map<native_type>), std::nullopt };
+                                     runtime, make_propid(runtime, name), 1, &vector_map<native_type>),
+                            std::nullopt };
                     }
                     // NOTE: Array.prototype.pop is a modify operation. Let this fall through
                     // NOTE: Array.prototype.push is a modify operation. Let this fall through
@@ -4226,13 +4243,15 @@ namespace jswinrt
                     {
                         // NOTE: Cannot use Array.prototype.reduce since we cannot satisfy 'HasProperty'
                         return { jsi::Function::createFromHostFunction(
-                            runtime, make_propid(runtime, name), 1, &vector_reduce<native_type>), std::nullopt };
+                                     runtime, make_propid(runtime, name), 1, &vector_reduce<native_type>),
+                            std::nullopt };
                     }
                     else if (name == "reduceRight"sv)
                     {
                         // NOTE: Cannot use Array.prototype.reduceRight since we cannot satisfy 'HasProperty'
                         return { jsi::Function::createFromHostFunction(
-                            runtime, make_propid(runtime, name), 1, &vector_reduceRight<native_type>), std::nullopt };
+                                     runtime, make_propid(runtime, name), 1, &vector_reduceRight<native_type>),
+                            std::nullopt };
                     }
                     // NOTE: Array.prototype.reverse is a modify operation. Let this fall through
                     // NOTE: Array.prototype.shift is a modify operation. Let this fall through
@@ -4240,13 +4259,15 @@ namespace jswinrt
                     {
                         // NOTE: Cannot use Array.prototype.slice since we cannot satisfy 'HasProperty'
                         return { jsi::Function::createFromHostFunction(
-                            runtime, make_propid(runtime, name), 1, &vector_slice<native_type>), std::nullopt };
+                                     runtime, make_propid(runtime, name), 1, &vector_slice<native_type>),
+                            std::nullopt };
                     }
                     else if (name == "some"sv)
                     {
                         // NOTE: Cannot use Array.prototype.some since we cannot satisfy 'HasProperty'
                         return { jsi::Function::createFromHostFunction(
-                            runtime, make_propid(runtime, name), 1, &vector_some<native_type>), std::nullopt };
+                                     runtime, make_propid(runtime, name), 1, &vector_some<native_type>),
+                            std::nullopt };
                     }
                     // NOTE: Array.prototype.sort is a modify operation. Let this fall through
                     // NOTE: Array.prototype.splic is a modify operation. Let this fall through
