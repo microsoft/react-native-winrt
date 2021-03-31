@@ -108,7 +108,8 @@ export function makeCollectionsTests(pThis) {
        // TODO: new TestScenario('Array as IVector<Object>', runObjectArrayAsVectorTest.bind(pThis)),
 
        // Vectors behave like arrays
-       new TestScenario('IVector behave like Array', runVectorAsArrayTest.bind(pThis)),
+       new TestScenario('IVector behaves like Array', runVectorAsArrayTest.bind(pThis)),
+       new TestScenario('IVectorView behaves like Array', runVectorViewAsArrayTest.bind(pThis)),
     ];
 }
 
@@ -1047,7 +1048,7 @@ function runVectorAsArrayTest(scenario) {
         doVectorReverseTest([8, 42]);
         doVectorReverseTest(numericVectorContents);
 
-        // Array.prototype.shift
+        // Array.prototype.shift / Array.prototype.unshift
         doVectorShiftUnshiftTest([]);
         doVectorShiftUnshiftTest([42]);
         doVectorShiftUnshiftTest(numericVectorContents);
@@ -1061,5 +1062,62 @@ function runVectorAsArrayTest(scenario) {
 
         // Array.prototype.splice
         doVectorSpliceTest();
+    });
+}
+
+function runVectorViewAsArrayTest(scenario) {
+    this.runSync(scenario, () => {
+        doCommonVectorAsArrayTest(TestComponent.Test.copyNumericsToVectorView);
+
+        // TODO: Should we guarantee the presence/absence of exceptions?
+        const swallowExceptions = (fn) => { try { fn(); } catch {} };
+
+        var view = TestComponent.Test.copyNumericsToVectorView(numericVectorContents);
+
+        // Assigning to element should fail
+        swallowExceptions(() => view[0] = 42);
+        swallowExceptions(() => view[100] = 42);
+        verifyVectorContents(view, numericVectorContents);
+
+        // Array.prototype.length (set should fail)
+        swallowExceptions(() => view.length = 0);
+        swallowExceptions(() => view.length = 100);
+        verifyVectorContents(view, numericVectorContents);
+
+        // Array.prototype.copyWithin
+        swallowExceptions(() => view.copyWithin(0, 2));
+        verifyVectorContents(view, numericVectorContents);
+
+        // Array.prototype.fill
+        swallowExceptions(() => view.fill(42));
+        verifyVectorContents(view, numericVectorContents);
+
+        // Array.prototype.push
+        swallowExceptions(() => view.pop());
+        verifyVectorContents(view, numericVectorContents);
+
+        // Array.prototype.pop
+        swallowExceptions(() => view.push(42));
+        verifyVectorContents(view, numericVectorContents);
+
+        // Array.prototype.reverse
+        swallowExceptions(() => view.reverse());
+        verifyVectorContents(view, numericVectorContents);
+
+        // Array.prototype.shift
+        swallowExceptions(() => view.shift());
+        verifyVectorContents(view, numericVectorContents);
+
+        // Array.prototype.unshift
+        swallowExceptions(() => view.unshift(42));
+        verifyVectorContents(view, numericVectorContents);
+
+        // Array.prototype.sort
+        swallowExceptions(() => view.sort());
+        verifyVectorContents(view, numericVectorContents);
+
+        // Array.prototype.splice
+        swallowExceptions(() => view.splice(1, 2, 42));
+        verifyVectorContents(view, numericVectorContents);
     });
 }
