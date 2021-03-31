@@ -585,6 +585,7 @@ namespace jswinrt
     }
 
     jsi::String make_string(jsi::Runtime& runtime, std::wstring_view str);
+    std::u16string string_to_utf16(jsi::Runtime& runtime, const jsi::String& string);
 
     inline jsi::PropNameID make_propid(jsi::Runtime& runtime, std::string_view str)
     {
@@ -833,6 +834,61 @@ namespace jswinrt
         jsi::Function m_resolve;
         jsi::Function m_reject;
     };
+
+    inline bool to_boolean(jsi::Runtime& runtime, const jsi::Value& value)
+    {
+        // Common case first
+        if (value.isBool())
+            return value.getBool();
+        if (value.isUndefined() || value.isNull())
+            return false;
+        if (value.isSymbol() || value.isObject())
+            return true;
+        if (value.isNumber())
+            return value.getNumber() != 0;
+
+        assert(value.isString());
+        return !value.getString(runtime).utf8(runtime).empty();
+    }
+
+    inline double to_number(jsi::Runtime& runtime, const jsi::Value& value)
+    {
+        if (value.isNumber())
+            return value.getNumber();
+        if (value.isUndefined())
+            return std::numeric_limits<double>::quiet_NaN();
+        if (value.isNull())
+            return 0;
+        if (value.isBool())
+            return value.getBool() ? 1 : 0;
+
+        if (value.isString())
+        {
+            // This is probably not 100% correct, but it should be good enough
+            auto str = value.getString(runtime).utf8(runtime);
+            double result;
+            auto [ptr, ec] = std::from_chars(str.data(), str.data() + str.size(), result);
+            if (ec != std::errc{})
+                return std::numeric_limits<double>::quiet_NaN();
+
+            return result;
+        }
+
+        // Symbol & Object (TODO: Object shouldn't be included here)
+        throw jsi::JSError(runtime, "TypeError: Cannot convert value to number");
+    }
+
+    inline double to_integer_or_infinity(jsi::Runtime& runtime, const jsi::Value& value)
+    {
+        auto result = to_number(runtime, value);
+        if (std::isnan(result) || (result == 0.0) || (result == -0.0))
+            return 0;
+        if ((result == std::numeric_limits<double>::infinity()) || (result == -std::numeric_limits<double>::infinity()))
+            return result;
+
+        auto integer = std::floor(std::abs(result));
+        return (result < 0) ? -integer : integer;
+    }
 }
 
 // JS thread context data
@@ -3308,6 +3364,417 @@ namespace jswinrt
             constexpr const static_interface_data& data = data_t<T>::value;
         }
 
+        inline std::optional<jsi::Value> fwd_array_prototype(jsi::Runtime& runtime, std::string_view name)
+        {
+            auto arrayClass = runtime.global().getPropertyAsObject(runtime, "Array");
+            auto arrayProto = arrayClass.getPropertyAsObject(runtime, "prototype");
+
+            // NOTE: 'name' is constructed from a std::string
+            assert(name.data()[name.size()] == 0);
+            auto result = arrayProto.getProperty(runtime, name.data());
+            if (!result.isUndefined())
+                return result;
+
+            return std::nullopt;
+        }
+
+        inline uint32_t vector_index_from_arg(jsi::Runtime& runtime, const jsi::Value* args, size_t count, size_t index,
+            uint32_t size, uint32_t defaultValue = 0)
+        {
+            if (index >= count)
+                return defaultValue;
+
+            auto value = to_integer_or_infinity(runtime, args[index]);
+            if (value == -std::numeric_limits<double>::infinity())
+                return 0;
+
+            if (value < 0)
+            {
+                value = std::max(0.0, size + value);
+            }
+            else
+            {
+                value = std::min(value, static_cast<double>(size));
+            }
+
+            assert(static_cast<double>(static_cast<uint32_t>(value)) == value);
+            return static_cast<uint32_t>(value);
+        }
+
+        inline jsi::Function callback_from_arg(
+            jsi::Runtime& runtime, const jsi::Value* args, size_t count, size_t index = 0)
+        {
+            if (index >= count)
+            {
+                throw jsi::JSError(runtime, "TypeError: undefined is not a function");
+            }
+
+            return args[index].asObject(runtime).asFunction(runtime);
+        }
+
+        inline std::optional<jsi::Object> callback_this_arg(
+            jsi::Runtime& runtime, const jsi::Value* args, size_t count, size_t index = 1)
+        {
+            if ((index < count) && args[index].isObject())
+            {
+                return args[index].getObject(runtime);
+            }
+
+            return std::nullopt;
+        }
+
+        // NOTE: From Array.prototype.concat. Returns the vector concatenated with the arguments
+        template <typename TVector>
+        inline jsi::Value vector_concat(
+            jsi::Runtime& runtime, const jsi::Value& thisValue, const jsi::Value* args, size_t count)
+        {
+            using namespace winrt::Windows::Foundation::Collections;
+
+            // TODO: We could in theory try and pre-calculate the final size, but it's not quite clear that would be
+            // worth it
+            auto vector = convert_value_to_native<TVector>(runtime, thisValue);
+            jsi::Array result(runtime, vector.Size());
+
+            size_t i = 0;
+            for (auto&& value : vector)
+            {
+                result.setValueAtIndex(runtime, i++, convert_native_to_value(runtime, value));
+            }
+
+            auto pushFn = result.getPropertyAsFunction(runtime, "push");
+            for (size_t argIndex = 0; argIndex < count; ++argIndex)
+            {
+                auto& arg = args[argIndex];
+
+                // TODO: By the JS standard, we should check to see if the argument responds to
+                // 'Symbol.isConcatSpreadable', however this poses two problems. The first is that JSI does not offer us
+                // the ability to check this, and the second is that JSI does not allow us to advertise 'IVector*' types
+                // as 'isConcatSpreadable'. As a workaround - at least until JSI has the functionality we need - we'll
+                // assume 'isConcatSpreadable' to be true if (1) the argument is an array, or (2) the argument is an
+                // 'IVector*<T>'. Note that we'll be missing out on non-array/non-vector spreadable types as well as
+                // 'IVector*<U>' types.
+                // Also note that this problem exists in the reverse direction - when a vector is used as an argument to
+                // an 'Array.prototype.concat' call since we'll be unable to use our logic below during that call.
+                // Again, the ideal solution would be for JSI to give us the functionality we require
+                if (!arg.isObject())
+                {
+                    pushFn.callWithThis(runtime, result, arg);
+                }
+                else if (auto obj = arg.getObject(runtime); obj.isArray(runtime))
+                {
+                    auto arr = obj.getArray(runtime);
+                    auto arrLen = arr.length(runtime);
+                    for (auto j = 0; j < arrLen; ++j)
+                    {
+                        pushFn.callWithThis(runtime, result, arr.getValueAtIndex(runtime, j));
+                    }
+                }
+                else if (obj.isHostObject<projected_object_instance>(runtime))
+                {
+                    using value_type = typename pinterface_traits<TVector>::value_type;
+                    auto hostObj = obj.getHostObject<projected_object_instance>(runtime);
+                    if (auto v = hostObj->instance().try_as<IVector<value_type>>())
+                    {
+                        for (auto&& value : v)
+                        {
+                            pushFn.callWithThis(runtime, result, convert_native_to_value(runtime, value));
+                        }
+                    }
+                    else if (auto view = hostObj->instance().try_as<IVectorView<value_type>>())
+                    {
+                        for (auto&& value : v)
+                        {
+                            pushFn.callWithThis(runtime, result, convert_native_to_value(runtime, value));
+                        }
+                    }
+                    // TODO: IIterable?
+                    else
+                    {
+                        pushFn.callWithThis(runtime, result, arg);
+                    }
+                }
+                else
+                {
+                    pushFn.callWithThis(runtime, result, arg);
+                }
+            }
+
+            return result;
+        }
+
+        template <typename TVector>
+        inline jsi::Value vector_every(
+            jsi::Runtime& runtime, const jsi::Value& thisValue, const jsi::Value* args, size_t count)
+        {
+            auto fn = callback_from_arg(runtime, args, count);
+            auto thisArg = callback_this_arg(runtime, args, count);
+
+            auto vector = convert_value_to_native<TVector>(runtime, thisValue);
+            double index = 0;
+            for (auto&& value : vector)
+            {
+                jsi::Value result;
+                if (thisArg)
+                {
+                    result =
+                        fn.callWithThis(runtime, *thisArg, convert_native_to_value(runtime, value), index++, thisValue);
+                }
+                else
+                {
+                    result = fn.call(runtime, convert_native_to_value(runtime, value), index++, thisValue);
+                }
+
+                if (!to_boolean(runtime, result))
+                    return false;
+            }
+
+            return true;
+        }
+
+        template <typename TVector>
+        inline jsi::Value vector_filter(
+            jsi::Runtime& runtime, const jsi::Value& thisValue, const jsi::Value* args, size_t count)
+        {
+            auto fn = callback_from_arg(runtime, args, count);
+            auto thisArg = callback_this_arg(runtime, args, count);
+
+            jsi::Array result(runtime, 0);
+            auto pushFn = result.getPropertyAsFunction(runtime, "push");
+
+            auto vector = convert_value_to_native<TVector>(runtime, thisValue);
+            double index = 0;
+            for (auto&& value : vector)
+            {
+                jsi::Value includeResult;
+                if (thisArg)
+                {
+                    includeResult =
+                        fn.callWithThis(runtime, *thisArg, convert_native_to_value(runtime, value), index++, thisValue);
+                }
+                else
+                {
+                    includeResult = fn.call(runtime, convert_native_to_value(runtime, value), index++, thisValue);
+                }
+
+                if (to_boolean(runtime, includeResult))
+                {
+                    pushFn.callWithThis(runtime, result, convert_native_to_value(runtime, value));
+                }
+            }
+
+            return result;
+        }
+
+        template <typename TVector>
+        inline jsi::Value vector_forEach(
+            jsi::Runtime& runtime, const jsi::Value& thisValue, const jsi::Value* args, size_t count)
+        {
+            auto fn = callback_from_arg(runtime, args, count);
+            auto thisArg = callback_this_arg(runtime, args, count);
+
+            auto vector = convert_value_to_native<TVector>(runtime, thisValue);
+            double index = 0;
+            for (auto&& value : vector)
+            {
+                if (thisArg)
+                {
+                    fn.callWithThis(runtime, *thisArg, convert_native_to_value(runtime, value), index++, thisValue);
+                }
+                else
+                {
+                    fn.call(runtime, convert_native_to_value(runtime, value), index++, thisValue);
+                }
+            }
+
+            return jsi::Value::undefined();
+        }
+
+        template <typename TVector>
+        inline jsi::Value vector_lastIndexOf(
+            jsi::Runtime& runtime, const jsi::Value& thisValue, const jsi::Value* args, size_t count)
+        {
+            auto vector = convert_value_to_native<TVector>(runtime, thisValue);
+            auto size = vector.Size();
+
+            if ((size == 0) || (count < 1))
+                return -1;
+
+            int64_t fromIndex = size - 1;
+            if (count >= 2)
+            {
+                auto val = to_integer_or_infinity(runtime, args[1]);
+                if (val == -std::numeric_limits<double>::infinity())
+                    return -1;
+
+                if (val >= 0)
+                {
+                    fromIndex = static_cast<int64_t>(std::min(static_cast<double>(fromIndex), val));
+                }
+                else
+                {
+                    fromIndex = static_cast<int64_t>(size + val);
+                }
+            }
+
+            for (; fromIndex >= 0; --fromIndex)
+            {
+                if (jsi::Value::strictEquals(runtime, args[0],
+                        convert_native_to_value(runtime, vector.GetAt(static_cast<uint32_t>(fromIndex)))))
+                    return static_cast<double>(fromIndex);
+            }
+
+            return -1;
+        }
+
+        template <typename TVector>
+        inline jsi::Value vector_map(
+            jsi::Runtime& runtime, const jsi::Value& thisValue, const jsi::Value* args, size_t count)
+        {
+            auto fn = callback_from_arg(runtime, args, count);
+            auto thisArg = callback_this_arg(runtime, args, count);
+
+            auto vector = convert_value_to_native<TVector>(runtime, thisValue);
+            jsi::Array result(runtime, vector.Size());
+
+            uint32_t index = 0;
+            for (auto&& value : vector)
+            {
+                jsi::Value mapResult;
+                if (thisArg)
+                {
+                    mapResult = fn.callWithThis(runtime, *thisArg, convert_native_to_value(runtime, value),
+                        static_cast<double>(index), thisValue);
+                }
+                else
+                {
+                    mapResult = fn.call(
+                        runtime, convert_native_to_value(runtime, value), static_cast<double>(index), thisValue);
+                }
+
+                result.setValueAtIndex(runtime, index, std::move(mapResult));
+                ++index;
+            }
+
+            return result;
+        }
+
+        template <typename TVector>
+        inline jsi::Value vector_reduce(
+            jsi::Runtime& runtime, const jsi::Value& thisValue, const jsi::Value* args, size_t count)
+        {
+            auto vector = convert_value_to_native<TVector>(runtime, thisValue);
+            auto size = vector.Size();
+            auto fn = callback_from_arg(runtime, args, count);
+
+            if ((size == 0) && (count < 2))
+            {
+                throw jsi::JSError(runtime, "TypeError: Reduce of empty vector with no initial value");
+            }
+
+            jsi::Value accum;
+            uint32_t i = 0;
+            if (count >= 2)
+            {
+                accum = jsi::Value(runtime, args[1]);
+            }
+            else
+            {
+                accum = convert_native_to_value(runtime, vector.GetAt(i++));
+            }
+
+            for (; i < size; ++i)
+            {
+                accum = fn.call(runtime, accum, convert_native_to_value(runtime, vector.GetAt(i)),
+                    static_cast<double>(i), thisValue);
+            }
+
+            return accum;
+        }
+
+        template <typename TVector>
+        inline jsi::Value vector_reduceRight(
+            jsi::Runtime& runtime, const jsi::Value& thisValue, const jsi::Value* args, size_t count)
+        {
+            auto vector = convert_value_to_native<TVector>(runtime, thisValue);
+            auto size = vector.Size();
+            auto fn = callback_from_arg(runtime, args, count);
+
+            if ((size == 0) && (count < 2))
+            {
+                throw jsi::JSError(runtime, "TypeError: Reduce of empty vector with no initial value");
+            }
+
+            jsi::Value accum;
+            uint32_t i = size;
+            if (count >= 2)
+            {
+                accum = jsi::Value(runtime, args[1]);
+            }
+            else
+            {
+                accum = convert_native_to_value(runtime, vector.GetAt(--i));
+            }
+
+            while (i-- > 0)
+            {
+                accum = fn.call(runtime, accum, convert_native_to_value(runtime, vector.GetAt(i)),
+                    static_cast<double>(i), thisValue);
+            }
+
+            return accum;
+        }
+
+        template <typename TVector>
+        inline jsi::Value vector_slice(
+            jsi::Runtime& runtime, const jsi::Value& thisValue, const jsi::Value* args, size_t count)
+        {
+            auto vector = convert_value_to_native<TVector>(runtime, thisValue);
+            auto size = vector.Size();
+
+            auto start = vector_index_from_arg(runtime, args, count, 0, size);
+            auto end = vector_index_from_arg(runtime, args, count, 1, size, size);
+            if (start > end)
+                end = start;
+
+            auto copySize = end - start;
+            jsi::Array result(runtime, copySize);
+            for (size_t i = 0; start < end; ++i, ++start)
+            {
+                result.setValueAtIndex(runtime, i, convert_native_to_value(runtime, vector.GetAt(start)));
+            }
+
+            return result;
+        }
+
+        template <typename TVector>
+        inline jsi::Value vector_some(
+            jsi::Runtime& runtime, const jsi::Value& thisValue, const jsi::Value* args, size_t count)
+        {
+            auto fn = callback_from_arg(runtime, args, count);
+            auto thisArg = callback_this_arg(runtime, args, count);
+
+            auto vector = convert_value_to_native<TVector>(runtime, thisValue);
+            double index = 0;
+            for (auto&& value : vector)
+            {
+                jsi::Value result;
+                if (thisArg)
+                {
+                    result =
+                        fn.callWithThis(runtime, *thisArg, convert_native_to_value(runtime, value), index++, thisValue);
+                }
+                else
+                {
+                    result = fn.call(runtime, convert_native_to_value(runtime, value), index++, thisValue);
+                }
+
+                if (to_boolean(runtime, result))
+                    return true;
+            }
+
+            return false;
+        }
+
         namespace IVector
         {
             template <typename T>
@@ -3316,6 +3783,32 @@ namespace jswinrt
                 using native_type = winrt::Windows::Foundation::Collections::IVector<T>;
 
                 static constexpr const static_interface_data::property_mapping properties[] = {
+                    { "length", // NOTE: From Array.prototype
+                        [](jsi::Runtime& runtime, const IInspectable& thisValue) {
+                            return convert_native_to_value(runtime, thisValue.as<native_type>().Size());
+                        },
+                        [](jsi::Runtime& runtime, const IInspectable& thisValue, const jsi::Value& value) {
+                            // Following Chakra's behavior, setting the length can only be used to remove elements
+                            auto vector = thisValue.as<native_type>();
+                            auto currLen = vector.Size();
+                            auto newLen = convert_value_to_native<uint32_t>(runtime, value);
+                            if (newLen > currLen)
+                            {
+                                throw jsi::JSError(runtime, "TypeError: Cannot assign 'length' to IVector that is "
+                                                            "greater than its current length");
+                            }
+                            else if (newLen == 0)
+                            {
+                                vector.Clear();
+                            }
+                            else
+                            {
+                                for (; currLen > newLen; --currLen)
+                                {
+                                    vector.RemoveAtEnd();
+                                }
+                            }
+                        } },
                     { "size",
                         [](jsi::Runtime& runtime, const IInspectable& thisValue) {
                             return convert_native_to_value(runtime, thisValue.as<native_type>().Size());
@@ -3401,6 +3894,365 @@ namespace jswinrt
                         },
                         2, false },
                 };
+
+                static jsi::Value copyWithin(
+                    jsi::Runtime& runtime, const jsi::Value& thisValue, const jsi::Value* args, size_t count)
+                {
+                    auto vector = convert_value_to_native<native_type>(runtime, thisValue);
+                    auto size = vector.Size();
+
+                    auto target = vector_index_from_arg(runtime, args, count, 0, size);
+                    auto start = vector_index_from_arg(runtime, args, count, 1, size);
+                    auto end = vector_index_from_arg(runtime, args, count, 2, size, size);
+
+                    if (end > start)
+                    {
+                        if (target < start) // Forward copy
+                        {
+                            // Because we're copying to earlier in the list, the [begin, end) pair define the length
+                            while (start < end)
+                            {
+                                vector.SetAt(target++, vector.GetAt(start++));
+                            }
+                        }
+                        else // Reverse copy
+                        {
+                            // Because we're copying later in the list, either [begin, end) or [target, size) define the
+                            // length
+                            auto copyCount = std::min(end - start, size - target);
+                            while (copyCount-- != 0)
+                            {
+                                vector.SetAt(target + copyCount, vector.GetAt(start + copyCount));
+                            }
+                        }
+                    }
+
+                    return jsi::Value(runtime, thisValue);
+                }
+
+                static jsi::Value pop(jsi::Runtime& runtime, const jsi::Value& thisValue, const jsi::Value*, size_t)
+                {
+                    auto vector = convert_value_to_native<native_type>(runtime, thisValue);
+                    auto size = vector.Size();
+                    if (size == 0)
+                        return jsi::Value::undefined();
+
+                    auto result = convert_native_to_value(runtime, vector.GetAt(size - 1));
+                    vector.RemoveAtEnd();
+                    return result;
+                }
+
+                static jsi::Value push(
+                    jsi::Runtime& runtime, const jsi::Value& thisValue, const jsi::Value* args, size_t count)
+                {
+                    // TODO: Why do we have to define this function? Based off the specification, we should satisfy all
+                    // requements for Array.prototype.push to work
+                    auto vector = convert_value_to_native<native_type>(runtime, thisValue);
+                    for (size_t i = 0; i < count; ++i)
+                    {
+                        vector.Append(convert_value_to_native<T>(runtime, args[i]));
+                    }
+
+                    return static_cast<double>(vector.Size());
+                }
+
+                static jsi::Value reverse(jsi::Runtime& runtime, const jsi::Value& thisValue, const jsi::Value*, size_t)
+                {
+                    auto vector = convert_value_to_native<native_type>(runtime, thisValue);
+                    auto size = vector.Size();
+
+                    uint32_t left = 0;
+                    uint32_t right = (size != 0) ? size - 1 : 0;
+                    for (; left < right; ++left, --right)
+                    {
+                        auto temp = vector.GetAt(right);
+                        vector.SetAt(right, vector.GetAt(left));
+                        vector.SetAt(left, temp);
+                    }
+
+                    return jsi::Value(runtime, thisValue);
+                }
+
+                static jsi::Value shift(jsi::Runtime& runtime, const jsi::Value& thisValue, const jsi::Value*, size_t)
+                {
+                    auto vector = convert_value_to_native<native_type>(runtime, thisValue);
+                    auto size = vector.Size();
+                    if (size == 0)
+                        return jsi::Value::undefined();
+
+                    auto result = convert_native_to_value(runtime, vector.GetAt(0));
+                    for (uint32_t i = 1; i < size; ++i)
+                    {
+                        vector.SetAt(i - 1, vector.GetAt(i));
+                    }
+
+                    vector.RemoveAtEnd();
+                    return result;
+                }
+
+                static jsi::Value sort(
+                    jsi::Runtime& runtime, const jsi::Value& thisValue, const jsi::Value* args, size_t count)
+                {
+                    auto vector = convert_value_to_native<native_type>(runtime, thisValue);
+                    auto size = vector.Size();
+
+                    if (count >= 1)
+                    {
+                        auto compareFn = args[0].asObject(runtime).asFunction(runtime);
+
+                        std::vector<jsi::Value> values;
+                        values.reserve(size);
+                        for (auto&& value : vector)
+                        {
+                            values.push_back(convert_native_to_value(runtime, value));
+                        }
+
+                        std::stable_sort(values.begin(), values.end(), [&](auto&& lhs, auto&& rhs) {
+                            return to_number(runtime, compareFn.call(runtime, lhs, rhs)) < 0;
+                        });
+
+                        for (uint32_t i = 0; i < size; ++i)
+                        {
+                            vector.SetAt(i, convert_value_to_native<T>(runtime, values[i]));
+                        }
+                    }
+                    else
+                    {
+                        // Default is to sort 'toString' representations
+                        std::vector<std::pair<std::u16string, T>> values;
+                        values.reserve(size);
+                        for (auto value : vector)
+                        {
+                            values.emplace_back(
+                                string_to_utf16(runtime, convert_native_to_value(runtime, value).toString(runtime)),
+                                std::move(value));
+                        }
+
+                        std::stable_sort(values.begin(), values.end(),
+                            [&](auto&& lhs, auto&& rhs) { return lhs.first < rhs.first; });
+
+                        for (uint32_t i = 0; i < size; ++i)
+                        {
+                            vector.SetAt(i, values[i].second);
+                        }
+                    }
+
+                    return jsi::Value(runtime, thisValue);
+                }
+
+                static jsi::Value splice(
+                    jsi::Runtime& runtime, const jsi::Value& thisValue, const jsi::Value* args, size_t count)
+                {
+                    auto vector = convert_value_to_native<native_type>(runtime, thisValue);
+                    auto size = vector.Size();
+
+                    auto start = vector_index_from_arg(runtime, args, count, 0, size);
+
+                    uint32_t deleteCount =
+                        (count >= 2) ? static_cast<uint32_t>(std::clamp(to_integer_or_infinity(runtime, args[1]), 0.0,
+                                           static_cast<double>(size - start))) :
+                        (count >= 1) ? (size - start) :
+                                       0;
+
+                    uint32_t insertCount = (count >= 3) ? static_cast<uint32_t>(count - 2) : 0;
+                    auto assignCount = std::min(deleteCount, insertCount);
+                    deleteCount -= assignCount;
+                    insertCount -= assignCount;
+
+                    jsi::Array result(runtime, deleteCount);
+                    uint32_t i = 0;
+                    while (assignCount-- > 0)
+                    {
+                        result.setValueAtIndex(runtime, i, convert_native_to_value(runtime, vector.GetAt(start)));
+                        vector.SetAt(start, convert_value_to_native<T>(runtime, args[2 + i]));
+                        ++i;
+                        ++start;
+                    }
+
+                    while (deleteCount-- > 0)
+                    {
+                        assert(insertCount == 0);
+                        result.setValueAtIndex(runtime, i, convert_native_to_value(runtime, vector.GetAt(start)));
+                        vector.RemoveAt(start);
+                        ++i;
+                    }
+                    assert(i == result.length(runtime));
+
+                    while (insertCount-- > 0)
+                    {
+                        vector.InsertAt(start, convert_value_to_native<T>(runtime, args[2 + i]));
+                        ++i;
+                        ++start;
+                    }
+
+                    return result;
+                }
+
+                static jsi::Value unshift(
+                    jsi::Runtime& runtime, const jsi::Value& thisValue, const jsi::Value* args, size_t count)
+                {
+                    auto vector = convert_value_to_native<native_type>(runtime, thisValue);
+                    for (size_t i = count; i-- > 0; )
+                    {
+                        vector.InsertAt(0, convert_value_to_native<T>(runtime, args[i]));
+                    }
+
+                    return static_cast<double>(vector.Size());
+                }
+
+                static std::optional<jsi::Value> runtime_get_property(
+                    jsi::Runtime& runtime, const IInspectable& thisValue, std::string_view name)
+                {
+                    // If the "property" is a number, then that translates to a 'GetAt' call
+                    if (auto index = index_from_name(name))
+                    {
+                        auto vector = thisValue.as<native_type>();
+                        if (*index >= vector.Size())
+                        {
+                            return jsi::Value::undefined();
+                        }
+
+                        return convert_native_to_value(runtime, vector.GetAt(*index));
+                    }
+                    else if (name == "concat"sv)
+                    {
+                        // NOTE: Cannot use Array.prototype.concat since we cannot satisfy 'IsConcatSpreadable'
+                        return jsi::Function::createFromHostFunction(
+                            runtime, make_propid(runtime, name), 1, &vector_concat<native_type>);
+                    }
+                    else if (name == "copyWithin"sv)
+                    {
+                        // NOTE: Cannot use Array.prototype.copyWithin since we cannot satisfy 'HasProperty'
+                        return jsi::Function::createFromHostFunction(
+                            runtime, make_propid(runtime, name), 2, &copyWithin);
+                    }
+                    // NOTE: Forward to Array.prototype.entries since we satisfy 'CreateArrayIterator' requirements
+                    else if (name == "every"sv)
+                    {
+                        // NOTE: Cannot use Array.prototype.every since we cannot satisfy 'HasProperty'
+                        return jsi::Function::createFromHostFunction(
+                            runtime, make_propid(runtime, name), 1, &vector_every<native_type>);
+                    }
+                    // NOTE: Forward to Array.prototype.fill since we satisfy all requirements
+                    else if (name == "filter"sv)
+                    {
+                        // NOTE: Cannot use Array.prototype.filter since we cannot satisfy 'HasProperty'
+                        return jsi::Function::createFromHostFunction(
+                            runtime, make_propid(runtime, name), 1, &vector_filter<native_type>);
+                    }
+                    // NOTE: Forward to Array.prototype.find since we satisfy all requirements
+                    // NOTE: Forward to Array.prototype.findIndex since we satisfy all requirements
+                    // TODO: flat & flatMap
+                    else if (name == "forEach"sv)
+                    {
+                        // NOTE: Cannot use Array.prototype.forEach since we cannot satisfy 'HasProperty'
+                        return jsi::Function::createFromHostFunction(
+                            runtime, make_propid(runtime, name), 1, &vector_forEach<native_type>);
+                    }
+                    // NOTE: Forward to Array.prototype.includes since we satisfy all requirements
+                    // NOTE: 'indexOf' is a function that exists on IVector, so that takes precedence
+                    // NOTE: Forward to Array.prototype.join since we satisfy all requirements
+                    // NOTE: Forward to Array.prototype.keys since we satisfy all requirements
+                    else if (name == "lastIndexOf"sv)
+                    {
+                        // NOTE: Cannot use Array.prototype.lastIndexOf since we cannot satisfy 'HasProperty'
+                        return jsi::Function::createFromHostFunction(
+                            runtime, make_propid(runtime, name), 1, &vector_lastIndexOf<native_type>);
+                    }
+                    else if (name == "map"sv)
+                    {
+                        // NOTE: Cannot use Array.prototype.map since we cannot satisfy 'HasProperty'
+                        return jsi::Function::createFromHostFunction(
+                            runtime, make_propid(runtime, name), 1, &vector_map<native_type>);
+                    }
+                    else if (name == "pop"sv)
+                    {
+                        // NOTE: Cannot use Array.prototype.pop since we cannot satisfy 'DeletePropertyOrThrow'
+                        return jsi::Function::createFromHostFunction(runtime, make_propid(runtime, name), 0, &pop);
+                    }
+                    else if (name == "push"sv)
+                    {
+                        // TODO: It's not actually clear why we can't just forward to Array.prototype.push
+                        return jsi::Function::createFromHostFunction(runtime, make_propid(runtime, name), 1, &push);
+                    }
+                    else if (name == "reduce"sv)
+                    {
+                        // NOTE: Cannot use Array.prototype.reduce since we cannot satisfy 'HasProperty'
+                        return jsi::Function::createFromHostFunction(
+                            runtime, make_propid(runtime, name), 1, &vector_reduce<native_type>);
+                    }
+                    else if (name == "reduceRight"sv)
+                    {
+                        // NOTE: Cannot use Array.prototype.reduceRight since we cannot satisfy 'HasProperty'
+                        return jsi::Function::createFromHostFunction(
+                            runtime, make_propid(runtime, name), 1, &vector_reduceRight<native_type>);
+                    }
+                    else if (name == "reverse"sv)
+                    {
+                        // NOTE: Cannot use Array.prototype.reverse since we cannot satisfy 'HasProperty'
+                        return jsi::Function::createFromHostFunction(runtime, make_propid(runtime, name), 1, &reverse);
+                    }
+                    else if (name == "shift"sv)
+                    {
+                        // NOTE: Cannot use Array.prototype.shift since we cannot satisfy 'HasProperty'
+                        return jsi::Function::createFromHostFunction(runtime, make_propid(runtime, name), 1, &shift);
+                    }
+                    else if (name == "slice"sv)
+                    {
+                        // NOTE: Cannot use Array.prototype.slice since we cannot satisfy 'HasProperty'
+                        return jsi::Function::createFromHostFunction(
+                            runtime, make_propid(runtime, name), 1, &vector_slice<native_type>);
+                    }
+                    else if (name == "some"sv)
+                    {
+                        // NOTE: Cannot use Array.prototype.some since we cannot satisfy 'HasProperty'
+                        return jsi::Function::createFromHostFunction(
+                            runtime, make_propid(runtime, name), 1, &vector_some<native_type>);
+                    }
+                    else if (name == "sort"sv)
+                    {
+                        // NOTE: Cannot use Array.prototype.sort since we cannot satisfy 'HasProperty'
+                        return jsi::Function::createFromHostFunction(runtime, make_propid(runtime, name), 1, &sort);
+                    }
+                    else if (name == "splice"sv)
+                    {
+                        // NOTE: Cannot use Array.prototype.splice since we cannot satisfy 'HasProperty'
+                        return jsi::Function::createFromHostFunction(runtime, make_propid(runtime, name), 2, &splice);
+                    }
+                    // NOTE: Forward to Array.prototype.toLocaleString since we satisfy all requirements
+                    // NOTE: Forward to Array.prototype.toString since we satisfy all requirements
+                    else if (name == "unshift"sv)
+                    {
+                        // NOTE: Cannot use Array.prototype.unshift since we cannot satisfy 'HasProperty'
+                        return jsi::Function::createFromHostFunction(runtime, make_propid(runtime, name), 1, &unshift);
+                    }
+                    // NOTE: Forward to Array.prototype.values since we satisfy 'CreateArrayIterator' requirements
+
+                    return fwd_array_prototype(runtime, name);
+                }
+
+                static bool runtime_set_property(jsi::Runtime& runtime, const IInspectable& thisValue,
+                    std::string_view name, const jsi::Value& value)
+                {
+                    // If the "property" is a number, then that translates to a 'SetAt' call
+                    if (auto index = index_from_name(name))
+                    {
+                        auto vector = thisValue.as<native_type>();
+                        if (*index == vector.Size())
+                        {
+                            // Following Chakra's behavior, assigning to one-past the end appends
+                            vector.Append(convert_value_to_native<T>(runtime, value));
+                        }
+                        else
+                        {
+                            vector.SetAt(*index, convert_value_to_native<T>(runtime, value));
+                        }
+
+                        return true;
+                    }
+
+                    return false;
+                }
             };
 
             template <typename T>
@@ -3408,7 +4260,8 @@ namespace jswinrt
             {
                 using iface = interface_data<T>;
                 static constexpr const static_interface_data value{ winrt::guid_of<typename iface::native_type>(),
-                    iface::properties, {}, iface::functions };
+                    iface::properties, {}, iface::functions, &iface::runtime_get_property,
+                    &iface::runtime_set_property };
             };
 
             template <typename T>
@@ -3454,6 +4307,20 @@ namespace jswinrt
                         },
                         1, false },
                 };
+
+                static std::optional<jsi::Value> runtime_get_property(
+                    jsi::Runtime& runtime, const IInspectable& thisValue, std::string_view name)
+                {
+                    // If the "property" is a number, then that translates to a 'GetAt' call
+                    if (auto index = index_from_name(name))
+                    {
+                        return convert_native_to_value(runtime, thisValue.as<native_type>().GetAt(*index));
+                    }
+
+                    // TODO: Check 'Array.prototype' for the property?
+
+                    return jsi::Value::undefined();
+                }
             };
 
             template <typename T>
@@ -3461,7 +4328,7 @@ namespace jswinrt
             {
                 using iface = interface_data<T>;
                 static constexpr const static_interface_data value{ winrt::guid_of<typename iface::native_type>(),
-                    iface::properties, {}, iface::functions };
+                    iface::properties, {}, iface::functions, &iface::runtime_get_property };
             };
 
             template <typename T>
