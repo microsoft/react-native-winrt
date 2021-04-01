@@ -21,6 +21,7 @@ import { makeArrayTestScenarios } from './ArrayTests'
 import { makeDelegateAndEventTestScenarios } from './DelegateAndEventTests'
 import { makeAsyncTestScenarios } from './AsyncTests'
 import { makeCollectionsTests } from './CollectionsTests'
+import { makeInheritanceTestScenarios } from './InheritanceTests'
 
 class App extends Component {
     test = new TestComponent.Test();
@@ -36,6 +37,7 @@ class App extends Component {
         ...makeDelegateAndEventTestScenarios(this),
         ...makeAsyncTestScenarios(this),
         ...makeCollectionsTests(this),
+        ...makeInheritanceTestScenarios(this),
     ];
 
     runSync(scenario, fn) {

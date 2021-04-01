@@ -356,4 +356,20 @@ namespace TestComponent
             Windows.Foundation.Collections.IVector<Int32> inputValue,
             ObjectDelegate targetFn);
     }
+    
+    [contract(TestContract, 1)]
+    unsealed runtimeclass HierarchyBase
+    {
+        HierarchyBase();
+        String OverriddenHierarchyBaseMethod();
+        String NonOverriddenHierarchyBaseMethod();
+    }
+
+    [contract(TestContract, 1)]
+    unsealed runtimeclass HierarchyDerived : HierarchyBase
+    {
+        HierarchyDerived();
+        String HierarchyDerivedMethod();
+    }
+
 }
