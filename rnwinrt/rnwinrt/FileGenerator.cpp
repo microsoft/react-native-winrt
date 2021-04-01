@@ -231,7 +231,7 @@ namespace jswinrt::classes::%
     }
 )^-^",
                 classDef->type_def.TypeName(),
-                is_activatable(classDef->type_def) ? "static_activatable_class_data"sv : "static_class_data"sv);
+                classDef->methods.constructors.empty() ? "static_class_data"sv : "static_activatable_class_data"sv);
         }
 
         writer.write("}\n");
