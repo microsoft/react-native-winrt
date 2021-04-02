@@ -51,8 +51,7 @@ export function makePropertiesTestScenarios(pThis) {
         new TestScenario('Test::GuidArrayProperty', runGuidArrayProperty.bind(pThis)),
         new TestScenario('Test::EnumArrayProperty', runEnumArrayProperty.bind(pThis)),
         new TestScenario('Test::CompositeStructArrayProperty', runCompositeStructArrayProperty.bind(pThis)),
-        // TODO: Causes compilation errors in jswinrt: https://github.com/microsoft/jswinrt/issues/9
-        // new TestScenario('Test::RefArrayProperty', runRefArrayProperty.bind(pThis)),
+        new TestScenario('Test::RefArrayProperty', runRefArrayProperty.bind(pThis)),
         new TestScenario('Test::ObjectArrayProperty', runObjectArrayProperty.bind(pThis)),
     ];
 }
@@ -324,7 +323,7 @@ function runCompositeStructArrayProperty(scenario) {
     runSyncPropertyTest.call(this, scenario, 'object', TestValues.composite.validArrays, TestValues.composite.invalidArrays, () => this.test.compositeStructArrayProperty, (val) => this.test.compositeStructArrayProperty = val);
 }
 
-function runRefArrayPropertyArrayProperty(scenario) {
+function runRefArrayProperty(scenario) {
     runSyncPropertyTest.call(this, scenario, 'object',
         [[], [42], [0, 1, 2, 3, 4, 5, 6, 7, 8, 9], TestValues.s32.valid],
         [42, ['A'], [true], ['42'], TestValues.s32.invalid],

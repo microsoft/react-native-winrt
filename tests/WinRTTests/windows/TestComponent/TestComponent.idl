@@ -267,8 +267,7 @@ namespace TestComponent
         Guid[] GuidArrayProperty;
         TestEnum[] EnumArrayProperty;
         CompositeType[] CompositeStructArrayProperty;
-        // TODO: Causes compilation errors in jswinrt: https://github.com/microsoft/jswinrt/issues/9
-        // Windows.Foundation.IReference<Int32>[] RefArrayProperty;
+        Windows.Foundation.IReference<Int32>[] RefArrayProperty;
         Windows.Foundation.Collections.IVector<Int32>[] ObjectArrayProperty;
 
         // Member functions
