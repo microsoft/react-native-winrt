@@ -110,7 +110,6 @@ namespace winrt::TestComponent::implementation
         static Windows::Foundation::Collections::IVector<int32_t> StaticInvokeObjectDelegate(
             Windows::Foundation::Collections::IVector<int32_t> const& inputValue, ObjectDelegate const& targetFn);
 
-        /* TODO: Delegates with out params currently cause compilation errors
         static bool StaticInvokeBoolDelegateWithOutParam(bool inputValue, BoolDelegateWithOutParam const& targetFn);
         static char16_t StaticInvokeCharDelegateWithOutParam(
             char16_t inputValue, CharDelegateWithOutParam const& targetFn);
@@ -129,7 +128,6 @@ namespace winrt::TestComponent::implementation
         static Windows::Foundation::Collections::IVector<int32_t> StaticInvokeObjectDelegateWithOutParam(
             Windows::Foundation::Collections::IVector<int32_t> const& inputValue,
             ObjectDelegateWithOutParam const& targetFn);
-        */
 
         static Windows::Foundation::Collections::IVector<bool> CopyBoolsToVector(array_view<bool const> values);
         static Windows::Foundation::Collections::IVector<char16_t> CopyCharsToVector(array_view<char16_t const> values);

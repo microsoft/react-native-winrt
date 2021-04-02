@@ -22,15 +22,25 @@ export function makeDelegateAndEventTestScenarios(pThis) {
         new TestScenario('Test::StaticObjectEventHandler', runStaticObjectEventHandler.bind(pThis)),
 
         // Static Delegates
-        new TestScenario('Test::StaticBoolDelegate', runStaticBoolDelegate.bind(pThis)),
-        new TestScenario('Test::StaticCharDelegate', runStaticCharDelegate.bind(pThis)),
-        new TestScenario('Test::StaticNumericDelegate', runStaticNumericDelegate.bind(pThis)),
-        new TestScenario('Test::StaticStringDelegate', runStaticStringDelegate.bind(pThis)),
-        new TestScenario('Test::StaticGuidDelegate', runStaticGuidDelegate.bind(pThis)),
-        new TestScenario('Test::StaticEnumDelegate', runStaticEnumDelegate.bind(pThis)),
-        new TestScenario('Test::StaticCompositeStructDelegate', runStaticCompositeStructDelegate.bind(pThis)),
-        new TestScenario('Test::StaticRefDelegate', runStaticRefDelegate.bind(pThis)),
-        new TestScenario('Test::StaticObjectDelegate', runStaticObjectDelegate.bind(pThis)),
+        new TestScenario('Test::StaticInvokeBoolDelegate', runStaticBoolDelegate.bind(pThis)),
+        new TestScenario('Test::StaticInvokeCharDelegate', runStaticCharDelegate.bind(pThis)),
+        new TestScenario('Test::StaticInvokeNumericDelegate', runStaticNumericDelegate.bind(pThis)),
+        new TestScenario('Test::StaticInvokeStringDelegate', runStaticStringDelegate.bind(pThis)),
+        new TestScenario('Test::StaticInvokeGuidDelegate', runStaticGuidDelegate.bind(pThis)),
+        new TestScenario('Test::StaticInvokeEnumDelegate', runStaticEnumDelegate.bind(pThis)),
+        new TestScenario('Test::StaticInvokeCompositeStructDelegate', runStaticCompositeStructDelegate.bind(pThis)),
+        new TestScenario('Test::StaticInvokeRefDelegate', runStaticRefDelegate.bind(pThis)),
+        new TestScenario('Test::StaticInvokeObjectDelegate', runStaticObjectDelegate.bind(pThis)),
+
+        new TestScenario('Test::StaticInvokeBoolDelegateWithOutParam', runStaticBoolDelegateWithOutParam.bind(pThis)),
+        new TestScenario('Test::StaticInvokeCharDelegateWithOutParam', runStaticCharDelegateWithOutParam.bind(pThis)),
+        new TestScenario('Test::StaticInvokeNumericDelegateWithOutParam', runStaticNumericDelegateWithOutParam.bind(pThis)),
+        new TestScenario('Test::StaticInvokeStringDelegateWithOutParam', runStaticStringDelegateWithOutParam.bind(pThis)),
+        new TestScenario('Test::StaticInvokeGuidDelegateWithOutParam', runStaticGuidDelegateWithOutParam.bind(pThis)),
+        new TestScenario('Test::StaticInvokeEnumDelegateWithOutParam', runStaticEnumDelegateWithOutParam.bind(pThis)),
+        new TestScenario('Test::StaticInvokeCompositeStructDelegateWithOutParam', runStaticCompositeStructDelegateWithOutParam.bind(pThis)),
+        new TestScenario('Test::StaticInvokeRefDelegateWithOutParam', runStaticRefDelegateWithOutParam.bind(pThis)),
+        new TestScenario('Test::StaticInvokeObjectDelegateWithOutParam', runStaticObjectDelegateWithOutParam.bind(pThis)),
 
         // Non-static events
         new TestScenario('Test::BoolEventHandler', runBoolEventHandler.bind(pThis)),
@@ -137,7 +147,7 @@ function runDelegateTest(scenario, values, invoke) {
         var threw = false;
         try {
             // TODO: Exception message not preserved through propagation; should it?
-            invoke(values[0], (value) => { throw new Error() });
+            invoke(values[0], () => { throw new Error() });
         } catch (e) {
             threw = true;
         }
@@ -184,6 +194,64 @@ function runStaticObjectDelegate(scenario) {
     }
 
     runDelegateTest.call(this, scenario, values, (val, fn) => TestComponent.Test.staticInvokeObjectDelegate(val, fn));
+}
+
+function runDelegateWithOutParamTest(scenario, values, invoke) {
+    this.runSync(scenario, () => {
+        for (var val of values) {
+            assert.equal(val, invoke(val, (value) => { return { outValue: value }; }));
+        }
+
+        var threw = false;
+        try {
+            // TODO: Exception message not preserved through propagation; should it?
+            invoke(values[0], () => { throw new Error() });
+        } catch (e) {
+            threw = true;
+        }
+        assert.isTrue(threw);
+    });
+}
+
+function runStaticBoolDelegateWithOutParam(scenario) {
+    runDelegateWithOutParamTest.call(this, scenario, TestValues.bools.valid, (val, fn) => TestComponent.Test.staticInvokeBoolDelegateWithOutParam(val, fn));
+}
+
+function runStaticCharDelegateWithOutParam(scenario) {
+    runDelegateWithOutParamTest.call(this, scenario, TestValues.chars.valid, (val, fn) => TestComponent.Test.staticInvokeCharDelegateWithOutParam(val, fn));
+}
+
+function runStaticNumericDelegateWithOutParam(scenario) {
+    runDelegateWithOutParamTest.call(this, scenario, TestValues.s32.valid, (val, fn) => TestComponent.Test.staticInvokeNumericDelegateWithOutParam(val, fn));
+}
+
+function runStaticStringDelegateWithOutParam(scenario) {
+    runDelegateWithOutParamTest.call(this, scenario, TestValues.strings.valid, (val, fn) => TestComponent.Test.staticInvokeStringDelegateWithOutParam(val, fn));
+}
+
+function runStaticGuidDelegateWithOutParam(scenario) {
+    runDelegateWithOutParamTest.call(this, scenario, TestValues.guids.valid, (val, fn) => TestComponent.Test.staticInvokeGuidDelegateWithOutParam(val, fn));
+}
+
+function runStaticEnumDelegateWithOutParam(scenario) {
+    runDelegateWithOutParamTest.call(this, scenario, TestValues.enums.valid, (val, fn) => TestComponent.Test.staticInvokeEnumDelegateWithOutParam(val, fn));
+}
+
+function runStaticCompositeStructDelegateWithOutParam(scenario) {
+    runDelegateWithOutParamTest.call(this, scenario, TestValues.composite.valid, (val, fn) => TestComponent.Test.staticInvokeCompositeStructDelegateWithOutParam(val, fn));
+}
+
+function runStaticRefDelegateWithOutParam(scenario) {
+    runDelegateWithOutParamTest.call(this, scenario, TestValues.s32.valid, (val, fn) => TestComponent.Test.staticInvokeRefDelegateWithOutParam(val, fn));
+}
+
+function runStaticObjectDelegateWithOutParam(scenario) {
+   var values = [];
+    for (var val of TestValues.s32.validArrays) {
+        values.push(TestComponent.Test.copyNumericsToVector(val));
+    }
+
+    runDelegateWithOutParamTest.call(this, scenario, values, (val, fn) => TestComponent.Test.staticInvokeObjectDelegateWithOutParam(val, fn));
 }
 
 // Non-static events

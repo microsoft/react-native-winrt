@@ -181,7 +181,6 @@ namespace TestComponent
             Windows.Foundation.Collections.IVector<Int32> value,
             ObjectDelegate targetFn);
 
-        /* TODO: Delegates with out params currently cause compilation errors - https://github.com/microsoft/jswinrt/issues/16
         static Boolean StaticInvokeBoolDelegateWithOutParam(Boolean value, BoolDelegateWithOutParam targetFn);
         static Char StaticInvokeCharDelegateWithOutParam(Char value, CharDelegateWithOutParam targetFn);
         static Int32 StaticInvokeNumericDelegateWithOutParam(Int32 value, NumericDelegateWithOutParam targetFn);
@@ -195,7 +194,6 @@ namespace TestComponent
         static Windows.Foundation.Collections.IVector<Int32> StaticInvokeObjectDelegateWithOutParam(
             Windows.Foundation.Collections.IVector<Int32> value,
             ObjectDelegateWithOutParam targetFn);
-        */
 
         // Copy array to IVector
         static Windows.Foundation.Collections.IVector<Boolean> CopyBoolsToVector(Boolean[] values);

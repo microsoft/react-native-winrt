@@ -550,7 +550,6 @@ namespace winrt::TestComponent::implementation
         return targetFn(inputValue);
     }
 
-    /* TODO: Delegates with out params currently cause compilation errors
     bool Test::StaticInvokeBoolDelegateWithOutParam(bool inputValue, BoolDelegateWithOutParam const& targetFn)
     {
         bool result = false;
@@ -621,7 +620,6 @@ namespace winrt::TestComponent::implementation
         targetFn(inputValue, result);
         return result;
     }
-    */
 
     template <typename T>
     static Windows::Foundation::Collections::IVector<T> CopyToVector(array_view<T const> values)
