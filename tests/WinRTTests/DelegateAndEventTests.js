@@ -11,16 +11,15 @@ import {
 export function makeDelegateAndEventTestScenarios(pThis) {
     return [
         // Static events
-        // TODO: AV when interface does not support weak ref: https://github.com/microsoft/jswinrt/issues/13
-        // new TestScenario('Test::StaticBoolEventHandler', runStaticBoolEventHandler.bind(pThis)),
-        // new TestScenario('Test::StaticCharEventHandler', runStaticCharEventHandler.bind(pThis)),
-        // new TestScenario('Test::StaticNumericEventHandler', runStaticNumericEventHandler.bind(pThis)),
-        // new TestScenario('Test::StaticStringEventHandler', runStaticStringEventHandler.bind(pThis)),
-        // new TestScenario('Test::StaticGuidEventHandler', runStaticGuidEventHandler.bind(pThis)),
-        // new TestScenario('Test::StaticEnumEventHandler', runStaticEnumEventHandler.bind(pThis)),
-        // new TestScenario('Test::StaticCompositeStructEventHandler', runStaticCompositeStructEventHandler.bind(pThis)),
-        // new TestScenario('Test::StaticRefEventHandler', runStaticRefEventHandler.bind(pThis)),
-        // new TestScenario('Test::StaticObjectEventHandler', runStaticObjectEventHandler.bind(pThis)),
+        new TestScenario('Test::StaticBoolEventHandler', runStaticBoolEventHandler.bind(pThis)),
+        new TestScenario('Test::StaticCharEventHandler', runStaticCharEventHandler.bind(pThis)),
+        new TestScenario('Test::StaticNumericEventHandler', runStaticNumericEventHandler.bind(pThis)),
+        new TestScenario('Test::StaticStringEventHandler', runStaticStringEventHandler.bind(pThis)),
+        new TestScenario('Test::StaticGuidEventHandler', runStaticGuidEventHandler.bind(pThis)),
+        new TestScenario('Test::StaticEnumEventHandler', runStaticEnumEventHandler.bind(pThis)),
+        new TestScenario('Test::StaticCompositeStructEventHandler', runStaticCompositeStructEventHandler.bind(pThis)),
+        new TestScenario('Test::StaticRefEventHandler', runStaticRefEventHandler.bind(pThis)),
+        new TestScenario('Test::StaticObjectEventHandler', runStaticObjectEventHandler.bind(pThis)),
 
         // Static Delegates
         new TestScenario('Test::StaticBoolDelegate', runStaticBoolDelegate.bind(pThis)),
@@ -62,6 +61,7 @@ function testStaticEventHandler(scenario, args, name, invoke) {
     this.runSync(scenario, () => {
         var i = 0;
         var invokeCount = 0;
+        var exception;
         var handler = (sender, arg) => {
             try {
                 assert.isTrue(i < args.length);
@@ -115,7 +115,7 @@ function runStaticEnumEventHandler(scenario) {
 }
 
 function runStaticCompositeStructEventHandler(scenario) {
-    testStaticEventHandler.call(this, scenario, TestValues.composite.valid, 'staticcompositeStructeventhandler', (arg) => TestComponent.Test.raiseStaticCompositeStructEvent(arg));
+    testStaticEventHandler.call(this, scenario, TestValues.composite.valid, 'staticcompositestructeventhandler', (arg) => TestComponent.Test.raiseStaticCompositeStructEvent(arg));
 }
 
 function runStaticRefEventHandler(scenario) {
