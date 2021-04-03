@@ -111,7 +111,7 @@ namespace TestComponent
         static Boolean StaticBoolProperty;
         // TODO: More, but static properties don't seem to work
 
-        // Static array properties
+        // TODO: Static array properties, once static properties work
 
         // Static functions
         static Boolean StaticOr(Boolean lhs, Boolean rhs);
@@ -146,7 +146,10 @@ namespace TestComponent
         static Guid[] StaticGuidArrayOutParam(Guid[] values, out Guid[] rot1, out Guid[] rot2);
         static TestEnum[] StaticEnumArrayOutParam(TestEnum[] values, out TestEnum[] rot1, out TestEnum[] rot2);
         static CompositeType[] StaticCompositeStructArrayOutParam(CompositeType[] values, out CompositeType[] rot1, out CompositeType[] rot2);
-        // TODO: Ref array
+        static Windows.Foundation.IReference<Int32>[] StaticRefArrayOutParam(
+            Windows.Foundation.IReference<Int32>[] values,
+            out Windows.Foundation.IReference<Int32>[] rot1,
+            out Windows.Foundation.IReference<Int32>[] rot2);
         static Windows.Foundation.Collections.IVector<Int32>[] StaticObjectArrayOutParam(
             Windows.Foundation.Collections.IVector<Int32>[] values,
             out Windows.Foundation.Collections.IVector<Int32>[] rot1,
@@ -160,7 +163,7 @@ namespace TestComponent
         static void StaticGuidFillParam(ref Guid[] values);
         static void StaticEnumFillParam(ref TestEnum[] values);
         static void StaticCompositeStructFillParam(ref CompositeType[] values);
-        // TODO: Ref
+        static void StaticRefFillParam(ref Windows.Foundation.IReference<Int32>[] values);
         static void StaticObjectFillParam(ref Windows.Foundation.Collections.IVector<Int32>[] values);
 
         // Static events
@@ -328,6 +331,10 @@ namespace TestComponent
         Guid[] GuidArrayOutParam(Guid[] values, out Guid[] rot1, out Guid[] rot2);
         TestEnum[] EnumArrayOutParam(TestEnum[] values, out TestEnum[] rot1, out TestEnum[] rot2);
         CompositeType[] CompositeStructArrayOutParam(CompositeType[] values, out CompositeType[] rot1, out CompositeType[] rot2);
+        Windows.Foundation.IReference<Int32>[] RefArrayOutParam(
+            Windows.Foundation.IReference<Int32>[] values,
+            out Windows.Foundation.IReference<Int32>[] rot1,
+            out Windows.Foundation.IReference<Int32>[] rot2);
         Windows.Foundation.Collections.IVector<Int32>[] ObjectArrayOutParam(
             Windows.Foundation.Collections.IVector<Int32>[] values,
             out Windows.Foundation.Collections.IVector<Int32>[] rot1,
@@ -341,7 +348,7 @@ namespace TestComponent
         void GuidFillParam(ref Guid[] values);
         void EnumFillParam(ref TestEnum[] values);
         void CompositeStructFillParam(ref CompositeType[] values);
-        // TODO: Ref
+        void RefFillParam(ref Windows.Foundation.IReference<Int32>[] values);
         void ObjectFillParam(ref Windows.Foundation.Collections.IVector<Int32>[] values);
 
         // Member events

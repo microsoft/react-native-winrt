@@ -51,6 +51,10 @@ namespace winrt::TestComponent::implementation
             array_view<TestEnum const> values, com_array<TestEnum>& rot1, com_array<TestEnum>& rot2);
         static com_array<CompositeType> StaticCompositeStructArrayOutParam(
             array_view<CompositeType const> values, com_array<CompositeType>& rot1, com_array<CompositeType>& rot2);
+        static com_array<Windows::Foundation::IReference<int32_t>> StaticRefArrayOutParam(
+            array_view<Windows::Foundation::IReference<int32_t> const> values,
+            com_array<Windows::Foundation::IReference<int32_t>>& rot1,
+            com_array<Windows::Foundation::IReference<int32_t>>& rot2);
         static com_array<Windows::Foundation::Collections::IVector<int32_t>> StaticObjectArrayOutParam(
             array_view<Windows::Foundation::Collections::IVector<int32_t> const> values,
             com_array<Windows::Foundation::Collections::IVector<int32_t>>& rot1,
@@ -63,6 +67,7 @@ namespace winrt::TestComponent::implementation
         static void StaticGuidFillParam(array_view<winrt::guid> values);
         static void StaticEnumFillParam(array_view<TestEnum> values);
         static void StaticCompositeStructFillParam(array_view<CompositeType> values);
+        static void StaticRefFillParam(array_view<Windows::Foundation::IReference<int32_t>> values);
         static void StaticObjectFillParam(array_view<Windows::Foundation::Collections::IVector<int32_t>> values);
 
         static winrt::event_token StaticBoolEventHandler(Windows::Foundation::EventHandler<bool> const& handler);
@@ -298,6 +303,10 @@ namespace winrt::TestComponent::implementation
             array_view<TestEnum const> values, com_array<TestEnum>& rot1, com_array<TestEnum>& rot2);
         com_array<CompositeType> CompositeStructArrayOutParam(
             array_view<CompositeType const> values, com_array<CompositeType>& rot1, com_array<CompositeType>& rot2);
+        com_array<Windows::Foundation::IReference<int32_t>> RefArrayOutParam(
+            array_view<Windows::Foundation::IReference<int32_t> const> values,
+            com_array<Windows::Foundation::IReference<int32_t>>& rot1,
+            com_array<Windows::Foundation::IReference<int32_t>>& rot2);
         com_array<Windows::Foundation::Collections::IVector<int32_t>> ObjectArrayOutParam(
             array_view<Windows::Foundation::Collections::IVector<int32_t> const> values,
             com_array<Windows::Foundation::Collections::IVector<int32_t>>& rot1,
@@ -310,6 +319,7 @@ namespace winrt::TestComponent::implementation
         void GuidFillParam(array_view<winrt::guid> values);
         void EnumFillParam(array_view<TestEnum> values);
         void CompositeStructFillParam(array_view<CompositeType> values);
+        void RefFillParam(array_view<Windows::Foundation::IReference<int32_t>> values);
         void ObjectFillParam(array_view<Windows::Foundation::Collections::IVector<int32_t>> values);
 
         winrt::event_token BoolEventHandler(Windows::Foundation::EventHandler<bool> const& handler);

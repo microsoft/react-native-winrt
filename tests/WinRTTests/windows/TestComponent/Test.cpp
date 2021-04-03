@@ -263,6 +263,16 @@ namespace winrt::TestComponent::implementation
         return reverse_array(values);
     }
 
+    com_array<Windows::Foundation::IReference<int32_t>> Test::StaticRefArrayOutParam(
+        array_view<Windows::Foundation::IReference<int32_t> const> values,
+        com_array<Windows::Foundation::IReference<int32_t>>& rot1,
+        com_array<Windows::Foundation::IReference<int32_t>>& rot2)
+    {
+        rot1 = rotate_array(values, 1);
+        rot2 = rotate_array(values, 2);
+        return reverse_array(values);
+    }
+
     com_array<Windows::Foundation::Collections::IVector<int32_t>> Test::StaticObjectArrayOutParam(
         array_view<Windows::Foundation::Collections::IVector<int32_t> const> values,
         com_array<Windows::Foundation::Collections::IVector<int32_t>>& rot1,
@@ -351,6 +361,11 @@ namespace winrt::TestComponent::implementation
                 ++byte;
             next.Bools.Value = !next.Bools.Value;
         }
+    }
+
+    void Test::StaticRefFillParam(array_view<Windows::Foundation::IReference<int32_t>> values)
+    {
+        std::iota(values.begin(), values.end(), 0);
     }
 
     void Test::StaticObjectFillParam(array_view<Windows::Foundation::Collections::IVector<int32_t>> values)
@@ -1389,6 +1404,16 @@ namespace winrt::TestComponent::implementation
         return reverse_array(values);
     }
 
+    com_array<Windows::Foundation::IReference<int32_t>> Test::RefArrayOutParam(
+        array_view<Windows::Foundation::IReference<int32_t> const> values,
+        com_array<Windows::Foundation::IReference<int32_t>>& rot1,
+        com_array<Windows::Foundation::IReference<int32_t>>& rot2)
+    {
+        rot1 = rotate_array(values, 1);
+        rot2 = rotate_array(values, 2);
+        return reverse_array(values);
+    }
+
     com_array<Windows::Foundation::Collections::IVector<int32_t>> Test::ObjectArrayOutParam(
         array_view<Windows::Foundation::Collections::IVector<int32_t> const> values,
         com_array<Windows::Foundation::Collections::IVector<int32_t>>& rot1,
@@ -1477,6 +1502,11 @@ namespace winrt::TestComponent::implementation
                 ++byte;
             next.Bools.Value = !next.Bools.Value;
         }
+    }
+
+    void Test::RefFillParam(array_view<Windows::Foundation::IReference<int32_t>> values)
+    {
+        std::iota(values.begin(), values.end(), 0);
     }
 
     void Test::ObjectFillParam(array_view<Windows::Foundation::Collections::IVector<int32_t>> values)

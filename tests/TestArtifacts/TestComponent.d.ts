@@ -102,6 +102,7 @@ declare namespace TestComponent {
         guidArrayOutParam(values: string[]): { rot1: string[]; rot2: string[]; returnValue: string[] };
         enumArrayOutParam(values: TestComponent.TestEnum[]): { rot1: TestComponent.TestEnum[]; rot2: TestComponent.TestEnum[]; returnValue: TestComponent.TestEnum[] };
         compositeStructArrayOutParam(values: TestComponent.CompositeType[]): { rot1: TestComponent.CompositeType[]; rot2: TestComponent.CompositeType[]; returnValue: TestComponent.CompositeType[] };
+        refArrayOutParam(values: number[] | null): { rot1: number[] | null; rot2: number[] | null; returnValue: number[] | null };
         objectArrayOutParam(values: Windows.Foundation.Collections.IVector<number>[]): { rot1: Windows.Foundation.Collections.IVector<number>[]; rot2: Windows.Foundation.Collections.IVector<number>[]; returnValue: Windows.Foundation.Collections.IVector<number>[] };
         boolFillParam(): boolean[];
         charFillParam(): string[];
@@ -110,6 +111,7 @@ declare namespace TestComponent {
         guidFillParam(): string[];
         enumFillParam(): TestComponent.TestEnum[];
         compositeStructFillParam(): TestComponent.CompositeType[];
+        refFillParam(): number[] | null;
         objectFillParam(): Windows.Foundation.Collections.IVector<number>[];
         raiseBoolEvent(value: boolean): void;
         raiseCharEvent(value: string): void;
@@ -165,6 +167,7 @@ declare namespace TestComponent {
         staticGuidArrayOutParam(values: string[]): { rot1: string[]; rot2: string[]; returnValue: string[] };
         staticEnumArrayOutParam(values: TestComponent.TestEnum[]): { rot1: TestComponent.TestEnum[]; rot2: TestComponent.TestEnum[]; returnValue: TestComponent.TestEnum[] };
         staticCompositeStructArrayOutParam(values: TestComponent.CompositeType[]): { rot1: TestComponent.CompositeType[]; rot2: TestComponent.CompositeType[]; returnValue: TestComponent.CompositeType[] };
+        staticRefArrayOutParam(values: number[] | null): { rot1: number[] | null; rot2: number[] | null; returnValue: number[] | null };
         staticObjectArrayOutParam(values: Windows.Foundation.Collections.IVector<number>[]): { rot1: Windows.Foundation.Collections.IVector<number>[]; rot2: Windows.Foundation.Collections.IVector<number>[]; returnValue: Windows.Foundation.Collections.IVector<number>[] };
         staticBoolFillParam(): boolean[];
         staticCharFillParam(): string[];
@@ -173,6 +176,7 @@ declare namespace TestComponent {
         staticGuidFillParam(): string[];
         staticEnumFillParam(): TestComponent.TestEnum[];
         staticCompositeStructFillParam(): TestComponent.CompositeType[];
+        staticRefFillParam(): number[] | null;
         staticObjectFillParam(): Windows.Foundation.Collections.IVector<number>[];
         raiseStaticBoolEvent(value: boolean): void;
         raiseStaticCharEvent(value: string): void;
@@ -359,6 +363,7 @@ declare namespace TestComponent {
         guidArrayOutParam(values: string[]): { rot1: string[]; rot2: string[]; returnValue: string[] };
         enumArrayOutParam(values: TestComponent.TestEnum[]): { rot1: TestComponent.TestEnum[]; rot2: TestComponent.TestEnum[]; returnValue: TestComponent.TestEnum[] };
         compositeStructArrayOutParam(values: TestComponent.CompositeType[]): { rot1: TestComponent.CompositeType[]; rot2: TestComponent.CompositeType[]; returnValue: TestComponent.CompositeType[] };
+        refArrayOutParam(values: number[] | null): { rot1: number[] | null; rot2: number[] | null; returnValue: number[] | null };
         objectArrayOutParam(values: Windows.Foundation.Collections.IVector<number>[]): { rot1: Windows.Foundation.Collections.IVector<number>[]; rot2: Windows.Foundation.Collections.IVector<number>[]; returnValue: Windows.Foundation.Collections.IVector<number>[] };
         boolFillParam(): boolean[];
         charFillParam(): string[];
@@ -367,6 +372,7 @@ declare namespace TestComponent {
         guidFillParam(): string[];
         enumFillParam(): TestComponent.TestEnum[];
         compositeStructFillParam(): TestComponent.CompositeType[];
+        refFillParam(): number[] | null;
         objectFillParam(): Windows.Foundation.Collections.IVector<number>[];
         raiseBoolEvent(value: boolean): void;
         raiseCharEvent(value: string): void;
@@ -400,6 +406,7 @@ declare namespace TestComponent {
         static staticGuidArrayOutParam(values: string[]): { rot1: string[]; rot2: string[]; returnValue: string[] };
         static staticEnumArrayOutParam(values: TestComponent.TestEnum[]): { rot1: TestComponent.TestEnum[]; rot2: TestComponent.TestEnum[]; returnValue: TestComponent.TestEnum[] };
         static staticCompositeStructArrayOutParam(values: TestComponent.CompositeType[]): { rot1: TestComponent.CompositeType[]; rot2: TestComponent.CompositeType[]; returnValue: TestComponent.CompositeType[] };
+        static staticRefArrayOutParam(values: number[] | null): { rot1: number[] | null; rot2: number[] | null; returnValue: number[] | null };
         static staticObjectArrayOutParam(values: Windows.Foundation.Collections.IVector<number>[]): { rot1: Windows.Foundation.Collections.IVector<number>[]; rot2: Windows.Foundation.Collections.IVector<number>[]; returnValue: Windows.Foundation.Collections.IVector<number>[] };
         static staticBoolFillParam(): boolean[];
         static staticCharFillParam(): string[];
@@ -408,6 +415,7 @@ declare namespace TestComponent {
         static staticGuidFillParam(): string[];
         static staticEnumFillParam(): TestComponent.TestEnum[];
         static staticCompositeStructFillParam(): TestComponent.CompositeType[];
+        static staticRefFillParam(): number[] | null;
         static staticObjectFillParam(): Windows.Foundation.Collections.IVector<number>[];
         static raiseStaticBoolEvent(value: boolean): void;
         static raiseStaticCharEvent(value: string): void;
