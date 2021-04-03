@@ -81,6 +81,23 @@ namespace TestComponent
     delegate void RefDelegateWithOutParam(Windows.Foundation.IReference<Int32> value, out Windows.Foundation.IReference<Int32> outValue);
     delegate void ObjectDelegateWithOutParam(Windows.Foundation.Collections.IVector<Int32> value, out Windows.Foundation.Collections.IVector<Int32> outValue);
 
+    // Delegates with array types
+    delegate Boolean[] BoolArrayDelegate(Boolean[] values, ref Boolean[] subset, out Boolean[] outValue);
+    delegate Char[] CharArrayDelegate(Char[] values, ref Char[] subset, out Char[] outValue);
+    delegate Int32[] NumericArrayDelegate(Int32[] values, ref Int32[] subset, out Int32[] outValue);
+    delegate String[] StringArrayDelegate(String[] values, ref String[] subset, out String[] outValue);
+    delegate Guid[] GuidArrayDelegate(Guid[] values, ref Guid[] subset, out Guid[] outValue);
+    delegate TestEnum[] EnumArrayDelegate(TestEnum[] values, ref TestEnum[] subset, out TestEnum[] outValue);
+    delegate CompositeType[] CompositeStructArrayDelegate(CompositeType[] values, ref CompositeType[] subset, out CompositeType[] outValue);
+    delegate Windows.Foundation.IReference<Int32>[] RefArrayDelegate(
+        Windows.Foundation.IReference<Int32>[] values,
+        ref Windows.Foundation.IReference<Int32>[] subset,
+        out Windows.Foundation.IReference<Int32>[] outValue);
+    delegate Windows.Foundation.Collections.IVector<Int32>[] ObjectArrayDelegate(
+        Windows.Foundation.Collections.IVector<Int32>[] values,
+        ref Windows.Foundation.Collections.IVector<Int32>[] subset,
+        out Windows.Foundation.Collections.IVector<Int32>[] outValue);
+
     [contract(TestContract, 1)]
     runtimeclass Test
     {
@@ -194,6 +211,16 @@ namespace TestComponent
         static Windows.Foundation.Collections.IVector<Int32> StaticInvokeObjectDelegateWithOutParam(
             Windows.Foundation.Collections.IVector<Int32> value,
             ObjectDelegateWithOutParam targetFn);
+
+        static Boolean StaticInvokeBoolArrayDelegate(Boolean[] values, BoolArrayDelegate targetFn);
+        static Boolean StaticInvokeCharArrayDelegate(Char[] values, CharArrayDelegate targetFn);
+        static Boolean StaticInvokeNumericArrayDelegate(Int32[] values, NumericArrayDelegate targetFn);
+        static Boolean StaticInvokeStringArrayDelegate(String[] values, StringArrayDelegate targetFn);
+        static Boolean StaticInvokeGuidArrayDelegate(Guid[] values, GuidArrayDelegate targetFn);
+        static Boolean StaticInvokeEnumArrayDelegate(TestEnum[] values, EnumArrayDelegate targetFn);
+        static Boolean StaticInvokeCompositeStructArrayDelegate(CompositeType[] values, CompositeStructArrayDelegate targetFn);
+        static Boolean StaticInvokeRefArrayDelegate(Windows.Foundation.IReference<Int32>[] values, RefArrayDelegate targetFn);
+        static Boolean StaticInvokeObjectArrayDelegate(Windows.Foundation.Collections.IVector<Int32>[] values, ObjectArrayDelegate targetFn);
 
         // Copy array to IVector
         static Windows.Foundation.Collections.IVector<Boolean> CopyBoolsToVector(Boolean[] values);
@@ -338,18 +365,5 @@ namespace TestComponent
         void RaiseCompositeStructEvent(CompositeType value);
         void RaiseRefEvent(Windows.Foundation.IReference<Int32> value);
         void RaiseObjectEvent(Windows.Foundation.Collections.IVector<Int32> value);
-
-        // Member delegate invocation
-        Boolean InvokeBoolDelegate(Boolean value, BoolDelegate targetFn);
-        Char InvokeCharDelegate(Char value, CharDelegate targetFn);
-        Int32 InvokeNumericDelegate(Int32 value, NumericDelegate targetFn);
-        String InvokeStringDelegate(String value, StringDelegate targetFn);
-        Guid InvokeGuidDelegate(Guid value, GuidDelegate targetFn);
-        TestEnum InvokeEnumDelegate(TestEnum value, EnumDelegate targetFn);
-        CompositeType InvokeCompositeStructDelegate(CompositeType value, CompositeStructDelegate targetFn);
-        Windows.Foundation.IReference<Int32> InvokeRefDelegate(Windows.Foundation.IReference<Int32> value, RefDelegate targetFn);
-        Windows.Foundation.Collections.IVector<Int32> InvokeObjectDelegate(
-            Windows.Foundation.Collections.IVector<Int32> value,
-            ObjectDelegate targetFn);
     }
 }

@@ -5,7 +5,9 @@
 import {
     TestScenario,
     TestValues,
-    assert
+    assert,
+    allSetGuid,
+    zeroGuid
 } from './TestCommon'
 
 export function makeDelegateAndEventTestScenarios(pThis) {
@@ -42,6 +44,16 @@ export function makeDelegateAndEventTestScenarios(pThis) {
         new TestScenario('Test::StaticInvokeRefDelegateWithOutParam', runStaticRefDelegateWithOutParam.bind(pThis)),
         new TestScenario('Test::StaticInvokeObjectDelegateWithOutParam', runStaticObjectDelegateWithOutParam.bind(pThis)),
 
+        new TestScenario('Test::StaticInvokeBoolArrayDelegate', runStaticBoolArrayDelegate.bind(pThis)),
+        new TestScenario('Test::StaticInvokeCharArrayDelegate', runStaticCharArrayDelegate.bind(pThis)),
+        new TestScenario('Test::StaticInvokeNumericArrayDelegate', runStaticNumericArrayDelegate.bind(pThis)),
+        new TestScenario('Test::StaticInvokeStringArrayDelegate', runStaticStringArrayDelegate.bind(pThis)),
+        new TestScenario('Test::StaticInvokeGuidArrayDelegate', runStaticGuidArrayDelegate.bind(pThis)),
+        new TestScenario('Test::StaticInvokeEnumArrayDelegate', runStaticEnumArrayDelegate.bind(pThis)),
+        new TestScenario('Test::StaticInvokeCompositeStructArrayDelegate', runStaticCompositeStructArrayDelegate.bind(pThis)),
+        new TestScenario('Test::StaticInvokeRefArrayDelegate', runStaticRefArrayDelegate.bind(pThis)),
+        new TestScenario('Test::StaticInvokeObjectArrayDelegate', runStaticObjectArrayDelegate.bind(pThis)),
+
         // Non-static events
         new TestScenario('Test::BoolEventHandler', runBoolEventHandler.bind(pThis)),
         new TestScenario('Test::CharEventHandler', runCharEventHandler.bind(pThis)),
@@ -52,17 +64,6 @@ export function makeDelegateAndEventTestScenarios(pThis) {
         new TestScenario('Test::CompositeStructEventHandler', runCompositeStructEventHandler.bind(pThis)),
         new TestScenario('Test::RefEventHandler', runRefEventHandler.bind(pThis)),
         new TestScenario('Test::ObjectEventHandler', runObjectEventHandler.bind(pThis)),
-
-        // Non-static Delegates
-        new TestScenario('Test::BoolDelegate', runBoolDelegate.bind(pThis)),
-        new TestScenario('Test::CharDelegate', runCharDelegate.bind(pThis)),
-        new TestScenario('Test::NumericDelegate', runNumericDelegate.bind(pThis)),
-        new TestScenario('Test::StringDelegate', runStringDelegate.bind(pThis)),
-        new TestScenario('Test::GuidDelegate', runGuidDelegate.bind(pThis)),
-        new TestScenario('Test::EnumDelegate', runEnumDelegate.bind(pThis)),
-        new TestScenario('Test::CompositeStructDelegate', runCompositeStructDelegate.bind(pThis)),
-        new TestScenario('Test::RefDelegate', runRefDelegate.bind(pThis)),
-        new TestScenario('Test::ObjectDelegate', runObjectDelegate.bind(pThis)),
     ];
 }
 
@@ -196,6 +197,7 @@ function runStaticObjectDelegate(scenario) {
     runDelegateTest.call(this, scenario, values, (val, fn) => TestComponent.Test.staticInvokeObjectDelegate(val, fn));
 }
 
+// Static delegates with out params
 function runDelegateWithOutParamTest(scenario, values, invoke) {
     this.runSync(scenario, () => {
         for (var val of values) {
@@ -252,6 +254,69 @@ function runStaticObjectDelegateWithOutParam(scenario) {
     }
 
     runDelegateWithOutParamTest.call(this, scenario, values, (val, fn) => TestComponent.Test.staticInvokeObjectDelegateWithOutParam(val, fn));
+}
+
+// Static array delegates
+function runArrayDelegateTest(scenario, values, invoke, modify) {
+    this.runSync(scenario, () => {
+        assert.isTrue(invoke(values, (vals, fill) => {
+            for (var i = 0; i < fill.length; ++i) {
+                fill[i] = vals[i];
+            }
+
+            var out = new Array(vals.length);
+            for (var i = 0; i < vals.length; ++i) {
+                out[i] = vals[vals.length - i - 1];
+            }
+
+            return { returnValue: vals, outValue: out };
+        }));
+    });
+}
+
+function runStaticBoolArrayDelegate(scenario) {
+    runArrayDelegateTest.call(this, scenario, [true, false, true, false, true, false], (vals, fn) => TestComponent.Test.staticInvokeBoolArrayDelegate(vals, fn));
+}
+
+function runStaticCharArrayDelegate(scenario) {
+    runArrayDelegateTest.call(this, scenario, ['a', 'b', 'c', 'd', 'e', 'f'], (vals, fn) => TestComponent.Test.staticInvokeCharArrayDelegate(vals, fn));
+}
+
+function runStaticNumericArrayDelegate(scenario) {
+    runArrayDelegateTest.call(this, scenario, [1, 2, 3, 4, 5, 6], (vals, fn) => TestComponent.Test.staticInvokeNumericArrayDelegate(vals, fn));
+}
+
+function runStaticStringArrayDelegate(scenario) {
+    runArrayDelegateTest.call(this, scenario, ['apple', 'banana', 'cherry', 'durian', 'elderberry', 'fig'], (vals, fn) => TestComponent.Test.staticInvokeStringArrayDelegate(vals, fn));
+}
+
+function runStaticGuidArrayDelegate(scenario) {
+    runArrayDelegateTest.call(this, scenario,
+        [zeroGuid, allSetGuid, '11111111-1111-1111-1111-111111111111', '22222222-2222-2222-2222-222222222222', '33333333-3333-3333-3333-333333333333', '44444444-4444-4444-4444-444444444444'],
+        (vals, fn) => TestComponent.Test.staticInvokeGuidArrayDelegate(vals, fn));
+}
+
+function runStaticEnumArrayDelegate(scenario) {
+    runArrayDelegateTest.call(this, scenario, [1, 2, 3, 4, 1, 2], (vals, fn) => TestComponent.Test.staticInvokeEnumArrayDelegate(vals, fn));
+}
+
+function runStaticCompositeStructArrayDelegate(scenario) {
+    runArrayDelegateTest.call(this, scenario, [...TestValues.composite.valid, ...TestValues.composite.valid], (vals, fn) => TestComponent.Test.staticInvokeCompositeStructArrayDelegate(vals, fn));
+}
+
+function runStaticRefArrayDelegate(scenario) {
+    runArrayDelegateTest.call(this, scenario, [1, 2, 3, 4, 5, 6], (vals, fn) => TestComponent.Test.staticInvokeRefArrayDelegate(vals, fn));
+}
+
+function runStaticObjectArrayDelegate(scenario) {
+    runArrayDelegateTest.call(this, scenario, [
+        TestComponent.Test.copyNumericsToVector([]),
+        TestComponent.Test.copyNumericsToVector([1]),
+        TestComponent.Test.copyNumericsToVector([1, 2]),
+        TestComponent.Test.copyNumericsToVector([1, 2, 3]),
+        TestComponent.Test.copyNumericsToVector([1, 2, 3, 4]),
+        TestComponent.Test.copyNumericsToVector([1, 2, 3, 4, 5]),
+    ], (vals, fn) => TestComponent.Test.staticInvokeObjectArrayDelegate(vals, fn));
 }
 
 // Non-static events
@@ -323,46 +388,4 @@ function runRefEventHandler(scenario) {
 function runObjectEventHandler(scenario) {
     var vals = [TestComponent.Test.copyNumericsToVector([]), TestComponent.Test.copyNumericsToVector([0]), TestComponent.Test.copyNumericsToVector([0, 1, 2, 3, 4])];
     testEventHandler.call(this, scenario, vals, 'objecteventhandler', (arg) => this.test.raiseObjectEvent(arg));
-}
-
-// Non-static delegates
-function runBoolDelegate(scenario) {
-    runDelegateTest.call(this, scenario, TestValues.bools.valid, (val, fn) => this.test.invokeBoolDelegate(val, fn));
-}
-
-function runCharDelegate(scenario) {
-    runDelegateTest.call(this, scenario, TestValues.chars.valid, (val, fn) => this.test.invokeCharDelegate(val, fn));
-}
-
-function runNumericDelegate(scenario) {
-    runDelegateTest.call(this, scenario, TestValues.s32.valid, (val, fn) => this.test.invokeNumericDelegate(val, fn));
-}
-
-function runStringDelegate(scenario) {
-    runDelegateTest.call(this, scenario, TestValues.strings.valid, (val, fn) => this.test.invokeStringDelegate(val, fn));
-}
-
-function runGuidDelegate(scenario) {
-    runDelegateTest.call(this, scenario, TestValues.guids.valid, (val, fn) => this.test.invokeGuidDelegate(val, fn));
-}
-
-function runEnumDelegate(scenario) {
-    runDelegateTest.call(this, scenario, TestValues.enums.valid, (val, fn) => this.test.invokeEnumDelegate(val, fn));
-}
-
-function runCompositeStructDelegate(scenario) {
-    runDelegateTest.call(this, scenario, TestValues.composite.valid, (val, fn) => this.test.invokeCompositeStructDelegate(val, fn));
-}
-
-function runRefDelegate(scenario) {
-    runDelegateTest.call(this, scenario, TestValues.s32.valid, (val, fn) => this.test.invokeRefDelegate(val, fn));
-}
-
-function runObjectDelegate(scenario) {
-    var values = [];
-    for (var val of TestValues.s32.validArrays) {
-        values.push(TestComponent.Test.copyNumericsToVector(val));
-    }
-
-    runDelegateTest.call(this, scenario, values, (val, fn) => this.test.invokeObjectDelegate(val, fn));
 }
