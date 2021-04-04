@@ -14,4 +14,19 @@ namespace winrt::TestComponent::implementation
     {
         return L"HierarchyBase.OverriddenHierarchyBaseMethod";
     }
+
+    winrt::hstring HierarchyBase::OverloadedHierarchyBaseMethod(winrt::hstring param1)
+    {
+        return L"HierarchyBase.OverloadedHierarchyBaseMethod";
+    }
+    
+    winrt::hstring HierarchyBase::StaticHierarchyBaseMethod()
+    {
+        return L"HierarchyBase.StaticHierarchyBaseMethod";
+    }
+    
+    winrt::hstring HierarchyBase::IHierarchyV2ContractMethod()
+    {
+        return L"HierarchyBase.IHierarchyV2ContractMethod";
+    }
 }

@@ -77,6 +77,24 @@ export const assert = {
         if (result.success) {
             throw new Error('assertNotEqual failed! \'' + stringify(lhs) + '\' == \'' + stringify(rhs) + '\'');
         }
+    },
+
+    throwsError(functionToExecute, errorName, errorMessage) {
+        let isFunctionExecuted = false;
+        try {
+            functionToExecute();
+            isFunctionExecuted = true;
+        } catch (error) {
+            if (errorName && error.name !== errorName) {
+                throw new Error('throwsError failed! Actual error name: ' + error.name + '. Expected error name: ' + errorName);
+            }
+            if (errorMessage && error.message !== errorMessage) {
+                throw new Error('throwsError failed! Actual error message: ' + error.message + '. Expected error name: ' + errorMessage);
+            }
+        }
+        if (isFunctionExecuted) {
+            throw new Error('throwsError failed! Function executed when it should not have.')
+        }
     }
 };
 

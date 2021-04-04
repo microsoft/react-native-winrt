@@ -4,6 +4,9 @@
 
 namespace winrt::TestComponent::implementation
 {
+    HierarchyDerived::HierarchyDerived(winrt::hstring name)
+    {
+    }
 
     winrt::hstring HierarchyDerived::OverriddenHierarchyBaseMethod()
     { 
@@ -13,6 +16,11 @@ namespace winrt::TestComponent::implementation
     winrt::hstring HierarchyDerived::HierarchyDerivedMethod()
     {
         return L"HierarchyDerived.HierarchyDerivedMethod";
+    }
+
+    winrt::hstring HierarchyDerived::OverloadedHierarchyBaseMethod(winrt::hstring param1, winrt::hstring param2)
+    {
+        return L"HierarchyDerived.OverloadedHierarchyBaseMethod";
     }
 
 }

@@ -6,9 +6,10 @@ namespace winrt::TestComponent::implementation
 {
     struct HierarchyDerived : HierarchyDerivedT<HierarchyDerived, HierarchyBase>
     {
-        HierarchyDerived() = default;
+        HierarchyDerived(winrt::hstring name);
         winrt::hstring OverriddenHierarchyBaseMethod();
         winrt::hstring HierarchyDerivedMethod();
+        winrt::hstring OverloadedHierarchyBaseMethod(winrt::hstring param1, winrt::hstring param2);
     };
 }
 
