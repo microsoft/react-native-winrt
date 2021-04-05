@@ -31,6 +31,51 @@ declare namespace TestComponent {
     
     type GuidDelegateWithOutParam = (inputValue: string) => string;
     
+    class HierarchyBase implements TestComponent.IHierarchyBase, TestComponent.IHierarchyBaseProtected, TestComponent.IHierarchyV2Contract {
+        constructor();
+        nonOverriddenHierarchyBaseMethod(): string;
+        overloadedHierarchyBaseMethod(param1: string): string;
+        protected overriddenHierarchyBaseMethod(): string;
+        iHierarchyV2ContractMethod(): string;
+        static staticHierarchyBaseMethod(): string;
+    }
+
+    class HierarchyDerived extends TestComponent.HierarchyBase implements TestComponent.IHierarchyDerived {
+        constructor(name: string);
+        hierarchyDerivedMethod(): string;
+        overloadedHierarchyBaseMethod(param1: string, param2: string): string;
+    }
+
+    interface IHierarchyBase {
+        nonOverriddenHierarchyBaseMethod(): string;
+        overloadedHierarchyBaseMethod(param1: string): string;
+    }
+
+    interface IHierarchyBaseFactory {
+        createInstance(baseInterface: any): { innerInterface: any; returnValue: TestComponent.HierarchyBase };
+    }
+
+    interface IHierarchyBaseProtected {
+        overriddenHierarchyBaseMethod(): string;
+    }
+
+    interface IHierarchyBaseStatics {
+        staticHierarchyBaseMethod(): string;
+    }
+
+    interface IHierarchyDerived {
+        hierarchyDerivedMethod(): string;
+        overloadedHierarchyBaseMethod(param1: string, param2: string): string;
+    }
+
+    interface IHierarchyDerivedFactory {
+        createInstance(name: string, baseInterface: any): { innerInterface: any; returnValue: TestComponent.HierarchyDerived };
+    }
+
+    interface IHierarchyV2Contract {
+        iHierarchyV2ContractMethod(): string;
+    }
+
     interface ITest {
         boolProperty: boolean;
         booleanArrayProperty: boolean[];
