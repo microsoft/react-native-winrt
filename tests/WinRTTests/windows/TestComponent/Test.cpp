@@ -263,6 +263,16 @@ namespace winrt::TestComponent::implementation
         return reverse_array(values);
     }
 
+    com_array<Windows::Foundation::IReference<int32_t>> Test::StaticRefArrayOutParam(
+        array_view<Windows::Foundation::IReference<int32_t> const> values,
+        com_array<Windows::Foundation::IReference<int32_t>>& rot1,
+        com_array<Windows::Foundation::IReference<int32_t>>& rot2)
+    {
+        rot1 = rotate_array(values, 1);
+        rot2 = rotate_array(values, 2);
+        return reverse_array(values);
+    }
+
     com_array<Windows::Foundation::Collections::IVector<int32_t>> Test::StaticObjectArrayOutParam(
         array_view<Windows::Foundation::Collections::IVector<int32_t> const> values,
         com_array<Windows::Foundation::Collections::IVector<int32_t>>& rot1,
@@ -351,6 +361,11 @@ namespace winrt::TestComponent::implementation
                 ++byte;
             next.Bools.Value = !next.Bools.Value;
         }
+    }
+
+    void Test::StaticRefFillParam(array_view<Windows::Foundation::IReference<int32_t>> values)
+    {
+        std::iota(values.begin(), values.end(), 0);
     }
 
     void Test::StaticObjectFillParam(array_view<Windows::Foundation::Collections::IVector<int32_t>> values)
@@ -550,7 +565,6 @@ namespace winrt::TestComponent::implementation
         return targetFn(inputValue);
     }
 
-    /* TODO: Delegates with out params currently cause compilation errors
     bool Test::StaticInvokeBoolDelegateWithOutParam(bool inputValue, BoolDelegateWithOutParam const& targetFn)
     {
         bool result = false;
@@ -621,7 +635,93 @@ namespace winrt::TestComponent::implementation
         targetFn(inputValue, result);
         return result;
     }
-    */
+
+    template <typename T, typename Delegate>
+    static bool DoInvokeArrayDelegate(array_view<const T> values, const Delegate& targetFn)
+    {
+        T fillResult[5];
+        if (values.size() < std::size(fillResult))
+            throw hresult_invalid_argument(); // Since we aren't reporting result size; assume complete fill
+
+        com_array<T> outResult;
+        auto result = targetFn(values, fillResult, outResult);
+
+        // Check the fill result
+        for (uint32_t i = 0; i < std::size(fillResult); ++i)
+        {
+            if (values[i] != fillResult[i])
+                return false;
+        }
+
+        // Check the output arg
+        if (outResult.size() != values.size())
+            return false;
+        for (uint32_t i = 0; i < values.size(); ++i)
+        {
+            if (values[i] != outResult[values.size() - i - 1])
+                return false;
+        }
+
+        // Return value should be a copy
+        if (result.size() != values.size())
+            return false;
+        for (uint32_t i = 0; i < values.size(); ++i)
+        {
+            if (values[i] != result[i])
+                return false;
+        }
+
+        return true;
+    }
+
+    bool Test::StaticInvokeBoolArrayDelegate(array_view<bool const> values, BoolArrayDelegate const& targetFn)
+    {
+        return DoInvokeArrayDelegate(values, targetFn);
+    }
+
+    bool Test::StaticInvokeCharArrayDelegate(array_view<char16_t const> values, CharArrayDelegate const& targetFn)
+    {
+        return DoInvokeArrayDelegate(values, targetFn);
+    }
+
+    bool Test::StaticInvokeNumericArrayDelegate(array_view<int32_t const> values, NumericArrayDelegate const& targetFn)
+    {
+        return DoInvokeArrayDelegate(values, targetFn);
+    }
+
+    bool Test::StaticInvokeStringArrayDelegate(array_view<hstring const> values, StringArrayDelegate const& targetFn)
+    {
+        return DoInvokeArrayDelegate(values, targetFn);
+    }
+
+    bool Test::StaticInvokeGuidArrayDelegate(array_view<winrt::guid const> values, GuidArrayDelegate const& targetFn)
+    {
+        return DoInvokeArrayDelegate(values, targetFn);
+    }
+
+    bool Test::StaticInvokeEnumArrayDelegate(array_view<TestEnum const> values, EnumArrayDelegate const& targetFn)
+    {
+        return DoInvokeArrayDelegate(values, targetFn);
+    }
+
+    bool Test::StaticInvokeCompositeStructArrayDelegate(
+        array_view<CompositeType const> values, CompositeStructArrayDelegate const& targetFn)
+    {
+        return DoInvokeArrayDelegate(values, targetFn);
+    }
+
+    bool Test::StaticInvokeRefArrayDelegate(
+        array_view<Windows::Foundation::IReference<int32_t> const> values, RefArrayDelegate const& targetFn)
+    {
+        return DoInvokeArrayDelegate(values, targetFn);
+    }
+
+    bool Test::StaticInvokeObjectArrayDelegate(
+        array_view<Windows::Foundation::Collections::IVector<int32_t> const> values,
+        ObjectArrayDelegate const& targetFn)
+    {
+        return DoInvokeArrayDelegate(values, targetFn);
+    }
 
     template <typename T>
     static Windows::Foundation::Collections::IVector<T> CopyToVector(array_view<T const> values)
@@ -1304,6 +1404,16 @@ namespace winrt::TestComponent::implementation
         return reverse_array(values);
     }
 
+    com_array<Windows::Foundation::IReference<int32_t>> Test::RefArrayOutParam(
+        array_view<Windows::Foundation::IReference<int32_t> const> values,
+        com_array<Windows::Foundation::IReference<int32_t>>& rot1,
+        com_array<Windows::Foundation::IReference<int32_t>>& rot2)
+    {
+        rot1 = rotate_array(values, 1);
+        rot2 = rotate_array(values, 2);
+        return reverse_array(values);
+    }
+
     com_array<Windows::Foundation::Collections::IVector<int32_t>> Test::ObjectArrayOutParam(
         array_view<Windows::Foundation::Collections::IVector<int32_t> const> values,
         com_array<Windows::Foundation::Collections::IVector<int32_t>>& rot1,
@@ -1392,6 +1502,11 @@ namespace winrt::TestComponent::implementation
                 ++byte;
             next.Bools.Value = !next.Bools.Value;
         }
+    }
+
+    void Test::RefFillParam(array_view<Windows::Foundation::IReference<int32_t>> values)
+    {
+        std::iota(values.begin(), values.end(), 0);
     }
 
     void Test::ObjectFillParam(array_view<Windows::Foundation::Collections::IVector<int32_t>> values)
@@ -1541,53 +1656,5 @@ namespace winrt::TestComponent::implementation
     void Test::RaiseObjectEvent(Windows::Foundation::Collections::IVector<int32_t> const& value)
     {
         m_objectEventSource(*this, value);
-    }
-
-    bool Test::InvokeBoolDelegate(bool inputValue, BoolDelegate const& targetFn)
-    {
-        return targetFn(inputValue);
-    }
-
-    char16_t Test::InvokeCharDelegate(char16_t inputValue, CharDelegate const& targetFn)
-    {
-        return targetFn(inputValue);
-    }
-
-    int32_t Test::InvokeNumericDelegate(int32_t inputValue, NumericDelegate const& targetFn)
-    {
-        return targetFn(inputValue);
-    }
-
-    hstring Test::InvokeStringDelegate(hstring const& inputValue, StringDelegate const& targetFn)
-    {
-        return targetFn(inputValue);
-    }
-
-    winrt::guid Test::InvokeGuidDelegate(winrt::guid const& inputValue, GuidDelegate const& targetFn)
-    {
-        return targetFn(inputValue);
-    }
-
-    TestEnum Test::InvokeEnumDelegate(TestEnum const& inputValue, EnumDelegate const& targetFn)
-    {
-        return targetFn(inputValue);
-    }
-
-    CompositeType Test::InvokeCompositeStructDelegate(
-        CompositeType const& inputValue, CompositeStructDelegate const& targetFn)
-    {
-        return targetFn(inputValue);
-    }
-
-    Windows::Foundation::IReference<int32_t> Test::InvokeRefDelegate(
-        Windows::Foundation::IReference<int32_t> const& inputValue, RefDelegate const& targetFn)
-    {
-        return targetFn(inputValue);
-    }
-
-    Windows::Foundation::Collections::IVector<int32_t> Test::InvokeObjectDelegate(
-        Windows::Foundation::Collections::IVector<int32_t> const& inputValue, ObjectDelegate const& targetFn)
-    {
-        return targetFn(inputValue);
     }
 }

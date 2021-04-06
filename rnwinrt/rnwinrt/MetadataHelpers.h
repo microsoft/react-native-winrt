@@ -382,7 +382,7 @@ struct generic_instantiation
 
         if (stackSize)
         {
-            for (auto begin = genericParamStack.first_parent; begin >= genericParamStack.last_parent; --begin)
+            for (auto begin = genericParamStack.last_parent; begin <= genericParamStack.first_parent; ++begin)
             {
                 signatures.push_back(*begin);
             }

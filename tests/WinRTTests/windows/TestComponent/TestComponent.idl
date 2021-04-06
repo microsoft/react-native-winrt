@@ -60,27 +60,43 @@ namespace TestComponent
     };
 
     // Delegates
-    // TODO: Error if argument is named 'value' & has a return value - https://github.com/microsoft/jswinrt/issues/15
-    delegate Boolean BoolDelegate(Boolean inputValue);
-    delegate Char CharDelegate(Char inputValue);
-    delegate Int32 NumericDelegate(Int32 inputValue);
-    delegate String StringDelegate(String inputValue);
-    delegate Guid GuidDelegate(Guid inputValue);
-    delegate TestEnum EnumDelegate(TestEnum inputValue);
-    delegate CompositeType CompositeStructDelegate(CompositeType inputValue);
-    delegate Windows.Foundation.IReference<Int32> RefDelegate(Windows.Foundation.IReference<Int32> inputValue);
-    delegate Windows.Foundation.Collections.IVector<Int32> ObjectDelegate(Windows.Foundation.Collections.IVector<Int32> inputValue);
+    delegate Boolean BoolDelegate(Boolean value);
+    delegate Char CharDelegate(Char value);
+    delegate Int32 NumericDelegate(Int32 value);
+    delegate String StringDelegate(String value);
+    delegate Guid GuidDelegate(Guid value);
+    delegate TestEnum EnumDelegate(TestEnum value);
+    delegate CompositeType CompositeStructDelegate(CompositeType value);
+    delegate Windows.Foundation.IReference<Int32> RefDelegate(Windows.Foundation.IReference<Int32> value);
+    delegate Windows.Foundation.Collections.IVector<Int32> ObjectDelegate(Windows.Foundation.Collections.IVector<Int32> value);
 
     // Delegates with out params
-    delegate void BoolDelegateWithOutParam(Boolean inputValue, out Boolean outValue);
-    delegate void CharDelegateWithOutParam(Char inputValue, out Char outValue);
-    delegate void NumericDelegateWithOutParam(Int32 inputValue, out Int32 outValue);
-    delegate void StringDelegateWithOutParam(String inputValue, out String outValue);
-    delegate void GuidDelegateWithOutParam(Guid inputValue, out Guid outValue);
-    delegate void EnumDelegateWithOutParam(TestEnum inputValue, out TestEnum outValue);
-    delegate void CompositeStructDelegateWithOutParam(CompositeType inputValue, out CompositeType outValue);
-    delegate void RefDelegateWithOutParam(Windows.Foundation.IReference<Int32> inputValue, out Windows.Foundation.IReference<Int32> outValue);
-    delegate void ObjectDelegateWithOutParam(Windows.Foundation.Collections.IVector<Int32> inputValue, out Windows.Foundation.Collections.IVector<Int32> outValue);
+    delegate void BoolDelegateWithOutParam(Boolean value, out Boolean outValue);
+    delegate void CharDelegateWithOutParam(Char value, out Char outValue);
+    delegate void NumericDelegateWithOutParam(Int32 value, out Int32 outValue);
+    delegate void StringDelegateWithOutParam(String value, out String outValue);
+    delegate void GuidDelegateWithOutParam(Guid value, out Guid outValue);
+    delegate void EnumDelegateWithOutParam(TestEnum value, out TestEnum outValue);
+    delegate void CompositeStructDelegateWithOutParam(CompositeType value, out CompositeType outValue);
+    delegate void RefDelegateWithOutParam(Windows.Foundation.IReference<Int32> value, out Windows.Foundation.IReference<Int32> outValue);
+    delegate void ObjectDelegateWithOutParam(Windows.Foundation.Collections.IVector<Int32> value, out Windows.Foundation.Collections.IVector<Int32> outValue);
+
+    // Delegates with array types
+    delegate Boolean[] BoolArrayDelegate(Boolean[] values, ref Boolean[] subset, out Boolean[] outValue);
+    delegate Char[] CharArrayDelegate(Char[] values, ref Char[] subset, out Char[] outValue);
+    delegate Int32[] NumericArrayDelegate(Int32[] values, ref Int32[] subset, out Int32[] outValue);
+    delegate String[] StringArrayDelegate(String[] values, ref String[] subset, out String[] outValue);
+    delegate Guid[] GuidArrayDelegate(Guid[] values, ref Guid[] subset, out Guid[] outValue);
+    delegate TestEnum[] EnumArrayDelegate(TestEnum[] values, ref TestEnum[] subset, out TestEnum[] outValue);
+    delegate CompositeType[] CompositeStructArrayDelegate(CompositeType[] values, ref CompositeType[] subset, out CompositeType[] outValue);
+    delegate Windows.Foundation.IReference<Int32>[] RefArrayDelegate(
+        Windows.Foundation.IReference<Int32>[] values,
+        ref Windows.Foundation.IReference<Int32>[] subset,
+        out Windows.Foundation.IReference<Int32>[] outValue);
+    delegate Windows.Foundation.Collections.IVector<Int32>[] ObjectArrayDelegate(
+        Windows.Foundation.Collections.IVector<Int32>[] values,
+        ref Windows.Foundation.Collections.IVector<Int32>[] subset,
+        out Windows.Foundation.Collections.IVector<Int32>[] outValue);
 
     [contract(TestContract, 1)]
     runtimeclass Test
@@ -95,7 +111,7 @@ namespace TestComponent
         static Boolean StaticBoolProperty;
         // TODO: More, but static properties don't seem to work
 
-        // Static array properties
+        // TODO: Static array properties, once static properties work
 
         // Static functions
         static Boolean StaticOr(Boolean lhs, Boolean rhs);
@@ -130,7 +146,10 @@ namespace TestComponent
         static Guid[] StaticGuidArrayOutParam(Guid[] values, out Guid[] rot1, out Guid[] rot2);
         static TestEnum[] StaticEnumArrayOutParam(TestEnum[] values, out TestEnum[] rot1, out TestEnum[] rot2);
         static CompositeType[] StaticCompositeStructArrayOutParam(CompositeType[] values, out CompositeType[] rot1, out CompositeType[] rot2);
-        // TODO: Ref array
+        static Windows.Foundation.IReference<Int32>[] StaticRefArrayOutParam(
+            Windows.Foundation.IReference<Int32>[] values,
+            out Windows.Foundation.IReference<Int32>[] rot1,
+            out Windows.Foundation.IReference<Int32>[] rot2);
         static Windows.Foundation.Collections.IVector<Int32>[] StaticObjectArrayOutParam(
             Windows.Foundation.Collections.IVector<Int32>[] values,
             out Windows.Foundation.Collections.IVector<Int32>[] rot1,
@@ -144,7 +163,7 @@ namespace TestComponent
         static void StaticGuidFillParam(ref Guid[] values);
         static void StaticEnumFillParam(ref TestEnum[] values);
         static void StaticCompositeStructFillParam(ref CompositeType[] values);
-        // TODO: Ref
+        static void StaticRefFillParam(ref Windows.Foundation.IReference<Int32>[] values);
         static void StaticObjectFillParam(ref Windows.Foundation.Collections.IVector<Int32>[] values);
 
         // Static events
@@ -170,33 +189,41 @@ namespace TestComponent
         static void RaiseStaticObjectEvent(Windows.Foundation.Collections.IVector<Int32> value);
 
         // Static delegate invocation
-        static Boolean StaticInvokeBoolDelegate(Boolean inputValue, BoolDelegate targetFn);
-        static Char StaticInvokeCharDelegate(Char inputValue, CharDelegate targetFn);
-        static Int32 StaticInvokeNumericDelegate(Int32 inputValue, NumericDelegate targetFn);
-        static String StaticInvokeStringDelegate(String inputValue, StringDelegate targetFn);
-        static Guid StaticInvokeGuidDelegate(Guid inputValue, GuidDelegate targetFn);
-        static TestEnum StaticInvokeEnumDelegate(TestEnum inputValue, EnumDelegate targetFn);
-        static CompositeType StaticInvokeCompositeStructDelegate(CompositeType inputValue, CompositeStructDelegate targetFn);
-        static Windows.Foundation.IReference<Int32> StaticInvokeRefDelegate(Windows.Foundation.IReference<Int32> inputValue, RefDelegate targetFn);
+        static Boolean StaticInvokeBoolDelegate(Boolean value, BoolDelegate targetFn);
+        static Char StaticInvokeCharDelegate(Char value, CharDelegate targetFn);
+        static Int32 StaticInvokeNumericDelegate(Int32 value, NumericDelegate targetFn);
+        static String StaticInvokeStringDelegate(String value, StringDelegate targetFn);
+        static Guid StaticInvokeGuidDelegate(Guid value, GuidDelegate targetFn);
+        static TestEnum StaticInvokeEnumDelegate(TestEnum value, EnumDelegate targetFn);
+        static CompositeType StaticInvokeCompositeStructDelegate(CompositeType value, CompositeStructDelegate targetFn);
+        static Windows.Foundation.IReference<Int32> StaticInvokeRefDelegate(Windows.Foundation.IReference<Int32> value, RefDelegate targetFn);
         static Windows.Foundation.Collections.IVector<Int32> StaticInvokeObjectDelegate(
-            Windows.Foundation.Collections.IVector<Int32> inputValue,
+            Windows.Foundation.Collections.IVector<Int32> value,
             ObjectDelegate targetFn);
 
-        /* TODO: Delegates with out params currently cause compilation errors - https://github.com/microsoft/jswinrt/issues/16
-        static Boolean StaticInvokeBoolDelegateWithOutParam(Boolean inputValue, BoolDelegateWithOutParam targetFn);
-        static Char StaticInvokeCharDelegateWithOutParam(Char inputValue, CharDelegateWithOutParam targetFn);
-        static Int32 StaticInvokeNumericDelegateWithOutParam(Int32 inputValue, NumericDelegateWithOutParam targetFn);
-        static String StaticInvokeStringDelegateWithOutParam(String inputValue, StringDelegateWithOutParam targetFn);
-        static Guid StaticInvokeGuidDelegateWithOutParam(Guid inputValue, GuidDelegateWithOutParam targetFn);
-        static TestEnum StaticInvokeEnumDelegateWithOutParam(TestEnum inputValue, EnumDelegateWithOutParam targetFn);
-        static CompositeType StaticInvokeCompositeStructDelegateWithOutParam(CompositeType inputValue, CompositeStructDelegateWithOutParam targetFn);
+        static Boolean StaticInvokeBoolDelegateWithOutParam(Boolean value, BoolDelegateWithOutParam targetFn);
+        static Char StaticInvokeCharDelegateWithOutParam(Char value, CharDelegateWithOutParam targetFn);
+        static Int32 StaticInvokeNumericDelegateWithOutParam(Int32 value, NumericDelegateWithOutParam targetFn);
+        static String StaticInvokeStringDelegateWithOutParam(String value, StringDelegateWithOutParam targetFn);
+        static Guid StaticInvokeGuidDelegateWithOutParam(Guid value, GuidDelegateWithOutParam targetFn);
+        static TestEnum StaticInvokeEnumDelegateWithOutParam(TestEnum value, EnumDelegateWithOutParam targetFn);
+        static CompositeType StaticInvokeCompositeStructDelegateWithOutParam(CompositeType value, CompositeStructDelegateWithOutParam targetFn);
         static Windows.Foundation.IReference<Int32> StaticInvokeRefDelegateWithOutParam(
-            Windows.Foundation.IReference<Int32> inputValue,
+            Windows.Foundation.IReference<Int32> value,
             RefDelegateWithOutParam targetFn);
         static Windows.Foundation.Collections.IVector<Int32> StaticInvokeObjectDelegateWithOutParam(
-            Windows.Foundation.Collections.IVector<Int32> inputValue,
+            Windows.Foundation.Collections.IVector<Int32> value,
             ObjectDelegateWithOutParam targetFn);
-        */
+
+        static Boolean StaticInvokeBoolArrayDelegate(Boolean[] values, BoolArrayDelegate targetFn);
+        static Boolean StaticInvokeCharArrayDelegate(Char[] values, CharArrayDelegate targetFn);
+        static Boolean StaticInvokeNumericArrayDelegate(Int32[] values, NumericArrayDelegate targetFn);
+        static Boolean StaticInvokeStringArrayDelegate(String[] values, StringArrayDelegate targetFn);
+        static Boolean StaticInvokeGuidArrayDelegate(Guid[] values, GuidArrayDelegate targetFn);
+        static Boolean StaticInvokeEnumArrayDelegate(TestEnum[] values, EnumArrayDelegate targetFn);
+        static Boolean StaticInvokeCompositeStructArrayDelegate(CompositeType[] values, CompositeStructArrayDelegate targetFn);
+        static Boolean StaticInvokeRefArrayDelegate(Windows.Foundation.IReference<Int32>[] values, RefArrayDelegate targetFn);
+        static Boolean StaticInvokeObjectArrayDelegate(Windows.Foundation.Collections.IVector<Int32>[] values, ObjectArrayDelegate targetFn);
 
         // Copy array to IVector
         static Windows.Foundation.Collections.IVector<Boolean> CopyBoolsToVector(Boolean[] values);
@@ -268,8 +295,7 @@ namespace TestComponent
         Guid[] GuidArrayProperty;
         TestEnum[] EnumArrayProperty;
         CompositeType[] CompositeStructArrayProperty;
-        // TODO: Causes compilation errors in jswinrt: https://github.com/microsoft/jswinrt/issues/9
-        // Windows.Foundation.IReference<Int32>[] RefArrayProperty;
+        Windows.Foundation.IReference<Int32>[] RefArrayProperty;
         Windows.Foundation.Collections.IVector<Int32>[] ObjectArrayProperty;
 
         // Member functions
@@ -305,6 +331,10 @@ namespace TestComponent
         Guid[] GuidArrayOutParam(Guid[] values, out Guid[] rot1, out Guid[] rot2);
         TestEnum[] EnumArrayOutParam(TestEnum[] values, out TestEnum[] rot1, out TestEnum[] rot2);
         CompositeType[] CompositeStructArrayOutParam(CompositeType[] values, out CompositeType[] rot1, out CompositeType[] rot2);
+        Windows.Foundation.IReference<Int32>[] RefArrayOutParam(
+            Windows.Foundation.IReference<Int32>[] values,
+            out Windows.Foundation.IReference<Int32>[] rot1,
+            out Windows.Foundation.IReference<Int32>[] rot2);
         Windows.Foundation.Collections.IVector<Int32>[] ObjectArrayOutParam(
             Windows.Foundation.Collections.IVector<Int32>[] values,
             out Windows.Foundation.Collections.IVector<Int32>[] rot1,
@@ -318,7 +348,7 @@ namespace TestComponent
         void GuidFillParam(ref Guid[] values);
         void EnumFillParam(ref TestEnum[] values);
         void CompositeStructFillParam(ref CompositeType[] values);
-        // TODO: Ref
+        void RefFillParam(ref Windows.Foundation.IReference<Int32>[] values);
         void ObjectFillParam(ref Windows.Foundation.Collections.IVector<Int32>[] values);
 
         // Member events
@@ -342,19 +372,6 @@ namespace TestComponent
         void RaiseCompositeStructEvent(CompositeType value);
         void RaiseRefEvent(Windows.Foundation.IReference<Int32> value);
         void RaiseObjectEvent(Windows.Foundation.Collections.IVector<Int32> value);
-
-        // Member delegate invocation
-        Boolean InvokeBoolDelegate(Boolean inputValue, BoolDelegate targetFn);
-        Char InvokeCharDelegate(Char inputValue, CharDelegate targetFn);
-        Int32 InvokeNumericDelegate(Int32 inputValue, NumericDelegate targetFn);
-        String InvokeStringDelegate(String inputValue, StringDelegate targetFn);
-        Guid InvokeGuidDelegate(Guid inputValue, GuidDelegate targetFn);
-        TestEnum InvokeEnumDelegate(TestEnum inputValue, EnumDelegate targetFn);
-        CompositeType InvokeCompositeStructDelegate(CompositeType inputValue, CompositeStructDelegate targetFn);
-        Windows.Foundation.IReference<Int32> InvokeRefDelegate(Windows.Foundation.IReference<Int32> inputValue, RefDelegate targetFn);
-        Windows.Foundation.Collections.IVector<Int32> InvokeObjectDelegate(
-            Windows.Foundation.Collections.IVector<Int32> inputValue,
-            ObjectDelegate targetFn);
     }
 
     [contract(TestContract, 2)]
