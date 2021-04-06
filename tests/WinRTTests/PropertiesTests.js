@@ -51,8 +51,7 @@ export function makePropertiesTestScenarios(pThis) {
         new TestScenario('Test::GuidArrayProperty', runGuidArrayProperty.bind(pThis)),
         new TestScenario('Test::EnumArrayProperty', runEnumArrayProperty.bind(pThis)),
         new TestScenario('Test::CompositeStructArrayProperty', runCompositeStructArrayProperty.bind(pThis)),
-        // TODO: Causes compilation errors in jswinrt: https://github.com/microsoft/jswinrt/issues/9
-        // new TestScenario('Test::RefArrayProperty', runRefArrayProperty.bind(pThis)),
+        new TestScenario('Test::RefArrayProperty', runRefArrayProperty.bind(pThis)),
         new TestScenario('Test::ObjectArrayProperty', runObjectArrayProperty.bind(pThis)),
     ];
 }
@@ -60,7 +59,7 @@ export function makePropertiesTestScenarios(pThis) {
 function runSyncPropertyTest(scenario, type, vals, invalidVals, get, set) {
     this.runSync(scenario, () => {
         var initial = get();
-        assert.equal(typeof(initial), type);
+        assert.equal(type, typeof(initial));
 
         for (var val of vals) {
             var assignedVal;
@@ -81,7 +80,7 @@ function runSyncPropertyTest(scenario, type, vals, invalidVals, get, set) {
 
 // Static properties
 function runStaticBoolProperty(scenario) {
-    runSyncPropertyTest.call(this, scenario, 'boolean', TestValues.bools.valid, TestValues.bools.invalid, [], () => TestComponent.Test.staticBoolProperty, (val) => TestComponent.Test.staticBoolProperty = val);
+    runSyncPropertyTest.call(this, scenario, 'boolean', TestValues.bools.valid, TestValues.bools.invalid, () => TestComponent.Test.staticBoolProperty, (val) => TestComponent.Test.staticBoolProperty = val);
 }
 
 // Non-static properties
@@ -324,7 +323,7 @@ function runCompositeStructArrayProperty(scenario) {
     runSyncPropertyTest.call(this, scenario, 'object', TestValues.composite.validArrays, TestValues.composite.invalidArrays, () => this.test.compositeStructArrayProperty, (val) => this.test.compositeStructArrayProperty = val);
 }
 
-function runRefArrayPropertyArrayProperty(scenario) {
+function runRefArrayProperty(scenario) {
     runSyncPropertyTest.call(this, scenario, 'object',
         [[], [42], [0, 1, 2, 3, 4, 5, 6, 7, 8, 9], TestValues.s32.valid],
         [42, ['A'], [true], ['42'], TestValues.s32.invalid],

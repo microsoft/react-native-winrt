@@ -76,12 +76,6 @@ inline bool is_web_host_hidden(const T& row)
 }
 
 template <typename T>
-inline bool is_activatable(const T& row)
-{
-    return has_attribute(row, metadata_namespace, activatable_attribute);
-}
-
-template <typename T>
 inline bool is_default_overload(const T& row)
 {
     using namespace std::literals;

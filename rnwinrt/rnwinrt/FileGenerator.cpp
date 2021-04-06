@@ -231,7 +231,7 @@ namespace jswinrt::classes::%
     }
 )^-^",
                 classDef->type_def.TypeName(),
-                is_activatable(classDef->type_def) ? "static_activatable_class_data"sv : "static_class_data"sv);
+                classDef->methods.constructors.empty() ? "static_class_data"sv : "static_activatable_class_data"sv);
         }
 
         writer.write("}\n");
@@ -403,7 +403,7 @@ static void write_cppwinrt_type(jswinrt_writer& writer, const param_iterator& pa
         }
     };
 
-    // NOTE: We don't manually project generic types, so we can ge away with assuming an empty generic param stack
+    // NOTE: We don't manually project generic types, so we can get away with assuming an empty generic param stack
     resolve_type(param.signature(), {},
         overloaded{
             [&](const GenericTypeInstSig& sig, const generic_param_stack& newStack, bool isArray) {
@@ -536,7 +536,7 @@ static void write_params_native_to_value(jswinrt_writer& writer, const function_
     int argNum = 0;
     for (auto&& param : fn.params())
     {
-        if (param.is_input())
+        if (param.is_input() || !param.by_ref())
         {
             writer.write_fmt(
                 "\n%auto arg% = convert_native_to_value(runtime, param%);", indent{ indentLevel }, argNum, argNum);
@@ -1122,12 +1122,32 @@ namespace jswinrt::namespaces::%
                 cpp_typename{ delegateData->type_def }, cpp_typename{ delegateData->type_def },
                 [&](jswinrt_writer& w) { write_native_function_params(w, fn); });
 
+            auto writeReturnType = [&](jswinrt_writer& w) {
+                resolve_type(fn.signature.ReturnType().Type(), {},
+                    overloaded{
+                        [&](const GenericTypeInstSig& sig, const generic_param_stack& genStack, bool isArray) {
+                            if (isArray)
+                                w.write("winrt::com_array<"sv);
+                            write_cppwinrt_type(w, sig, genStack);
+                            if (isArray)
+                                w.write(">");
+                        },
+                        [&](auto&& value, bool isArray) {
+                            if (isArray)
+                                w.write("winrt::com_array<"sv);
+                            write_cppwinrt_type(w, value);
+                            if (isArray)
+                                w.write(">");
+                        },
+                    });
+            };
+
             if (fn.has_return_value)
             {
                 //
                 writer.write_fmt(R"^-^(
             % returnValue%;)^-^",
-                    [&](jswinrt_writer& w) { write_cppwinrt_type(w, fn.signature.ReturnType().Type(), {}); },
+                    writeReturnType,
                     [&](jswinrt_writer& w) { write_cppwinrt_type_initializer(w, fn.signature.ReturnType().Type()); });
             }
 
@@ -1140,9 +1160,21 @@ namespace jswinrt::namespaces::%
             writer.write_fmt(R"^-^(
                 %fn.call(runtime)^-^",
                 (fn.has_return_value || fn.has_out_params) ? "auto result = " : "");
-            for (int i = 0; i < fn.param_count; ++i)
+
+            int argNum = 0;
+            for (auto&& param : fn.params())
             {
-                writer.write_fmt(", arg%", i);
+                if (param.is_input())
+                {
+                    writer.write_fmt(", arg%", argNum);
+                }
+                else if (!param.by_ref())
+                {
+                    // Out & not by ref is "fill array". Due to the way JSI handles function invocation, it doesn't
+                    // realize that the argument we pass it is convertible to jsi::Value
+                    writer.write_fmt(", arg%.value()", argNum);
+                }
+                ++argNum;
             }
             writer.write_fmt(");");
 
@@ -1155,13 +1187,13 @@ namespace jswinrt::namespaces::%
                     // This is a bit different than below since we need to "extract" the value
                     writer.write_fmt(R"^-^(
                 returnValue = convert_value_to_native<%>(runtime, obj.getProperty(runtime, "returnValue"));)^-^",
-                        [&](jswinrt_writer& w) { write_cppwinrt_type(w, fn.signature.ReturnType().Type(), {}); });
+                        writeReturnType);
                 }
             }
             else if (fn.has_return_value)
             {
-                writer.write_fmt("\n                returnValue = convert_value_to_native<%>(runtime, result);",
-                    [&](jswinrt_writer& w) { write_cppwinrt_type(w, fn.signature.ReturnType().Type(), {}); });
+                writer.write_fmt(
+                    "\n                returnValue = convert_value_to_native<%>(runtime, result);", writeReturnType);
             }
 
             writer.write(R"^-^(

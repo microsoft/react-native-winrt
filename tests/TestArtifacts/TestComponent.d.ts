@@ -1,21 +1,27 @@
 //tslint:disable
 
 declare namespace TestComponent {
-    type BoolDelegate = (inputValue: boolean) => boolean;
+    type BoolArrayDelegate = (values: boolean[]) => { subset: boolean[]; outValue: boolean[]; returnValue: boolean[] };
     
-    type BoolDelegateWithOutParam = (inputValue: boolean) => boolean;
+    type BoolDelegate = (value: boolean) => boolean;
+    
+    type BoolDelegateWithOutParam = (value: boolean) => boolean;
     
     interface BooleanTypes {
          value: boolean;
     }
 
-    type CharDelegate = (inputValue: string) => string;
+    type CharArrayDelegate = (values: string[]) => { subset: string[]; outValue: string[]; returnValue: string[] };
     
-    type CharDelegateWithOutParam = (inputValue: string) => string;
+    type CharDelegate = (value: string) => string;
     
-    type CompositeStructDelegate = (inputValue: TestComponent.CompositeType) => TestComponent.CompositeType;
+    type CharDelegateWithOutParam = (value: string) => string;
     
-    type CompositeStructDelegateWithOutParam = (inputValue: TestComponent.CompositeType) => TestComponent.CompositeType;
+    type CompositeStructArrayDelegate = (values: TestComponent.CompositeType[]) => { subset: TestComponent.CompositeType[]; outValue: TestComponent.CompositeType[]; returnValue: TestComponent.CompositeType[] };
+    
+    type CompositeStructDelegate = (value: TestComponent.CompositeType) => TestComponent.CompositeType;
+    
+    type CompositeStructDelegateWithOutParam = (value: TestComponent.CompositeType) => TestComponent.CompositeType;
     
     interface CompositeType {
          numerics: TestComponent.NumericTypes;
@@ -23,13 +29,17 @@ declare namespace TestComponent {
          bools: TestComponent.BooleanTypes;
     }
 
-    type EnumDelegate = (inputValue: TestComponent.TestEnum) => TestComponent.TestEnum;
+    type EnumArrayDelegate = (values: TestComponent.TestEnum[]) => { subset: TestComponent.TestEnum[]; outValue: TestComponent.TestEnum[]; returnValue: TestComponent.TestEnum[] };
     
-    type EnumDelegateWithOutParam = (inputValue: TestComponent.TestEnum) => TestComponent.TestEnum;
+    type EnumDelegate = (value: TestComponent.TestEnum) => TestComponent.TestEnum;
     
-    type GuidDelegate = (inputValue: string) => string;
+    type EnumDelegateWithOutParam = (value: TestComponent.TestEnum) => TestComponent.TestEnum;
     
-    type GuidDelegateWithOutParam = (inputValue: string) => string;
+    type GuidArrayDelegate = (values: string[]) => { subset: string[]; outValue: string[]; returnValue: string[] };
+    
+    type GuidDelegate = (value: string) => string;
+    
+    type GuidDelegateWithOutParam = (value: string) => string;
     
     interface ITest {
         boolProperty: boolean;
@@ -52,6 +62,7 @@ declare namespace TestComponent {
         objectArrayProperty: Windows.Foundation.Collections.IVector<number>[];
         objectProperty: Windows.Foundation.Collections.IVector<number>;
         propertyValue: Windows.Foundation.IPropertyValue;
+        refArrayProperty: number[] | null;
         refBooleanProperty: boolean | null;
         refCharProperty: string | null;
         refEnumProperty: TestComponent.TestEnum | null;
@@ -91,6 +102,7 @@ declare namespace TestComponent {
         guidArrayOutParam(values: string[]): { rot1: string[]; rot2: string[]; returnValue: string[] };
         enumArrayOutParam(values: TestComponent.TestEnum[]): { rot1: TestComponent.TestEnum[]; rot2: TestComponent.TestEnum[]; returnValue: TestComponent.TestEnum[] };
         compositeStructArrayOutParam(values: TestComponent.CompositeType[]): { rot1: TestComponent.CompositeType[]; rot2: TestComponent.CompositeType[]; returnValue: TestComponent.CompositeType[] };
+        refArrayOutParam(values: number[] | null): { rot1: number[] | null; rot2: number[] | null; returnValue: number[] | null };
         objectArrayOutParam(values: Windows.Foundation.Collections.IVector<number>[]): { rot1: Windows.Foundation.Collections.IVector<number>[]; rot2: Windows.Foundation.Collections.IVector<number>[]; returnValue: Windows.Foundation.Collections.IVector<number>[] };
         boolFillParam(): boolean[];
         charFillParam(): string[];
@@ -99,6 +111,7 @@ declare namespace TestComponent {
         guidFillParam(): string[];
         enumFillParam(): TestComponent.TestEnum[];
         compositeStructFillParam(): TestComponent.CompositeType[];
+        refFillParam(): number[] | null;
         objectFillParam(): Windows.Foundation.Collections.IVector<number>[];
         raiseBoolEvent(value: boolean): void;
         raiseCharEvent(value: string): void;
@@ -109,15 +122,6 @@ declare namespace TestComponent {
         raiseCompositeStructEvent(value: TestComponent.CompositeType): void;
         raiseRefEvent(value: number | null): void;
         raiseObjectEvent(value: Windows.Foundation.Collections.IVector<number>): void;
-        invokeBoolDelegate(inputValue: boolean, targetFn: TestComponent.BoolDelegate): boolean;
-        invokeCharDelegate(inputValue: string, targetFn: TestComponent.CharDelegate): string;
-        invokeNumericDelegate(inputValue: number, targetFn: TestComponent.NumericDelegate): number;
-        invokeStringDelegate(inputValue: string, targetFn: TestComponent.StringDelegate): string;
-        invokeGuidDelegate(inputValue: string, targetFn: TestComponent.GuidDelegate): string;
-        invokeEnumDelegate(inputValue: TestComponent.TestEnum, targetFn: TestComponent.EnumDelegate): TestComponent.TestEnum;
-        invokeCompositeStructDelegate(inputValue: TestComponent.CompositeType, targetFn: TestComponent.CompositeStructDelegate): TestComponent.CompositeType;
-        invokeRefDelegate(inputValue: number | null, targetFn: TestComponent.RefDelegate): number | null;
-        invokeObjectDelegate(inputValue: Windows.Foundation.Collections.IVector<number>, targetFn: TestComponent.ObjectDelegate): Windows.Foundation.Collections.IVector<number>;
         addEventListener(type: "booleventhandler", listener: Windows.Foundation.EventHandler<boolean>): void
         addEventListener(type: "chareventhandler", listener: Windows.Foundation.EventHandler<string>): void
         addEventListener(type: "compositestructeventhandler", listener: Windows.Foundation.EventHandler<TestComponent.CompositeType>): void
@@ -163,6 +167,7 @@ declare namespace TestComponent {
         staticGuidArrayOutParam(values: string[]): { rot1: string[]; rot2: string[]; returnValue: string[] };
         staticEnumArrayOutParam(values: TestComponent.TestEnum[]): { rot1: TestComponent.TestEnum[]; rot2: TestComponent.TestEnum[]; returnValue: TestComponent.TestEnum[] };
         staticCompositeStructArrayOutParam(values: TestComponent.CompositeType[]): { rot1: TestComponent.CompositeType[]; rot2: TestComponent.CompositeType[]; returnValue: TestComponent.CompositeType[] };
+        staticRefArrayOutParam(values: number[] | null): { rot1: number[] | null; rot2: number[] | null; returnValue: number[] | null };
         staticObjectArrayOutParam(values: Windows.Foundation.Collections.IVector<number>[]): { rot1: Windows.Foundation.Collections.IVector<number>[]; rot2: Windows.Foundation.Collections.IVector<number>[]; returnValue: Windows.Foundation.Collections.IVector<number>[] };
         staticBoolFillParam(): boolean[];
         staticCharFillParam(): string[];
@@ -171,6 +176,7 @@ declare namespace TestComponent {
         staticGuidFillParam(): string[];
         staticEnumFillParam(): TestComponent.TestEnum[];
         staticCompositeStructFillParam(): TestComponent.CompositeType[];
+        staticRefFillParam(): number[] | null;
         staticObjectFillParam(): Windows.Foundation.Collections.IVector<number>[];
         raiseStaticBoolEvent(value: boolean): void;
         raiseStaticCharEvent(value: string): void;
@@ -181,15 +187,33 @@ declare namespace TestComponent {
         raiseStaticCompositeStructEvent(value: TestComponent.CompositeType): void;
         raiseStaticRefEvent(value: number | null): void;
         raiseStaticObjectEvent(value: Windows.Foundation.Collections.IVector<number>): void;
-        staticInvokeBoolDelegate(inputValue: boolean, targetFn: TestComponent.BoolDelegate): boolean;
-        staticInvokeCharDelegate(inputValue: string, targetFn: TestComponent.CharDelegate): string;
-        staticInvokeNumericDelegate(inputValue: number, targetFn: TestComponent.NumericDelegate): number;
-        staticInvokeStringDelegate(inputValue: string, targetFn: TestComponent.StringDelegate): string;
-        staticInvokeGuidDelegate(inputValue: string, targetFn: TestComponent.GuidDelegate): string;
-        staticInvokeEnumDelegate(inputValue: TestComponent.TestEnum, targetFn: TestComponent.EnumDelegate): TestComponent.TestEnum;
-        staticInvokeCompositeStructDelegate(inputValue: TestComponent.CompositeType, targetFn: TestComponent.CompositeStructDelegate): TestComponent.CompositeType;
-        staticInvokeRefDelegate(inputValue: number | null, targetFn: TestComponent.RefDelegate): number | null;
-        staticInvokeObjectDelegate(inputValue: Windows.Foundation.Collections.IVector<number>, targetFn: TestComponent.ObjectDelegate): Windows.Foundation.Collections.IVector<number>;
+        staticInvokeBoolDelegate(value: boolean, targetFn: TestComponent.BoolDelegate): boolean;
+        staticInvokeCharDelegate(value: string, targetFn: TestComponent.CharDelegate): string;
+        staticInvokeNumericDelegate(value: number, targetFn: TestComponent.NumericDelegate): number;
+        staticInvokeStringDelegate(value: string, targetFn: TestComponent.StringDelegate): string;
+        staticInvokeGuidDelegate(value: string, targetFn: TestComponent.GuidDelegate): string;
+        staticInvokeEnumDelegate(value: TestComponent.TestEnum, targetFn: TestComponent.EnumDelegate): TestComponent.TestEnum;
+        staticInvokeCompositeStructDelegate(value: TestComponent.CompositeType, targetFn: TestComponent.CompositeStructDelegate): TestComponent.CompositeType;
+        staticInvokeRefDelegate(value: number | null, targetFn: TestComponent.RefDelegate): number | null;
+        staticInvokeObjectDelegate(value: Windows.Foundation.Collections.IVector<number>, targetFn: TestComponent.ObjectDelegate): Windows.Foundation.Collections.IVector<number>;
+        staticInvokeBoolDelegateWithOutParam(value: boolean, targetFn: TestComponent.BoolDelegateWithOutParam): boolean;
+        staticInvokeCharDelegateWithOutParam(value: string, targetFn: TestComponent.CharDelegateWithOutParam): string;
+        staticInvokeNumericDelegateWithOutParam(value: number, targetFn: TestComponent.NumericDelegateWithOutParam): number;
+        staticInvokeStringDelegateWithOutParam(value: string, targetFn: TestComponent.StringDelegateWithOutParam): string;
+        staticInvokeGuidDelegateWithOutParam(value: string, targetFn: TestComponent.GuidDelegateWithOutParam): string;
+        staticInvokeEnumDelegateWithOutParam(value: TestComponent.TestEnum, targetFn: TestComponent.EnumDelegateWithOutParam): TestComponent.TestEnum;
+        staticInvokeCompositeStructDelegateWithOutParam(value: TestComponent.CompositeType, targetFn: TestComponent.CompositeStructDelegateWithOutParam): TestComponent.CompositeType;
+        staticInvokeRefDelegateWithOutParam(value: number | null, targetFn: TestComponent.RefDelegateWithOutParam): number | null;
+        staticInvokeObjectDelegateWithOutParam(value: Windows.Foundation.Collections.IVector<number>, targetFn: TestComponent.ObjectDelegateWithOutParam): Windows.Foundation.Collections.IVector<number>;
+        staticInvokeBoolArrayDelegate(values: boolean[], targetFn: TestComponent.BoolArrayDelegate): boolean;
+        staticInvokeCharArrayDelegate(values: string[], targetFn: TestComponent.CharArrayDelegate): boolean;
+        staticInvokeNumericArrayDelegate(values: number[], targetFn: TestComponent.NumericArrayDelegate): boolean;
+        staticInvokeStringArrayDelegate(values: string[], targetFn: TestComponent.StringArrayDelegate): boolean;
+        staticInvokeGuidArrayDelegate(values: string[], targetFn: TestComponent.GuidArrayDelegate): boolean;
+        staticInvokeEnumArrayDelegate(values: TestComponent.TestEnum[], targetFn: TestComponent.EnumArrayDelegate): boolean;
+        staticInvokeCompositeStructArrayDelegate(values: TestComponent.CompositeType[], targetFn: TestComponent.CompositeStructArrayDelegate): boolean;
+        staticInvokeRefArrayDelegate(values: number[] | null, targetFn: TestComponent.RefArrayDelegate): boolean;
+        staticInvokeObjectArrayDelegate(values: Windows.Foundation.Collections.IVector<number>[], targetFn: TestComponent.ObjectArrayDelegate): boolean;
         copyBoolsToVector(values: boolean[]): Windows.Foundation.Collections.IVector<boolean>;
         copyCharsToVector(values: string[]): Windows.Foundation.Collections.IVector<string>;
         copyNumericsToVector(values: number[]): Windows.Foundation.Collections.IVector<number>;
@@ -233,9 +257,11 @@ declare namespace TestComponent {
         removeEventListener(type: "staticstringeventhandler", listener: Windows.Foundation.EventHandler<string>): void
     }
 
-    type NumericDelegate = (inputValue: number) => number;
+    type NumericArrayDelegate = (values: number[]) => { subset: number[]; outValue: number[]; returnValue: number[] };
     
-    type NumericDelegateWithOutParam = (inputValue: number) => number;
+    type NumericDelegate = (value: number) => number;
+    
+    type NumericDelegateWithOutParam = (value: number) => number;
     
     interface NumericTypes {
          u8: number;
@@ -250,17 +276,23 @@ declare namespace TestComponent {
          enum: TestComponent.TestEnum;
     }
 
-    type ObjectDelegate = (inputValue: Windows.Foundation.Collections.IVector<number>) => Windows.Foundation.Collections.IVector<number>;
+    type ObjectArrayDelegate = (values: Windows.Foundation.Collections.IVector<number>[]) => { subset: Windows.Foundation.Collections.IVector<number>[]; outValue: Windows.Foundation.Collections.IVector<number>[]; returnValue: Windows.Foundation.Collections.IVector<number>[] };
     
-    type ObjectDelegateWithOutParam = (inputValue: Windows.Foundation.Collections.IVector<number>) => Windows.Foundation.Collections.IVector<number>;
+    type ObjectDelegate = (value: Windows.Foundation.Collections.IVector<number>) => Windows.Foundation.Collections.IVector<number>;
     
-    type RefDelegate = (inputValue: number | null) => number | null;
+    type ObjectDelegateWithOutParam = (value: Windows.Foundation.Collections.IVector<number>) => Windows.Foundation.Collections.IVector<number>;
     
-    type RefDelegateWithOutParam = (inputValue: number | null) => number | null;
+    type RefArrayDelegate = (values: number[] | null) => { subset: number[] | null; outValue: number[] | null; returnValue: number[] | null };
     
-    type StringDelegate = (inputValue: string) => string;
+    type RefDelegate = (value: number | null) => number | null;
     
-    type StringDelegateWithOutParam = (inputValue: string) => string;
+    type RefDelegateWithOutParam = (value: number | null) => number | null;
+    
+    type StringArrayDelegate = (values: string[]) => { subset: string[]; outValue: string[]; returnValue: string[] };
+    
+    type StringDelegate = (value: string) => string;
+    
+    type StringDelegateWithOutParam = (value: string) => string;
     
     interface StringTypes {
          char: string;
@@ -269,6 +301,7 @@ declare namespace TestComponent {
     }
 
     class Test implements TestComponent.ITest {
+        objectArrayProperty: Windows.Foundation.Collections.IVector<number>[];
         numericsStructProperty: TestComponent.NumericTypes;
         numericArrayProperty: number[];
         hResultProperty: number;
@@ -286,7 +319,7 @@ declare namespace TestComponent {
         booleansStructProperty: TestComponent.BooleanTypes;
         booleanArrayProperty: boolean[];
         u8Property: number;
-        objectArrayProperty: Windows.Foundation.Collections.IVector<number>[];
+        objectProperty: Windows.Foundation.Collections.IVector<number>;
         boolProperty: boolean;
         u64Property: number;
         u32Property: number;
@@ -302,8 +335,8 @@ declare namespace TestComponent {
         refEnumProperty: TestComponent.TestEnum | null;
         refCharProperty: string | null;
         refBooleanProperty: boolean | null;
+        refArrayProperty: number[] | null;
         propertyValue: Windows.Foundation.IPropertyValue;
-        objectProperty: Windows.Foundation.Collections.IVector<number>;
         static staticBoolProperty: boolean;
         constructor();
         dateTimePropertyCppValue(): string;
@@ -330,6 +363,7 @@ declare namespace TestComponent {
         guidArrayOutParam(values: string[]): { rot1: string[]; rot2: string[]; returnValue: string[] };
         enumArrayOutParam(values: TestComponent.TestEnum[]): { rot1: TestComponent.TestEnum[]; rot2: TestComponent.TestEnum[]; returnValue: TestComponent.TestEnum[] };
         compositeStructArrayOutParam(values: TestComponent.CompositeType[]): { rot1: TestComponent.CompositeType[]; rot2: TestComponent.CompositeType[]; returnValue: TestComponent.CompositeType[] };
+        refArrayOutParam(values: number[] | null): { rot1: number[] | null; rot2: number[] | null; returnValue: number[] | null };
         objectArrayOutParam(values: Windows.Foundation.Collections.IVector<number>[]): { rot1: Windows.Foundation.Collections.IVector<number>[]; rot2: Windows.Foundation.Collections.IVector<number>[]; returnValue: Windows.Foundation.Collections.IVector<number>[] };
         boolFillParam(): boolean[];
         charFillParam(): string[];
@@ -338,6 +372,7 @@ declare namespace TestComponent {
         guidFillParam(): string[];
         enumFillParam(): TestComponent.TestEnum[];
         compositeStructFillParam(): TestComponent.CompositeType[];
+        refFillParam(): number[] | null;
         objectFillParam(): Windows.Foundation.Collections.IVector<number>[];
         raiseBoolEvent(value: boolean): void;
         raiseCharEvent(value: string): void;
@@ -348,15 +383,6 @@ declare namespace TestComponent {
         raiseCompositeStructEvent(value: TestComponent.CompositeType): void;
         raiseRefEvent(value: number | null): void;
         raiseObjectEvent(value: Windows.Foundation.Collections.IVector<number>): void;
-        invokeBoolDelegate(inputValue: boolean, targetFn: TestComponent.BoolDelegate): boolean;
-        invokeCharDelegate(inputValue: string, targetFn: TestComponent.CharDelegate): string;
-        invokeNumericDelegate(inputValue: number, targetFn: TestComponent.NumericDelegate): number;
-        invokeStringDelegate(inputValue: string, targetFn: TestComponent.StringDelegate): string;
-        invokeGuidDelegate(inputValue: string, targetFn: TestComponent.GuidDelegate): string;
-        invokeEnumDelegate(inputValue: TestComponent.TestEnum, targetFn: TestComponent.EnumDelegate): TestComponent.TestEnum;
-        invokeCompositeStructDelegate(inputValue: TestComponent.CompositeType, targetFn: TestComponent.CompositeStructDelegate): TestComponent.CompositeType;
-        invokeRefDelegate(inputValue: number | null, targetFn: TestComponent.RefDelegate): number | null;
-        invokeObjectDelegate(inputValue: Windows.Foundation.Collections.IVector<number>, targetFn: TestComponent.ObjectDelegate): Windows.Foundation.Collections.IVector<number>;
         static logFailures(failures: string): void;
         static staticOr(lhs: boolean, rhs: boolean): boolean;
         static staticOrAll(values: boolean[]): boolean;
@@ -380,6 +406,7 @@ declare namespace TestComponent {
         static staticGuidArrayOutParam(values: string[]): { rot1: string[]; rot2: string[]; returnValue: string[] };
         static staticEnumArrayOutParam(values: TestComponent.TestEnum[]): { rot1: TestComponent.TestEnum[]; rot2: TestComponent.TestEnum[]; returnValue: TestComponent.TestEnum[] };
         static staticCompositeStructArrayOutParam(values: TestComponent.CompositeType[]): { rot1: TestComponent.CompositeType[]; rot2: TestComponent.CompositeType[]; returnValue: TestComponent.CompositeType[] };
+        static staticRefArrayOutParam(values: number[] | null): { rot1: number[] | null; rot2: number[] | null; returnValue: number[] | null };
         static staticObjectArrayOutParam(values: Windows.Foundation.Collections.IVector<number>[]): { rot1: Windows.Foundation.Collections.IVector<number>[]; rot2: Windows.Foundation.Collections.IVector<number>[]; returnValue: Windows.Foundation.Collections.IVector<number>[] };
         static staticBoolFillParam(): boolean[];
         static staticCharFillParam(): string[];
@@ -388,6 +415,7 @@ declare namespace TestComponent {
         static staticGuidFillParam(): string[];
         static staticEnumFillParam(): TestComponent.TestEnum[];
         static staticCompositeStructFillParam(): TestComponent.CompositeType[];
+        static staticRefFillParam(): number[] | null;
         static staticObjectFillParam(): Windows.Foundation.Collections.IVector<number>[];
         static raiseStaticBoolEvent(value: boolean): void;
         static raiseStaticCharEvent(value: string): void;
@@ -398,15 +426,33 @@ declare namespace TestComponent {
         static raiseStaticCompositeStructEvent(value: TestComponent.CompositeType): void;
         static raiseStaticRefEvent(value: number | null): void;
         static raiseStaticObjectEvent(value: Windows.Foundation.Collections.IVector<number>): void;
-        static staticInvokeBoolDelegate(inputValue: boolean, targetFn: TestComponent.BoolDelegate): boolean;
-        static staticInvokeCharDelegate(inputValue: string, targetFn: TestComponent.CharDelegate): string;
-        static staticInvokeNumericDelegate(inputValue: number, targetFn: TestComponent.NumericDelegate): number;
-        static staticInvokeStringDelegate(inputValue: string, targetFn: TestComponent.StringDelegate): string;
-        static staticInvokeGuidDelegate(inputValue: string, targetFn: TestComponent.GuidDelegate): string;
-        static staticInvokeEnumDelegate(inputValue: TestComponent.TestEnum, targetFn: TestComponent.EnumDelegate): TestComponent.TestEnum;
-        static staticInvokeCompositeStructDelegate(inputValue: TestComponent.CompositeType, targetFn: TestComponent.CompositeStructDelegate): TestComponent.CompositeType;
-        static staticInvokeRefDelegate(inputValue: number | null, targetFn: TestComponent.RefDelegate): number | null;
-        static staticInvokeObjectDelegate(inputValue: Windows.Foundation.Collections.IVector<number>, targetFn: TestComponent.ObjectDelegate): Windows.Foundation.Collections.IVector<number>;
+        static staticInvokeBoolDelegate(value: boolean, targetFn: TestComponent.BoolDelegate): boolean;
+        static staticInvokeCharDelegate(value: string, targetFn: TestComponent.CharDelegate): string;
+        static staticInvokeNumericDelegate(value: number, targetFn: TestComponent.NumericDelegate): number;
+        static staticInvokeStringDelegate(value: string, targetFn: TestComponent.StringDelegate): string;
+        static staticInvokeGuidDelegate(value: string, targetFn: TestComponent.GuidDelegate): string;
+        static staticInvokeEnumDelegate(value: TestComponent.TestEnum, targetFn: TestComponent.EnumDelegate): TestComponent.TestEnum;
+        static staticInvokeCompositeStructDelegate(value: TestComponent.CompositeType, targetFn: TestComponent.CompositeStructDelegate): TestComponent.CompositeType;
+        static staticInvokeRefDelegate(value: number | null, targetFn: TestComponent.RefDelegate): number | null;
+        static staticInvokeObjectDelegate(value: Windows.Foundation.Collections.IVector<number>, targetFn: TestComponent.ObjectDelegate): Windows.Foundation.Collections.IVector<number>;
+        static staticInvokeBoolDelegateWithOutParam(value: boolean, targetFn: TestComponent.BoolDelegateWithOutParam): boolean;
+        static staticInvokeCharDelegateWithOutParam(value: string, targetFn: TestComponent.CharDelegateWithOutParam): string;
+        static staticInvokeNumericDelegateWithOutParam(value: number, targetFn: TestComponent.NumericDelegateWithOutParam): number;
+        static staticInvokeStringDelegateWithOutParam(value: string, targetFn: TestComponent.StringDelegateWithOutParam): string;
+        static staticInvokeGuidDelegateWithOutParam(value: string, targetFn: TestComponent.GuidDelegateWithOutParam): string;
+        static staticInvokeEnumDelegateWithOutParam(value: TestComponent.TestEnum, targetFn: TestComponent.EnumDelegateWithOutParam): TestComponent.TestEnum;
+        static staticInvokeCompositeStructDelegateWithOutParam(value: TestComponent.CompositeType, targetFn: TestComponent.CompositeStructDelegateWithOutParam): TestComponent.CompositeType;
+        static staticInvokeRefDelegateWithOutParam(value: number | null, targetFn: TestComponent.RefDelegateWithOutParam): number | null;
+        static staticInvokeObjectDelegateWithOutParam(value: Windows.Foundation.Collections.IVector<number>, targetFn: TestComponent.ObjectDelegateWithOutParam): Windows.Foundation.Collections.IVector<number>;
+        static staticInvokeBoolArrayDelegate(values: boolean[], targetFn: TestComponent.BoolArrayDelegate): boolean;
+        static staticInvokeCharArrayDelegate(values: string[], targetFn: TestComponent.CharArrayDelegate): boolean;
+        static staticInvokeNumericArrayDelegate(values: number[], targetFn: TestComponent.NumericArrayDelegate): boolean;
+        static staticInvokeStringArrayDelegate(values: string[], targetFn: TestComponent.StringArrayDelegate): boolean;
+        static staticInvokeGuidArrayDelegate(values: string[], targetFn: TestComponent.GuidArrayDelegate): boolean;
+        static staticInvokeEnumArrayDelegate(values: TestComponent.TestEnum[], targetFn: TestComponent.EnumArrayDelegate): boolean;
+        static staticInvokeCompositeStructArrayDelegate(values: TestComponent.CompositeType[], targetFn: TestComponent.CompositeStructArrayDelegate): boolean;
+        static staticInvokeRefArrayDelegate(values: number[] | null, targetFn: TestComponent.RefArrayDelegate): boolean;
+        static staticInvokeObjectArrayDelegate(values: Windows.Foundation.Collections.IVector<number>[], targetFn: TestComponent.ObjectArrayDelegate): boolean;
         static copyBoolsToVector(values: boolean[]): Windows.Foundation.Collections.IVector<boolean>;
         static copyCharsToVector(values: string[]): Windows.Foundation.Collections.IVector<string>;
         static copyNumericsToVector(values: number[]): Windows.Foundation.Collections.IVector<number>;

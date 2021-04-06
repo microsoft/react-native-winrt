@@ -669,7 +669,7 @@ namespace jswinrt
     };
 
     template <typename T>
-    jsi::Value convert_native_to_value(jsi::Runtime& runtime, T&& value)
+    auto convert_native_to_value(jsi::Runtime& runtime, T&& value)
     {
         return projected_value_traits<std::remove_const_t<std::remove_reference_t<T>>>::as_value(
             runtime, std::forward<T>(value));
@@ -680,6 +680,142 @@ namespace jswinrt
     {
         return projected_value_traits<T>::as_native(runtime, value);
     }
+
+    template <typename T>
+    struct array_to_native_iterator
+    {
+        using difference_type = std::ptrdiff_t;
+        using value_type = T;
+        using pointer = void;
+        using reference = T;
+        using iterator_category = std::random_access_iterator_tag;
+
+        array_to_native_iterator(jsi::Runtime& runtime, jsi::Array& array, size_t index = 0) :
+            m_runtime(runtime), m_array(array), m_index(index)
+        {
+        }
+
+        array_to_native_iterator& begin() noexcept
+        {
+            return *this;
+        }
+
+        array_to_native_iterator end() noexcept
+        {
+            return array_to_native_iterator(m_runtime, m_array, m_array.length(m_runtime));
+        }
+
+        bool operator==(const array_to_native_iterator& other) const noexcept
+        {
+            assert(&m_array == &other.m_array);
+            return m_index == other.m_index;
+        }
+
+        bool operator!=(const array_to_native_iterator& other) const noexcept
+        {
+            return !(*this == other);
+        }
+
+        bool operator<(const array_to_native_iterator& other) const noexcept
+        {
+            assert(&m_array == &other.m_array);
+            return m_index < other.m_index;
+        }
+
+        bool operator>(const array_to_native_iterator& other) const noexcept
+        {
+            assert(&m_array == &other.m_array);
+            return m_index > other.m_index;
+        }
+
+        bool operator<=(const array_to_native_iterator& other) const noexcept
+        {
+            return !(*this > other);
+        }
+
+        bool operator>=(const array_to_native_iterator& other) const noexcept
+        {
+            return !(*this < other);
+        }
+
+        T operator*()
+        {
+            return convert_value_to_native<T>(m_runtime, m_array.getValueAtIndex(m_runtime, m_index));
+        }
+
+        T operator[](difference_type index) const
+        {
+            return convert_value_to_native<T>(m_runtime, m_array.getValueAtIndex(m_runtime, m_index + index));
+        }
+
+        array_to_native_iterator& operator++() noexcept
+        {
+            ++m_index;
+            return *this;
+        }
+
+        array_to_native_iterator operator++(int) noexcept
+        {
+            auto result = *this;
+            ++(*this);
+            return result;
+        }
+
+        array_to_native_iterator& operator+=(difference_type count) noexcept
+        {
+            m_index += count;
+            return *this;
+        }
+
+        array_to_native_iterator operator+(difference_type count) noexcept
+        {
+            auto result = *this;
+            result += count;
+            return result;
+        }
+
+        friend array_to_native_iterator operator+(difference_type count, array_to_native_iterator itr) noexcept
+        {
+            itr += count;
+            return itr;
+        }
+
+        array_to_native_iterator& operator--() noexcept
+        {
+            --m_index;
+            return *this;
+        }
+
+        array_to_native_iterator operator--(int) noexcept
+        {
+            auto result = *this;
+            --(*this);
+            return result;
+        }
+
+        array_to_native_iterator& operator-=(difference_type count) noexcept
+        {
+            m_index -= count;
+            return *this;
+        }
+
+        array_to_native_iterator operator-(difference_type count) noexcept
+        {
+            auto result = *this;
+            result -= count;
+            return result;
+        }
+
+        difference_type operator-(const array_to_native_iterator& other) const noexcept
+        {
+            return static_cast<difference_type>(m_index - other.m_index);
+        }
+
+    private:
+        jsi::Runtime& m_runtime;
+        jsi::Array& m_array;
+        std::size_t m_index;
+    };
 
     namespace details
     {
@@ -2213,55 +2349,81 @@ namespace jswinrt
     };
 
     template <typename T>
-    struct fill_array_wrapper
+    struct value_fill_array_wrapper
     {
-        fill_array_wrapper(jsi::Runtime& runtime, const jsi::Value& value) :
+        value_fill_array_wrapper(jsi::Runtime& runtime, const winrt::array_view<T>& array) :
+            m_runtime(runtime), m_nativeArray(array), m_jsArray(runtime, array.size())
+        {
+        }
+
+        ~value_fill_array_wrapper()
+        {
+            for (uint32_t i = 0; i < m_nativeArray.size(); ++i)
+            {
+                m_nativeArray[i] = convert_value_to_native<T>(m_runtime, m_jsArray.getValueAtIndex(m_runtime, i));
+            }
+        }
+
+        // NOTE: Cannot rely on an 'operator jsi::Value()' because of how JSI makes function calls
+        jsi::Value value()
+        {
+            return jsi::Value(m_runtime, m_jsArray);
+        }
+
+    private:
+        jsi::Runtime& m_runtime;
+        winrt::array_view<T> m_nativeArray;
+        jsi::Array m_jsArray;
+    };
+
+    template <typename T>
+    struct native_fill_array_wrapper
+    {
+        native_fill_array_wrapper(jsi::Runtime& runtime, const jsi::Value& value) :
             m_runtime(runtime), m_jsArray(value.asObject(runtime).asArray(runtime))
         {
             auto size = m_jsArray.size(runtime);
             if constexpr (std::is_base_of_v<winrt::Windows::Foundation::IUnknown, T>)
             {
-                m_data.resize(size, nullptr);
+                m_nativeArray.resize(size, nullptr);
             }
             else
             {
-                m_data.resize(size);
+                m_nativeArray.resize(size);
             }
         }
 
-        ~fill_array_wrapper()
+        ~native_fill_array_wrapper()
         {
-            for (std::size_t i = 0; i < m_data.size(); ++i)
+            for (std::size_t i = 0; i < m_nativeArray.size(); ++i)
             {
-                m_jsArray.setValueAtIndex(m_runtime, i, convert_native_to_value(m_runtime, m_data[i]));
+                m_jsArray.setValueAtIndex(m_runtime, i, convert_native_to_value(m_runtime, m_nativeArray[i]));
             }
         }
 
         operator winrt::array_view<T>()
         {
-            return winrt::array_view<T>(m_data.data(), static_cast<std::uint32_t>(m_data.size()));
+            return winrt::array_view<T>(m_nativeArray.data(), static_cast<std::uint32_t>(m_nativeArray.size()));
         }
 
     private:
         jsi::Runtime& m_runtime;
         jsi::Array m_jsArray;
-        sso_vector<T, 4> m_data; // NOTE: Because std::vector<bool> makes everyone sad...
+        sso_vector<T, 4> m_nativeArray; // NOTE: Because std::vector<bool> makes everyone sad...
     };
 
     template <typename T>
     struct projected_value_traits<winrt::array_view<T>>
     {
         // NOTE: Non-const 'T' - this is specific to 'fill array' scenarios
-        static jsi::Value as_value(jsi::Runtime& runtime, const winrt::array_view<T>&)
+        static value_fill_array_wrapper<T> as_value(jsi::Runtime& runtime, const winrt::array_view<T>& value)
         {
-            // TODO: We could see this when implementing interfaces (currently not supported) or for delegates that use
-            // the fill array pattern (also currently not supported, but maybe we should?)
-            throw jsi::JSError(runtime, "TypeError: JS implemented fill array patterns are currently not supported");
+            return value_fill_array_wrapper<T>(runtime, value);
         }
 
-        static fill_array_wrapper<T> as_native(jsi::Runtime& runtime, const jsi::Value& value)
+        static native_fill_array_wrapper<T> as_native(jsi::Runtime& runtime, const jsi::Value& value)
         {
-            return fill_array_wrapper<T>(runtime, value);
+            return native_fill_array_wrapper<T>(runtime, value);
         }
     };
 
@@ -2292,11 +2454,16 @@ namespace jswinrt
     struct projected_value_traits<winrt::array_view<const T>>
     {
         // NOTE: Const 'T' - this is specific to 'pass array' scenarios
-        static jsi::Value as_value(jsi::Runtime& runtime, const winrt::array_view<const T>&)
+        static jsi::Value as_value(jsi::Runtime& runtime, const winrt::array_view<const T>& value)
         {
-            // TODO: We could see this when implementing interfaces (currently not supported) or for delegates that use
-            // the pass array pattern (also currently not supported, but maybe we should?)
-            throw jsi::JSError(runtime, "TypeError: JS implemented pass array patterns are currently not supported");
+            // Array is immutable; we can convert to a JS array and call it a day
+            jsi::Array result(runtime, value.size());
+            for (uint32_t i = 0; i < value.size(); ++i)
+            {
+                result.setValueAtIndex(runtime, i, convert_native_to_value(runtime, value[i]));
+            }
+
+            return result;
         }
 
         static pass_array_wrapper<T> as_native(jsi::Runtime& runtime, const jsi::Value& value)
@@ -2321,10 +2488,9 @@ namespace jswinrt
 
         static winrt::com_array<T> as_native(jsi::Runtime& runtime, const jsi::Value& value)
         {
-            // TODO: We could see this when implementing interfaces (currently not supported), or for delegates that use
-            // the output/return array pattern (also currently not supported, but maybe we should?)
-            throw jsi::JSError(
-                runtime, "TypeError: JS implemented out/return array patterns are currently not supported");
+            auto array = value.asObject(runtime).asArray(runtime);
+            array_to_native_iterator<T> range(runtime, array);
+            return winrt::com_array<T>(range.begin(), range.end());
         }
     };
 
