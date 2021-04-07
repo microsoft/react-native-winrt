@@ -12,6 +12,11 @@ namespace winrt::TestComponent::implementation
 
     winrt::hstring HierarchyBase::OverriddenHierarchyBaseMethod()
     {
+        return OverriddenHierarchyBaseMethodOverride();
+    }
+
+    winrt::hstring HierarchyBase::OverriddenHierarchyBaseMethodOverride()
+    {
         return L"HierarchyBase.OverriddenHierarchyBaseMethod";
     }
 

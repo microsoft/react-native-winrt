@@ -8,7 +8,7 @@ namespace winrt::TestComponent::implementation
     {
     }
 
-    winrt::hstring HierarchyDerived::OverriddenHierarchyBaseMethod()
+    winrt::hstring HierarchyDerived::OverriddenHierarchyBaseMethodOverride()
     { 
         return L"HierarchyDerived.OverriddenHierarchyBaseMethod";
     }

@@ -85,6 +85,10 @@ public:
 
     void WriteClassOrInterface(winmd::reader::TypeDef const& type, TextWriter& textWriter)
     {
+        if (get_category(type) == winmd::reader::category::interface_type && exclusiveto_class(type)) 
+        {
+            return;
+        }
         textWriter.WriteIndentedLine(
             "%% %%% {%}"sv,
             [&]() // Format: ['abstract?' 'class/interface' 'name' 'extends baseclass' 'implements interface1,
@@ -151,11 +155,35 @@ public:
                 {
                     return;
                 }
-                textWriter.Write(
-                    get_category(type) == winmd::reader::category::interface_type ? " extends " : " implements ");
+                // filter out exclusiveto interfaces
+                std::vector<jswinrt::typeparser::type_semantics> filteredInterfaces; 
                 for (auto&& interfaceimpl : type.InterfaceImpl())
                 {
                     auto const& implementsTypeSem = jswinrt::typeparser::get_type_semantics(interfaceimpl.Interface());
+                    if (std::holds_alternative<jswinrt::typeparser::type_definition>(implementsTypeSem))
+                    {
+                        if (exclusiveto_class(std::get<jswinrt::typeparser::type_definition>(implementsTypeSem)))
+                        {
+                            continue;
+                        }
+                    }
+                    if (std::holds_alternative<jswinrt::typeparser::generic_type_instance>(implementsTypeSem))
+                    {
+                        if (exclusiveto_class(std::get<jswinrt::typeparser::generic_type_instance>(implementsTypeSem).generic_type))
+                        {
+                            continue;
+                        }
+                    }
+                    filteredInterfaces.push_back(implementsTypeSem);   
+                }
+                if (filteredInterfaces.size() == 0)
+                {
+                    return; 
+                }
+                textWriter.Write(
+                    get_category(type) == winmd::reader::category::interface_type ? " extends " : " implements ");
+                for (auto&& implementsTypeSem : filteredInterfaces)
+                {
                     WriteTypeSemantics(implementsTypeSem, type, textWriter, false, false);
                     textWriter.Write(", ");
                 }
@@ -546,4 +574,5 @@ public:
     {
         return name.find("`") != std::string::npos;
     }
+
 };

@@ -375,6 +375,7 @@ namespace TestComponent
     }
 
     [contract(TestContract, 2)]
+    [exclusiveto(HierarchyBase)]
     interface IHierarchyV2Contract 
     { 
         String IHierarchyV2ContractMethod();
@@ -384,7 +385,8 @@ namespace TestComponent
     unsealed runtimeclass HierarchyBase : IHierarchyV2Contract
     {
         HierarchyBase();
-        protected String OverriddenHierarchyBaseMethod();
+        String OverriddenHierarchyBaseMethod();
+        overridable String OverriddenHierarchyBaseMethodOverride();
         String NonOverriddenHierarchyBaseMethod();
         String OverloadedHierarchyBaseMethod(String param1);
         static String StaticHierarchyBaseMethod();

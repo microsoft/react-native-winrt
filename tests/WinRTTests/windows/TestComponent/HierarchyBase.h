@@ -7,10 +7,11 @@ namespace winrt::TestComponent::implementation
     {
         HierarchyBase() = default;
         winrt::hstring NonOverriddenHierarchyBaseMethod();
-        virtual winrt::hstring OverriddenHierarchyBaseMethod();
+        winrt::hstring OverriddenHierarchyBaseMethod();        
         winrt::hstring OverloadedHierarchyBaseMethod(winrt::hstring param1);
         static winrt::hstring StaticHierarchyBaseMethod();
         winrt::hstring IHierarchyV2ContractMethod();
+        virtual winrt::hstring OverriddenHierarchyBaseMethodOverride();
     };
 }
 
