@@ -8,6 +8,8 @@ inline constexpr const std::string_view metadata_namespace = "Windows.Foundation
 
 inline constexpr const std::string_view activatable_attribute = "ActivatableAttribute";
 inline constexpr const std::string_view static_attribute = "StaticAttribute";
+inline constexpr const std::string_view protected_attribute = "ProtectedAttribute";
+inline constexpr const std::string_view overridable_attribute = "OverridableAttribute";
 
 inline constexpr std::pair<std::string_view, std::string_view> numerics_mappings[] = {
     { "Matrix3x2", "float3x2" },
@@ -91,7 +93,7 @@ inline bool is_default_interface(const winmd::reader::InterfaceImpl& ifaceImpl)
 winmd::reader::coded_index<winmd::reader::TypeDefOrRef> default_interface(const winmd::reader::TypeDef& classType);
 winmd::reader::TypeDef exclusiveto_class(winmd::reader::TypeDef iface);
 
-bool is_factory_interface(winmd::reader::TypeDef iface);
+bool should_project_interface(const winmd::reader::TypeDef& iface);
 
 inline constexpr bool is_child_namespace(std::string_view expectedChild, std::string_view expectedParent)
 {

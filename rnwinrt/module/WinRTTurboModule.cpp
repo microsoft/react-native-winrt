@@ -57,7 +57,7 @@ runtime_context* jswinrt::current_runtime_context()
     {
         // WinRT module not initialized for the current thread. This is likely because of a logic error in the runtime
         // where we are trying to access data from a background thread instead of caching the context on creation
-        std::terminate();
+        winrt::terminate();
     }
 
     return result;
