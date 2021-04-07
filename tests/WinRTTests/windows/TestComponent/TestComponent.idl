@@ -121,6 +121,63 @@ namespace TestComponent
         static String StaticAppend(String a, Char b, String c);
         static String StaticAppendAll(String[] values);
 
+        // Static function overloads
+        static String StaticArityOverload();
+        static String StaticArityOverload(String str);
+        static String StaticArityOverload(String first, String second);
+
+        static String StaticDefaultOverload(String str, Boolean val);
+        [default_overload]
+        static String StaticDefaultOverload(String str, Int32 repeat);
+        static String StaticDefaultOverload(String str, UInt32 val);
+
+        static String StaticOutParamOverload(String str);
+        [default_overload]
+        static String StaticOutParamOverload(String str, out String outParam);
+        [default_overload]
+        static String StaticOutParamOverload(String str, String other);
+
+        static String StaticContractArityOverload();
+
+        static String StaticContractDefaultOverloadV1(String str, Boolean val);
+        [default_overload]
+        static String StaticContractDefaultOverloadV1(String str, Int32 repeat);
+        static String StaticContractDefaultOverloadV1(String str, UInt32 val);
+
+        static String StaticContractDefaultOverloadV2(String str, Double val);
+
+        static String StaticContractOutParamOverloadV1(String str);
+        [default_overload]
+        static String StaticContractOutParamOverloadV1(String str, out String outParam);
+        [default_overload]
+        static String StaticContractOutParamOverloadV1(String str, String other);
+
+        static String StaticContractOutParamOverloadV2(Char ch);
+
+        // "v2" overloads
+        [contract(TestContract, 2)]
+        {
+            [overload("StaticContractArityOverload")]
+            static String StaticContractArityOverload(String str);
+
+            [overload("StaticContractDefaultOverloadV1")]
+            static String StaticContractDefaultOverloadV1(String str, Double val);
+
+            static String StaticContractDefaultOverloadV2(String str, Boolean val);
+            [default_overload]
+            static String StaticContractDefaultOverloadV2(String str, Int32 val);
+            static String StaticContractDefaultOverloadV2(String str, UInt32 val);
+
+            [overload("StaticContractOutParamOverloadV1")]
+            static String StaticContractOutParamOverloadV1(Char ch);
+
+            static String StaticContractOutParamOverloadV2(String str);
+            [default_overload]
+            static String StaticContractOutParamOverloadV2(String str, out String outParam);
+            [default_overload]
+            static String StaticContractOutParamOverloadV2(String str, String other);
+        }
+
         // Static out params
         static Boolean StaticBoolOutParam(Boolean lhs, Boolean rhs, out Boolean andResult, out Boolean orResult);
         static Char StaticCharOutParam(Char value, out Char next, out Char prev);

@@ -20,6 +20,34 @@ namespace winrt::TestComponent::implementation
         static hstring StaticAppend(hstring const& a, char16_t b, hstring const& c);
         static hstring StaticAppendAll(array_view<hstring const> values);
 
+        static hstring StaticArityOverload();
+        static hstring StaticArityOverload(hstring const& str);
+        static hstring StaticArityOverload(hstring const& first, hstring const& second);
+        static hstring StaticDefaultOverload(hstring const& str, bool val);
+        static hstring StaticDefaultOverload(hstring const& str, int32_t repeat);
+        static hstring StaticDefaultOverload(hstring const& str, uint32_t val);
+        static hstring StaticOutParamOverload(hstring const& str);
+        static hstring StaticOutParamOverload(hstring const& str, hstring& outParam);
+        static hstring StaticOutParamOverload(hstring const& str, hstring const& other);
+        static hstring StaticContractArityOverload();
+        static hstring StaticContractArityOverload(hstring const& str);
+        static hstring StaticContractDefaultOverloadV1(hstring const& str, bool val);
+        static hstring StaticContractDefaultOverloadV1(hstring const& str, int32_t repeat);
+        static hstring StaticContractDefaultOverloadV1(hstring const& str, uint32_t val);
+        static hstring StaticContractDefaultOverloadV1(hstring const& str, double val);
+        static hstring StaticContractDefaultOverloadV2(hstring const& str, double val);
+        static hstring StaticContractDefaultOverloadV2(hstring const& str, bool val);
+        static hstring StaticContractDefaultOverloadV2(hstring const& str, int32_t val);
+        static hstring StaticContractDefaultOverloadV2(hstring const& str, uint32_t val);
+        static hstring StaticContractOutParamOverloadV1(hstring const& str);
+        static hstring StaticContractOutParamOverloadV1(hstring const& str, hstring& outParam);
+        static hstring StaticContractOutParamOverloadV1(hstring const& str, hstring const& other);
+        static hstring StaticContractOutParamOverloadV1(char16_t ch);
+        static hstring StaticContractOutParamOverloadV2(hstring const& str);
+        static hstring StaticContractOutParamOverloadV2(hstring const& str, hstring& outParam);
+        static hstring StaticContractOutParamOverloadV2(hstring const& str, hstring const& other);
+        static hstring StaticContractOutParamOverloadV2(char16_t ch);
+
         static bool StaticBoolOutParam(bool lhs, bool rhs, bool& andResult, bool& or);
         static char16_t StaticCharOutParam(char16_t value, char16_t& next, char16_t& prev);
         static int32_t StaticNumericOutParam(int32_t value, int32_t& doubledValue, int32_t& tripledValue);

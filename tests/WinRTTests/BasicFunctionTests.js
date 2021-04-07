@@ -20,6 +20,16 @@ export function makeBasicFunctionTestScenarios(pThis) {
         new TestScenario('Test::StaticAppend', runStaticAppend.bind(pThis)),
         new TestScenario('Test::StaticAppendAll', runStaticAppendAll.bind(pThis)),
 
+        // Static overloads
+        new TestScenario('Test::StaticArityOverload', runStaticArityOverload.bind(pThis)),
+        new TestScenario('Test::StaticDefaultOverload', runStaticDefaultOverload.bind(pThis)),
+        new TestScenario('Test::StaticOutParamOverload', runStaticOutParamOverload.bind(pThis)),
+        new TestScenario('Test::StaticContractArityOverload', runStaticContractArityOverload.bind(pThis)),
+        new TestScenario('Test::StaticContractDefaultOverloadV1', runStaticContractDefaultOverloadV1.bind(pThis)),
+        new TestScenario('Test::StaticContractDefaultOverloadV2', runStaticContractDefaultOverloadV2.bind(pThis)),
+        new TestScenario('Test::StaticContractOutParamOverloadV1', runStaticContractOutParamOverloadV1.bind(pThis)),
+        new TestScenario('Test::StaticContractOutParamOverloadV2', runStaticContractOutParamOverloadV2.bind(pThis)),
+
         // Static out params
         new TestScenario('Test::StaticBoolOutParam', runStaticBoolOutParam.bind(pThis)),
         new TestScenario('Test::StaticCharOutParam', runStaticCharOutParam.bind(pThis)),
@@ -104,7 +114,7 @@ function runStaticAppend(scenario) {
     this.runSync(scenario, () => {
         assert.equal(TestComponent.Test.staticAppend('foo', '\0', 'bar'), 'foo\0bar');
         assert.equal(TestComponent.Test.staticAppend('Hello', ' ', 'world'), 'Hello world');
-    })
+    });
 }
 
 function runStaticAppendAll(scenario) {
@@ -115,7 +125,65 @@ function runStaticAppendAll(scenario) {
         run([], '');
         run(['foo'], 'foo');
         run(['f\0o\0o', '\0', 'b\0a\0r'], 'f\0o\0o\0b\0a\0r');
-    })
+    });
+}
+
+// Static overloads
+function runStaticArityOverload(scenario) {
+    this.runSync(scenario, () => {
+        assert.equal('No-arg overload', TestComponent.Test.staticArityOverload());
+        assert.equal('Testing', TestComponent.Test.staticArityOverload('Testing'));
+        assert.equal('foobar', TestComponent.Test.staticArityOverload('foo', 'bar'));
+    });
+}
+
+function runStaticDefaultOverload(scenario) {
+    this.runSync(scenario, () => {
+        assert.equal('foofoo', TestComponent.Test.staticDefaultOverload('foo', 2));
+    });
+}
+
+function runStaticOutParamOverload(scenario) {
+    this.runSync(scenario, () => {
+        var result = TestComponent.Test.staticOutParamOverload('foo');
+        assert.equal('Success!', result.outParam);
+        assert.equal('foo', result.returnValue);
+    });
+}
+
+function runStaticContractArityOverload(scenario) {
+    this.runSync(scenario, () => {
+        assert.equal('No-arg overload', TestComponent.Test.staticContractArityOverload());
+        assert.equal('Testing', TestComponent.Test.staticContractArityOverload('Testing'));
+    });
+}
+
+function runStaticContractDefaultOverloadV1(scenario) {
+    this.runSync(scenario, () => {
+        assert.equal('foofoo', TestComponent.Test.staticContractDefaultOverloadV1('foo', 2));
+    });
+}
+
+function runStaticContractDefaultOverloadV2(scenario) {
+    this.runSync(scenario, () => {
+        assert.equal('foofoo', TestComponent.Test.staticContractDefaultOverloadV2('foo', 2));
+    });
+}
+
+function runStaticContractOutParamOverloadV1(scenario) {
+    this.runSync(scenario, () => {
+        var result = TestComponent.Test.staticContractOutParamOverloadV1('foo');
+        assert.equal('Success!', result.outParam);
+        assert.equal('foo', result.returnValue);
+    });
+}
+
+function runStaticContractOutParamOverloadV2(scenario) {
+    this.runSync(scenario, () => {
+        var result = TestComponent.Test.staticContractOutParamOverloadV2('foo');
+        assert.equal('Success!', result.outParam);
+        assert.equal('foo', result.returnValue);
+    });
 }
 
 // Static out params

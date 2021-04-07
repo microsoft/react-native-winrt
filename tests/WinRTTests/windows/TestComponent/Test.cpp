@@ -114,6 +114,162 @@ namespace winrt::TestComponent::implementation
         return hstring(result);
     }
 
+    hstring Test::StaticArityOverload()
+    {
+        return L"No-arg overload";
+    }
+
+    hstring Test::StaticArityOverload(hstring const& str)
+    {
+        return str;
+    }
+
+    hstring Test::StaticArityOverload(hstring const& first, hstring const& second)
+    {
+        return first + second;
+    }
+
+    hstring Test::StaticDefaultOverload(hstring const&, bool)
+    {
+        return L"Test failed! Incorrect overload called";
+    }
+
+    hstring Test::StaticDefaultOverload(hstring const& str, int32_t repeat)
+    {
+        hstring result;
+        for (int32_t i = 0; i < repeat; ++i)
+        {
+            result = result + str;
+        }
+
+        return result;
+    }
+
+    hstring Test::StaticDefaultOverload(hstring const&, uint32_t)
+    {
+        return L"Test failed! Incorrect overload called";
+    }
+
+    hstring Test::StaticOutParamOverload(hstring const&)
+    {
+        return L"Test failed! Incorrect overload called";
+    }
+
+    hstring Test::StaticOutParamOverload(hstring const& str, hstring& outParam)
+    {
+        outParam = L"Success!";
+        return str;
+    }
+
+    hstring Test::StaticOutParamOverload(hstring const&, hstring const&)
+    {
+        return L"Test failed! Incorrect overload called";
+    }
+
+    hstring Test::StaticContractArityOverload()
+    {
+        return L"No-arg overload";
+    }
+
+    hstring Test::StaticContractArityOverload(hstring const& str)
+    {
+        return str;
+    }
+
+    hstring Test::StaticContractDefaultOverloadV1(hstring const&, bool)
+    {
+        return L"Test failed! Incorrect overload called";
+    }
+
+    hstring Test::StaticContractDefaultOverloadV1(hstring const& str, int32_t repeat)
+    {
+        hstring result;
+        for (int32_t i = 0; i < repeat; ++i)
+        {
+            result = result + str;
+        }
+
+        return result;
+    }
+
+    hstring Test::StaticContractDefaultOverloadV1(hstring const&, uint32_t)
+    {
+        return L"Test failed! Incorrect overload called";
+    }
+
+    hstring Test::StaticContractDefaultOverloadV1(hstring const&, double)
+    {
+        return L"Test failed! Incorrect overload called";
+    }
+
+    hstring Test::StaticContractDefaultOverloadV2(hstring const&, double)
+    {
+        return L"Test failed! Incorrect overload called";
+    }
+
+    hstring Test::StaticContractDefaultOverloadV2(hstring const&, bool)
+    {
+        return L"Test failed! Incorrect overload called";
+    }
+
+    hstring Test::StaticContractDefaultOverloadV2(hstring const& str, int32_t repeat)
+    {
+        hstring result;
+        for (int32_t i = 0; i < repeat; ++i)
+        {
+            result = result + str;
+        }
+
+        return result;
+    }
+
+    hstring Test::StaticContractDefaultOverloadV2(hstring const&, uint32_t)
+    {
+        return L"Test failed! Incorrect overload called";
+    }
+
+    hstring Test::StaticContractOutParamOverloadV1(hstring const&)
+    {
+        return L"Test failed! Incorrect overload called";
+    }
+
+    hstring Test::StaticContractOutParamOverloadV1(hstring const& str, hstring& outParam)
+    {
+        outParam = L"Success!";
+        return str;
+    }
+
+    hstring Test::StaticContractOutParamOverloadV1(hstring const&, hstring const&)
+    {
+        return L"Test failed! Incorrect overload called";
+    }
+
+    hstring Test::StaticContractOutParamOverloadV1(char16_t)
+    {
+        return L"Test failed! Incorrect overload called";
+    }
+
+    hstring Test::StaticContractOutParamOverloadV2(hstring const&)
+    {
+        return L"Test failed! Incorrect overload called";
+    }
+
+    hstring Test::StaticContractOutParamOverloadV2(hstring const& str, hstring& outParam)
+    {
+        outParam = L"Success!";
+        return str;
+    }
+
+    hstring Test::StaticContractOutParamOverloadV2(hstring const&, hstring const&)
+    {
+        return L"Test failed! Incorrect overload called";
+    }
+
+    hstring Test::StaticContractOutParamOverloadV2(char16_t)
+    {
+        return L"Test failed! Incorrect overload called";
+    }
+
     bool Test::StaticBoolOutParam(bool lhs, bool rhs, bool& andResult, bool& or)
     {
         andResult = lhs && rhs;
