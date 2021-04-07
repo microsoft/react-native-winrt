@@ -33,14 +33,15 @@ TypeDef exclusiveto_class(TypeDef iface)
     return iface.get_database().get_cache().find_required(sysType.name);
 }
 
-bool is_factory_interface(TypeDef iface)
+bool should_project_interface(const winmd::reader::TypeDef& iface)
 {
     auto classDef = exclusiveto_class(iface);
     if (!classDef)
     {
-        return false;
+        return true;
     }
 
+    // Don't project static/factory interfaces
     for (auto&& attr : classDef.CustomAttribute())
     {
         auto [attrNs, attrName] = attr.TypeNamespaceAndName();
@@ -65,11 +66,33 @@ bool is_factory_interface(TypeDef iface)
         auto [typeNs, typeName] = separate_typename(type->name);
         if ((typeNs == iface.TypeNamespace()) && (typeName == iface.TypeName()))
         {
-            return true;
+            return false;
         }
     }
 
-    return false;
+    // Don't project protected/overridable interfaces since they appear as 'protected' on the class
+    for (auto&& impl : classDef.InterfaceImpl())
+    {
+        auto implIface = impl.Interface();
+        if ((implIface.type() != TypeDefOrRef::TypeDef) && (implIface.type() != TypeDefOrRef::TypeRef))
+            continue;
+
+        auto [implNs, implName] = get_type_namespace_and_name(implIface);
+        if ((implNs != iface.TypeNamespace()) || (implName != iface.TypeName()))
+            continue;
+
+        for (auto&& attr : impl.CustomAttribute())
+        {
+            auto [attrNs, attrName] = attr.TypeNamespaceAndName();
+            if (attrNs != metadata_namespace)
+                continue;
+
+            if ((attrName == protected_attribute) || (attrName == overridable_attribute))
+                return false;
+        }
+    }
+
+    return true;
 }
 
 TypeDef generic_type_def(const GenericTypeInstSig& sig)
