@@ -89,11 +89,11 @@ export const assert = {
                 throw new Error('throwsError failed! Actual error name: ' + error.name + '. Expected error name: ' + errorName);
             }
             if (errorMessage && error.message !== errorMessage) {
-                throw new Error('throwsError failed! Actual error message: ' + error.message + '. Expected error name: ' + errorMessage);
+                throw new Error('throwsError failed! Actual error message: ' + error.message + '. Expected error message: ' + errorMessage);
             }
         }
         if (isFunctionExecuted) {
-            throw new Error('throwsError failed! Function executed when it should not have.')
+            throw new Error('throwsError failed! Function did not throw any error.')
         }
     }
 };

@@ -34,4 +34,8 @@ namespace winrt::TestComponent::implementation
     {
         return L"HierarchyBase.IHierarchyV2ContractMethod";
     }
+
+    void HierarchyBase::InaccessibleHierarchyBaseMethod()
+    {
+    }
 }

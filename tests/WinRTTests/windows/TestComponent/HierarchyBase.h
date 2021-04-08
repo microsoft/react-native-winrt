@@ -11,6 +11,7 @@ namespace winrt::TestComponent::implementation
         winrt::hstring OverloadedHierarchyBaseMethod(winrt::hstring param1);
         static winrt::hstring StaticHierarchyBaseMethod();
         winrt::hstring IHierarchyV2ContractMethod();
+        void InaccessibleHierarchyBaseMethod();
         virtual winrt::hstring OverriddenHierarchyBaseMethodOverride();
     };
 }

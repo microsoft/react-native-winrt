@@ -389,6 +389,7 @@ namespace TestComponent
         overridable String OverriddenHierarchyBaseMethodOverride();
         String NonOverriddenHierarchyBaseMethod();
         String OverloadedHierarchyBaseMethod(String param1);
+        protected void InaccessibleHierarchyBaseMethod();
         static String StaticHierarchyBaseMethod();
     }
 

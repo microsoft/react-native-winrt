@@ -46,6 +46,7 @@ declare namespace TestComponent {
         overriddenHierarchyBaseMethod(): string;
         nonOverriddenHierarchyBaseMethod(): string;
         overloadedHierarchyBaseMethod(param1: string): string;
+        protected inaccessibleHierarchyBaseMethod(): void;
         protected overriddenHierarchyBaseMethodOverride(): string;
         iHierarchyV2ContractMethod(): string;
         static staticHierarchyBaseMethod(): string;

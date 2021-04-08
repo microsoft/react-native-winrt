@@ -16,6 +16,7 @@ export function makeInheritanceTestScenarios(pThis) {
         new TestScenario('Overloaded method test', runOverloadedMethodTest.bind(pThis)),
         new TestScenario('Static method from derived class', runStaticMethodFromDerivedClassTest.bind(pThis)),
         new TestScenario('V2 interface method', runV2InterfaceMethods.bind(pThis)),
+        new TestScenario('Inaccesible method call', runExecuteNonAccessibleMethodTest.bind(pThis)),
     ];
 }
 
@@ -23,7 +24,7 @@ function runInvalidDerivedClassConstructorTest(scenario) {
     this.runSync(scenario, () => {
         assert.throwsError(() => {
             const hierarchyDerived = new TestComponent.HierarchyDerived();
-        }, "Error", "TypeError: No constructor overload exists for TestComponent.HierarchyDerived with 0 args")
+        }, "Error", "TypeError: No constructor overload exists for TestComponent.HierarchyDerived with 0 args");
     });
 }
 
@@ -75,5 +76,28 @@ function runV2InterfaceMethods(scenario) {
         const hierarchyDerived = new TestComponent.HierarchyDerived("");
         assert.equal(hierarchyBase.iHierarchyV2ContractMethod(), "HierarchyBase.IHierarchyV2ContractMethod");
         assert.equal(hierarchyDerived.iHierarchyV2ContractMethod(), "HierarchyBase.IHierarchyV2ContractMethod");
+    });
+}
+
+function runExecuteNonAccessibleMethodTest(scenario) {    
+    this.runSync(scenario, () => {
+        const hierarchyBase = new TestComponent.HierarchyBase();
+        const hierarchyDerived = new TestComponent.HierarchyDerived("");
+        
+        assert.throwsError(() => {    
+            hierarchyBase.overriddenHierarchyBaseMethodOverride();
+        }, "TypeError", "Object expected");
+
+        assert.throwsError(() => {    
+            hierarchyDerived.overriddenHierarchyBaseMethodOverride();
+        }, "TypeError", "Object expected");
+        
+        assert.throwsError(() => {
+            hierarchyBase.inaccessibleHierarchyBaseMethod();
+        }, "TypeError", "Object expected");
+
+        assert.throwsError(() => {
+            hierarchyDerived.inaccessibleHierarchyBaseMethod();
+        }, "TypeError", "Object expected");
     });
 }
