@@ -83,7 +83,7 @@ const refValuesToAdd = [4, 5, null, 6];
 
 // TODO: Objects; probably need to create on the fly?
 
-export function makeCollectionsTests(pThis) {
+export function makeCollectionsTestScenarios(pThis) {
     return [
         // Vectors created from copies of arrays
         new TestScenario('IVector<Boolean>', runBoolVectorCopyTest.bind(pThis)),

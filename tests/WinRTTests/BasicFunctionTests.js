@@ -41,6 +41,9 @@ export function makeBasicFunctionTestScenarios(pThis) {
         new TestScenario('Test::StaticRefOutParam', runStaticRefOutParam.bind(pThis)),
         new TestScenario('Test::StaticObjectOutParam', runStaticObjectOutParam.bind(pThis)),
 
+        // Constructors
+        new TestScenario('Constructor Test', runConstructorTest.bind(pThis)),
+
         // Non-static functions
         new TestScenario('Test::Or', runOr.bind(pThis)),
         new TestScenario('Test::OrAll', runOrAll.bind(pThis)),
@@ -327,6 +330,18 @@ function runStaticObjectOutParam(scenario) {
             assert.equal(doubledValues.getAt(i), val.getAt(i) * 2);
             assert.equal(tripledValues.getAt(i), val.getAt(i) * 3);
         }
+    });
+}
+
+// Constructors
+function runConstructorTest(scenario) {
+    this.runSync(scenario, () => {
+        var test = new TestComponent.Test();
+        assert.equal(0, test.constructorParamCount);
+        test = new TestComponent.Test(42);
+        assert.equal(1, test.constructorParamCount);
+        test = new TestComponent.Test(42, 'foo');
+        assert.equal(2, test.constructorParamCount);
     });
 }
 

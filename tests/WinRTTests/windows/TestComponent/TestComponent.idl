@@ -103,6 +103,10 @@ namespace TestComponent
     {
         // Constructors
         Test();
+        Test(Int32 val);
+        Test(Int32 val, String str);
+
+        Int32 ConstructorParamCount { get; }; // To validate which constructor was called
 
         // Infra helpers
         static void LogFailures(String failures);

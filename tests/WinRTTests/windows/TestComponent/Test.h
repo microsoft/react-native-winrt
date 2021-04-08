@@ -6,7 +6,22 @@ namespace winrt::TestComponent::implementation
 {
     struct Test : TestT<Test>
     {
-        Test() = default;
+        Test() : m_constructorParamCount(0)
+        {
+        }
+
+        Test(int32_t) : m_constructorParamCount(1)
+        {
+        }
+
+        Test(int32_t, hstring const&) : m_constructorParamCount(2)
+        {
+        }
+
+        int32_t ConstructorParamCount()
+        {
+            return m_constructorParamCount;
+        }
 
         static void LogFailures(hstring const& failures);
 
@@ -425,6 +440,8 @@ namespace winrt::TestComponent::implementation
             s_refEventSource;
         inline static event<Windows::Foundation::EventHandler<Windows::Foundation::Collections::IVector<int32_t>>>
             s_objectEventSource;
+
+        int32_t m_constructorParamCount;
 
         // Non-static properties
         bool m_boolProperty = false;
