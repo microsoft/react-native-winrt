@@ -86,18 +86,18 @@ function runExecuteNonAccessibleMethodTest(scenario) {
         
         assert.throwsError(() => {    
             hierarchyBase.overriddenHierarchyBaseMethodOverride();
-        }, "TypeError", "Object expected");
+        }, "TypeError");
 
         assert.throwsError(() => {    
             hierarchyDerived.overriddenHierarchyBaseMethodOverride();
-        }, "TypeError", "Object expected");
+        }, "TypeError");
         
         assert.throwsError(() => {
             hierarchyBase.inaccessibleHierarchyBaseMethod();
-        }, "TypeError", "Object expected");
+        }, "TypeError");
 
         assert.throwsError(() => {
             hierarchyDerived.inaccessibleHierarchyBaseMethod();
-        }, "TypeError", "Object expected");
+        }, "TypeError");
     });
 }
