@@ -11,8 +11,22 @@
 #include "Test.h"
 
 #include "Test.g.cpp"
+#include "TestObject.g.cpp"
 
 using namespace std::literals;
+
+template <typename T>
+static T default_value()
+{
+    if constexpr (std::is_base_of_v<winrt::Windows::Foundation::IInspectable, T>)
+    {
+        return T{ nullptr };
+    }
+    else
+    {
+        return T{};
+    }
+}
 
 winrt::hstring to_lower(const winrt::hstring& hstr)
 {
@@ -38,7 +52,7 @@ template <typename T>
 winrt::com_array<T> rotate_array(const winrt::array_view<const T>& values, int amt)
 {
     assert(values.size() > static_cast<std::size_t>(amt));
-    winrt::com_array<T> result(values.size());
+    winrt::com_array<T> result(values.size(), default_value<T>());
     std::rotate_copy(values.rbegin(), values.rbegin() + amt, values.rend(), result.rbegin());
     return result;
 }
@@ -347,20 +361,12 @@ namespace winrt::TestComponent::implementation
         return value.Value() * 4;
     }
 
-    Windows::Foundation::Collections::IVector<int32_t> Test::StaticObjectOutParam(
-        Windows::Foundation::Collections::IVector<int32_t> const& values,
-        Windows::Foundation::Collections::IVector<int32_t>& doubledValues,
-        Windows::Foundation::Collections::IVector<int32_t>& tripledValues)
+    TestComponent::TestObject Test::StaticObjectOutParam(TestComponent::TestObject const& value,
+        TestComponent::TestObject& doubledValue, TestComponent::TestObject& tripledValue)
     {
-        doubledValues = single_threaded_vector<int32_t>();
-        tripledValues = single_threaded_vector<int32_t>();
-        for (auto val : values)
-        {
-            doubledValues.Append(val * 2);
-            tripledValues.Append(val * 3);
-        }
-
-        return values;
+        doubledValue = winrt::make<TestObject>(value.Value() * 2);
+        tripledValue = winrt::make<TestObject>(value.Value() * 3);
+        return winrt::make<TestObject>(value.Value() * 4);
     }
 
     com_array<bool> Test::StaticBoolArrayOutParam(
@@ -429,10 +435,9 @@ namespace winrt::TestComponent::implementation
         return reverse_array(values);
     }
 
-    com_array<Windows::Foundation::Collections::IVector<int32_t>> Test::StaticObjectArrayOutParam(
-        array_view<Windows::Foundation::Collections::IVector<int32_t> const> values,
-        com_array<Windows::Foundation::Collections::IVector<int32_t>>& rot1,
-        com_array<Windows::Foundation::Collections::IVector<int32_t>>& rot2)
+    com_array<TestComponent::TestObject> Test::StaticObjectArrayOutParam(
+        array_view<TestComponent::TestObject const> values, com_array<TestComponent::TestObject>& rot1,
+        com_array<TestComponent::TestObject>& rot2)
     {
         rot1 = rotate_array(values, 1);
         rot2 = rotate_array(values, 2);
@@ -524,14 +529,12 @@ namespace winrt::TestComponent::implementation
         std::iota(values.begin(), values.end(), 0);
     }
 
-    void Test::StaticObjectFillParam(array_view<Windows::Foundation::Collections::IVector<int32_t>> values)
+    void Test::StaticObjectFillParam(array_view<TestComponent::TestObject> values)
     {
         int32_t next = 0;
-        std::vector<int32_t> v;
         for (auto& val : values)
         {
-            val = single_threaded_vector<int32_t>(std::vector{ v });
-            v.push_back(next++);
+            val = winrt::make<TestObject>(next++);
         }
     }
 
@@ -618,7 +621,7 @@ namespace winrt::TestComponent::implementation
     }
 
     winrt::event_token Test::StaticObjectEventHandler(
-        Windows::Foundation::EventHandler<Windows::Foundation::Collections::IVector<int32_t>> const& handler)
+        Windows::Foundation::EventHandler<TestComponent::TestObject> const& handler)
     {
         return s_objectEventSource.add(handler);
     }
@@ -668,7 +671,7 @@ namespace winrt::TestComponent::implementation
         s_refEventSource(nullptr, value);
     }
 
-    void Test::RaiseStaticObjectEvent(Windows::Foundation::Collections::IVector<int32_t> const& value)
+    void Test::RaiseStaticObjectEvent(TestComponent::TestObject const& value)
     {
         s_objectEventSource(nullptr, value);
     }
@@ -715,8 +718,8 @@ namespace winrt::TestComponent::implementation
         return targetFn(inputValue);
     }
 
-    Windows::Foundation::Collections::IVector<int32_t> Test::StaticInvokeObjectDelegate(
-        Windows::Foundation::Collections::IVector<int32_t> const& inputValue, ObjectDelegate const& targetFn)
+    TestComponent::TestObject Test::StaticInvokeObjectDelegate(
+        TestComponent::TestObject const& inputValue, ObjectDelegate const& targetFn)
     {
         return targetFn(inputValue);
     }
@@ -783,11 +786,10 @@ namespace winrt::TestComponent::implementation
         return result;
     }
 
-    Windows::Foundation::Collections::IVector<int32_t> Test::StaticInvokeObjectDelegateWithOutParam(
-        Windows::Foundation::Collections::IVector<int32_t> const& inputValue,
-        ObjectDelegateWithOutParam const& targetFn)
+    TestComponent::TestObject Test::StaticInvokeObjectDelegateWithOutParam(
+        TestComponent::TestObject const& inputValue, ObjectDelegateWithOutParam const& targetFn)
     {
-        Windows::Foundation::Collections::IVector<int32_t> result;
+        TestComponent::TestObject result{ nullptr };
         targetFn(inputValue, result);
         return result;
     }
@@ -795,7 +797,8 @@ namespace winrt::TestComponent::implementation
     template <typename T, typename Delegate>
     static bool DoInvokeArrayDelegate(array_view<const T> values, const Delegate& targetFn)
     {
-        T fillResult[5];
+        T fillResult[] = { default_value<T>(), default_value<T>(), default_value<T>(), default_value<T>(),
+            default_value<T>() };
         if (values.size() < std::size(fillResult))
             throw hresult_invalid_argument(); // Since we aren't reporting result size; assume complete fill
 
@@ -873,8 +876,7 @@ namespace winrt::TestComponent::implementation
     }
 
     bool Test::StaticInvokeObjectArrayDelegate(
-        array_view<Windows::Foundation::Collections::IVector<int32_t> const> values,
-        ObjectArrayDelegate const& targetFn)
+        array_view<TestComponent::TestObject const> values, ObjectArrayDelegate const& targetFn)
     {
         return DoInvokeArrayDelegate(values, targetFn);
     }
@@ -927,8 +929,8 @@ namespace winrt::TestComponent::implementation
         return CopyToVector(values);
     }
 
-    Windows::Foundation::Collections::IVector<Windows::Foundation::IInspectable> Test::CopyObjectsToVector(
-        array_view<Windows::Foundation::IInspectable const> values)
+    Windows::Foundation::Collections::IVector<TestComponent::TestObject> Test::CopyObjectsToVector(
+        array_view<TestComponent::TestObject const> values)
     {
         return CopyToVector(values);
     }
@@ -938,43 +940,51 @@ namespace winrt::TestComponent::implementation
     {
         return vector;
     }
+
     Windows::Foundation::Collections::IVector<char16_t> Test::ReturnSameCharVector(
         Windows::Foundation::Collections::IVector<char16_t> const& vector)
     {
         return vector;
     }
+
     Windows::Foundation::Collections::IVector<int32_t> Test::ReturnSameNumericVector(
         Windows::Foundation::Collections::IVector<int32_t> const& vector)
     {
         return vector;
     }
+
     Windows::Foundation::Collections::IVector<hstring> Test::ReturnSameStringVector(
         Windows::Foundation::Collections::IVector<hstring> const& vector)
     {
         return vector;
     }
+
     Windows::Foundation::Collections::IVector<winrt::guid> Test::ReturnSameGuidVector(
         Windows::Foundation::Collections::IVector<winrt::guid> const& vector)
     {
         return vector;
     }
+
     Windows::Foundation::Collections::IVector<TestComponent::TestEnum> Test::ReturnSameEnumVector(
         Windows::Foundation::Collections::IVector<TestComponent::TestEnum> const& vector)
     {
         return vector;
     }
+
     Windows::Foundation::Collections::IVector<TestComponent::CompositeType> Test::ReturnSameCompositeStructVector(
         Windows::Foundation::Collections::IVector<TestComponent::CompositeType> const& vector)
     {
         return vector;
     }
+
     Windows::Foundation::Collections::IVector<Windows::Foundation::IReference<int32_t>> Test::ReturnSameRefVector(
         Windows::Foundation::Collections::IVector<Windows::Foundation::IReference<int32_t>> const& vector)
     {
         return vector;
     }
-    Windows::Foundation::Collections::IVector<Windows::Foundation::IInspectable> Test::ReturnSameObjectVector(
-        Windows::Foundation::Collections::IVector<Windows::Foundation::IInspectable> const& vector)
+
+    Windows::Foundation::Collections::IVector<TestComponent::TestObject> Test::ReturnSameObjectVector(
+        Windows::Foundation::Collections::IVector<TestComponent::TestObject> const& vector)
     {
         return vector;
     }
@@ -1244,12 +1254,12 @@ namespace winrt::TestComponent::implementation
         m_refEnumProperty = value;
     }
 
-    Windows::Foundation::Collections::IVector<int32_t> Test::ObjectProperty()
+    TestComponent::TestObject Test::ObjectProperty()
     {
         return m_objectProperty;
     }
 
-    void Test::ObjectProperty(Windows::Foundation::Collections::IVector<int32_t> const& value)
+    void Test::ObjectProperty(TestComponent::TestObject const& value)
     {
         m_objectProperty = value;
     }
@@ -1334,12 +1344,12 @@ namespace winrt::TestComponent::implementation
         m_refArrayProperty.assign(value.begin(), value.end());
     }
 
-    com_array<Windows::Foundation::Collections::IVector<int32_t>> Test::ObjectArrayProperty()
+    com_array<TestComponent::TestObject> Test::ObjectArrayProperty()
     {
-        return com_array<Windows::Foundation::Collections::IVector<int32_t>>(m_objectArrayProperty);
+        return com_array<TestComponent::TestObject>(m_objectArrayProperty);
     }
 
-    void Test::ObjectArrayProperty(array_view<Windows::Foundation::Collections::IVector<int32_t> const> value)
+    void Test::ObjectArrayProperty(array_view<TestComponent::TestObject const> value)
     {
         m_objectArrayProperty.assign(value.begin(), value.end());
     }
@@ -1645,20 +1655,12 @@ namespace winrt::TestComponent::implementation
         return value.Value() * 4;
     }
 
-    Windows::Foundation::Collections::IVector<int32_t> Test::ObjectOutParam(
-        Windows::Foundation::Collections::IVector<int32_t> const& values,
-        Windows::Foundation::Collections::IVector<int32_t>& doubledValues,
-        Windows::Foundation::Collections::IVector<int32_t>& tripledValues)
+    TestComponent::TestObject Test::ObjectOutParam(TestComponent::TestObject const& value,
+        TestComponent::TestObject& doubledValue, TestComponent::TestObject& tripledValue)
     {
-        doubledValues = single_threaded_vector<int32_t>();
-        tripledValues = single_threaded_vector<int32_t>();
-        for (auto val : values)
-        {
-            doubledValues.Append(val * 2);
-            tripledValues.Append(val * 3);
-        }
-
-        return values;
+        doubledValue = winrt::make<TestObject>(value.Value() * 2);
+        tripledValue = winrt::make<TestObject>(value.Value() * 3);
+        return winrt::make<TestObject>(value.Value() * 4);
     }
 
     com_array<bool> Test::BoolArrayOutParam(array_view<bool const> values, com_array<bool>& rot1, com_array<bool>& rot2)
@@ -1726,10 +1728,8 @@ namespace winrt::TestComponent::implementation
         return reverse_array(values);
     }
 
-    com_array<Windows::Foundation::Collections::IVector<int32_t>> Test::ObjectArrayOutParam(
-        array_view<Windows::Foundation::Collections::IVector<int32_t> const> values,
-        com_array<Windows::Foundation::Collections::IVector<int32_t>>& rot1,
-        com_array<Windows::Foundation::Collections::IVector<int32_t>>& rot2)
+    com_array<TestComponent::TestObject> Test::ObjectArrayOutParam(array_view<TestComponent::TestObject const> values,
+        com_array<TestComponent::TestObject>& rot1, com_array<TestComponent::TestObject>& rot2)
     {
         rot1 = rotate_array(values, 1);
         rot2 = rotate_array(values, 2);
@@ -1821,14 +1821,12 @@ namespace winrt::TestComponent::implementation
         std::iota(values.begin(), values.end(), 0);
     }
 
-    void Test::ObjectFillParam(array_view<Windows::Foundation::Collections::IVector<int32_t>> values)
+    void Test::ObjectFillParam(array_view<TestComponent::TestObject> values)
     {
         int32_t next = 0;
-        std::vector<int32_t> v;
         for (auto& val : values)
         {
-            val = single_threaded_vector<int32_t>(std::vector{ v });
-            v.push_back(next++);
+            val = winrt::make<TestObject>(next++);
         }
     }
 
@@ -1915,7 +1913,7 @@ namespace winrt::TestComponent::implementation
     }
 
     winrt::event_token Test::ObjectEventHandler(
-        Windows::Foundation::EventHandler<Windows::Foundation::Collections::IVector<int32_t>> const& handler)
+        Windows::Foundation::EventHandler<TestComponent::TestObject> const& handler)
     {
         return m_objectEventSource.add(handler);
     }
@@ -1965,7 +1963,7 @@ namespace winrt::TestComponent::implementation
         m_refEventSource(*this, value);
     }
 
-    void Test::RaiseObjectEvent(Windows::Foundation::Collections::IVector<int32_t> const& value)
+    void Test::RaiseObjectEvent(TestComponent::TestObject const& value)
     {
         m_objectEventSource(*this, value);
     }

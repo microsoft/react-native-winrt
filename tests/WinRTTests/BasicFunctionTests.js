@@ -322,14 +322,16 @@ function runStaticRefOutParam(scenario) {
 
 function runStaticObjectOutParam(scenario) {
     this.runSync(scenario, () => {
-        var val = TestComponent.Test.copyNumericsToVector([0, 1, 2, 3, 4]);
-        var { returnValue, doubledValues, tripledValues } = TestComponent.Test.staticObjectOutParam(val);
-        assert.isTrue(val == returnValue);
-
-        for (var i = 0; i < val.size; ++i) {
-            assert.equal(doubledValues.getAt(i), val.getAt(i) * 2);
-            assert.equal(tripledValues.getAt(i), val.getAt(i) * 3);
-        }
+        var run = (val) => {
+            var obj = new TestComponent.TestObject(val);
+            var { returnValue, doubledValue, tripledValue } = TestComponent.Test.staticObjectOutParam(obj);
+            assert.equal(doubledValue.value, val * 2);
+            assert.equal(tripledValue.value, val * 3);
+            assert.equal(returnValue.value, val * 4);
+        };
+        run(0);
+        run(42);
+        run(-1);
     });
 }
 
@@ -600,13 +602,15 @@ function runRefOutParam(scenario) {
 
 function runObjectOutParam(scenario) {
     this.runSync(scenario, () => {
-        var val = TestComponent.Test.copyNumericsToVector([0, 1, 2, 3, 4]);
-        var { returnValue, doubledValues, tripledValues } = this.test.objectOutParam(val);
-        assert.isTrue(val == returnValue);
-
-        for (var i = 0; i < val.size; ++i) {
-            assert.equal(doubledValues.getAt(i), val.getAt(i) * 2);
-            assert.equal(tripledValues.getAt(i), val.getAt(i) * 3);
-        }
+        var run = (val) => {
+            var obj = new TestComponent.TestObject(val);
+            var { returnValue, doubledValue, tripledValue } = this.test.objectOutParam(obj);
+            assert.equal(doubledValue.value, val * 2);
+            assert.equal(tripledValue.value, val * 3);
+            assert.equal(returnValue.value, val * 4);
+        };
+        run(0);
+        run(42);
+        run(-1);
     });
 }
