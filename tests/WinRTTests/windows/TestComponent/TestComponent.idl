@@ -313,6 +313,7 @@ namespace TestComponent
         static Windows.Foundation.IAsyncOperation<Int32> AddAsync(Int32 lhs, Int32 rhs);
         static Windows.Foundation.IAsyncOperationWithProgress<Int32, Int32> CountDoubleAsync(Int32 value);
         static Windows.Foundation.IAsyncAction ThrowAsyncException();
+        static Windows.Foundation.IAsyncOperation<Int32> ImmediateReturnAsync(Int32 value);
 
         // Member properties
         Boolean BoolProperty;

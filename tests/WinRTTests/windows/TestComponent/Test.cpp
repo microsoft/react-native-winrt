@@ -1034,6 +1034,11 @@ namespace winrt::TestComponent::implementation
         throw std::invalid_argument("test");
     }
 
+    Windows::Foundation::IAsyncOperation<int32_t> Test::ImmediateReturnAsync(int32_t value)
+    {
+        co_return value;
+    }
+
     bool Test::BoolProperty()
     {
         return m_boolProperty;

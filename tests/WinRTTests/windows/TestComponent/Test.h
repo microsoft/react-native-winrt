@@ -246,6 +246,7 @@ namespace winrt::TestComponent::implementation
         static Windows::Foundation::IAsyncOperation<int32_t> AddAsync(int32_t lhs, int32_t rhs);
         static Windows::Foundation::IAsyncOperationWithProgress<int32_t, int32_t> CountDoubleAsync(int32_t value);
         static Windows::Foundation::IAsyncAction ThrowAsyncException();
+        static Windows::Foundation::IAsyncOperation<int32_t> ImmediateReturnAsync(int32_t value);
 
         bool BoolProperty();
         void BoolProperty(bool value);
