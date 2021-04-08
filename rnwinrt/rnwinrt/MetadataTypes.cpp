@@ -72,6 +72,9 @@ type_method_data<IsClass>::type_method_data(const Settings& settings, const Type
         if (!is_method_allowed(settings, method))
             continue;
 
+        if (method.Flags().Access() != MemberAccess::Public)
+            continue;
+
         auto methodClass = classify_method(method);
         if constexpr (IsClass)
         {
@@ -500,7 +503,9 @@ static void handle_generic_instantiation(projection_data& data, generic_instanti
 
     if (typeDef.TypeNamespace() == foundation_namespace)
     {
-        if (typeDef.TypeName() == "IReference`1"sv)
+        if ((typeDef.TypeName() == "IReference`1"sv) || (typeDef.TypeName() == "IReferenceArray`1"sv) ||
+            (typeDef.TypeName() == "IAsyncActionWithProgress`1"sv) || (typeDef.TypeName() == "IAsyncOperation`1"sv) ||
+            (typeDef.TypeName() == "IAsyncOperationWithProgress`2"sv))
             return;
     }
 
@@ -546,7 +551,10 @@ static void parse_typedefs(const Settings& settings, projection_data& data, cons
         if constexpr (std::is_same_v<T, interface_projection_data>)
         {
             // Static/activation factory interfaces don't need to be tracked; we handle them differently
-            if (is_factory_interface(typeDef))
+            if (!should_project_interface(typeDef))
+                continue;
+
+            if (isFoundationNs && (typeDef.TypeName() == "IAsyncAction"sv))
                 continue;
         }
         else if constexpr (std::is_same_v<T, struct_projection_data>)
