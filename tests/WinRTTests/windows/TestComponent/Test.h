@@ -303,6 +303,34 @@ namespace winrt::TestComponent::implementation
         hstring Append(hstring const& a, char16_t b, hstring const& c);
         hstring AppendAll(array_view<hstring const> values);
 
+        hstring ArityOverload();
+        hstring ArityOverload(hstring const& str);
+        hstring ArityOverload(hstring const& first, hstring const& second);
+        hstring DefaultOverload(hstring const& str, bool val);
+        hstring DefaultOverload(hstring const& str, int32_t repeat);
+        hstring DefaultOverload(hstring const& str, uint32_t val);
+        hstring OutParamOverload(hstring const& str);
+        hstring OutParamOverload(hstring const& str, hstring& outParam);
+        hstring OutParamOverload(hstring const& str, hstring const& other);
+        hstring ContractArityOverload();
+        hstring ContractArityOverload(hstring const& str);
+        hstring ContractDefaultOverloadV1(hstring const& str, bool val);
+        hstring ContractDefaultOverloadV1(hstring const& str, int32_t repeat);
+        hstring ContractDefaultOverloadV1(hstring const& str, uint32_t val);
+        hstring ContractDefaultOverloadV1(hstring const& str, double val);
+        hstring ContractDefaultOverloadV2(hstring const& str, double val);
+        hstring ContractDefaultOverloadV2(hstring const& str, bool val);
+        hstring ContractDefaultOverloadV2(hstring const& str, int32_t val);
+        hstring ContractDefaultOverloadV2(hstring const& str, uint32_t val);
+        hstring ContractOutParamOverloadV1(hstring const& str);
+        hstring ContractOutParamOverloadV1(hstring const& str, hstring& outParam);
+        hstring ContractOutParamOverloadV1(hstring const& str, hstring const& other);
+        hstring ContractOutParamOverloadV1(char16_t ch);
+        hstring ContractOutParamOverloadV2(hstring const& str);
+        hstring ContractOutParamOverloadV2(hstring const& str, hstring& outParam);
+        hstring ContractOutParamOverloadV2(hstring const& str, hstring const& other);
+        hstring ContractOutParamOverloadV2(char16_t ch);
+
         bool BoolOutParam(bool lhs, bool rhs, bool& andResult, bool& or);
         char16_t CharOutParam(char16_t value, char16_t& next, char16_t& prev);
         int32_t NumericOutParam(int32_t value, int32_t& doubledValue, int32_t& tripledValue);

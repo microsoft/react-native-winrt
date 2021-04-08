@@ -1436,6 +1436,162 @@ namespace winrt::TestComponent::implementation
         return hstring(result);
     }
 
+    hstring Test::ArityOverload()
+    {
+        return L"No-arg overload";
+    }
+
+    hstring Test::ArityOverload(hstring const& str)
+    {
+        return str;
+    }
+
+    hstring Test::ArityOverload(hstring const& first, hstring const& second)
+    {
+        return first + second;
+    }
+
+    hstring Test::DefaultOverload(hstring const&, bool)
+    {
+        return L"Test failed! Incorrect overload called";
+    }
+
+    hstring Test::DefaultOverload(hstring const& str, int32_t repeat)
+    {
+        hstring result;
+        for (int32_t i = 0; i < repeat; ++i)
+        {
+            result = result + str;
+        }
+
+        return result;
+    }
+
+    hstring Test::DefaultOverload(hstring const&, uint32_t)
+    {
+        return L"Test failed! Incorrect overload called";
+    }
+
+    hstring Test::OutParamOverload(hstring const&)
+    {
+        return L"Test failed! Incorrect overload called";
+    }
+
+    hstring Test::OutParamOverload(hstring const& str, hstring& outParam)
+    {
+        outParam = L"Success!";
+        return str;
+    }
+
+    hstring Test::OutParamOverload(hstring const&, hstring const&)
+    {
+        return L"Test failed! Incorrect overload called";
+    }
+
+    hstring Test::ContractArityOverload()
+    {
+        return L"No-arg overload";
+    }
+
+    hstring Test::ContractArityOverload(hstring const& str)
+    {
+        return str;
+    }
+
+    hstring Test::ContractDefaultOverloadV1(hstring const&, bool)
+    {
+        return L"Test failed! Incorrect overload called";
+    }
+
+    hstring Test::ContractDefaultOverloadV1(hstring const& str, int32_t repeat)
+    {
+        hstring result;
+        for (int32_t i = 0; i < repeat; ++i)
+        {
+            result = result + str;
+        }
+
+        return result;
+    }
+
+    hstring Test::ContractDefaultOverloadV1(hstring const&, uint32_t)
+    {
+        return L"Test failed! Incorrect overload called";
+    }
+
+    hstring Test::ContractDefaultOverloadV1(hstring const&, double)
+    {
+        return L"Test failed! Incorrect overload called";
+    }
+
+    hstring Test::ContractDefaultOverloadV2(hstring const&, double)
+    {
+        return L"Test failed! Incorrect overload called";
+    }
+
+    hstring Test::ContractDefaultOverloadV2(hstring const&, bool)
+    {
+        return L"Test failed! Incorrect overload called";
+    }
+
+    hstring Test::ContractDefaultOverloadV2(hstring const& str, int32_t repeat)
+    {
+        hstring result;
+        for (int32_t i = 0; i < repeat; ++i)
+        {
+            result = result + str;
+        }
+
+        return result;
+    }
+
+    hstring Test::ContractDefaultOverloadV2(hstring const&, uint32_t)
+    {
+        return L"Test failed! Incorrect overload called";
+    }
+
+    hstring Test::ContractOutParamOverloadV1(hstring const&)
+    {
+        return L"Test failed! Incorrect overload called";
+    }
+
+    hstring Test::ContractOutParamOverloadV1(hstring const& str, hstring& outParam)
+    {
+        outParam = L"Success!";
+        return str;
+    }
+
+    hstring Test::ContractOutParamOverloadV1(hstring const&, hstring const&)
+    {
+        return L"Test failed! Incorrect overload called";
+    }
+
+    hstring Test::ContractOutParamOverloadV1(char16_t)
+    {
+        return L"Test failed! Incorrect overload called";
+    }
+
+    hstring Test::ContractOutParamOverloadV2(hstring const&)
+    {
+        return L"Test failed! Incorrect overload called";
+    }
+
+    hstring Test::ContractOutParamOverloadV2(hstring const& str, hstring& outParam)
+    {
+        outParam = L"Success!";
+        return str;
+    }
+
+    hstring Test::ContractOutParamOverloadV2(hstring const&, hstring const&)
+    {
+        return L"Test failed! Incorrect overload called";
+    }
+
+    hstring Test::ContractOutParamOverloadV2(char16_t)
+    {
+        return L"Test failed! Incorrect overload called";
+    }
+
     bool Test::BoolOutParam(bool lhs, bool rhs, bool& andResult, bool& or)
     {
         andResult = lhs && rhs;

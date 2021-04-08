@@ -363,6 +363,63 @@ namespace TestComponent
         String Append(String a, Char b, String c);
         String AppendAll(String[] values);
 
+        // Static function overloads
+        String ArityOverload();
+        String ArityOverload(String str);
+        String ArityOverload(String first, String second);
+
+        String DefaultOverload(String str, Boolean val);
+        [default_overload]
+        String DefaultOverload(String str, Int32 repeat);
+        String DefaultOverload(String str, UInt32 val);
+
+        String OutParamOverload(String str);
+        [default_overload]
+        String OutParamOverload(String str, out String outParam);
+        [default_overload]
+        String OutParamOverload(String str, String other);
+
+        String ContractArityOverload();
+
+        String ContractDefaultOverloadV1(String str, Boolean val);
+        [default_overload]
+        String ContractDefaultOverloadV1(String str, Int32 repeat);
+        String ContractDefaultOverloadV1(String str, UInt32 val);
+
+        String ContractDefaultOverloadV2(String str, Double val);
+
+        String ContractOutParamOverloadV1(String str);
+        [default_overload]
+        String ContractOutParamOverloadV1(String str, out String outParam);
+        [default_overload]
+        String ContractOutParamOverloadV1(String str, String other);
+
+        String ContractOutParamOverloadV2(Char ch);
+
+        // "v2" overloads
+        [contract(TestContract, 2)]
+        {
+            [overload("ContractArityOverload")]
+            String ContractArityOverload(String str);
+
+            [overload("ContractDefaultOverloadV1")]
+            String ContractDefaultOverloadV1(String str, Double val);
+
+            String ContractDefaultOverloadV2(String str, Boolean val);
+            [default_overload]
+            String ContractDefaultOverloadV2(String str, Int32 val);
+            String ContractDefaultOverloadV2(String str, UInt32 val);
+
+            [overload("ContractOutParamOverloadV1")]
+            String ContractOutParamOverloadV1(Char ch);
+
+            String ContractOutParamOverloadV2(String str);
+            [default_overload]
+            String ContractOutParamOverloadV2(String str, out String outParam);
+            [default_overload]
+            String ContractOutParamOverloadV2(String str, String other);
+        }
+
         // Member out params
         Boolean BoolOutParam(Boolean lhs, Boolean rhs, out Boolean andResult, out Boolean orResult);
         Char CharOutParam(Char value, out Char next, out Char prev);
