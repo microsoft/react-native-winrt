@@ -457,9 +457,10 @@ static void check_generic_base_types(
     }
 }
 
-static void check_generic_function_outputs(
+static void check_generic_function_params(
     projection_data& data, const TypeDef& typeDef, const generic_param_stack& genericParamStack)
 {
+    auto isDelegate = get_category(typeDef) == category::delegate_type;
     auto checkType = [&](const TypeSig& sig) {
         resolve_type(sig, genericParamStack,
             overloaded{
@@ -478,6 +479,8 @@ static void check_generic_function_outputs(
         // We don't care about function inputs since they need to be provided by the caller, and even if this is coming
         // from JS (e.g. array-to-vector conversion), the created object does not need to be observable by JS
         function_signature fn(method);
+        auto isEventAdd = fn.method_def.SpecialName() && starts_with(fn.method_def.Name(), "add_");
+
         if (fn.has_return_value)
         {
             checkType(fn.signature.ReturnType().Type());
@@ -486,9 +489,27 @@ static void check_generic_function_outputs(
         for (auto&& param : fn.params())
         {
             // NOTE: Purposefully not checking by_ref since fill arrays still produce observable output
-            if (param.is_output())
+            if (param.is_output() || isDelegate)
             {
                 checkType(param.type());
+            }
+            else if (isEventAdd)
+            {
+                // The parameter is a delegate, which might have generic arguments that we need to include
+                resolve_type(param.type(), genericParamStack,
+                    overloaded{
+                        [&](const GenericTypeInstSig& sig, const generic_param_stack& newStack, bool isArray) {
+                            assert(!isArray);
+                            generic_instantiation inst(sig, newStack);
+                            check_generic_function_params(data, generic_type_def(sig), inst.stack());
+                        },
+                        [](const TypeDef&, bool isArray) {
+                            assert(!isArray);
+                            // NOTE: For non-generic delegates, we'll depend on going through this path "naturally" as a
+                            // part of the delegate getting projected below
+                        },
+                        [](auto&&, bool) { assert(false); },
+                    });
             }
         }
     }
@@ -498,7 +519,7 @@ static void handle_generic_instantiation(projection_data& data, generic_instanti
 {
     // Some generic interfaces are projected away or handled differently
     auto typeDef = generic_type_def(inst.signature());
-    if (get_category(typeDef) == category::delegate_type)
+    if (get_category(typeDef) != category::interface_type)
         return;
 
     if (typeDef.TypeNamespace() == foundation_namespace)
@@ -519,7 +540,7 @@ static void handle_generic_instantiation(projection_data& data, generic_instanti
     // NOTE: The generic params could, themselves, be generic. E.g. an 'IVector<IReference<T>>', however we don't
     // actually care about that unless that fact is actually observable in JS, which the following will catch
     check_generic_base_types(data, typeDef, inst.stack());
-    check_generic_function_outputs(data, typeDef, inst.stack());
+    check_generic_function_params(data, typeDef, inst.stack());
 
     itr->second = std::make_unique<generic_interface_instantiation>(std::move(inst), guid);
     data.interfaces.push_back(itr->second.get());
@@ -602,7 +623,7 @@ void parse_metadata(const Settings& settings, projection_data& data)
         parse_typedefs(settings, data, members.classes, currNs->class_children, [&](class_projection_data* classData) {
             currNs->named_children.push_back(classData);
             check_generic_base_types(data, classData->type_def, {});
-            check_generic_function_outputs(data, classData->type_def, {});
+            check_generic_function_params(data, classData->type_def, {});
         });
         parse_typedefs(settings, data, members.enums, currNs->enum_children,
             [&](enum_projection_data* enumData) { currNs->named_children.push_back(enumData); });
@@ -625,13 +646,13 @@ void parse_metadata(const Settings& settings, projection_data& data)
         parse_typedefs(
             settings, data, members.delegates, currNs->delegate_children, [&](delegate_projection_data* delegateData) {
                 // Delegates can have out/return values for the Invoke function
-                check_generic_function_outputs(data, delegateData->type_def, {});
+                check_generic_function_params(data, delegateData->type_def, {});
             });
         parse_typedefs(
             settings, data, members.interfaces, currNs->interface_children, [&](interface_projection_data* ifaceData) {
                 data.interfaces.push_back(ifaceData);
                 check_generic_base_types(data, ifaceData->type_def, {});
-                check_generic_function_outputs(data, ifaceData->type_def, {});
+                check_generic_function_params(data, ifaceData->type_def, {});
             });
     }
 
