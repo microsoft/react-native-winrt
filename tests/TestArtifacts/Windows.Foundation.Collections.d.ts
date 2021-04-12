@@ -34,6 +34,7 @@ declare namespace Windows.Foundation.Collections {
         lookup(key: K): V;
         hasKey(key: K): boolean;
         split(): { first: Windows.Foundation.Collections.IMapView<K, V>; second: Windows.Foundation.Collections.IMapView<K, V> };
+
     }
 
     interface IMap<K, V> extends Windows.Foundation.Collections.IIterable<Windows.Foundation.Collections.IKeyValuePair<K, V>> {

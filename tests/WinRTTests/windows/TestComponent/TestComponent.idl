@@ -384,5 +384,9 @@ namespace TestComponent
         void RaiseCompositeStructEvent(CompositeType value);
         void RaiseRefEvent(Windows.Foundation.IReference<Int32> value);
         void RaiseObjectEvent(Windows.Foundation.Collections.IVector<Int32> value);
+
+        static Windows.Foundation.Collections.IMap<String, Int32> CreateStringToNumberMap();
+        static Windows.Foundation.Collections.IMapView<String, Int32> CopyToMapView(
+            Windows.Foundation.Collections.IMap<String, Int32> stringToNumberMap);
     }
 }

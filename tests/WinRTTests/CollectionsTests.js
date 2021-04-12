@@ -110,6 +110,8 @@ export function makeCollectionsTests(pThis) {
        // Vectors behave like arrays
        new TestScenario('IVector behaves like Array', runVectorAsArrayTest.bind(pThis)),
        new TestScenario('IVectorView behaves like Array', runVectorViewAsArrayTest.bind(pThis)),
+       new TestScenario('IMap with string keys behaves like JS object', runIMapAsJSObjectTest.bind(pThis)),
+       new TestScenario('IMapView with string keys behaves like readonly JS object', runIMapViewAsReadonlyJSObject.bind(pThis)),
     ];
 }
 
@@ -1119,5 +1121,45 @@ function runVectorViewAsArrayTest(scenario) {
         // Array.prototype.splice
         swallowExceptions(() => view.splice(1, 2, 42));
         verifyVectorContents(view, numericVectorContents);
+    });
+}
+
+function runIMapAsJSObjectTest(scenario) {
+    this.runSync(scenario, () => {
+        const map = TestComponent.Test.createStringToNumberMap();
+        map["hello"] = 1;
+        map.insert("world", 2);
+        assert.equal(map["hello"], 1);
+        assert.equal(map.lookup("hello"), 1);
+        assert.equal(map["world"], 2);
+        assert.equal(map.lookup("world"), 2);
+        assert.equal(map.size, 2);
+
+        map.clear();
+        assert.equal(map.size, 0);
+        assert.equal(typeof(map.clear), "function");
+        map["clear"] = 3;
+        assert.equal(typeof(map.clear), "function");
+        assert.equal(map.lookup("clear"), 3);
+
+        assert.throwsException(() => {
+            map["a"] = "b";
+        })
+    });
+}
+
+function runIMapViewAsReadonlyJSObject(scenario) {
+    this.runSync(scenario, () => {
+        const map = TestComponent.Test.createStringToNumberMap();
+        map["hello"] = 1;
+        map.insert("world", 2);
+        
+        const mapView = TestComponent.Test.copyToMapView(map);
+        assert.equal(mapView["hello"], 1);
+        assert.equal(mapView["world"], 2);
+        assert.equal(mapView.size, 2);
+        assert.throwsException(() => {
+            map["hello"] = 12;
+        });
     });
 }

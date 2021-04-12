@@ -18,6 +18,12 @@ namespace winrt
 {
     using namespace Windows::Foundation;
     using namespace Windows::Foundation::Collections;
+
+    template <typename K, typename V, typename Allocator = std::allocator<K>>
+    Windows::Foundation::Collections::IMapView<K, V> single_threaded_map_view(std::map<K, V, Allocator>&& values = {})
+    {
+        return make<impl::input_map_view<K, V, std::map<K, V, Allocator>>>(std::move(values));
+    }
 }
 
 winrt::hstring to_lower(const winrt::hstring& hstr)
@@ -1719,4 +1725,21 @@ namespace winrt::TestComponent::implementation
     {
         m_objectEventSource(*this, value);
     }
+
+    Windows::Foundation::Collections::IMap<winrt::hstring, int32_t> Test::CreateStringToNumberMap()
+    {
+        return single_threaded_map<winrt::hstring, int32_t>();
+    }
+
+    Windows::Foundation::Collections::IMapView<winrt::hstring, int32_t> Test::CopyToMapView(
+        Windows::Foundation::Collections::IMap<winrt::hstring, int32_t> stringToNumberMap)
+    {
+        std::map<hstring, int32_t> copy;
+        for (auto&& pair : stringToNumberMap)
+        {
+            copy[pair.Key()] = pair.Value();
+        }
+        return winrt::single_threaded_map_view(std::move(copy));
+    }
+
 }

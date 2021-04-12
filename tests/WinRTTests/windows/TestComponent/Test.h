@@ -371,6 +371,11 @@ namespace winrt::TestComponent::implementation
         void RaiseRefEvent(Windows::Foundation::IReference<int32_t> const& value);
         void RaiseObjectEvent(Windows::Foundation::Collections::IVector<int32_t> const& value);
 
+        // IMap
+        static Windows::Foundation::Collections::IMap<winrt::hstring, int32_t> CreateStringToNumberMap();
+        static Windows::Foundation::Collections::IMapView<winrt::hstring, int32_t> CopyToMapView(
+            Windows::Foundation::Collections::IMap<winrt::hstring, int32_t> stringToNumberMap);
+
     private:
         // Static properties
         inline static bool s_boolProperty = false;
