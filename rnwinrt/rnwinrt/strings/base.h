@@ -3072,7 +3072,8 @@ namespace jswinrt
             {
                 using iface = interface_data<K, V>;
                 static constexpr const static_interface_data value{ winrt::guid_of<typename iface::native_type>(),
-                    iface::properties, {}, iface::functions, &iface::runtime_get_property, &iface::runtime_set_property };
+                    iface::properties, {}, iface::functions, &iface::runtime_get_property,
+                    &iface::runtime_set_property };
             };
 
             template <typename K, typename V>
@@ -3934,8 +3935,7 @@ namespace jswinrt
                     uint32_t deleteCount =
                         (count >= 2) ? static_cast<uint32_t>(std::clamp(to_integer_or_infinity(runtime, args[1]), 0.0,
                                            static_cast<double>(size - start))) :
-                        (count >= 1) ? (size - start) :
-                                       0;
+                                       (count >= 1) ? (size - start) : 0;
 
                     uint32_t insertCount = (count >= 3) ? static_cast<uint32_t>(count - 2) : 0;
                     auto assignCount = std::min(deleteCount, insertCount);
