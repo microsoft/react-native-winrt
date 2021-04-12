@@ -223,6 +223,15 @@ declare namespace TestComponent {
         copyCompositeStructsToVector(values: TestComponent.CompositeType[]): Windows.Foundation.Collections.IVector<TestComponent.CompositeType>;
         copyRefsToVector(values: number[] | null): Windows.Foundation.Collections.IVector<number | null>;
         copyObjectsToVector(values: any): Windows.Foundation.Collections.IVector<any>;
+        copyBoolsToVectorView(values: boolean[]): Windows.Foundation.Collections.IVectorView<boolean>;
+        copyCharsToVectorView(values: string[]): Windows.Foundation.Collections.IVectorView<string>;
+        copyNumericsToVectorView(values: number[]): Windows.Foundation.Collections.IVectorView<number>;
+        copyStringsToVectorView(values: string[]): Windows.Foundation.Collections.IVectorView<string>;
+        copyGuidsToVectorView(values: string[]): Windows.Foundation.Collections.IVectorView<string>;
+        copyEnumValuesToVectorView(values: TestComponent.TestEnum[]): Windows.Foundation.Collections.IVectorView<TestComponent.TestEnum>;
+        copyCompositeStructsToVectorView(values: TestComponent.CompositeType[]): Windows.Foundation.Collections.IVectorView<TestComponent.CompositeType>;
+        copyRefsToVectorView(values: number[] | null): Windows.Foundation.Collections.IVectorView<number | null>;
+        copyObjectsToVectorView(values: any): Windows.Foundation.Collections.IVectorView<any>;
         returnSameBoolVector(vector: Windows.Foundation.Collections.IVector<boolean>): Windows.Foundation.Collections.IVector<boolean>;
         returnSameCharVector(vector: Windows.Foundation.Collections.IVector<string>): Windows.Foundation.Collections.IVector<string>;
         returnSameNumericVector(vector: Windows.Foundation.Collections.IVector<number>): Windows.Foundation.Collections.IVector<number>;
@@ -237,6 +246,8 @@ declare namespace TestComponent {
         addAsync(lhs: number, rhs: number): Windows.Foundation.WinRTPromise<number, void>;
         countDoubleAsync(value: number): Windows.Foundation.WinRTPromise<number, number>;
         throwAsyncException(): Windows.Foundation.WinRTPromise<void, void>;
+        createStringToNumberMap(): Windows.Foundation.Collections.IMap<string, number>;
+        copyToMapView(stringToNumberMap: Windows.Foundation.Collections.IMap<string, number>): Windows.Foundation.Collections.IMapView<string, number>;
         addEventListener(type: "staticbooleventhandler", listener: Windows.Foundation.EventHandler<boolean>): void
         addEventListener(type: "staticchareventhandler", listener: Windows.Foundation.EventHandler<string>): void
         addEventListener(type: "staticcompositestructeventhandler", listener: Windows.Foundation.EventHandler<TestComponent.CompositeType>): void
@@ -462,6 +473,15 @@ declare namespace TestComponent {
         static copyCompositeStructsToVector(values: TestComponent.CompositeType[]): Windows.Foundation.Collections.IVector<TestComponent.CompositeType>;
         static copyRefsToVector(values: number[] | null): Windows.Foundation.Collections.IVector<number | null>;
         static copyObjectsToVector(values: any): Windows.Foundation.Collections.IVector<any>;
+        static copyBoolsToVectorView(values: boolean[]): Windows.Foundation.Collections.IVectorView<boolean>;
+        static copyCharsToVectorView(values: string[]): Windows.Foundation.Collections.IVectorView<string>;
+        static copyNumericsToVectorView(values: number[]): Windows.Foundation.Collections.IVectorView<number>;
+        static copyStringsToVectorView(values: string[]): Windows.Foundation.Collections.IVectorView<string>;
+        static copyGuidsToVectorView(values: string[]): Windows.Foundation.Collections.IVectorView<string>;
+        static copyEnumValuesToVectorView(values: TestComponent.TestEnum[]): Windows.Foundation.Collections.IVectorView<TestComponent.TestEnum>;
+        static copyCompositeStructsToVectorView(values: TestComponent.CompositeType[]): Windows.Foundation.Collections.IVectorView<TestComponent.CompositeType>;
+        static copyRefsToVectorView(values: number[] | null): Windows.Foundation.Collections.IVectorView<number | null>;
+        static copyObjectsToVectorView(values: any): Windows.Foundation.Collections.IVectorView<any>;
         static returnSameBoolVector(vector: Windows.Foundation.Collections.IVector<boolean>): Windows.Foundation.Collections.IVector<boolean>;
         static returnSameCharVector(vector: Windows.Foundation.Collections.IVector<string>): Windows.Foundation.Collections.IVector<string>;
         static returnSameNumericVector(vector: Windows.Foundation.Collections.IVector<number>): Windows.Foundation.Collections.IVector<number>;
@@ -476,6 +496,8 @@ declare namespace TestComponent {
         static addAsync(lhs: number, rhs: number): Windows.Foundation.WinRTPromise<number, void>;
         static countDoubleAsync(value: number): Windows.Foundation.WinRTPromise<number, number>;
         static throwAsyncException(): Windows.Foundation.WinRTPromise<void, void>;
+        static createStringToNumberMap(): Windows.Foundation.Collections.IMap<string, number>;
+        static copyToMapView(stringToNumberMap: Windows.Foundation.Collections.IMap<string, number>): Windows.Foundation.Collections.IMapView<string, number>;
         addEventListener(type: "booleventhandler", listener: Windows.Foundation.EventHandler<boolean>): void
         addEventListener(type: "chareventhandler", listener: Windows.Foundation.EventHandler<string>): void
         addEventListener(type: "compositestructeventhandler", listener: Windows.Foundation.EventHandler<TestComponent.CompositeType>): void

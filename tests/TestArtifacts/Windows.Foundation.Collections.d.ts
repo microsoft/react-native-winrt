@@ -34,7 +34,7 @@ declare namespace Windows.Foundation.Collections {
         lookup(key: K): V;
         hasKey(key: K): boolean;
         split(): { first: Windows.Foundation.Collections.IMapView<K, V>; second: Windows.Foundation.Collections.IMapView<K, V> };
-
+        readonly [key: string]: any;
     }
 
     interface IMap<K, V> extends Windows.Foundation.Collections.IIterable<Windows.Foundation.Collections.IKeyValuePair<K, V>> {
@@ -45,6 +45,7 @@ declare namespace Windows.Foundation.Collections {
         insert(key: K, value: V): boolean;
         remove(key: K): void;
         clear(): void;
+        [key: string]: any;
     }
 
     interface IObservableMap<K, V> extends Windows.Foundation.Collections.IMap<K, V> {
@@ -70,6 +71,21 @@ declare namespace Windows.Foundation.Collections {
         getAt(index: number): T;
         indexOf(value: T): { index: number; returnValue: boolean };
         getMany(startIndex: number): { items: T[]; returnValue: number };
+        length: number; 
+        readonly [index: number]: T;
+        concat(...items: (T | ConcatArray<T>)[]): T[];
+        every<S extends T>(predicate: (value: T, index: number, array: T[]) => value is S, thisArg?: any): this is S[];
+        filter<S extends T>(predicate: (value: T, index: number, array: T[]) => value is S, thisArg?: any): S[];
+        filter(predicate: (value: T, index: number, array: T[]) => unknown, thisArg?: any): T[];
+        forEach(callbackfn: (value: T, index: number, array: T[]) => void, thisArg?: any): void;
+        lastIndexOf(searchElement: T, fromIndex?: number): number;
+        map<U>(callbackfn: (value: T, index: number, array: T[]) => U, thisArg?: any): U[];
+        reduce(callbackfn: (previousValue: T, currentValue: T, currentIndex: number, array: T[]) => T): T;
+        reduce(callbackfn: (previousValue: T, currentValue: T, currentIndex: number, array: T[]) => T, initialValue: T): T;
+        reduceRight(callbackfn: (previousValue: T, currentValue: T, currentIndex: number, array: T[]) => T): T;
+        reduceRight(callbackfn: (previousValue: T, currentValue: T, currentIndex: number, array: T[]) => T, initialValue: T): T;
+        slice(start?: number, end?: number): T[];
+        some(predicate: (value: T, index: number, array: T[]) => unknown, thisArg?: any): boolean;
     }
 
     interface IVector<T> extends Windows.Foundation.Collections.IIterable<T> {
@@ -85,6 +101,30 @@ declare namespace Windows.Foundation.Collections {
         clear(): void;
         getMany(startIndex: number): { items: T[]; returnValue: number };
         replaceAll(items: T[]): void;
+        length: number; 
+        [index: number]: T;
+        concat(...items: (T | ConcatArray<T>)[]): T[];
+        copyWithin(target: number, start: number, end?: number): this;
+        every<S extends T>(predicate: (value: T, index: number, array: T[]) => value is S, thisArg?: any): this is S[];
+        some(predicate: (value: T, index: number, array: T[]) => unknown, thisArg?: any): boolean;
+        filter<S extends T>(predicate: (value: T, index: number, array: T[]) => value is S, thisArg?: any): S[];
+        filter(predicate: (value: T, index: number, array: T[]) => unknown, thisArg?: any): T[];
+        forEach(callbackfn: (value: T, index: number, array: T[]) => void, thisArg?: any): void;
+        lastIndexOf(searchElement: T, fromIndex?: number): number;
+        pop(): T | undefined;
+        push(...items: T[]): number;
+        map<U>(callbackfn: (value: T, index: number, array: T[]) => U, thisArg?: any): U[];
+        reduce(callbackfn: (previousValue: T, currentValue: T, currentIndex: number, array: T[]) => T): T;
+        reduce(callbackfn: (previousValue: T, currentValue: T, currentIndex: number, array: T[]) => T, initialValue: T): T;
+        reduceRight(callbackfn: (previousValue: T, currentValue: T, currentIndex: number, array: T[]) => T): T;
+        reduceRight(callbackfn: (previousValue: T, currentValue: T, currentIndex: number, array: T[]) => T, initialValue: T): T;
+        reverse(): T[];
+        shift(): T | undefined;
+        slice(start?: number, end?: number): T[];
+        sort(compareFn?: (a: T, b: T) => number): this;
+        splice(start: number, deleteCount?: number): T[];
+        some(predicate: (value: T, index: number, array: T[]) => unknown, thisArg?: any): boolean;
+        unshift(...items: T[]): number;
     }
 
     type MapChangedEventHandler<K, V> = (sender: Windows.Foundation.Collections.IObservableMap<K, V>, event: Windows.Foundation.Collections.IMapChangedEventArgs<K>) => void;
