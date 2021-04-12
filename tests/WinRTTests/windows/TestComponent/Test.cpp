@@ -1835,7 +1835,8 @@ namespace winrt::TestComponent::implementation
         }
     }
 
-    winrt::event_token Test::BoolEventHandler(Windows::Foundation::EventHandler<bool> const& handler)
+    winrt::event_token Test::BoolEventHandler(
+        Windows::Foundation::TypedEventHandler<TestComponent::Test, bool> const& handler)
     {
         return m_boolEventSource.add(handler);
     }
@@ -1845,7 +1846,8 @@ namespace winrt::TestComponent::implementation
         m_boolEventSource.remove(token);
     }
 
-    winrt::event_token Test::CharEventHandler(Windows::Foundation::EventHandler<char16_t> const& handler)
+    winrt::event_token Test::CharEventHandler(
+        Windows::Foundation::TypedEventHandler<TestComponent::Test, char16_t> const& handler)
     {
         return m_charEventSource.add(handler);
     }
@@ -1855,7 +1857,8 @@ namespace winrt::TestComponent::implementation
         m_charEventSource.remove(token);
     }
 
-    winrt::event_token Test::NumericEventHandler(Windows::Foundation::EventHandler<int32_t> const& handler)
+    winrt::event_token Test::NumericEventHandler(
+        Windows::Foundation::TypedEventHandler<TestComponent::Test, int32_t> const& handler)
     {
         return m_numericEventSource.add(handler);
     }
@@ -1865,7 +1868,8 @@ namespace winrt::TestComponent::implementation
         m_numericEventSource.remove(token);
     }
 
-    winrt::event_token Test::StringEventHandler(Windows::Foundation::EventHandler<hstring> const& handler)
+    winrt::event_token Test::StringEventHandler(
+        Windows::Foundation::TypedEventHandler<TestComponent::Test, hstring> const& handler)
     {
         return m_stringEventSource.add(handler);
     }
@@ -1875,7 +1879,8 @@ namespace winrt::TestComponent::implementation
         m_stringEventSource.remove(token);
     }
 
-    winrt::event_token Test::GuidEventHandler(Windows::Foundation::EventHandler<winrt::guid> const& handler)
+    winrt::event_token Test::GuidEventHandler(
+        Windows::Foundation::TypedEventHandler<TestComponent::Test, winrt::guid> const& handler)
     {
         return m_guidEventSource.add(handler);
     }
@@ -1885,7 +1890,8 @@ namespace winrt::TestComponent::implementation
         m_guidEventSource.remove(token);
     }
 
-    winrt::event_token Test::EnumEventHandler(Windows::Foundation::EventHandler<TestEnum> const& handler)
+    winrt::event_token Test::EnumEventHandler(
+        Windows::Foundation::TypedEventHandler<TestComponent::Test, TestEnum> const& handler)
     {
         return m_enumEventSource.add(handler);
     }
@@ -1896,7 +1902,7 @@ namespace winrt::TestComponent::implementation
     }
 
     winrt::event_token Test::CompositeStructEventHandler(
-        Windows::Foundation::EventHandler<CompositeType> const& handler)
+        Windows::Foundation::TypedEventHandler<TestComponent::Test, CompositeType> const& handler)
     {
         return m_compositeStructEventSource.add(handler);
     }
@@ -1907,7 +1913,8 @@ namespace winrt::TestComponent::implementation
     }
 
     winrt::event_token Test::RefEventHandler(
-        Windows::Foundation::EventHandler<Windows::Foundation::IReference<int32_t>> const& handler)
+        Windows::Foundation::TypedEventHandler<TestComponent::Test, Windows::Foundation::IReference<int32_t>> const&
+            handler)
     {
         return m_refEventSource.add(handler);
     }
@@ -1918,7 +1925,7 @@ namespace winrt::TestComponent::implementation
     }
 
     winrt::event_token Test::ObjectEventHandler(
-        Windows::Foundation::EventHandler<TestComponent::TestObject> const& handler)
+        Windows::Foundation::TypedEventHandler<TestComponent::Test, TestComponent::TestObject> const& handler)
     {
         return m_objectEventSource.add(handler);
     }

@@ -462,15 +462,15 @@ namespace TestComponent
         void ObjectFillParam(ref TestObject[] values);
 
         // Member events
-        event Windows.Foundation.EventHandler<Boolean> BoolEventHandler;
-        event Windows.Foundation.EventHandler<Char> CharEventHandler;
-        event Windows.Foundation.EventHandler<Int32> NumericEventHandler;
-        event Windows.Foundation.EventHandler<String> StringEventHandler;
-        event Windows.Foundation.EventHandler<Guid> GuidEventHandler;
-        event Windows.Foundation.EventHandler<TestEnum> EnumEventHandler;
-        event Windows.Foundation.EventHandler<CompositeType> CompositeStructEventHandler;
-        event Windows.Foundation.EventHandler<Windows.Foundation.IReference<Int32> > RefEventHandler;
-        event Windows.Foundation.EventHandler<TestObject> ObjectEventHandler;
+        event Windows.Foundation.TypedEventHandler<Test, Boolean> BoolEventHandler;
+        event Windows.Foundation.TypedEventHandler<Test, Char> CharEventHandler;
+        event Windows.Foundation.TypedEventHandler<Test, Int32> NumericEventHandler;
+        event Windows.Foundation.TypedEventHandler<Test, String> StringEventHandler;
+        event Windows.Foundation.TypedEventHandler<Test, Guid> GuidEventHandler;
+        event Windows.Foundation.TypedEventHandler<Test, TestEnum> EnumEventHandler;
+        event Windows.Foundation.TypedEventHandler<Test, CompositeType> CompositeStructEventHandler;
+        event Windows.Foundation.TypedEventHandler<Test, Windows.Foundation.IReference<Int32> > RefEventHandler;
+        event Windows.Foundation.TypedEventHandler<Test, TestObject> ObjectEventHandler;
 
         // Member event triggers
         void RaiseBoolEvent(Boolean value);

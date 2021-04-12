@@ -402,25 +402,33 @@ namespace winrt::TestComponent::implementation
         void RefFillParam(array_view<Windows::Foundation::IReference<int32_t>> values);
         void ObjectFillParam(array_view<TestComponent::TestObject> values);
 
-        winrt::event_token BoolEventHandler(Windows::Foundation::EventHandler<bool> const& handler);
+        winrt::event_token BoolEventHandler(
+            Windows::Foundation::TypedEventHandler<TestComponent::Test, bool> const& handler);
         void BoolEventHandler(winrt::event_token const& token) noexcept;
-        winrt::event_token CharEventHandler(Windows::Foundation::EventHandler<char16_t> const& handler);
+        winrt::event_token CharEventHandler(
+            Windows::Foundation::TypedEventHandler<TestComponent::Test, char16_t> const& handler);
         void CharEventHandler(winrt::event_token const& token) noexcept;
-        winrt::event_token NumericEventHandler(Windows::Foundation::EventHandler<int32_t> const& handler);
+        winrt::event_token NumericEventHandler(
+            Windows::Foundation::TypedEventHandler<TestComponent::Test, int32_t> const& handler);
         void NumericEventHandler(winrt::event_token const& token) noexcept;
-        winrt::event_token StringEventHandler(Windows::Foundation::EventHandler<hstring> const& handler);
+        winrt::event_token StringEventHandler(
+            Windows::Foundation::TypedEventHandler<TestComponent::Test, hstring> const& handler);
         void StringEventHandler(winrt::event_token const& token) noexcept;
-        winrt::event_token GuidEventHandler(Windows::Foundation::EventHandler<winrt::guid> const& handler);
+        winrt::event_token GuidEventHandler(
+            Windows::Foundation::TypedEventHandler<TestComponent::Test, winrt::guid> const& handler);
         void GuidEventHandler(winrt::event_token const& token) noexcept;
-        winrt::event_token EnumEventHandler(Windows::Foundation::EventHandler<TestEnum> const& handler);
+        winrt::event_token EnumEventHandler(
+            Windows::Foundation::TypedEventHandler<TestComponent::Test, TestEnum> const& handler);
         void EnumEventHandler(winrt::event_token const& token) noexcept;
-        winrt::event_token CompositeStructEventHandler(Windows::Foundation::EventHandler<CompositeType> const& handler);
+        winrt::event_token CompositeStructEventHandler(
+            Windows::Foundation::TypedEventHandler<TestComponent::Test, CompositeType> const& handler);
         void CompositeStructEventHandler(winrt::event_token const& token) noexcept;
         winrt::event_token RefEventHandler(
-            Windows::Foundation::EventHandler<Windows::Foundation::IReference<int32_t>> const& handler);
+            Windows::Foundation::TypedEventHandler<TestComponent::Test, Windows::Foundation::IReference<int32_t>> const&
+                handler);
         void RefEventHandler(winrt::event_token const& token) noexcept;
         winrt::event_token ObjectEventHandler(
-            Windows::Foundation::EventHandler<TestComponent::TestObject> const& handler);
+            Windows::Foundation::TypedEventHandler<TestComponent::Test, TestComponent::TestObject> const& handler);
         void ObjectEventHandler(winrt::event_token const& token) noexcept;
 
         void RaiseBoolEvent(bool value);
@@ -490,15 +498,17 @@ namespace winrt::TestComponent::implementation
         Windows::Foundation::IPropertyValue m_propertyValue;
 
         // Non-static event sources
-        event<Windows::Foundation::EventHandler<bool>> m_boolEventSource;
-        event<Windows::Foundation::EventHandler<char16_t>> m_charEventSource;
-        event<Windows::Foundation::EventHandler<int32_t>> m_numericEventSource;
-        event<Windows::Foundation::EventHandler<hstring>> m_stringEventSource;
-        event<Windows::Foundation::EventHandler<winrt::guid>> m_guidEventSource;
-        event<Windows::Foundation::EventHandler<TestEnum>> m_enumEventSource;
-        event<Windows::Foundation::EventHandler<CompositeType>> m_compositeStructEventSource;
-        event<Windows::Foundation::EventHandler<Windows::Foundation::IReference<int32_t>>> m_refEventSource;
-        event<Windows::Foundation::EventHandler<TestComponent::TestObject>> m_objectEventSource;
+        event<Windows::Foundation::TypedEventHandler<TestComponent::Test, bool>> m_boolEventSource;
+        event<Windows::Foundation::TypedEventHandler<TestComponent::Test, char16_t>> m_charEventSource;
+        event<Windows::Foundation::TypedEventHandler<TestComponent::Test, int32_t>> m_numericEventSource;
+        event<Windows::Foundation::TypedEventHandler<TestComponent::Test, hstring>> m_stringEventSource;
+        event<Windows::Foundation::TypedEventHandler<TestComponent::Test, winrt::guid>> m_guidEventSource;
+        event<Windows::Foundation::TypedEventHandler<TestComponent::Test, TestEnum>> m_enumEventSource;
+        event<Windows::Foundation::TypedEventHandler<TestComponent::Test, CompositeType>> m_compositeStructEventSource;
+        event<Windows::Foundation::TypedEventHandler<TestComponent::Test, Windows::Foundation::IReference<int32_t>>>
+            m_refEventSource;
+        event<Windows::Foundation::TypedEventHandler<TestComponent::Test, TestComponent::TestObject>>
+            m_objectEventSource;
     };
 }
 namespace winrt::TestComponent::factory_implementation
