@@ -126,6 +126,9 @@ namespace winrt::TestComponent::implementation
         static void StaticRefFillParam(array_view<Windows::Foundation::IReference<int32_t>> values);
         static void StaticObjectFillParam(array_view<TestComponent::TestObject> values);
 
+        static uint32_t StaticInterwovenParams(bool inBool, bool& outBool, int32_t inNumeric, int32_t& outNumeric,
+            array_view<int32_t const> inArray, com_array<int32_t>& outArray, array_view<int32_t> refArray);
+
         static winrt::event_token StaticBoolEventHandler(Windows::Foundation::EventHandler<bool> const& handler);
         static void StaticBoolEventHandler(winrt::event_token const& token) noexcept;
         static winrt::event_token StaticCharEventHandler(Windows::Foundation::EventHandler<char16_t> const& handler);
@@ -205,6 +208,9 @@ namespace winrt::TestComponent::implementation
             array_view<Windows::Foundation::IReference<int32_t> const> values, RefArrayDelegate const& targetFn);
         static bool StaticInvokeObjectArrayDelegate(
             array_view<TestComponent::TestObject const> values, ObjectArrayDelegate const& targetFn);
+
+        static bool StaticInvokeInterwovenDelegate(
+            bool inBool, int32_t inNumeric, array_view<int32_t const> inArray, InterwovenDelegate const& targetFn);
 
         static Windows::Foundation::Collections::IVector<bool> CopyBoolsToVector(array_view<bool const> values);
         static Windows::Foundation::Collections::IVector<char16_t> CopyCharsToVector(array_view<char16_t const> values);
@@ -401,6 +407,9 @@ namespace winrt::TestComponent::implementation
         void CompositeStructFillParam(array_view<CompositeType> values);
         void RefFillParam(array_view<Windows::Foundation::IReference<int32_t>> values);
         void ObjectFillParam(array_view<TestComponent::TestObject> values);
+
+        uint32_t InterwovenParams(bool inBool, bool& outBool, int32_t inNumeric, int32_t& outNumeric,
+            array_view<int32_t const> inArray, com_array<int32_t>& outArray, array_view<int32_t> refArray);
 
         winrt::event_token BoolEventHandler(
             Windows::Foundation::TypedEventHandler<TestComponent::Test, bool> const& handler);

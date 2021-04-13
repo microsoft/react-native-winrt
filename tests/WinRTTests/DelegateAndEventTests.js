@@ -54,6 +54,8 @@ export function makeDelegateAndEventTestScenarios(pThis) {
         new TestScenario('Test::StaticInvokeRefArrayDelegate', runStaticRefArrayDelegate.bind(pThis)),
         new TestScenario('Test::StaticInvokeObjectArrayDelegate', runStaticObjectArrayDelegate.bind(pThis)),
 
+        new TestScenario('Test::StaticInvokeInterwovenDelegate', runStaticInterwovenDelegate.bind(pThis)),
+
         // Non-static events
         new TestScenario('Test::BoolEventHandler', runBoolEventHandler.bind(pThis)),
         new TestScenario('Test::CharEventHandler', runCharEventHandler.bind(pThis)),
@@ -309,6 +311,27 @@ function runStaticObjectArrayDelegate(scenario) {
         new TestComponent.TestObject(5),
         new TestComponent.TestObject(6),
     ], (vals, fn) => TestComponent.Test.staticInvokeObjectArrayDelegate(vals, fn));
+}
+
+function runStaticInterwovenDelegate(scenario) {
+    this.runSync(scenario, () => {
+        var callback = (inBool, inNumeric, inArray, refArray) => {
+            var resultLen = Math.min(inArray.length, refArray.length);
+            for (var i = 0; i < resultLen; ++i) {
+                refArray[i] = inArray[i] * 2;
+            }
+
+            return {
+                returnValue: resultLen,
+                outBool: !inBool,
+                outNumeric: inNumeric * 2,
+                outArray: inArray.map(val => val * 2)
+            };
+        };
+
+        assert.isTrue(TestComponent.Test.staticInvokeInterwovenDelegate(true, 42, [1, 2, 3], callback));
+        assert.isTrue(TestComponent.Test.staticInvokeInterwovenDelegate(false, 8, [1, 2, 3, 4, 5, 6, 7], callback));
+    });
 }
 
 // Non-static events

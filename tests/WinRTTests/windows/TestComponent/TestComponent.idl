@@ -105,6 +105,10 @@ namespace TestComponent
         out Windows.Foundation.IReference<Int32>[] outValue);
     delegate TestObject[] ObjectArrayDelegate(TestObject[] values, ref TestObject[] subset, out TestObject[] outValue);
 
+    // Delegate with "interwoven" in/out params
+    delegate UInt32 InterwovenDelegate(Boolean inBool, out Boolean outBool, Int32 inNumeric, out Int32 outNumeric,
+        Int32[] inArray, out Int32[] outArray, ref Int32[] fillArray);
+
     [contract(TestContract, 1)]
     runtimeclass Test
     {
@@ -228,6 +232,10 @@ namespace TestComponent
         static void StaticRefFillParam(ref Windows.Foundation.IReference<Int32>[] values);
         static void StaticObjectFillParam(ref TestObject[] values);
 
+        // Static "interwoven" in/out params
+        static UInt32 StaticInterwovenParams(Boolean inBool, out Boolean outBool, Int32 inNumeric, out Int32 outNumeric,
+            Int32[] inArray, out Int32[] outArray, ref Int32[] refArray);
+
         // Static events
         static event Windows.Foundation.EventHandler<Boolean> StaticBoolEventHandler;
         static event Windows.Foundation.EventHandler<Char> StaticCharEventHandler;
@@ -282,6 +290,8 @@ namespace TestComponent
         static Boolean StaticInvokeCompositeStructArrayDelegate(CompositeType[] values, CompositeStructArrayDelegate targetFn);
         static Boolean StaticInvokeRefArrayDelegate(Windows.Foundation.IReference<Int32>[] values, RefArrayDelegate targetFn);
         static Boolean StaticInvokeObjectArrayDelegate(TestObject[] values, ObjectArrayDelegate targetFn);
+
+        static Boolean StaticInvokeInterwovenDelegate(Boolean inBool, Int32 inNumeric, Int32[] inArray, InterwovenDelegate targetFn);
 
         // Copy array to IVector
         static Windows.Foundation.Collections.IVector<Boolean> CopyBoolsToVector(Boolean[] values);
@@ -460,6 +470,10 @@ namespace TestComponent
         void CompositeStructFillParam(ref CompositeType[] values);
         void RefFillParam(ref Windows.Foundation.IReference<Int32>[] values);
         void ObjectFillParam(ref TestObject[] values);
+
+        // Member "interwoven" in/out params
+        UInt32 InterwovenParams(Boolean inBool, out Boolean outBool, Int32 inNumeric, out Int32 outNumeric,
+            Int32[] inArray, out Int32[] outArray, ref Int32[] refArray);
 
         // Member events
         event Windows.Foundation.TypedEventHandler<Test, Boolean> BoolEventHandler;

@@ -449,13 +449,14 @@ static void write_cppwinrt_type_initializer(jswinrt_writer& writer, const TypeSi
 static void write_params_value_to_native(jswinrt_writer& writer, const function_signature& fn, int indentLevel)
 {
     auto params = fn.params();
+    int paramNum = 0;
     for (int argNum = 0; params.first != params.second; ++params.first, ++argNum)
     {
         if (!params.first.by_ref())
         {
             writer.write_fmt(
                 "\n%auto arg% = convert_value_to_native<%>(runtime, args[%]);", indent{ indentLevel }, argNum,
-                [&](jswinrt_writer& w) { write_cppwinrt_type(w, params.first); }, argNum);
+                [&](jswinrt_writer& w) { write_cppwinrt_type(w, params.first); }, paramNum++);
         }
         else
         {

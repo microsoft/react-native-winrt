@@ -41,6 +41,9 @@ export function makeBasicFunctionTestScenarios(pThis) {
         new TestScenario('Test::StaticRefOutParam', runStaticRefOutParam.bind(pThis)),
         new TestScenario('Test::StaticObjectOutParam', runStaticObjectOutParam.bind(pThis)),
 
+        // Static "interwoven" params
+        new TestScenario('Test::StaticInterwovenParams', runStaticInterwovenParams.bind(pThis)),
+
         // Constructors
         new TestScenario('Constructor Test', runConstructorTest.bind(pThis)),
 
@@ -72,6 +75,9 @@ export function makeBasicFunctionTestScenarios(pThis) {
         new TestScenario('Test::CompositeStructOutParam', runCompositeStructOutParam.bind(pThis)),
         new TestScenario('Test::RefOutParam', runRefOutParam.bind(pThis)),
         new TestScenario('Test::ObjectOutParam', runObjectOutParam.bind(pThis)),
+
+        // Non-static "interwoven" params
+        new TestScenario('Test::InterwovenParams', runInterwovenParams.bind(pThis)),
     ];
 }
 
@@ -332,6 +338,28 @@ function runStaticObjectOutParam(scenario) {
         run(0);
         run(42);
         run(-1);
+    });
+}
+
+// Static "interwoven" params
+function runStaticInterwovenParams(scenario) {
+    this.runSync(scenario, () => {
+        var run = (inBool, inNumeric, inArray, refArray) => {
+            var expectedSize = Math.min(inArray.length, refArray.length);
+            var result = TestComponent.Test.staticInterwovenParams(inBool, inNumeric, inArray, refArray);
+            assert.equal(expectedSize, result.returnValue);
+            assert.equal(!inBool, result.outBool);
+            assert.equal(inNumeric * 2, result.outNumeric);
+            for (var i = 0; i < expectedSize; ++i) {
+                assert.equal(inArray[i] * 2, refArray[i]);
+            }
+            for (var i = 0; i < inArray.length; ++i) {
+                assert.equal(inArray[i] * 2, result.outArray[i]);
+            }
+        };
+
+        run(true, 42, [1, 2, 3], new Array(5));
+        run(true, 8, [1, 2, 3, 4, 5, 6, 7], new Array(5));
     });
 }
 
@@ -612,5 +640,27 @@ function runObjectOutParam(scenario) {
         run(0);
         run(42);
         run(-1);
+    });
+}
+
+// Non-static "interwoven" params
+function runInterwovenParams(scenario) {
+    this.runSync(scenario, () => {
+        var run = (inBool, inNumeric, inArray, refArray) => {
+            var expectedSize = Math.min(inArray.length, refArray.length);
+            var result = this.test.interwovenParams(inBool, inNumeric, inArray, refArray);
+            assert.equal(expectedSize, result.returnValue);
+            assert.equal(!inBool, result.outBool);
+            assert.equal(inNumeric * 2, result.outNumeric);
+            for (var i = 0; i < expectedSize; ++i) {
+                assert.equal(inArray[i] * 2, refArray[i]);
+            }
+            for (var i = 0; i < inArray.length; ++i) {
+                assert.equal(inArray[i] * 2, result.outArray[i]);
+            }
+        };
+
+        run(true, 42, [1, 2, 3], new Array(5));
+        run(true, 8, [1, 2, 3, 4, 5, 6, 7], new Array(5));
     });
 }

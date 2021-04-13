@@ -538,6 +538,27 @@ namespace winrt::TestComponent::implementation
         }
     }
 
+    uint32_t Test::StaticInterwovenParams(bool inBool, bool& outBool, int32_t inNumeric, int32_t& outNumeric,
+        array_view<int32_t const> inArray, com_array<int32_t>& outArray, array_view<int32_t> refArray)
+    {
+        outBool = !inBool;
+        outNumeric = inNumeric * 2;
+
+        auto resultSize = std::min(inArray.size(), refArray.size());
+        for (uint32_t i = 0; i < resultSize; ++i)
+        {
+            refArray[i] = inArray[i] * 2;
+        }
+
+        outArray = com_array<int32_t>(inArray.size());
+        for (uint32_t i = 0; i < inArray.size(); ++i)
+        {
+            outArray[i] = inArray[i] * 2;
+        }
+
+        return resultSize;
+    }
+
     winrt::event_token Test::StaticBoolEventHandler(Windows::Foundation::EventHandler<bool> const& handler)
     {
         return s_boolEventSource.add(handler);
@@ -879,6 +900,33 @@ namespace winrt::TestComponent::implementation
         array_view<TestComponent::TestObject const> values, ObjectArrayDelegate const& targetFn)
     {
         return DoInvokeArrayDelegate(values, targetFn);
+    }
+
+    bool Test::StaticInvokeInterwovenDelegate(
+        bool inBool, int32_t inNumeric, array_view<int32_t const> inArray, InterwovenDelegate const& targetFn)
+    {
+        bool outBool;
+        int32_t outNumeric;
+        int32_t refArray[5];
+        com_array<int32_t> outArray;
+        auto refArrayLen = targetFn(inBool, outBool, inNumeric, outNumeric, inArray, outArray, refArray);
+
+        bool result = !inBool == outBool;
+        result = result && ((inNumeric * 2) == outNumeric);
+
+        result = result && (refArrayLen == std::min(5u, inArray.size()));
+        for (uint32_t i = 0; i < refArrayLen; ++i)
+        {
+            result = result && ((inArray[i] * 2) == refArray[i]);
+        }
+
+        result = result && (outArray.size() == inArray.size());
+        for (uint32_t i = 0; i < outArray.size(); ++i)
+        {
+            result = result && ((inArray[i] * 2) == outArray[i]);
+        }
+
+        return result;
     }
 
     template <typename T>
@@ -1833,6 +1881,27 @@ namespace winrt::TestComponent::implementation
         {
             val = winrt::make<TestObject>(next++);
         }
+    }
+
+    uint32_t Test::InterwovenParams(bool inBool, bool& outBool, int32_t inNumeric, int32_t& outNumeric,
+        array_view<int32_t const> inArray, com_array<int32_t>& outArray, array_view<int32_t> refArray)
+    {
+        outBool = !inBool;
+        outNumeric = inNumeric * 2;
+
+        auto resultSize = std::min(inArray.size(), refArray.size());
+        for (uint32_t i = 0; i < resultSize; ++i)
+        {
+            refArray[i] = inArray[i] * 2;
+        }
+
+        outArray = com_array<int32_t>(inArray.size());
+        for (uint32_t i = 0; i < inArray.size(); ++i)
+        {
+            outArray[i] = inArray[i] * 2;
+        }
+
+        return resultSize;
     }
 
     winrt::event_token Test::BoolEventHandler(
