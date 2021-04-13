@@ -1158,8 +1158,5 @@ function runIMapViewAsReadonlyJSObject(scenario) {
         assert.equal(mapView["hello"], 1);
         assert.equal(mapView["world"], 2);
         assert.equal(mapView.size, 2);
-        assert.throwsException(() => {
-            map["hello"] = 12;
-        });
     });
 }

@@ -261,6 +261,11 @@ namespace TestComponent
             Windows.Foundation.Collections.IVector<Windows.Foundation.IReference<Int32> > vector);
         static Windows.Foundation.Collections.IVector<Object> ReturnSameObjectVector(Windows.Foundation.Collections.IVector<Object> vector);
 
+        // IMap 
+        static Windows.Foundation.Collections.IMap<String, Int32> CreateStringToNumberMap();
+        static Windows.Foundation.Collections.IMapView<String, Int32> CopyToMapView(
+            Windows.Foundation.Collections.IMap<String, Int32> stringToNumberMap);
+
         // Async
         static Windows.Foundation.IAsyncAction PauseAsync(Int32 milliseconds);
         static Windows.Foundation.IAsyncActionWithProgress<Int32> CountToNumberAsync(Int32 value);
@@ -384,9 +389,5 @@ namespace TestComponent
         void RaiseCompositeStructEvent(CompositeType value);
         void RaiseRefEvent(Windows.Foundation.IReference<Int32> value);
         void RaiseObjectEvent(Windows.Foundation.Collections.IVector<Int32> value);
-
-        static Windows.Foundation.Collections.IMap<String, Int32> CreateStringToNumberMap();
-        static Windows.Foundation.Collections.IMapView<String, Int32> CopyToMapView(
-            Windows.Foundation.Collections.IMap<String, Int32> stringToNumberMap);
     }
 }

@@ -374,7 +374,7 @@ namespace winrt::TestComponent::implementation
         // IMap
         static Windows::Foundation::Collections::IMap<winrt::hstring, int32_t> CreateStringToNumberMap();
         static Windows::Foundation::Collections::IMapView<winrt::hstring, int32_t> CopyToMapView(
-            Windows::Foundation::Collections::IMap<winrt::hstring, int32_t> stringToNumberMap);
+            Windows::Foundation::Collections::IMap<winrt::hstring, int32_t> const& stringToNumberMap);
 
     private:
         // Static properties

@@ -1731,15 +1731,42 @@ namespace winrt::TestComponent::implementation
         return single_threaded_map<winrt::hstring, int32_t>();
     }
 
-    Windows::Foundation::Collections::IMapView<winrt::hstring, int32_t> Test::CopyToMapView(
-        Windows::Foundation::Collections::IMap<winrt::hstring, int32_t> stringToNumberMap)
+    template <typename K, typename V>
+    struct MapViewImpl : winrt::implements<MapViewImpl<K, V>, IMapView<K, V>>
     {
-        std::map<hstring, int32_t> copy;
-        for (auto&& pair : stringToNumberMap)
+        MapViewImpl(IMap<K, V> value) : m_value(std::move(value))
         {
-            copy[pair.Key()] = pair.Value();
         }
-        return winrt::single_threaded_map_view(std::move(copy));
+
+        uint32_t Size() const noexcept
+        {
+            return m_value.Size();
+        }
+
+        bool HasKey(K key)
+        {
+            return m_value.HasKey(key);
+        }
+
+        V Lookup(K key)
+        {
+            return m_value.Lookup(key);
+        }
+
+        void Split(IMapView<K, V>& first, IMapView<K, V>& second)
+        {
+            first = MapViewImpl<K, V>(single_threaded_map<K, V>());
+            second = MapViewImpl<K, V>(m_value);
+        }
+
+    private:
+        IMap<K, V> m_value;
+    };
+
+    Windows::Foundation::Collections::IMapView<winrt::hstring, int32_t> Test::CopyToMapView(
+        Windows::Foundation::Collections::IMap<winrt::hstring, int32_t> const& stringToNumberMap)
+    {
+        return make<MapViewImpl<winrt::hstring, int32_t>>(stringToNumberMap);
     }
 
 }
