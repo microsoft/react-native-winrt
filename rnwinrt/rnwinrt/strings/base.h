@@ -3038,6 +3038,37 @@ namespace jswinrt
                         },
                         1, false },
                 };
+
+                static std::pair<std::optional<jsi::Value>, std::optional<jsi::Value>> runtime_get_property(
+                    jsi::Runtime& runtime, const IInspectable& thisValue, std::string_view name)
+                {
+                    // If the "property" is any other string, then that translates to a 'Lookup' call
+                    // The native map should have string keys.
+                    if constexpr (!std::is_same_v<K, winrt::hstring>)
+                    {
+                        return { std::nullopt, std::nullopt };
+                    }
+                    auto map = thisValue.as<native_type>();
+                    auto key = winrt::to_hstring(name);
+                    if (!map.HasKey(key))
+                    {
+                        return { std::nullopt, std::nullopt };
+                    }
+                    return { convert_native_to_value(runtime, map.Lookup(key)), std::nullopt };
+                };
+
+                static bool runtime_set_property(jsi::Runtime& runtime, const IInspectable& thisValue,
+                    std::string_view name, const jsi::Value& value)
+                {
+                    if constexpr (!std::is_same_v<K, winrt::hstring>)
+                    {
+                        return false;
+                    }
+                    auto map = thisValue.as<native_type>();
+                    auto key = winrt::to_hstring(name);
+                    map.Insert(key, convert_value_to_native<V>(runtime, value));
+                    return true;
+                }
             };
 
             template <typename K, typename V>
@@ -3045,7 +3076,8 @@ namespace jswinrt
             {
                 using iface = interface_data<K, V>;
                 static constexpr const static_interface_data value{ winrt::guid_of<typename iface::native_type>(),
-                    iface::properties, {}, iface::functions };
+                    iface::properties, {}, iface::functions, &iface::runtime_get_property,
+                    &iface::runtime_set_property };
             };
 
             template <typename K, typename V>
@@ -3122,6 +3154,24 @@ namespace jswinrt
                         },
                         0, false },
                 };
+
+                static std::pair<std::optional<jsi::Value>, std::optional<jsi::Value>> runtime_get_property(
+                    jsi::Runtime& runtime, const IInspectable& thisValue, std::string_view name)
+                {
+                    // If the "property" is any other string, then that translates to a 'Lookup' call
+                    // The native map should have string keys.
+                    if constexpr (!std::is_same_v<K, winrt::hstring>)
+                    {
+                        return { std::nullopt, std::nullopt };
+                    }
+                    auto map = thisValue.as<native_type>();
+                    auto key = winrt::to_hstring(name);
+                    if (!map.HasKey(key))
+                    {
+                        return { std::nullopt, std::nullopt };
+                    }
+                    return { convert_native_to_value(runtime, map.Lookup(key)), std::nullopt };
+                };
             };
 
             template <typename K, typename V>
@@ -3129,7 +3179,7 @@ namespace jswinrt
             {
                 using iface = interface_data<K, V>;
                 static constexpr const static_interface_data value{ winrt::guid_of<typename iface::native_type>(),
-                    iface::properties, {}, iface::functions };
+                    iface::properties, {}, iface::functions, &iface::runtime_get_property };
             };
 
             template <typename K, typename V>
@@ -3889,8 +3939,7 @@ namespace jswinrt
                     uint32_t deleteCount =
                         (count >= 2) ? static_cast<uint32_t>(std::clamp(to_integer_or_infinity(runtime, args[1]), 0.0,
                                            static_cast<double>(size - start))) :
-                        (count >= 1) ? (size - start) :
-                                       0;
+                                       (count >= 1) ? (size - start) : 0;
 
                     uint32_t insertCount = (count >= 3) ? static_cast<uint32_t>(count - 2) : 0;
                     auto assignCount = std::min(deleteCount, insertCount);
