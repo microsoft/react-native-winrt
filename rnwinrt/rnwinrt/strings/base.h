@@ -2274,11 +2274,15 @@ namespace jswinrt
         {
         }
 
-        ~value_fill_array_wrapper()
+        ~value_fill_array_wrapper() noexcept(false)
         {
             for (uint32_t i = 0; i < m_nativeArray.size(); ++i)
             {
-                m_nativeArray[i] = convert_value_to_native<T>(m_runtime, m_jsArray.getValueAtIndex(m_runtime, i));
+                auto value = m_jsArray.getValueAtIndex(m_runtime, i);
+                if (!value.isUndefined())
+                {
+                    m_nativeArray[i] = convert_value_to_native<T>(m_runtime, value);
+                }
             }
         }
 
@@ -2311,7 +2315,7 @@ namespace jswinrt
             }
         }
 
-        ~native_fill_array_wrapper()
+        ~native_fill_array_wrapper() noexcept(false)
         {
             for (std::size_t i = 0; i < m_nativeArray.size(); ++i)
             {
