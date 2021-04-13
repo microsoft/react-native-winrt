@@ -18,12 +18,6 @@ namespace winrt
 {
     using namespace Windows::Foundation;
     using namespace Windows::Foundation::Collections;
-
-    template <typename K, typename V, typename Allocator = std::allocator<K>>
-    Windows::Foundation::Collections::IMapView<K, V> single_threaded_map_view(std::map<K, V, Allocator>&& values = {})
-    {
-        return make<impl::input_map_view<K, V, std::map<K, V, Allocator>>>(std::move(values));
-    }
 }
 
 winrt::hstring to_lower(const winrt::hstring& hstr)
@@ -1755,8 +1749,8 @@ namespace winrt::TestComponent::implementation
 
         void Split(IMapView<K, V>& first, IMapView<K, V>& second)
         {
-            first = MapViewImpl<K, V>(single_threaded_map<K, V>());
-            second = MapViewImpl<K, V>(m_value);
+            first = make<MapViewImpl<winrt::hstring, int32_t>>(single_threaded_map<K, V>());
+            second = make<MapViewImpl<winrt::hstring, int32_t>>(m_value);
         }
 
     private:
