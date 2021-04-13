@@ -24,7 +24,7 @@ declare namespace Windows.Foundation {
          universalTime: number;
     }
 
-    class Deferral implements Windows.Foundation.IDeferral, Windows.Foundation.IClosable {
+    class Deferral implements Windows.Foundation.IClosable {
         constructor(handler: Windows.Foundation.DeferralCompletedHandler);
         complete(): void;
         close(): void;
@@ -97,30 +97,12 @@ declare namespace Windows.Foundation {
         close(): void;
     }
 
-    interface IDeferral extends Windows.Foundation.IClosable {
-        complete(): void;
-    }
-
-    interface IDeferralFactory {
-        create(handler: Windows.Foundation.DeferralCompletedHandler): Windows.Foundation.Deferral;
-    }
-
     interface IGetActivationFactory {
         getActivationFactory(activatableClassId: string): any;
     }
 
-    interface IGuidHelperStatics {
-        readonly empty: string;
-        createNewGuid(): string;
-        equals(target: string, value: string): boolean;
-    }
-
     interface IMemoryBuffer extends Windows.Foundation.IClosable {
         createReference(): Windows.Foundation.IMemoryBufferReference;
-    }
-
-    interface IMemoryBufferFactory {
-        create(capacity: number): Windows.Foundation.MemoryBuffer;
     }
 
     interface IMemoryBufferReference extends Windows.Foundation.IClosable {
@@ -171,48 +153,6 @@ declare namespace Windows.Foundation {
         getRectArray(): Windows.Foundation.Rect[];
     }
 
-    interface IPropertyValueStatics {
-        createEmpty(): any;
-        createUInt8(value: number): any;
-        createInt16(value: number): any;
-        createUInt16(value: number): any;
-        createInt32(value: number): any;
-        createUInt32(value: number): any;
-        createInt64(value: number): any;
-        createUInt64(value: number): any;
-        createSingle(value: number): any;
-        createDouble(value: number): any;
-        createChar16(value: string): any;
-        createBoolean(value: boolean): any;
-        createString(value: string): any;
-        createInspectable(value: any): any;
-        createGuid(value: string): any;
-        createDateTime(value: Windows.Foundation.DateTime): any;
-        createTimeSpan(value: Windows.Foundation.TimeSpan): any;
-        createPoint(value: Windows.Foundation.Point): any;
-        createSize(value: Windows.Foundation.Size): any;
-        createRect(value: Windows.Foundation.Rect): any;
-        createUInt8Array(value: number[]): any;
-        createInt16Array(value: number[]): any;
-        createUInt16Array(value: number[]): any;
-        createInt32Array(value: number[]): any;
-        createUInt32Array(value: number[]): any;
-        createInt64Array(value: number[]): any;
-        createUInt64Array(value: number[]): any;
-        createSingleArray(value: number[]): any;
-        createDoubleArray(value: number[]): any;
-        createChar16Array(value: string[]): any;
-        createBooleanArray(value: boolean[]): any;
-        createStringArray(value: string[]): any;
-        createInspectableArray(value: any): any;
-        createGuidArray(value: string[]): any;
-        createDateTimeArray(value: Windows.Foundation.DateTime[]): any;
-        createTimeSpanArray(value: Windows.Foundation.TimeSpan[]): any;
-        createPointArray(value: Windows.Foundation.Point[]): any;
-        createSizeArray(value: Windows.Foundation.Size[]): any;
-        createRectArray(value: Windows.Foundation.Rect[]): any;
-    }
-
     interface IReferenceArray<T> extends Windows.Foundation.IPropertyValue {
         readonly value: T[];
     }
@@ -225,52 +165,9 @@ declare namespace Windows.Foundation {
         toString(): string;
     }
 
-    interface IUriEscapeStatics {
-        unescapeComponent(toUnescape: string): string;
-        escapeComponent(toEscape: string): string;
-    }
-
-    interface IUriRuntimeClass {
-        readonly absoluteUri: string;
-        readonly displayUri: string;
-        readonly domain: string;
-        readonly extension: string;
-        readonly fragment: string;
-        readonly host: string;
-        readonly password: string;
-        readonly path: string;
-        readonly port: number;
-        readonly query: string;
-        readonly queryParsed: Windows.Foundation.WwwFormUrlDecoder;
-        readonly rawUri: string;
-        readonly schemeName: string;
-        readonly suspicious: boolean;
-        readonly userName: string;
-        equals(pUri: Windows.Foundation.Uri): boolean;
-        combineUri(relativeUri: string): Windows.Foundation.Uri;
-    }
-
-    interface IUriRuntimeClassFactory {
-        createUri(uri: string): Windows.Foundation.Uri;
-        createWithRelativeUri(baseUri: string, relativeUri: string): Windows.Foundation.Uri;
-    }
-
-    interface IUriRuntimeClassWithAbsoluteCanonicalUri {
-        readonly absoluteCanonicalUri: string;
-        readonly displayIri: string;
-    }
-
     interface IWwwFormUrlDecoderEntry {
         readonly name: string;
         readonly value: string;
-    }
-
-    interface IWwwFormUrlDecoderRuntimeClass extends Windows.Foundation.Collections.IIterable<Windows.Foundation.IWwwFormUrlDecoderEntry>, Windows.Foundation.Collections.IVectorView<Windows.Foundation.IWwwFormUrlDecoderEntry> {
-        getFirstValueByName(name: string): string;
-    }
-
-    interface IWwwFormUrlDecoderRuntimeClassFactory {
-        createWwwFormUrlDecoder(query: string): Windows.Foundation.WwwFormUrlDecoder;
     }
 
     class MemoryBuffer implements Windows.Foundation.IMemoryBuffer, Windows.Foundation.IClosable {
@@ -391,7 +288,7 @@ declare namespace Windows.Foundation {
     interface UniversalApiContract {
     }
 
-    class Uri implements Windows.Foundation.IUriRuntimeClass, Windows.Foundation.IUriRuntimeClassWithAbsoluteCanonicalUri, Windows.Foundation.IStringable {
+    class Uri implements Windows.Foundation.IStringable {
         readonly absoluteUri: string;
         readonly displayUri: string;
         readonly domain: string;
@@ -418,7 +315,7 @@ declare namespace Windows.Foundation {
         static escapeComponent(toEscape: string): string;
     }
 
-    class WwwFormUrlDecoder implements Windows.Foundation.IWwwFormUrlDecoderRuntimeClass, Windows.Foundation.Collections.IVectorView<Windows.Foundation.IWwwFormUrlDecoderEntry>, Windows.Foundation.Collections.IIterable<Windows.Foundation.IWwwFormUrlDecoderEntry> {
+    class WwwFormUrlDecoder implements Windows.Foundation.Collections.IVectorView<Windows.Foundation.IWwwFormUrlDecoderEntry>, Windows.Foundation.Collections.IIterable<Windows.Foundation.IWwwFormUrlDecoderEntry> {
         readonly size: number;
         constructor(query: string);
         getFirstValueByName(name: string): string;

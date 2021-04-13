@@ -139,19 +139,6 @@ declare namespace Windows.Foundation.Metadata {
         constructor();
     }
 
-    interface IApiInformationStatics {
-        isTypePresent(typeName: string): boolean;
-        isMethodPresent(typeName: string, methodName: string): boolean;
-        isMethodPresent(typeName: string, methodName: string, inputParameterCount: number): boolean;
-        isEventPresent(typeName: string, eventName: string): boolean;
-        isPropertyPresent(typeName: string, propertyName: string): boolean;
-        isReadOnlyPropertyPresent(typeName: string, propertyName: string): boolean;
-        isWriteablePropertyPresent(typeName: string, propertyName: string): boolean;
-        isEnumNamedValuePresent(enumTypeName: string, valueName: string): boolean;
-        isApiContractPresent(contractName: string, majorVersion: number): boolean;
-        isApiContractPresent(contractName: string, majorVersion: number, minorVersion: number): boolean;
-    }
-
     class InternalAttribute {
         constructor();
     }

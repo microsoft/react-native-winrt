@@ -373,4 +373,32 @@ namespace TestComponent
         void RaiseRefEvent(Windows.Foundation.IReference<Int32> value);
         void RaiseObjectEvent(Windows.Foundation.Collections.IVector<Int32> value);
     }
+
+    [contract(TestContract, 2)]
+    [exclusiveto(HierarchyBase)]
+    interface IHierarchyV2Contract 
+    { 
+        String IHierarchyV2ContractMethod();
+    };
+    
+    [contract(TestContract, 1)]
+    unsealed runtimeclass HierarchyBase : IHierarchyV2Contract
+    {
+        HierarchyBase();
+        String OverriddenHierarchyBaseMethod();
+        overridable String OverriddenHierarchyBaseMethodOverride();
+        String NonOverriddenHierarchyBaseMethod();
+        String OverloadedHierarchyBaseMethod(String param1);
+        protected void InaccessibleHierarchyBaseMethod();
+        static String StaticHierarchyBaseMethod();
+    }
+
+    [contract(TestContract, 1)]
+    unsealed runtimeclass HierarchyDerived : HierarchyBase
+    {
+        HierarchyDerived(String name);
+        String HierarchyDerivedMethod();
+        String OverloadedHierarchyBaseMethod(String param1, String param2);
+    }
+
 }
