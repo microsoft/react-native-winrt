@@ -96,16 +96,21 @@ export const assert = {
         }
     },
 
-    throwsException(fn) {
-        var threw = false;
+    throwsError(functionToExecute, errorName, errorMessage) {
+        let isFunctionExecuted = false;
         try {
-            fn();
-        } catch {
-            threw = true;
+            functionToExecute();
+            isFunctionExecuted = true;
+        } catch (error) {
+            if (errorName && error.name !== errorName) {
+                throw new Error('throwsError failed! Actual error name: ' + error.name + '. Expected error name: ' + errorName);
+            }
+            if (errorMessage && error.message !== errorMessage) {
+                throw new Error('throwsError failed! Actual error message: ' + error.message + '. Expected error message: ' + errorMessage);
+            }
         }
-
-        if (!threw) {
-            throw new Error('Assertion failed! Expected an exception, but none was thrown');
+        if (isFunctionExecuted) {
+            throw new Error('throwsError failed! Function did not throw any error.')
         }
     }
 };
