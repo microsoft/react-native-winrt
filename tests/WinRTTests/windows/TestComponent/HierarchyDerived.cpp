@@ -1,7 +1,7 @@
 #include "pch.h"
 
-#include "HierarchyDerived.h"
 #include "HierarchyDerived.g.cpp"
+#include "HierarchyDerived.h"
 
 namespace winrt::TestComponent::implementation
 {

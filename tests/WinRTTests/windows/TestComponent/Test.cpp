@@ -362,7 +362,7 @@ namespace winrt::TestComponent::implementation
         }
     }
 
-    void Test::StaticRefFillParam(array_view<Windows::Foundation::IReference<int32_t>> values)
+    void Test::StaticRefFillParam(array_view<IReference<int32_t>> values)
     {
         std::iota(values.begin(), values.end(), 0);
     }
@@ -378,7 +378,7 @@ namespace winrt::TestComponent::implementation
         }
     }
 
-    winrt::event_token Test::StaticBoolEventHandler(Windows::Foundation::EventHandler<bool> const& handler)
+    winrt::event_token Test::StaticBoolEventHandler(EventHandler<bool> const& handler)
     {
         return s_boolEventSource.add(handler);
     }
@@ -388,7 +388,7 @@ namespace winrt::TestComponent::implementation
         s_boolEventSource.remove(token);
     }
 
-    winrt::event_token Test::StaticCharEventHandler(Windows::Foundation::EventHandler<char16_t> const& handler)
+    winrt::event_token Test::StaticCharEventHandler(EventHandler<char16_t> const& handler)
     {
         return s_charEventSource.add(handler);
     }
@@ -398,7 +398,7 @@ namespace winrt::TestComponent::implementation
         s_charEventSource.remove(token);
     }
 
-    winrt::event_token Test::StaticNumericEventHandler(Windows::Foundation::EventHandler<int32_t> const& handler)
+    winrt::event_token Test::StaticNumericEventHandler(EventHandler<int32_t> const& handler)
     {
         return s_numericEventSource.add(handler);
     }
@@ -408,7 +408,7 @@ namespace winrt::TestComponent::implementation
         s_numericEventSource.remove(token);
     }
 
-    winrt::event_token Test::StaticStringEventHandler(Windows::Foundation::EventHandler<hstring> const& handler)
+    winrt::event_token Test::StaticStringEventHandler(EventHandler<hstring> const& handler)
     {
         return s_stringEventSource.add(handler);
     }
@@ -418,7 +418,7 @@ namespace winrt::TestComponent::implementation
         s_stringEventSource.remove(token);
     }
 
-    winrt::event_token Test::StaticGuidEventHandler(Windows::Foundation::EventHandler<winrt::guid> const& handler)
+    winrt::event_token Test::StaticGuidEventHandler(EventHandler<winrt::guid> const& handler)
     {
         return s_guidEventSource.add(handler);
     }
@@ -428,7 +428,7 @@ namespace winrt::TestComponent::implementation
         s_guidEventSource.remove(token);
     }
 
-    winrt::event_token Test::StaticEnumEventHandler(Windows::Foundation::EventHandler<TestEnum> const& handler)
+    winrt::event_token Test::StaticEnumEventHandler(EventHandler<TestEnum> const& handler)
     {
         return s_enumEventSource.add(handler);
     }
@@ -438,8 +438,7 @@ namespace winrt::TestComponent::implementation
         s_enumEventSource.remove(token);
     }
 
-    winrt::event_token Test::StaticCompositeStructEventHandler(
-        Windows::Foundation::EventHandler<CompositeType> const& handler)
+    winrt::event_token Test::StaticCompositeStructEventHandler(EventHandler<CompositeType> const& handler)
     {
         return s_compositeStructEventSource.add(handler);
     }
@@ -449,8 +448,7 @@ namespace winrt::TestComponent::implementation
         s_compositeStructEventSource.remove(token);
     }
 
-    winrt::event_token Test::StaticRefEventHandler(
-        Windows::Foundation::EventHandler<IReference<int32_t>> const& handler)
+    winrt::event_token Test::StaticRefEventHandler(EventHandler<IReference<int32_t>> const& handler)
     {
         return s_refEventSource.add(handler);
     }
@@ -460,8 +458,7 @@ namespace winrt::TestComponent::implementation
         s_refEventSource.remove(token);
     }
 
-    winrt::event_token Test::StaticObjectEventHandler(
-        Windows::Foundation::EventHandler<IVector<int32_t>> const& handler)
+    winrt::event_token Test::StaticObjectEventHandler(EventHandler<IVector<int32_t>> const& handler)
     {
         return s_objectEventSource.add(handler);
     }
@@ -709,14 +706,13 @@ namespace winrt::TestComponent::implementation
     }
 
     bool Test::StaticInvokeRefArrayDelegate(
-        array_view<Windows::Foundation::IReference<int32_t> const> values, RefArrayDelegate const& targetFn)
+        array_view<IReference<int32_t> const> values, RefArrayDelegate const& targetFn)
     {
         return DoInvokeArrayDelegate(values, targetFn);
     }
 
     bool Test::StaticInvokeObjectArrayDelegate(
-        array_view<Windows::Foundation::Collections::IVector<int32_t> const> values,
-        ObjectArrayDelegate const& targetFn)
+        array_view<IVector<int32_t> const> values, ObjectArrayDelegate const& targetFn)
     {
         return DoInvokeArrayDelegate(values, targetFn);
     }
@@ -898,13 +894,13 @@ namespace winrt::TestComponent::implementation
         return vector;
     }
 
-    Windows::Foundation::IAsyncAction Test::PauseAsync(int32_t milliseconds)
+    IAsyncAction Test::PauseAsync(int32_t milliseconds)
     {
         co_await winrt::resume_background();
         co_await std::chrono::milliseconds{ milliseconds };
     }
 
-    Windows::Foundation::IAsyncActionWithProgress<int32_t> Test::CountToNumberAsync(int32_t value)
+    IAsyncActionWithProgress<int32_t> Test::CountToNumberAsync(int32_t value)
     {
         co_await winrt::resume_background();
         auto progress = co_await winrt::get_progress_token();
@@ -915,14 +911,14 @@ namespace winrt::TestComponent::implementation
         }
     }
 
-    Windows::Foundation::IAsyncOperation<int32_t> Test::AddAsync(int32_t lhs, int32_t rhs)
+    IAsyncOperation<int32_t> Test::AddAsync(int32_t lhs, int32_t rhs)
     {
         co_await winrt::resume_background();
         co_await 50ms;
         co_return lhs + rhs;
     }
 
-    Windows::Foundation::IAsyncOperationWithProgress<int32_t, int32_t> Test::CountDoubleAsync(int32_t value)
+    IAsyncOperationWithProgress<int32_t, int32_t> Test::CountDoubleAsync(int32_t value)
     {
         co_await winrt::resume_background();
         auto progress = co_await winrt::get_progress_token();
@@ -936,7 +932,7 @@ namespace winrt::TestComponent::implementation
         co_return result - 1; // Because of the ending '++'
     }
 
-    Windows::Foundation::IAsyncAction Test::ThrowAsyncException()
+    IAsyncAction Test::ThrowAsyncException()
     {
         co_await winrt::resume_background();
         co_await 50ms;
@@ -1263,12 +1259,12 @@ namespace winrt::TestComponent::implementation
         m_objectArrayProperty.assign(value.begin(), value.end());
     }
 
-    Windows::Foundation::DateTime Test::DateTimeProperty()
+    DateTime Test::DateTimeProperty()
     {
         return m_dateTimeProperty;
     }
 
-    void Test::DateTimeProperty(Windows::Foundation::DateTime value)
+    void Test::DateTimeProperty(DateTime value)
     {
         m_dateTimeProperty = value;
     }
@@ -1278,12 +1274,12 @@ namespace winrt::TestComponent::implementation
         return winrt::to_hstring(m_dateTimeProperty.time_since_epoch().count());
     }
 
-    Windows::Foundation::TimeSpan Test::TimeSpanProperty()
+    TimeSpan Test::TimeSpanProperty()
     {
         return m_timeSpanProperty;
     }
 
-    void Test::TimeSpanProperty(Windows::Foundation::TimeSpan value)
+    void Test::TimeSpanProperty(TimeSpan value)
     {
         m_timeSpanProperty = value;
     }
@@ -1303,12 +1299,12 @@ namespace winrt::TestComponent::implementation
         this->m_hresultProperty = value;
     }
 
-    Windows::Foundation::IPropertyValue Test::PropertyValue()
+    IPropertyValue Test::PropertyValue()
     {
         return m_propertyValue;
     }
 
-    void Test::PropertyValue(Windows::Foundation::IPropertyValue value)
+    void Test::PropertyValue(IPropertyValue value)
     {
         m_propertyValue = value;
     }
@@ -1477,10 +1473,8 @@ namespace winrt::TestComponent::implementation
         return reverse_array(values);
     }
 
-    com_array<Windows::Foundation::IReference<int32_t>> Test::RefArrayOutParam(
-        array_view<Windows::Foundation::IReference<int32_t> const> values,
-        com_array<Windows::Foundation::IReference<int32_t>>& rot1,
-        com_array<Windows::Foundation::IReference<int32_t>>& rot2)
+    com_array<IReference<int32_t>> Test::RefArrayOutParam(array_view<IReference<int32_t> const> values,
+        com_array<IReference<int32_t>>& rot1, com_array<IReference<int32_t>>& rot2)
     {
         rot1 = rotate_array(values, 1);
         rot2 = rotate_array(values, 2);
@@ -1575,7 +1569,7 @@ namespace winrt::TestComponent::implementation
         }
     }
 
-    void Test::RefFillParam(array_view<Windows::Foundation::IReference<int32_t>> values)
+    void Test::RefFillParam(array_view<IReference<int32_t>> values)
     {
         std::iota(values.begin(), values.end(), 0);
     }
@@ -1591,7 +1585,7 @@ namespace winrt::TestComponent::implementation
         }
     }
 
-    winrt::event_token Test::BoolEventHandler(Windows::Foundation::EventHandler<bool> const& handler)
+    winrt::event_token Test::BoolEventHandler(EventHandler<bool> const& handler)
     {
         return m_boolEventSource.add(handler);
     }
@@ -1601,7 +1595,7 @@ namespace winrt::TestComponent::implementation
         m_boolEventSource.remove(token);
     }
 
-    winrt::event_token Test::CharEventHandler(Windows::Foundation::EventHandler<char16_t> const& handler)
+    winrt::event_token Test::CharEventHandler(EventHandler<char16_t> const& handler)
     {
         return m_charEventSource.add(handler);
     }
@@ -1611,7 +1605,7 @@ namespace winrt::TestComponent::implementation
         m_charEventSource.remove(token);
     }
 
-    winrt::event_token Test::NumericEventHandler(Windows::Foundation::EventHandler<int32_t> const& handler)
+    winrt::event_token Test::NumericEventHandler(EventHandler<int32_t> const& handler)
     {
         return m_numericEventSource.add(handler);
     }
@@ -1621,7 +1615,7 @@ namespace winrt::TestComponent::implementation
         m_numericEventSource.remove(token);
     }
 
-    winrt::event_token Test::StringEventHandler(Windows::Foundation::EventHandler<hstring> const& handler)
+    winrt::event_token Test::StringEventHandler(EventHandler<hstring> const& handler)
     {
         return m_stringEventSource.add(handler);
     }
@@ -1631,7 +1625,7 @@ namespace winrt::TestComponent::implementation
         m_stringEventSource.remove(token);
     }
 
-    winrt::event_token Test::GuidEventHandler(Windows::Foundation::EventHandler<winrt::guid> const& handler)
+    winrt::event_token Test::GuidEventHandler(EventHandler<winrt::guid> const& handler)
     {
         return m_guidEventSource.add(handler);
     }
@@ -1641,7 +1635,7 @@ namespace winrt::TestComponent::implementation
         m_guidEventSource.remove(token);
     }
 
-    winrt::event_token Test::EnumEventHandler(Windows::Foundation::EventHandler<TestEnum> const& handler)
+    winrt::event_token Test::EnumEventHandler(EventHandler<TestEnum> const& handler)
     {
         return m_enumEventSource.add(handler);
     }
@@ -1651,8 +1645,7 @@ namespace winrt::TestComponent::implementation
         m_enumEventSource.remove(token);
     }
 
-    winrt::event_token Test::CompositeStructEventHandler(
-        Windows::Foundation::EventHandler<CompositeType> const& handler)
+    winrt::event_token Test::CompositeStructEventHandler(EventHandler<CompositeType> const& handler)
     {
         return m_compositeStructEventSource.add(handler);
     }
@@ -1662,7 +1655,7 @@ namespace winrt::TestComponent::implementation
         m_compositeStructEventSource.remove(token);
     }
 
-    winrt::event_token Test::RefEventHandler(Windows::Foundation::EventHandler<IReference<int32_t>> const& handler)
+    winrt::event_token Test::RefEventHandler(EventHandler<IReference<int32_t>> const& handler)
     {
         return m_refEventSource.add(handler);
     }
@@ -1672,7 +1665,7 @@ namespace winrt::TestComponent::implementation
         m_refEventSource.remove(token);
     }
 
-    winrt::event_token Test::ObjectEventHandler(Windows::Foundation::EventHandler<IVector<int32_t>> const& handler)
+    winrt::event_token Test::ObjectEventHandler(EventHandler<IVector<int32_t>> const& handler)
     {
         return m_objectEventSource.add(handler);
     }
@@ -1727,7 +1720,7 @@ namespace winrt::TestComponent::implementation
         m_objectEventSource(*this, value);
     }
 
-    Windows::Foundation::Collections::IMap<winrt::hstring, int32_t> Test::CreateStringToNumberMap()
+    IMap<winrt::hstring, int32_t> Test::CreateStringToNumberMap()
     {
         return single_threaded_map<winrt::hstring, int32_t>();
     }
@@ -1764,8 +1757,7 @@ namespace winrt::TestComponent::implementation
         IMap<K, V> m_value;
     };
 
-    Windows::Foundation::Collections::IMapView<winrt::hstring, int32_t> Test::CopyToMapView(
-        Windows::Foundation::Collections::IMap<winrt::hstring, int32_t> const& stringToNumberMap)
+    IMapView<winrt::hstring, int32_t> Test::CopyToMapView(IMap<winrt::hstring, int32_t> const& stringToNumberMap)
     {
         return make<MapViewImpl<winrt::hstring, int32_t>>(stringToNumberMap);
     }
