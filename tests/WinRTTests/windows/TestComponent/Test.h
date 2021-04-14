@@ -51,6 +51,10 @@ namespace winrt::TestComponent::implementation
             array_view<TestEnum const> values, com_array<TestEnum>& rot1, com_array<TestEnum>& rot2);
         static com_array<CompositeType> StaticCompositeStructArrayOutParam(
             array_view<CompositeType const> values, com_array<CompositeType>& rot1, com_array<CompositeType>& rot2);
+        static com_array<Windows::Foundation::IReference<int32_t>> StaticRefArrayOutParam(
+            array_view<Windows::Foundation::IReference<int32_t> const> values,
+            com_array<Windows::Foundation::IReference<int32_t>>& rot1,
+            com_array<Windows::Foundation::IReference<int32_t>>& rot2);
         static com_array<Windows::Foundation::Collections::IVector<int32_t>> StaticObjectArrayOutParam(
             array_view<Windows::Foundation::Collections::IVector<int32_t> const> values,
             com_array<Windows::Foundation::Collections::IVector<int32_t>>& rot1,
@@ -63,6 +67,7 @@ namespace winrt::TestComponent::implementation
         static void StaticGuidFillParam(array_view<winrt::guid> values);
         static void StaticEnumFillParam(array_view<TestEnum> values);
         static void StaticCompositeStructFillParam(array_view<CompositeType> values);
+        static void StaticRefFillParam(array_view<Windows::Foundation::IReference<int32_t>> values);
         static void StaticObjectFillParam(array_view<Windows::Foundation::Collections::IVector<int32_t>> values);
 
         static winrt::event_token StaticBoolEventHandler(Windows::Foundation::EventHandler<bool> const& handler);
@@ -110,7 +115,6 @@ namespace winrt::TestComponent::implementation
         static Windows::Foundation::Collections::IVector<int32_t> StaticInvokeObjectDelegate(
             Windows::Foundation::Collections::IVector<int32_t> const& inputValue, ObjectDelegate const& targetFn);
 
-        /* TODO: Delegates with out params currently cause compilation errors
         static bool StaticInvokeBoolDelegateWithOutParam(bool inputValue, BoolDelegateWithOutParam const& targetFn);
         static char16_t StaticInvokeCharDelegateWithOutParam(
             char16_t inputValue, CharDelegateWithOutParam const& targetFn);
@@ -129,9 +133,64 @@ namespace winrt::TestComponent::implementation
         static Windows::Foundation::Collections::IVector<int32_t> StaticInvokeObjectDelegateWithOutParam(
             Windows::Foundation::Collections::IVector<int32_t> const& inputValue,
             ObjectDelegateWithOutParam const& targetFn);
-        */
 
-        static Windows::Foundation::Collections::IVector<int32_t> MakeNumericVector(array_view<int32_t const> values);
+        static bool StaticInvokeBoolArrayDelegate(array_view<bool const> values, BoolArrayDelegate const& targetFn);
+        static bool StaticInvokeCharArrayDelegate(array_view<char16_t const> values, CharArrayDelegate const& targetFn);
+        static bool StaticInvokeNumericArrayDelegate(
+            array_view<int32_t const> values, NumericArrayDelegate const& targetFn);
+        static bool StaticInvokeStringArrayDelegate(
+            array_view<hstring const> values, StringArrayDelegate const& targetFn);
+        static bool StaticInvokeGuidArrayDelegate(
+            array_view<winrt::guid const> values, GuidArrayDelegate const& targetFn);
+        static bool StaticInvokeEnumArrayDelegate(array_view<TestEnum const> values, EnumArrayDelegate const& targetFn);
+        static bool StaticInvokeCompositeStructArrayDelegate(
+            array_view<CompositeType const> values, CompositeStructArrayDelegate const& targetFn);
+        static bool StaticInvokeRefArrayDelegate(
+            array_view<Windows::Foundation::IReference<int32_t> const> values, RefArrayDelegate const& targetFn);
+        static bool StaticInvokeObjectArrayDelegate(
+            array_view<Windows::Foundation::Collections::IVector<int32_t> const> values,
+            ObjectArrayDelegate const& targetFn);
+
+        static Windows::Foundation::Collections::IVector<bool> CopyBoolsToVector(array_view<bool const> values);
+        static Windows::Foundation::Collections::IVector<char16_t> CopyCharsToVector(array_view<char16_t const> values);
+        static Windows::Foundation::Collections::IVector<int32_t> CopyNumericsToVector(
+            array_view<int32_t const> values);
+        static Windows::Foundation::Collections::IVector<hstring> CopyStringsToVector(array_view<hstring const> values);
+        static Windows::Foundation::Collections::IVector<winrt::guid> CopyGuidsToVector(
+            array_view<winrt::guid const> values);
+        static Windows::Foundation::Collections::IVector<TestEnum> CopyEnumValuesToVector(
+            array_view<TestEnum const> values);
+        static Windows::Foundation::Collections::IVector<CompositeType> CopyCompositeStructsToVector(
+            array_view<CompositeType const> values);
+        static Windows::Foundation::Collections::IVector<Windows::Foundation::IReference<int32_t>> CopyRefsToVector(
+            array_view<Windows::Foundation::IReference<int32_t> const> values);
+        static Windows::Foundation::Collections::IVector<Windows::Foundation::IInspectable> CopyObjectsToVector(
+            array_view<Windows::Foundation::IInspectable const> values);
+
+        static Windows::Foundation::Collections::IVector<bool> ReturnSameBoolVector(
+            Windows::Foundation::Collections::IVector<bool> const& vector);
+        static Windows::Foundation::Collections::IVector<char16_t> ReturnSameCharVector(
+            Windows::Foundation::Collections::IVector<char16_t> const& vector);
+        static Windows::Foundation::Collections::IVector<int32_t> ReturnSameNumericVector(
+            Windows::Foundation::Collections::IVector<int32_t> const& vector);
+        static Windows::Foundation::Collections::IVector<hstring> ReturnSameStringVector(
+            Windows::Foundation::Collections::IVector<hstring> const& vector);
+        static Windows::Foundation::Collections::IVector<winrt::guid> ReturnSameGuidVector(
+            Windows::Foundation::Collections::IVector<winrt::guid> const& vector);
+        static Windows::Foundation::Collections::IVector<TestEnum> ReturnSameEnumVector(
+            Windows::Foundation::Collections::IVector<TestEnum> const& vector);
+        static Windows::Foundation::Collections::IVector<CompositeType> ReturnSameCompositeStructVector(
+            Windows::Foundation::Collections::IVector<CompositeType> const& vector);
+        static Windows::Foundation::Collections::IVector<Windows::Foundation::IReference<int32_t>> ReturnSameRefVector(
+            Windows::Foundation::Collections::IVector<Windows::Foundation::IReference<int32_t>> const& vector);
+        static Windows::Foundation::Collections::IVector<Windows::Foundation::IInspectable> ReturnSameObjectVector(
+            Windows::Foundation::Collections::IVector<Windows::Foundation::IInspectable> const& vector);
+
+        static Windows::Foundation::IAsyncAction PauseAsync(int32_t milliseconds);
+        static Windows::Foundation::IAsyncActionWithProgress<int32_t> CountToNumberAsync(int32_t value);
+        static Windows::Foundation::IAsyncOperation<int32_t> AddAsync(int32_t lhs, int32_t rhs);
+        static Windows::Foundation::IAsyncOperationWithProgress<int32_t, int32_t> CountDoubleAsync(int32_t value);
+        static Windows::Foundation::IAsyncAction ThrowAsyncException();
 
         bool BoolProperty();
         void BoolProperty(bool value);
@@ -190,15 +249,6 @@ namespace winrt::TestComponent::implementation
         Windows::Foundation::IPropertyValue PropertyValue();
         void PropertyValue(Windows::Foundation::IPropertyValue value);
 
-        Windows::Foundation::IAsyncAction AppendZeroToIVectorAsync(
-            Windows::Foundation::Collections::IVector<int32_t> vector);
-        Windows::Foundation::IAsyncActionWithProgress<double> FillZeroesToIVectorAsync(
-            Windows::Foundation::Collections::IVector<int32_t> vector);
-        Windows::Foundation::IAsyncOperation<Windows::Foundation::Collections::IVector<int32_t>> CreateIVectorAsync();
-        Windows::Foundation::IAsyncOperationWithProgress<Windows::Foundation::Collections::IVector<int32_t>, double>
-        CreateIVectorWithZeroesAsync();
-        Windows::Foundation::IAsyncAction CreateAsyncException();
-
         com_array<bool> BooleanArrayProperty();
         void BooleanArrayProperty(array_view<bool const> value);
         com_array<char16_t> CharArrayProperty();
@@ -253,6 +303,10 @@ namespace winrt::TestComponent::implementation
             array_view<TestEnum const> values, com_array<TestEnum>& rot1, com_array<TestEnum>& rot2);
         com_array<CompositeType> CompositeStructArrayOutParam(
             array_view<CompositeType const> values, com_array<CompositeType>& rot1, com_array<CompositeType>& rot2);
+        com_array<Windows::Foundation::IReference<int32_t>> RefArrayOutParam(
+            array_view<Windows::Foundation::IReference<int32_t> const> values,
+            com_array<Windows::Foundation::IReference<int32_t>>& rot1,
+            com_array<Windows::Foundation::IReference<int32_t>>& rot2);
         com_array<Windows::Foundation::Collections::IVector<int32_t>> ObjectArrayOutParam(
             array_view<Windows::Foundation::Collections::IVector<int32_t> const> values,
             com_array<Windows::Foundation::Collections::IVector<int32_t>>& rot1,
@@ -265,6 +319,7 @@ namespace winrt::TestComponent::implementation
         void GuidFillParam(array_view<winrt::guid> values);
         void EnumFillParam(array_view<TestEnum> values);
         void CompositeStructFillParam(array_view<CompositeType> values);
+        void RefFillParam(array_view<Windows::Foundation::IReference<int32_t>> values);
         void ObjectFillParam(array_view<Windows::Foundation::Collections::IVector<int32_t>> values);
 
         winrt::event_token BoolEventHandler(Windows::Foundation::EventHandler<bool> const& handler);
@@ -297,19 +352,6 @@ namespace winrt::TestComponent::implementation
         void RaiseCompositeStructEvent(CompositeType const& value);
         void RaiseRefEvent(Windows::Foundation::IReference<int32_t> const& value);
         void RaiseObjectEvent(Windows::Foundation::Collections::IVector<int32_t> const& value);
-
-        bool InvokeBoolDelegate(bool inputValue, BoolDelegate const& targetFn);
-        char16_t InvokeCharDelegate(char16_t inputValue, CharDelegate const& targetFn);
-        int32_t InvokeNumericDelegate(int32_t inputValue, NumericDelegate const& targetFn);
-        hstring InvokeStringDelegate(hstring const& inputValue, StringDelegate const& targetFn);
-        winrt::guid InvokeGuidDelegate(winrt::guid const& inputValue, GuidDelegate const& targetFn);
-        TestEnum InvokeEnumDelegate(TestEnum const& inputValue, EnumDelegate const& targetFn);
-        CompositeType InvokeCompositeStructDelegate(
-            CompositeType const& inputValue, CompositeStructDelegate const& targetFn);
-        Windows::Foundation::IReference<int32_t> InvokeRefDelegate(
-            Windows::Foundation::IReference<int32_t> const& inputValue, RefDelegate const& targetFn);
-        Windows::Foundation::Collections::IVector<int32_t> InvokeObjectDelegate(
-            Windows::Foundation::Collections::IVector<int32_t> const& inputValue, ObjectDelegate const& targetFn);
 
     private:
         // Static properties

@@ -2,7 +2,7 @@
 
 #include "CommandReader.h"
 #include "FileGenerator.h"
-#include "MetadataHelpers.h"
+#include "MetadataTypes.h"
 #include "Settings.h"
 
 namespace
@@ -75,8 +75,10 @@ int main(int const argc, char** argv)
         }
 
         Settings settings(args);
-        const auto roots = Namespace::GetRoots(settings);
-        WriteFiles(settings, roots);
+
+        projection_data data;
+        parse_metadata(settings, data);
+        write_files(settings, data);
     }
     catch (std::exception const& e)
     {

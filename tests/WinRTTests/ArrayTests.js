@@ -20,6 +20,7 @@ export function makeArrayTestScenarios(pThis) {
         new TestScenario('Test::StaticGuidArrayOutParam', runStaticGuidArrayOutParam.bind(pThis)),
         new TestScenario('Test::StaticEnumArrayOutParam', runStaticEnumArrayOutParam.bind(pThis)),
         new TestScenario('Test::StaticCompositeStructArrayOutParam', runStaticCompositeStructArrayOutParam.bind(pThis)),
+        new TestScenario('Test::StaticRefArrayOutParam', runStaticRefArrayOutParam.bind(pThis)),
         new TestScenario('Test::StaticObjectArrayOutParam', runStaticObjectArrayOutParam.bind(pThis)),
 
         // Static array fill params
@@ -30,6 +31,7 @@ export function makeArrayTestScenarios(pThis) {
         new TestScenario('Test::StaticGuidFillParam', runStaticGuidFillParam.bind(pThis)),
         new TestScenario('Test::StaticEnumFillParam', runStaticEnumFillParam.bind(pThis)),
         new TestScenario('Test::StaticCompositeStructFillParam', runStaticCompositeStructFillParam.bind(pThis)),
+        new TestScenario('Test::StaticRefFillParam', runStaticRefFillParam.bind(pThis)),
         new TestScenario('Test::StaticObjectFillParam', runStaticObjectFillParam.bind(pThis)),
 
         // Non-static array out params
@@ -40,6 +42,7 @@ export function makeArrayTestScenarios(pThis) {
         new TestScenario('Test::GuidArrayOutParam', runGuidArrayOutParam.bind(pThis)),
         new TestScenario('Test::EnumArrayOutParam', runEnumArrayOutParam.bind(pThis)),
         new TestScenario('Test::CompositeStructArrayOutParam', runCompositeStructArrayOutParam.bind(pThis)),
+        new TestScenario('Test::RefArrayOutParam', runRefArrayOutParam.bind(pThis)),
         new TestScenario('Test::ObjectArrayOutParam', runObjectArrayOutParam.bind(pThis)),
 
         // Non-static array fill params
@@ -50,6 +53,7 @@ export function makeArrayTestScenarios(pThis) {
         new TestScenario('Test::GuidFillParam', runGuidFillParam.bind(pThis)),
         new TestScenario('Test::EnumFillParam', runEnumFillParam.bind(pThis)),
         new TestScenario('Test::CompositeStructFillParam', runCompositeStructFillParam.bind(pThis)),
+        new TestScenario('Test::RefFillParam', runRefFillParam.bind(pThis)),
         new TestScenario('Test::ObjectFillParam', runObjectFillParam.bind(pThis)),
     ];
 }
@@ -131,13 +135,20 @@ function runStaticCompositeStructArrayOutParam(scenario) {
     });
 }
 
+function runStaticRefArrayOutParam(scenario) {
+    this.runSync(scenario, () => {
+        var fn = (val) => TestComponent.Test.staticRefArrayOutParam(val);
+        validateArrayOutParam(TestValues.s32.valid, fn);
+    });
+}
+
 function runStaticObjectArrayOutParam(scenario) {
     this.runSync(scenario, () => {
         var fn = (val) => TestComponent.Test.staticObjectArrayOutParam(val);
         validateArrayOutParam([
-            TestComponent.Test.makeNumericVector([]),
-            TestComponent.Test.makeNumericVector([0]),
-            TestComponent.Test.makeNumericVector([0, 1, 2, 3, 4])
+            TestComponent.Test.copyNumericsToVector([]),
+            TestComponent.Test.copyNumericsToVector([0]),
+            TestComponent.Test.copyNumericsToVector([0, 1, 2, 3, 4])
         ], fn);
     });
 }
@@ -270,14 +281,32 @@ function runStaticCompositeStructFillParam(scenario) {
             for (var val of arr) {
                 assert.equal(val, {
                     numerics: { u8: expectNumeric, u16: expectNumeric, u32: expectNumeric, u64: expectNumeric, s16: expectNumeric,
-                            s32: expectNumeric, s64: expectNumeric, f32: expectNumeric, f64: expectNumeric, e: expectNumeric },
-                    strings: { ch: String.fromCharCode(expectNumeric), str: expectString,
+                            s32: expectNumeric, s64: expectNumeric, f32: expectNumeric, f64: expectNumeric, enum: expectNumeric },
+                    strings: { char: String.fromCharCode(expectNumeric), string: expectString,
                         guid: makeGuid(expectNumeric, expectNumeric, expectNumeric, [expectNumeric, expectNumeric, expectNumeric, expectNumeric, expectNumeric, expectNumeric, expectNumeric, expectNumeric]) },
-                    bools: { b: expectBool }
+                    bools: { value: expectBool }
                 });
                 ++expectNumeric;
                 expectString += 'a';
                 expectBool = !expectBool;
+            }
+        };
+        run(0);
+        run(1);
+        run(2);
+        run(100);
+    })
+}
+
+function runStaticRefFillParam(scenario) {
+    this.runSync(scenario, () => {
+        var run = (size) => {
+            var arr = new Array(size);
+            TestComponent.Test.staticRefFillParam(arr);
+
+            var expect = 0;
+            for (var val of arr) {
+                assert.equal(val, expect++);
             }
         };
         run(0);
@@ -359,13 +388,20 @@ function runCompositeStructArrayOutParam(scenario) {
     });
 }
 
+function runRefArrayOutParam(scenario) {
+    this.runSync(scenario, () => {
+        var fn = (val) => this.test.refArrayOutParam(val);
+        validateArrayOutParam([ 0, 1, 2, 3, 4 ], fn);
+    });
+}
+
 function runObjectArrayOutParam(scenario) {
     this.runSync(scenario, () => {
         var fn = (val) => this.test.objectArrayOutParam(val);
         validateArrayOutParam([
-            TestComponent.Test.makeNumericVector([]),
-            TestComponent.Test.makeNumericVector([0]),
-            TestComponent.Test.makeNumericVector([0, 1, 2, 3, 4])
+            TestComponent.Test.copyNumericsToVector([]),
+            TestComponent.Test.copyNumericsToVector([0]),
+            TestComponent.Test.copyNumericsToVector([0, 1, 2, 3, 4])
         ], fn);
     });
 }
@@ -498,14 +534,32 @@ function runCompositeStructFillParam(scenario) {
             for (var val of arr) {
                 assert.equal(val, {
                     numerics: { u8: expectNumeric, u16: expectNumeric, u32: expectNumeric, u64: expectNumeric, s16: expectNumeric,
-                            s32: expectNumeric, s64: expectNumeric, f32: expectNumeric, f64: expectNumeric, e: expectNumeric },
-                    strings: { ch: String.fromCharCode(expectNumeric), str: expectString,
+                            s32: expectNumeric, s64: expectNumeric, f32: expectNumeric, f64: expectNumeric, enum: expectNumeric },
+                    strings: { char: String.fromCharCode(expectNumeric), string: expectString,
                         guid: makeGuid(expectNumeric, expectNumeric, expectNumeric, [expectNumeric, expectNumeric, expectNumeric, expectNumeric, expectNumeric, expectNumeric, expectNumeric, expectNumeric]) },
-                    bools: { b: expectBool }
+                    bools: { value: expectBool }
                 });
                 ++expectNumeric;
                 expectString += 'a';
                 expectBool = !expectBool;
+            }
+        };
+        run(0);
+        run(1);
+        run(2);
+        run(100);
+    })
+}
+
+function runRefFillParam(scenario) {
+    this.runSync(scenario, () => {
+        var run = (size) => {
+            var arr = new Array(size);
+            this.test.refFillParam(arr);
+
+            var expect = 0;
+            for (var val of arr) {
+                assert.equal(val, expect++);
             }
         };
         run(0);

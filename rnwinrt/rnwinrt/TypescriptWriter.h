@@ -13,15 +13,18 @@ public:
     {
     }
 
-    void Write(Namespace const& node, TextWriter& textWriter)
+    void Write(const namespace_projection_data& ns, TextWriter& textWriter)
     {
         textWriter.Write("%"sv, "//tslint:disable"sv);
         textWriter.WriteBlankLine();
-        textWriter.WriteIndentedLine("declare namespace % {%}"sv, node.FullName(), [&]() {
+        textWriter.WriteIndentedLine("declare namespace % {%}"sv, ns.full_name, [&]() {
             textWriter.AddIndent();
-            for (auto const& type : node.Members().types)
+            if (ns.members)
             {
-                WriteTypeDefiniton(type.second, textWriter);
+                for (auto const& type : ns.members->types)
+                {
+                    WriteTypeDefiniton(type.second, textWriter);
+                }
             }
             textWriter.ReduceIndent();
             textWriter.WriteIndentedLine();
@@ -82,6 +85,10 @@ public:
 
     void WriteClassOrInterface(winmd::reader::TypeDef const& type, TextWriter& textWriter)
     {
+        if (get_category(type) == winmd::reader::category::interface_type && exclusiveto_class(type)) 
+        {
+            return;
+        }
         textWriter.WriteIndentedLine(
             "%% %%% {%}"sv,
             [&]() // Format: ['abstract?' 'class/interface' 'name' 'extends baseclass' 'implements interface1,
@@ -89,7 +96,8 @@ public:
             {
                 if (type.TypeNamespace() == "Windows.Foundation" && type.TypeName() == "IAsyncInfo")
                 {
-                    textWriter.Write("%", R"(interface WinRTPromiseBase<TResult, TProgress> extends PromiseLike<TResult> {
+                    textWriter.Write(
+                        "%", R"(interface WinRTPromiseBase<TResult, TProgress> extends PromiseLike<TResult> {
         then<U, V>(success?: (value: TResult) => Promise<U>, error?: (error: any) => Promise<U>, progress?: (progress: TProgress) => void): Promise<U>;
         then<U, V>(success?: (value: TResult) => Promise<U>, error?: (error: any) => U, progress?: (progress: TProgress) => void): Promise<U>;
         then<U, V>(success?: (value: TResult) => U, error?: (error: any) => Promise<U>, progress?: (progress: TProgress) => void): Promise<U>;
@@ -147,11 +155,35 @@ public:
                 {
                     return;
                 }
-                textWriter.Write(
-                    get_category(type) == winmd::reader::category::interface_type ? " extends " : " implements ");
+                // filter out exclusiveto interfaces
+                std::vector<jswinrt::typeparser::type_semantics> filteredInterfaces; 
                 for (auto&& interfaceimpl : type.InterfaceImpl())
                 {
                     auto const& implementsTypeSem = jswinrt::typeparser::get_type_semantics(interfaceimpl.Interface());
+                    if (std::holds_alternative<jswinrt::typeparser::type_definition>(implementsTypeSem))
+                    {
+                        if (exclusiveto_class(std::get<jswinrt::typeparser::type_definition>(implementsTypeSem)))
+                        {
+                            continue;
+                        }
+                    }
+                    if (std::holds_alternative<jswinrt::typeparser::generic_type_instance>(implementsTypeSem))
+                    {
+                        if (exclusiveto_class(std::get<jswinrt::typeparser::generic_type_instance>(implementsTypeSem).generic_type))
+                        {
+                            continue;
+                        }
+                    }
+                    filteredInterfaces.push_back(implementsTypeSem);   
+                }
+                if (filteredInterfaces.size() == 0)
+                {
+                    return; 
+                }
+                textWriter.Write(
+                    get_category(type) == winmd::reader::category::interface_type ? " extends " : " implements ");
+                for (auto&& implementsTypeSem : filteredInterfaces)
+                {
                     WriteTypeSemantics(implementsTypeSem, type, textWriter, false, false);
                     textWriter.Write(", ");
                 }
@@ -191,13 +223,13 @@ public:
                 std::map<std::string_view, winmd::reader::MethodDef> eventListeners;
                 for (auto&& method : type.MethodList())
                 {
-                    if (!IsMethodAllowed(settings, method))
+                    if (!is_method_allowed(settings, method))
                         continue;
                     if (method.SpecialName() &&
-                        (StartsWith(method.Name(), "get_") || StartsWith(method.Name(), "put_")))
+                        (starts_with(method.Name(), "get_") || starts_with(method.Name(), "put_")))
                         continue;
                     if (method.SpecialName() &&
-                        (StartsWith(method.Name(), "add_") || StartsWith(method.Name(), "remove_")))
+                        (starts_with(method.Name(), "add_") || starts_with(method.Name(), "remove_")))
                     {
                         eventListeners[method.Name()] = method;
                     }
@@ -210,7 +242,7 @@ public:
                 // Event Listeners:
                 for (auto const& [name, method] : eventListeners)
                 {
-                    if (!IsMethodAllowed(settings, method))
+                    if (!is_method_allowed(settings, method))
                         continue;
                     textWriter.WriteIndentedLine();
                     if (name._Starts_with("add_"))
@@ -535,11 +567,12 @@ public:
 
     bool IsTypeDefAllowed(winmd::reader::TypeDef const& type)
     {
-        return IsTypeAllowed(settings, type, get_category(type) == winmd::reader::category::class_type);
+        return is_type_allowed(settings, type, get_category(type) == winmd::reader::category::class_type);
     }
 
     static bool IsGeneric(std::string_view name)
     {
         return name.find("`") != std::string::npos;
     }
+
 };

@@ -6,14 +6,13 @@
 #include <fstream>
 #include <iostream>
 #include <numeric>
-#include <ppl.h>
-#include <pplawait.h>
-#include <ppltasks.h>
 #include <winrt/Windows.Storage.h>
 
 #include "Test.h"
 
 #include "Test.g.cpp"
+
+using namespace std::literals;
 
 winrt::hstring to_lower(const winrt::hstring& hstr)
 {
@@ -164,21 +163,21 @@ namespace winrt::TestComponent::implementation
     CompositeType Test::StaticCompositeStructOutParam(
         CompositeType const& input, CompositeType& first, CompositeType& second)
     {
-        auto& num = input.numerics;
-        auto& str = input.strings;
+        auto& num = input.Numerics;
+        auto& str = input.Strings;
 
-        first.numerics = { static_cast<uint8_t>(num.u8 + 1), static_cast<uint16_t>(num.u16 + 1), num.u32 + 1,
-            num.u64 + 1, num.s16 + 1, num.s32 + 1, num.s64 + 1, num.f32 + 1, num.f64 + 1,
-            static_cast<TestEnum>(static_cast<int>(num.e) + 1) };
-        first.strings = { static_cast<char16_t>(str.ch + 1), to_lower(str.str), {} };
-        first.bools = { !input.bools.b };
+        first.Numerics = { static_cast<uint8_t>(num.U8 + 1), static_cast<uint16_t>(num.U16 + 1), num.U32 + 1,
+            num.U64 + 1, num.S16 + 1, num.S32 + 1, num.S64 + 1, num.F32 + 1, num.F64 + 1,
+            static_cast<TestEnum>(static_cast<int>(num.Enum) + 1) };
+        first.Strings = { static_cast<char16_t>(str.Char + 1), to_lower(str.String), {} };
+        first.Bools = { !input.Bools.Value };
 
-        second.numerics = { static_cast<uint8_t>(num.u8 - 1), static_cast<uint16_t>(num.u16 - 1), num.u32 - 1,
-            num.u64 - 1, num.s16 - 1, num.s32 - 1, num.s64 - 1, num.f32 - 1, num.f64 - 1,
-            static_cast<TestEnum>(static_cast<int>(num.e) - 1) };
-        second.strings = { static_cast<char16_t>(str.ch - 1), to_upper(str.str),
+        second.Numerics = { static_cast<uint8_t>(num.U8 - 1), static_cast<uint16_t>(num.U16 - 1), num.U32 - 1,
+            num.U64 - 1, num.S16 - 1, num.S32 - 1, num.S64 - 1, num.F32 - 1, num.F64 - 1,
+            static_cast<TestEnum>(static_cast<int>(num.Enum) - 1) };
+        second.Strings = { static_cast<char16_t>(str.Char - 1), to_upper(str.String),
             { 0xFFFFFFFF, 0xFFFF, 0xFFFF, { 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF } } };
-        second.bools = { input.bools.b };
+        second.Bools = { input.Bools.Value };
 
         return input;
     }
@@ -264,6 +263,16 @@ namespace winrt::TestComponent::implementation
         return reverse_array(values);
     }
 
+    com_array<Windows::Foundation::IReference<int32_t>> Test::StaticRefArrayOutParam(
+        array_view<Windows::Foundation::IReference<int32_t> const> values,
+        com_array<Windows::Foundation::IReference<int32_t>>& rot1,
+        com_array<Windows::Foundation::IReference<int32_t>>& rot2)
+    {
+        rot1 = rotate_array(values, 1);
+        rot2 = rotate_array(values, 2);
+        return reverse_array(values);
+    }
+
     com_array<Windows::Foundation::Collections::IVector<int32_t>> Test::StaticObjectArrayOutParam(
         array_view<Windows::Foundation::Collections::IVector<int32_t> const> values,
         com_array<Windows::Foundation::Collections::IVector<int32_t>>& rot1,
@@ -333,25 +342,30 @@ namespace winrt::TestComponent::implementation
         for (auto& val : values)
         {
             val = next;
-            ++next.numerics.u8;
-            ++next.numerics.u16;
-            ++next.numerics.u32;
-            ++next.numerics.u64;
-            ++next.numerics.s16;
-            ++next.numerics.s32;
-            ++next.numerics.s64;
-            ++next.numerics.f32;
-            ++next.numerics.f64;
-            next.numerics.e = static_cast<TestEnum>(static_cast<int>(next.numerics.e) + 1);
-            ++next.strings.ch;
-            next.strings.str = std::wstring(next.strings.str.c_str(), next.strings.str.size()) + L"a";
-            ++next.strings.guid.Data1;
-            ++next.strings.guid.Data2;
-            ++next.strings.guid.Data3;
-            for (auto& byte : next.strings.guid.Data4)
+            ++next.Numerics.U8;
+            ++next.Numerics.U16;
+            ++next.Numerics.U32;
+            ++next.Numerics.U64;
+            ++next.Numerics.S16;
+            ++next.Numerics.S32;
+            ++next.Numerics.S64;
+            ++next.Numerics.F32;
+            ++next.Numerics.F64;
+            next.Numerics.Enum = static_cast<TestEnum>(static_cast<int>(next.Numerics.Enum) + 1);
+            ++next.Strings.Char;
+            next.Strings.String = std::wstring(next.Strings.String.c_str(), next.Strings.String.size()) + L"a";
+            ++next.Strings.Guid.Data1;
+            ++next.Strings.Guid.Data2;
+            ++next.Strings.Guid.Data3;
+            for (auto& byte : next.Strings.Guid.Data4)
                 ++byte;
-            next.bools.b = !next.bools.b;
+            next.Bools.Value = !next.Bools.Value;
         }
+    }
+
+    void Test::StaticRefFillParam(array_view<Windows::Foundation::IReference<int32_t>> values)
+    {
+        std::iota(values.begin(), values.end(), 0);
     }
 
     void Test::StaticObjectFillParam(array_view<Windows::Foundation::Collections::IVector<int32_t>> values)
@@ -551,7 +565,6 @@ namespace winrt::TestComponent::implementation
         return targetFn(inputValue);
     }
 
-    /* TODO: Delegates with out params currently cause compilation errors
     bool Test::StaticInvokeBoolDelegateWithOutParam(bool inputValue, BoolDelegateWithOutParam const& targetFn)
     {
         bool result = false;
@@ -622,11 +635,237 @@ namespace winrt::TestComponent::implementation
         targetFn(inputValue, result);
         return result;
     }
-    */
 
-    Windows::Foundation::Collections::IVector<int32_t> Test::MakeNumericVector(array_view<int32_t const> values)
+    template <typename T, typename Delegate>
+    static bool DoInvokeArrayDelegate(array_view<const T> values, const Delegate& targetFn)
     {
-        return single_threaded_vector(std::vector<int32_t>(values.begin(), values.end()));
+        T fillResult[5];
+        if (values.size() < std::size(fillResult))
+            throw hresult_invalid_argument(); // Since we aren't reporting result size; assume complete fill
+
+        com_array<T> outResult;
+        auto result = targetFn(values, fillResult, outResult);
+
+        // Check the fill result
+        for (uint32_t i = 0; i < std::size(fillResult); ++i)
+        {
+            if (values[i] != fillResult[i])
+                return false;
+        }
+
+        // Check the output arg
+        if (outResult.size() != values.size())
+            return false;
+        for (uint32_t i = 0; i < values.size(); ++i)
+        {
+            if (values[i] != outResult[values.size() - i - 1])
+                return false;
+        }
+
+        // Return value should be a copy
+        if (result.size() != values.size())
+            return false;
+        for (uint32_t i = 0; i < values.size(); ++i)
+        {
+            if (values[i] != result[i])
+                return false;
+        }
+
+        return true;
+    }
+
+    bool Test::StaticInvokeBoolArrayDelegate(array_view<bool const> values, BoolArrayDelegate const& targetFn)
+    {
+        return DoInvokeArrayDelegate(values, targetFn);
+    }
+
+    bool Test::StaticInvokeCharArrayDelegate(array_view<char16_t const> values, CharArrayDelegate const& targetFn)
+    {
+        return DoInvokeArrayDelegate(values, targetFn);
+    }
+
+    bool Test::StaticInvokeNumericArrayDelegate(array_view<int32_t const> values, NumericArrayDelegate const& targetFn)
+    {
+        return DoInvokeArrayDelegate(values, targetFn);
+    }
+
+    bool Test::StaticInvokeStringArrayDelegate(array_view<hstring const> values, StringArrayDelegate const& targetFn)
+    {
+        return DoInvokeArrayDelegate(values, targetFn);
+    }
+
+    bool Test::StaticInvokeGuidArrayDelegate(array_view<winrt::guid const> values, GuidArrayDelegate const& targetFn)
+    {
+        return DoInvokeArrayDelegate(values, targetFn);
+    }
+
+    bool Test::StaticInvokeEnumArrayDelegate(array_view<TestEnum const> values, EnumArrayDelegate const& targetFn)
+    {
+        return DoInvokeArrayDelegate(values, targetFn);
+    }
+
+    bool Test::StaticInvokeCompositeStructArrayDelegate(
+        array_view<CompositeType const> values, CompositeStructArrayDelegate const& targetFn)
+    {
+        return DoInvokeArrayDelegate(values, targetFn);
+    }
+
+    bool Test::StaticInvokeRefArrayDelegate(
+        array_view<Windows::Foundation::IReference<int32_t> const> values, RefArrayDelegate const& targetFn)
+    {
+        return DoInvokeArrayDelegate(values, targetFn);
+    }
+
+    bool Test::StaticInvokeObjectArrayDelegate(
+        array_view<Windows::Foundation::Collections::IVector<int32_t> const> values,
+        ObjectArrayDelegate const& targetFn)
+    {
+        return DoInvokeArrayDelegate(values, targetFn);
+    }
+
+    template <typename T>
+    static Windows::Foundation::Collections::IVector<T> CopyToVector(array_view<T const> values)
+    {
+        return single_threaded_vector(std::vector<T>(values.begin(), values.end()));
+    }
+
+    Windows::Foundation::Collections::IVector<bool> Test::CopyBoolsToVector(array_view<bool const> values)
+    {
+        return CopyToVector(values);
+    }
+
+    Windows::Foundation::Collections::IVector<char16_t> Test::CopyCharsToVector(array_view<char16_t const> values)
+    {
+        return CopyToVector(values);
+    }
+
+    Windows::Foundation::Collections::IVector<int32_t> Test::CopyNumericsToVector(array_view<int32_t const> values)
+    {
+        return CopyToVector(values);
+    }
+
+    Windows::Foundation::Collections::IVector<hstring> Test::CopyStringsToVector(array_view<hstring const> values)
+    {
+        return CopyToVector(values);
+    }
+
+    Windows::Foundation::Collections::IVector<winrt::guid> Test::CopyGuidsToVector(array_view<winrt::guid const> values)
+    {
+        return CopyToVector(values);
+    }
+
+    Windows::Foundation::Collections::IVector<TestEnum> Test::CopyEnumValuesToVector(array_view<TestEnum const> values)
+    {
+        return CopyToVector(values);
+    }
+
+    Windows::Foundation::Collections::IVector<CompositeType> Test::CopyCompositeStructsToVector(
+        array_view<CompositeType const> values)
+    {
+        return CopyToVector(values);
+    }
+
+    Windows::Foundation::Collections::IVector<Windows::Foundation::IReference<int32_t>> Test::CopyRefsToVector(
+        array_view<Windows::Foundation::IReference<int32_t> const> values)
+    {
+        return CopyToVector(values);
+    }
+
+    Windows::Foundation::Collections::IVector<Windows::Foundation::IInspectable> Test::CopyObjectsToVector(
+        array_view<Windows::Foundation::IInspectable const> values)
+    {
+        return CopyToVector(values);
+    }
+
+    Windows::Foundation::Collections::IVector<bool> Test::ReturnSameBoolVector(
+        Windows::Foundation::Collections::IVector<bool> const& vector)
+    {
+        return vector;
+    }
+    Windows::Foundation::Collections::IVector<char16_t> Test::ReturnSameCharVector(
+        Windows::Foundation::Collections::IVector<char16_t> const& vector)
+    {
+        return vector;
+    }
+    Windows::Foundation::Collections::IVector<int32_t> Test::ReturnSameNumericVector(
+        Windows::Foundation::Collections::IVector<int32_t> const& vector)
+    {
+        return vector;
+    }
+    Windows::Foundation::Collections::IVector<hstring> Test::ReturnSameStringVector(
+        Windows::Foundation::Collections::IVector<hstring> const& vector)
+    {
+        return vector;
+    }
+    Windows::Foundation::Collections::IVector<winrt::guid> Test::ReturnSameGuidVector(
+        Windows::Foundation::Collections::IVector<winrt::guid> const& vector)
+    {
+        return vector;
+    }
+    Windows::Foundation::Collections::IVector<TestComponent::TestEnum> Test::ReturnSameEnumVector(
+        Windows::Foundation::Collections::IVector<TestComponent::TestEnum> const& vector)
+    {
+        return vector;
+    }
+    Windows::Foundation::Collections::IVector<TestComponent::CompositeType> Test::ReturnSameCompositeStructVector(
+        Windows::Foundation::Collections::IVector<TestComponent::CompositeType> const& vector)
+    {
+        return vector;
+    }
+    Windows::Foundation::Collections::IVector<Windows::Foundation::IReference<int32_t>> Test::ReturnSameRefVector(
+        Windows::Foundation::Collections::IVector<Windows::Foundation::IReference<int32_t>> const& vector)
+    {
+        return vector;
+    }
+    Windows::Foundation::Collections::IVector<Windows::Foundation::IInspectable> Test::ReturnSameObjectVector(
+        Windows::Foundation::Collections::IVector<Windows::Foundation::IInspectable> const& vector)
+    {
+        return vector;
+    }
+
+    Windows::Foundation::IAsyncAction Test::PauseAsync(int32_t milliseconds)
+    {
+        co_await winrt::resume_background();
+        co_await std::chrono::milliseconds{ milliseconds };
+    }
+
+    Windows::Foundation::IAsyncActionWithProgress<int32_t> Test::CountToNumberAsync(int32_t value)
+    {
+        co_await winrt::resume_background();
+        auto progress = co_await winrt::get_progress_token();
+        for (int32_t i = 0; i <= value; ++i)
+        {
+            co_await 50ms;
+            progress(i);
+        }
+    }
+
+    Windows::Foundation::IAsyncOperation<int32_t> Test::AddAsync(int32_t lhs, int32_t rhs)
+    {
+        co_await winrt::resume_background();
+        co_await 50ms;
+        co_return lhs + rhs;
+    }
+
+    Windows::Foundation::IAsyncOperationWithProgress<int32_t, int32_t> Test::CountDoubleAsync(int32_t value)
+    {
+        co_await winrt::resume_background();
+        auto progress = co_await winrt::get_progress_token();
+        int32_t result = 0;
+        for (; result <= (value * 2); ++result)
+        {
+            co_await 50ms;
+            progress(result);
+        }
+
+        co_return result - 1; // Because of the ending '++'
+    }
+
+    Windows::Foundation::IAsyncAction Test::ThrowAsyncException()
+    {
+        co_await winrt::resume_background();
+        co_await 50ms;
+        throw std::invalid_argument("test");
     }
 
     bool Test::BoolProperty()
@@ -961,7 +1200,7 @@ namespace winrt::TestComponent::implementation
 
     hstring Test::DateTimePropertyCppValue()
     {
-        return winrt::to_hstring(static_cast<int64_t>(winrt::clock::to_file_time(m_dateTimeProperty).value));
+        return winrt::to_hstring(m_dateTimeProperty.time_since_epoch().count());
     }
 
     Windows::Foundation::TimeSpan Test::TimeSpanProperty()
@@ -976,8 +1215,7 @@ namespace winrt::TestComponent::implementation
 
     hstring Test::TimeSpanPropertyCppValue()
     {
-        return winrt::to_hstring(
-            std::chrono::duration_cast<std::chrono::duration<int64_t, std::milli>>(m_timeSpanProperty).count());
+        return winrt::to_hstring(m_timeSpanProperty.count());
     }
 
     hresult Test::HResultProperty()
@@ -988,58 +1226,6 @@ namespace winrt::TestComponent::implementation
     void Test::HResultProperty(hresult value)
     {
         this->m_hresultProperty = value;
-    }
-
-    Windows::Foundation::IAsyncAction Test::AppendZeroToIVectorAsync(
-        Windows::Foundation::Collections::IVector<int32_t> vector)
-    {
-        co_await concurrency::create_task([&vector] { vector.Append(0); });
-    }
-
-    Windows::Foundation::IAsyncActionWithProgress<double> Test::FillZeroesToIVectorAsync(
-        Windows::Foundation::Collections::IVector<int32_t> vector)
-    {
-        co_await winrt::resume_background();
-        co_await std::chrono::milliseconds(10);
-        auto progress{ co_await winrt::get_progress_token() };
-        for (int i = 0; i < 10; i++)
-        {
-            co_await std::chrono::milliseconds(10);
-            vector.Append(0);
-            auto p = (i + 1) * 0.1;
-            progress(p);
-        }
-    }
-
-    Windows::Foundation::IAsyncOperation<Windows::Foundation::Collections::IVector<int32_t>> Test::CreateIVectorAsync()
-    {
-        co_await winrt::resume_background();
-        co_await std::chrono::milliseconds(10);
-        Windows::Foundation::Collections::IVector<int32_t> vector{ winrt::single_threaded_vector<int>() };
-        co_return vector;
-    }
-
-    Windows::Foundation::IAsyncOperationWithProgress<Windows::Foundation::Collections::IVector<int32_t>, double> Test::
-        CreateIVectorWithZeroesAsync()
-    {
-        co_await winrt::resume_background();
-        co_await std::chrono::milliseconds(10);
-        auto progress{ co_await winrt::get_progress_token() };
-        Windows::Foundation::Collections::IVector<int32_t> vector{ winrt::single_threaded_vector<int>() };
-        for (int i = 0; i < 10; i++)
-        {
-            co_await std::chrono::milliseconds(10);
-            vector.Append(0);
-            progress((i + 1) * 0.1);
-        }
-        co_return vector;
-    }
-
-    Windows::Foundation::IAsyncAction Test::CreateAsyncException()
-    {
-        co_await winrt::resume_background();
-        co_await std::chrono::milliseconds(10);
-        throw std::invalid_argument("test");
     }
 
     Windows::Foundation::IPropertyValue Test::PropertyValue()
@@ -1218,6 +1404,16 @@ namespace winrt::TestComponent::implementation
         return reverse_array(values);
     }
 
+    com_array<Windows::Foundation::IReference<int32_t>> Test::RefArrayOutParam(
+        array_view<Windows::Foundation::IReference<int32_t> const> values,
+        com_array<Windows::Foundation::IReference<int32_t>>& rot1,
+        com_array<Windows::Foundation::IReference<int32_t>>& rot2)
+    {
+        rot1 = rotate_array(values, 1);
+        rot2 = rotate_array(values, 2);
+        return reverse_array(values);
+    }
+
     com_array<Windows::Foundation::Collections::IVector<int32_t>> Test::ObjectArrayOutParam(
         array_view<Windows::Foundation::Collections::IVector<int32_t> const> values,
         com_array<Windows::Foundation::Collections::IVector<int32_t>>& rot1,
@@ -1287,25 +1483,30 @@ namespace winrt::TestComponent::implementation
         for (auto& val : values)
         {
             val = next;
-            ++next.numerics.u8;
-            ++next.numerics.u16;
-            ++next.numerics.u32;
-            ++next.numerics.u64;
-            ++next.numerics.s16;
-            ++next.numerics.s32;
-            ++next.numerics.s64;
-            ++next.numerics.f32;
-            ++next.numerics.f64;
-            next.numerics.e = static_cast<TestEnum>(static_cast<int>(next.numerics.e) + 1);
-            ++next.strings.ch;
-            next.strings.str = std::wstring(next.strings.str.c_str(), next.strings.str.size()) + L"a";
-            ++next.strings.guid.Data1;
-            ++next.strings.guid.Data2;
-            ++next.strings.guid.Data3;
-            for (auto& byte : next.strings.guid.Data4)
+            ++next.Numerics.U8;
+            ++next.Numerics.U16;
+            ++next.Numerics.U32;
+            ++next.Numerics.U64;
+            ++next.Numerics.S16;
+            ++next.Numerics.S32;
+            ++next.Numerics.S64;
+            ++next.Numerics.F32;
+            ++next.Numerics.F64;
+            next.Numerics.Enum = static_cast<TestEnum>(static_cast<int>(next.Numerics.Enum) + 1);
+            ++next.Strings.Char;
+            next.Strings.String = std::wstring(next.Strings.String.c_str(), next.Strings.String.size()) + L"a";
+            ++next.Strings.Guid.Data1;
+            ++next.Strings.Guid.Data2;
+            ++next.Strings.Guid.Data3;
+            for (auto& byte : next.Strings.Guid.Data4)
                 ++byte;
-            next.bools.b = !next.bools.b;
+            next.Bools.Value = !next.Bools.Value;
         }
+    }
+
+    void Test::RefFillParam(array_view<Windows::Foundation::IReference<int32_t>> values)
+    {
+        std::iota(values.begin(), values.end(), 0);
     }
 
     void Test::ObjectFillParam(array_view<Windows::Foundation::Collections::IVector<int32_t>> values)
@@ -1455,53 +1656,5 @@ namespace winrt::TestComponent::implementation
     void Test::RaiseObjectEvent(Windows::Foundation::Collections::IVector<int32_t> const& value)
     {
         m_objectEventSource(*this, value);
-    }
-
-    bool Test::InvokeBoolDelegate(bool inputValue, BoolDelegate const& targetFn)
-    {
-        return targetFn(inputValue);
-    }
-
-    char16_t Test::InvokeCharDelegate(char16_t inputValue, CharDelegate const& targetFn)
-    {
-        return targetFn(inputValue);
-    }
-
-    int32_t Test::InvokeNumericDelegate(int32_t inputValue, NumericDelegate const& targetFn)
-    {
-        return targetFn(inputValue);
-    }
-
-    hstring Test::InvokeStringDelegate(hstring const& inputValue, StringDelegate const& targetFn)
-    {
-        return targetFn(inputValue);
-    }
-
-    winrt::guid Test::InvokeGuidDelegate(winrt::guid const& inputValue, GuidDelegate const& targetFn)
-    {
-        return targetFn(inputValue);
-    }
-
-    TestEnum Test::InvokeEnumDelegate(TestEnum const& inputValue, EnumDelegate const& targetFn)
-    {
-        return targetFn(inputValue);
-    }
-
-    CompositeType Test::InvokeCompositeStructDelegate(
-        CompositeType const& inputValue, CompositeStructDelegate const& targetFn)
-    {
-        return targetFn(inputValue);
-    }
-
-    Windows::Foundation::IReference<int32_t> Test::InvokeRefDelegate(
-        Windows::Foundation::IReference<int32_t> const& inputValue, RefDelegate const& targetFn)
-    {
-        return targetFn(inputValue);
-    }
-
-    Windows::Foundation::Collections::IVector<int32_t> Test::InvokeObjectDelegate(
-        Windows::Foundation::Collections::IVector<int32_t> const& inputValue, ObjectDelegate const& targetFn)
-    {
-        return targetFn(inputValue);
     }
 }

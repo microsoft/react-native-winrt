@@ -21,16 +21,16 @@ namespace TestComponent
     [contract(TestContract, 1)]
     struct NumericTypes
     {
-        UInt8 u8;
-        UInt16 u16;
-        UInt32 u32;
-        UInt64 u64;
-        Int16 s16;
-        Int32 s32;
-        Int64 s64;
-        Single f32;
-        Double f64;
-        TestEnum e;
+        UInt8 U8;
+        UInt16 U16;
+        UInt32 U32;
+        UInt64 U64;
+        Int16 S16;
+        Int32 S32;
+        Int64 S64;
+        Single F32;
+        Double F64;
+        TestEnum Enum;
 
         // TODO: IReference here and elsewhere? Or as its own?
     };
@@ -39,48 +39,64 @@ namespace TestComponent
     [contract(TestContract, 1)]
     struct StringTypes
     {
-        Char ch;
-        String str;
-        Guid guid;
+        Char Char;
+        String String;
+        Guid Guid;
     };
 
     // All of these are represented as 'boolean' in JavaScript
     [contract(TestContract, 1)]
     struct BooleanTypes
     {
-        Boolean b;
+        Boolean Value;
     };
 
     [contract(TestContract, 1)]
     struct CompositeType
     {
-        NumericTypes numerics;
-        StringTypes strings;
-        BooleanTypes bools;
+        NumericTypes Numerics;
+        StringTypes Strings;
+        BooleanTypes Bools;
     };
 
     // Delegates
-    // TODO: Error if argument is named 'value' & has a return value - https://github.com/microsoft/jswinrt/issues/15
-    delegate Boolean BoolDelegate(Boolean inputValue);
-    delegate Char CharDelegate(Char inputValue);
-    delegate Int32 NumericDelegate(Int32 inputValue);
-    delegate String StringDelegate(String inputValue);
-    delegate Guid GuidDelegate(Guid inputValue);
-    delegate TestEnum EnumDelegate(TestEnum inputValue);
-    delegate CompositeType CompositeStructDelegate(CompositeType inputValue);
-    delegate Windows.Foundation.IReference<Int32> RefDelegate(Windows.Foundation.IReference<Int32> inputValue);
-    delegate Windows.Foundation.Collections.IVector<Int32> ObjectDelegate(Windows.Foundation.Collections.IVector<Int32> inputValue);
+    delegate Boolean BoolDelegate(Boolean value);
+    delegate Char CharDelegate(Char value);
+    delegate Int32 NumericDelegate(Int32 value);
+    delegate String StringDelegate(String value);
+    delegate Guid GuidDelegate(Guid value);
+    delegate TestEnum EnumDelegate(TestEnum value);
+    delegate CompositeType CompositeStructDelegate(CompositeType value);
+    delegate Windows.Foundation.IReference<Int32> RefDelegate(Windows.Foundation.IReference<Int32> value);
+    delegate Windows.Foundation.Collections.IVector<Int32> ObjectDelegate(Windows.Foundation.Collections.IVector<Int32> value);
 
     // Delegates with out params
-    delegate void BoolDelegateWithOutParam(Boolean inputValue, out Boolean outValue);
-    delegate void CharDelegateWithOutParam(Char inputValue, out Char outValue);
-    delegate void NumericDelegateWithOutParam(Int32 inputValue, out Int32 outValue);
-    delegate void StringDelegateWithOutParam(String inputValue, out String outValue);
-    delegate void GuidDelegateWithOutParam(Guid inputValue, out Guid outValue);
-    delegate void EnumDelegateWithOutParam(TestEnum inputValue, out TestEnum outValue);
-    delegate void CompositeStructDelegateWithOutParam(CompositeType inputValue, out CompositeType outValue);
-    delegate void RefDelegateWithOutParam(Windows.Foundation.IReference<Int32> inputValue, out Windows.Foundation.IReference<Int32> outValue);
-    delegate void ObjectDelegateWithOutParam(Windows.Foundation.Collections.IVector<Int32> inputValue, out Windows.Foundation.Collections.IVector<Int32> outValue);
+    delegate void BoolDelegateWithOutParam(Boolean value, out Boolean outValue);
+    delegate void CharDelegateWithOutParam(Char value, out Char outValue);
+    delegate void NumericDelegateWithOutParam(Int32 value, out Int32 outValue);
+    delegate void StringDelegateWithOutParam(String value, out String outValue);
+    delegate void GuidDelegateWithOutParam(Guid value, out Guid outValue);
+    delegate void EnumDelegateWithOutParam(TestEnum value, out TestEnum outValue);
+    delegate void CompositeStructDelegateWithOutParam(CompositeType value, out CompositeType outValue);
+    delegate void RefDelegateWithOutParam(Windows.Foundation.IReference<Int32> value, out Windows.Foundation.IReference<Int32> outValue);
+    delegate void ObjectDelegateWithOutParam(Windows.Foundation.Collections.IVector<Int32> value, out Windows.Foundation.Collections.IVector<Int32> outValue);
+
+    // Delegates with array types
+    delegate Boolean[] BoolArrayDelegate(Boolean[] values, ref Boolean[] subset, out Boolean[] outValue);
+    delegate Char[] CharArrayDelegate(Char[] values, ref Char[] subset, out Char[] outValue);
+    delegate Int32[] NumericArrayDelegate(Int32[] values, ref Int32[] subset, out Int32[] outValue);
+    delegate String[] StringArrayDelegate(String[] values, ref String[] subset, out String[] outValue);
+    delegate Guid[] GuidArrayDelegate(Guid[] values, ref Guid[] subset, out Guid[] outValue);
+    delegate TestEnum[] EnumArrayDelegate(TestEnum[] values, ref TestEnum[] subset, out TestEnum[] outValue);
+    delegate CompositeType[] CompositeStructArrayDelegate(CompositeType[] values, ref CompositeType[] subset, out CompositeType[] outValue);
+    delegate Windows.Foundation.IReference<Int32>[] RefArrayDelegate(
+        Windows.Foundation.IReference<Int32>[] values,
+        ref Windows.Foundation.IReference<Int32>[] subset,
+        out Windows.Foundation.IReference<Int32>[] outValue);
+    delegate Windows.Foundation.Collections.IVector<Int32>[] ObjectArrayDelegate(
+        Windows.Foundation.Collections.IVector<Int32>[] values,
+        ref Windows.Foundation.Collections.IVector<Int32>[] subset,
+        out Windows.Foundation.Collections.IVector<Int32>[] outValue);
 
     [contract(TestContract, 1)]
     runtimeclass Test
@@ -95,7 +111,7 @@ namespace TestComponent
         static Boolean StaticBoolProperty;
         // TODO: More, but static properties don't seem to work
 
-        // Static array properties
+        // TODO: Static array properties, once static properties work
 
         // Static functions
         static Boolean StaticOr(Boolean lhs, Boolean rhs);
@@ -106,7 +122,7 @@ namespace TestComponent
         static String StaticAppendAll(String[] values);
 
         // Static out params
-        static Boolean StaticBoolOutParam(Boolean lhs, Boolean rhs, out Boolean and, out Boolean or);
+        static Boolean StaticBoolOutParam(Boolean lhs, Boolean rhs, out Boolean andResult, out Boolean orResult);
         static Char StaticCharOutParam(Char value, out Char next, out Char prev);
         static Int32 StaticNumericOutParam(Int32 value, out Int32 doubledValue, out Int32 tripledValue);
         static String StaticStringOutParam(String value, out String lower, out String upper);
@@ -130,7 +146,10 @@ namespace TestComponent
         static Guid[] StaticGuidArrayOutParam(Guid[] values, out Guid[] rot1, out Guid[] rot2);
         static TestEnum[] StaticEnumArrayOutParam(TestEnum[] values, out TestEnum[] rot1, out TestEnum[] rot2);
         static CompositeType[] StaticCompositeStructArrayOutParam(CompositeType[] values, out CompositeType[] rot1, out CompositeType[] rot2);
-        // TODO: Ref array
+        static Windows.Foundation.IReference<Int32>[] StaticRefArrayOutParam(
+            Windows.Foundation.IReference<Int32>[] values,
+            out Windows.Foundation.IReference<Int32>[] rot1,
+            out Windows.Foundation.IReference<Int32>[] rot2);
         static Windows.Foundation.Collections.IVector<Int32>[] StaticObjectArrayOutParam(
             Windows.Foundation.Collections.IVector<Int32>[] values,
             out Windows.Foundation.Collections.IVector<Int32>[] rot1,
@@ -144,7 +163,7 @@ namespace TestComponent
         static void StaticGuidFillParam(ref Guid[] values);
         static void StaticEnumFillParam(ref TestEnum[] values);
         static void StaticCompositeStructFillParam(ref CompositeType[] values);
-        // TODO: Ref
+        static void StaticRefFillParam(ref Windows.Foundation.IReference<Int32>[] values);
         static void StaticObjectFillParam(ref Windows.Foundation.Collections.IVector<Int32>[] values);
 
         // Static events
@@ -170,36 +189,72 @@ namespace TestComponent
         static void RaiseStaticObjectEvent(Windows.Foundation.Collections.IVector<Int32> value);
 
         // Static delegate invocation
-        static Boolean StaticInvokeBoolDelegate(Boolean inputValue, BoolDelegate targetFn);
-        static Char StaticInvokeCharDelegate(Char inputValue, CharDelegate targetFn);
-        static Int32 StaticInvokeNumericDelegate(Int32 inputValue, NumericDelegate targetFn);
-        static String StaticInvokeStringDelegate(String inputValue, StringDelegate targetFn);
-        static Guid StaticInvokeGuidDelegate(Guid inputValue, GuidDelegate targetFn);
-        static TestEnum StaticInvokeEnumDelegate(TestEnum inputValue, EnumDelegate targetFn);
-        static CompositeType StaticInvokeCompositeStructDelegate(CompositeType inputValue, CompositeStructDelegate targetFn);
-        static Windows.Foundation.IReference<Int32> StaticInvokeRefDelegate(Windows.Foundation.IReference<Int32> inputValue, RefDelegate targetFn);
+        static Boolean StaticInvokeBoolDelegate(Boolean value, BoolDelegate targetFn);
+        static Char StaticInvokeCharDelegate(Char value, CharDelegate targetFn);
+        static Int32 StaticInvokeNumericDelegate(Int32 value, NumericDelegate targetFn);
+        static String StaticInvokeStringDelegate(String value, StringDelegate targetFn);
+        static Guid StaticInvokeGuidDelegate(Guid value, GuidDelegate targetFn);
+        static TestEnum StaticInvokeEnumDelegate(TestEnum value, EnumDelegate targetFn);
+        static CompositeType StaticInvokeCompositeStructDelegate(CompositeType value, CompositeStructDelegate targetFn);
+        static Windows.Foundation.IReference<Int32> StaticInvokeRefDelegate(Windows.Foundation.IReference<Int32> value, RefDelegate targetFn);
         static Windows.Foundation.Collections.IVector<Int32> StaticInvokeObjectDelegate(
-            Windows.Foundation.Collections.IVector<Int32> inputValue,
+            Windows.Foundation.Collections.IVector<Int32> value,
             ObjectDelegate targetFn);
 
-        /* TODO: Delegates with out params currently cause compilation errors - https://github.com/microsoft/jswinrt/issues/16
-        static Boolean StaticInvokeBoolDelegateWithOutParam(Boolean inputValue, BoolDelegateWithOutParam targetFn);
-        static Char StaticInvokeCharDelegateWithOutParam(Char inputValue, CharDelegateWithOutParam targetFn);
-        static Int32 StaticInvokeNumericDelegateWithOutParam(Int32 inputValue, NumericDelegateWithOutParam targetFn);
-        static String StaticInvokeStringDelegateWithOutParam(String inputValue, StringDelegateWithOutParam targetFn);
-        static Guid StaticInvokeGuidDelegateWithOutParam(Guid inputValue, GuidDelegateWithOutParam targetFn);
-        static TestEnum StaticInvokeEnumDelegateWithOutParam(TestEnum inputValue, EnumDelegateWithOutParam targetFn);
-        static CompositeType StaticInvokeCompositeStructDelegateWithOutParam(CompositeType inputValue, CompositeStructDelegateWithOutParam targetFn);
+        static Boolean StaticInvokeBoolDelegateWithOutParam(Boolean value, BoolDelegateWithOutParam targetFn);
+        static Char StaticInvokeCharDelegateWithOutParam(Char value, CharDelegateWithOutParam targetFn);
+        static Int32 StaticInvokeNumericDelegateWithOutParam(Int32 value, NumericDelegateWithOutParam targetFn);
+        static String StaticInvokeStringDelegateWithOutParam(String value, StringDelegateWithOutParam targetFn);
+        static Guid StaticInvokeGuidDelegateWithOutParam(Guid value, GuidDelegateWithOutParam targetFn);
+        static TestEnum StaticInvokeEnumDelegateWithOutParam(TestEnum value, EnumDelegateWithOutParam targetFn);
+        static CompositeType StaticInvokeCompositeStructDelegateWithOutParam(CompositeType value, CompositeStructDelegateWithOutParam targetFn);
         static Windows.Foundation.IReference<Int32> StaticInvokeRefDelegateWithOutParam(
-            Windows.Foundation.IReference<Int32> inputValue,
+            Windows.Foundation.IReference<Int32> value,
             RefDelegateWithOutParam targetFn);
         static Windows.Foundation.Collections.IVector<Int32> StaticInvokeObjectDelegateWithOutParam(
-            Windows.Foundation.Collections.IVector<Int32> inputValue,
+            Windows.Foundation.Collections.IVector<Int32> value,
             ObjectDelegateWithOutParam targetFn);
-        */
 
-        // NOTE: Just a helper. Conversion support should ideally be built in
-        static Windows.Foundation.Collections.IVector<Int32> MakeNumericVector(Int32[] values);
+        static Boolean StaticInvokeBoolArrayDelegate(Boolean[] values, BoolArrayDelegate targetFn);
+        static Boolean StaticInvokeCharArrayDelegate(Char[] values, CharArrayDelegate targetFn);
+        static Boolean StaticInvokeNumericArrayDelegate(Int32[] values, NumericArrayDelegate targetFn);
+        static Boolean StaticInvokeStringArrayDelegate(String[] values, StringArrayDelegate targetFn);
+        static Boolean StaticInvokeGuidArrayDelegate(Guid[] values, GuidArrayDelegate targetFn);
+        static Boolean StaticInvokeEnumArrayDelegate(TestEnum[] values, EnumArrayDelegate targetFn);
+        static Boolean StaticInvokeCompositeStructArrayDelegate(CompositeType[] values, CompositeStructArrayDelegate targetFn);
+        static Boolean StaticInvokeRefArrayDelegate(Windows.Foundation.IReference<Int32>[] values, RefArrayDelegate targetFn);
+        static Boolean StaticInvokeObjectArrayDelegate(Windows.Foundation.Collections.IVector<Int32>[] values, ObjectArrayDelegate targetFn);
+
+        // Copy array to IVector
+        static Windows.Foundation.Collections.IVector<Boolean> CopyBoolsToVector(Boolean[] values);
+        static Windows.Foundation.Collections.IVector<Char> CopyCharsToVector(Char[] values);
+        static Windows.Foundation.Collections.IVector<Int32> CopyNumericsToVector(Int32[] values);
+        static Windows.Foundation.Collections.IVector<String> CopyStringsToVector(String[] values);
+        static Windows.Foundation.Collections.IVector<Guid> CopyGuidsToVector(Guid[] values);
+        static Windows.Foundation.Collections.IVector<TestEnum> CopyEnumValuesToVector(TestEnum[] values);
+        static Windows.Foundation.Collections.IVector<CompositeType> CopyCompositeStructsToVector(CompositeType[] values);
+        static Windows.Foundation.Collections.IVector<Windows.Foundation.IReference<Int32> > CopyRefsToVector(
+            Windows.Foundation.IReference<Int32>[] values);
+        static Windows.Foundation.Collections.IVector<Object> CopyObjectsToVector(Object[] values);
+
+        // Convert array to IVector
+        static Windows.Foundation.Collections.IVector<Boolean> ReturnSameBoolVector(Windows.Foundation.Collections.IVector<Boolean> vector);
+        static Windows.Foundation.Collections.IVector<Char> ReturnSameCharVector(Windows.Foundation.Collections.IVector<Char> vector);
+        static Windows.Foundation.Collections.IVector<Int32> ReturnSameNumericVector(Windows.Foundation.Collections.IVector<Int32> vector);
+        static Windows.Foundation.Collections.IVector<String> ReturnSameStringVector(Windows.Foundation.Collections.IVector<String> vector);
+        static Windows.Foundation.Collections.IVector<Guid> ReturnSameGuidVector(Windows.Foundation.Collections.IVector<Guid> vector);
+        static Windows.Foundation.Collections.IVector<TestEnum> ReturnSameEnumVector(Windows.Foundation.Collections.IVector<TestEnum> vector);
+        static Windows.Foundation.Collections.IVector<CompositeType> ReturnSameCompositeStructVector(Windows.Foundation.Collections.IVector<CompositeType> vector);
+        static Windows.Foundation.Collections.IVector<Windows.Foundation.IReference<Int32> > ReturnSameRefVector(
+            Windows.Foundation.Collections.IVector<Windows.Foundation.IReference<Int32> > vector);
+        static Windows.Foundation.Collections.IVector<Object> ReturnSameObjectVector(Windows.Foundation.Collections.IVector<Object> vector);
+
+        // Async
+        static Windows.Foundation.IAsyncAction PauseAsync(Int32 milliseconds);
+        static Windows.Foundation.IAsyncActionWithProgress<Int32> CountToNumberAsync(Int32 value);
+        static Windows.Foundation.IAsyncOperation<Int32> AddAsync(Int32 lhs, Int32 rhs);
+        static Windows.Foundation.IAsyncOperationWithProgress<Int32, Int32> CountDoubleAsync(Int32 value);
+        static Windows.Foundation.IAsyncAction ThrowAsyncException();
 
         // Member properties
         Boolean BoolProperty;
@@ -232,12 +287,6 @@ namespace TestComponent
         HRESULT HResultProperty;
         Windows.Foundation.IPropertyValue PropertyValue;
 
-        Windows.Foundation.IAsyncAction AppendZeroToIVectorAsync(Windows.Foundation.Collections.IVector<Int32> vector);
-        Windows.Foundation.IAsyncActionWithProgress<Double> FillZeroesToIVectorAsync(Windows.Foundation.Collections.IVector<Int32> vector);
-        Windows.Foundation.IAsyncOperation<Windows.Foundation.Collections.IVector<Int32> > CreateIVectorAsync();
-        Windows.Foundation.IAsyncOperationWithProgress<Windows.Foundation.Collections.IVector<Int32>, Double> CreateIVectorWithZeroesAsync();
-        Windows.Foundation.IAsyncAction CreateAsyncException();
-
         // Member array properties
         Boolean[] BooleanArrayProperty;
         Char[] CharArrayProperty;
@@ -246,8 +295,7 @@ namespace TestComponent
         Guid[] GuidArrayProperty;
         TestEnum[] EnumArrayProperty;
         CompositeType[] CompositeStructArrayProperty;
-        // TODO: Causes compilation errors in jswinrt: https://github.com/microsoft/jswinrt/issues/9
-        // Windows.Foundation.IReference<Int32>[] RefArrayProperty;
+        Windows.Foundation.IReference<Int32>[] RefArrayProperty;
         Windows.Foundation.Collections.IVector<Int32>[] ObjectArrayProperty;
 
         // Member functions
@@ -259,7 +307,7 @@ namespace TestComponent
         String AppendAll(String[] values);
 
         // Member out params
-        Boolean BoolOutParam(Boolean lhs, Boolean rhs, out Boolean and, out Boolean or);
+        Boolean BoolOutParam(Boolean lhs, Boolean rhs, out Boolean andResult, out Boolean orResult);
         Char CharOutParam(Char value, out Char next, out Char prev);
         Int32 NumericOutParam(Int32 value, out Int32 doubledValue, out Int32 tripledValue);
         String StringOutParam(String value, out String lower, out String upper);
@@ -283,6 +331,10 @@ namespace TestComponent
         Guid[] GuidArrayOutParam(Guid[] values, out Guid[] rot1, out Guid[] rot2);
         TestEnum[] EnumArrayOutParam(TestEnum[] values, out TestEnum[] rot1, out TestEnum[] rot2);
         CompositeType[] CompositeStructArrayOutParam(CompositeType[] values, out CompositeType[] rot1, out CompositeType[] rot2);
+        Windows.Foundation.IReference<Int32>[] RefArrayOutParam(
+            Windows.Foundation.IReference<Int32>[] values,
+            out Windows.Foundation.IReference<Int32>[] rot1,
+            out Windows.Foundation.IReference<Int32>[] rot2);
         Windows.Foundation.Collections.IVector<Int32>[] ObjectArrayOutParam(
             Windows.Foundation.Collections.IVector<Int32>[] values,
             out Windows.Foundation.Collections.IVector<Int32>[] rot1,
@@ -296,7 +348,7 @@ namespace TestComponent
         void GuidFillParam(ref Guid[] values);
         void EnumFillParam(ref TestEnum[] values);
         void CompositeStructFillParam(ref CompositeType[] values);
-        // TODO: Ref
+        void RefFillParam(ref Windows.Foundation.IReference<Int32>[] values);
         void ObjectFillParam(ref Windows.Foundation.Collections.IVector<Int32>[] values);
 
         // Member events
@@ -320,113 +372,33 @@ namespace TestComponent
         void RaiseCompositeStructEvent(CompositeType value);
         void RaiseRefEvent(Windows.Foundation.IReference<Int32> value);
         void RaiseObjectEvent(Windows.Foundation.Collections.IVector<Int32> value);
-
-        // Member delegate invocation
-        Boolean InvokeBoolDelegate(Boolean inputValue, BoolDelegate targetFn);
-        Char InvokeCharDelegate(Char inputValue, CharDelegate targetFn);
-        Int32 InvokeNumericDelegate(Int32 inputValue, NumericDelegate targetFn);
-        String InvokeStringDelegate(String inputValue, StringDelegate targetFn);
-        Guid InvokeGuidDelegate(Guid inputValue, GuidDelegate targetFn);
-        TestEnum InvokeEnumDelegate(TestEnum inputValue, EnumDelegate targetFn);
-        CompositeType InvokeCompositeStructDelegate(CompositeType inputValue, CompositeStructDelegate targetFn);
-        Windows.Foundation.IReference<Int32> InvokeRefDelegate(Windows.Foundation.IReference<Int32> inputValue, RefDelegate targetFn);
-        Windows.Foundation.Collections.IVector<Int32> InvokeObjectDelegate(
-            Windows.Foundation.Collections.IVector<Int32> inputValue,
-            ObjectDelegate targetFn);
     }
 
-
-
-
-
-
-
-#if 0
-    interface ITests
+    [contract(TestContract, 2)]
+    [exclusiveto(HierarchyBase)]
+    interface IHierarchyV2Contract 
+    { 
+        String IHierarchyV2ContractMethod();
+    };
+    
+    [contract(TestContract, 1)]
+    unsealed runtimeclass HierarchyBase : IHierarchyV2Contract
     {
-        /* TODO: Out params on delegates are currently not supported
-        void Param1Call(Param1Handler handler);
-        void Param2Call(Param2Handler handler);
-        void Param3Call(Param3Handler handler);
-        void Param4Call(Param4Handler handler);
-        void Param5Call(Param5Handler handler);
-        void Param6Call(Param6Handler handler);
-        void Param7Call(Param7Handler handler);
-        void Param8Call(Param8Handler handler);
-        void Param9Call(Param9Handler handler);
-        void Param10Call(Param10Handler handler);
-        void Param11Call(Param11Handler handler);
-        void Param12Call(Param12Handler handler);
-        void Param13Call(Param13Handler handler);
-        void Param14Call(Param14Handler handler);
-        void Param15Call(Param15Handler handler);
-        */
-
-        /* TODO: For some reason the following cause compilation errors w/ jswinrt
-        Boolean[] Array1(Boolean[] a, ref Boolean[] b, out Boolean[] c);
-        UInt8[] Array2(UInt8[] a, ref UInt8[] b, out UInt8[] c);
-        UInt16[] Array3(UInt16[] a, ref UInt16[] b, out UInt16[] c);
-        UInt32[] Array4(UInt32[] a, ref UInt32[] b, out UInt32[] c);
-        UInt64[] Array5(UInt64[] a, ref UInt64[] b, out UInt64[] c);
-        Int16[] Array6(Int16[] a, ref Int16[] b, out Int16[] c);
-        Int32[] Array7(Int32[] a, ref Int32[] b, out Int32[] c);
-        Int64[] Array8(Int64[] a, ref Int64[] b, out Int64[] c);
-        Single[] Array9(Single[] a, ref Single[] b, out Single[] c);
-        Double[] Array10(Double[] a, ref Double[] b, out Double[] c);
-        Char[] Array11(Char[] a, ref Char[] b, out Char[] c);
-        String[] Array12(String[] a, ref String[] b, out String[] c);
-        Blittable[] Array13(Blittable[] a, ref Blittable[] b, out Blittable[] c);
-        NonBlittable[] Array14(NonBlittable[] a, ref NonBlittable[] b, out NonBlittable[] c);
-        Nested[] Array15(Nested[] a, ref Nested[] b, out Nested[] c);
-        Windows.Foundation.IStringable[] Array16(Windows.Foundation.IStringable[] a, ref Windows.Foundation.IStringable[] b, out Windows.Foundation.IStringable[] c);
-        */
-
-        /* TODO: Out params on delegates are currently not supported
-        void Array1Call(Array1Handler handler);
-        void Array2Call(Array2Handler handler);
-        void Array3Call(Array3Handler handler);
-        void Array4Call(Array4Handler handler);
-        void Array5Call(Array5Handler handler);
-        void Array6Call(Array6Handler handler);
-        void Array7Call(Array7Handler handler);
-        void Array8Call(Array8Handler handler);
-        void Array9Call(Array9Handler handler);
-        void Array10Call(Array10Handler handler);
-        void Array11Call(Array11Handler handler);
-        void Array12Call(Array12Handler handler);
-        void Array13Call(Array13Handler handler);
-        void Array14Call(Array14Handler handler);
-        void Array15Call(Array15Handler handler);
-        void Array16Call(Array16Handler handler);
-        */
-
-        /* TODO: Collections support
-        Windows.Foundation.Collections.IIterable<String> Collection1(Windows.Foundation.Collections.IIterable<String> a, out Windows.Foundation.Collections.IIterable<String> b);
-        Windows.Foundation.Collections.IIterable<Windows.Foundation.Collections.IKeyValuePair<String, String> > Collection2(Windows.Foundation.Collections.IIterable<Windows.Foundation.Collections.IKeyValuePair<String, String> > a, out Windows.Foundation.Collections.IIterable<Windows.Foundation.Collections.IKeyValuePair<String, String> > b);
-        Windows.Foundation.Collections.IMap<String, String> Collection3(Windows.Foundation.Collections.IMap<String, String> a, out Windows.Foundation.Collections.IMap<String, String> b);
-        Windows.Foundation.Collections.IMapView<String, String> Collection4(Windows.Foundation.Collections.IMapView<String, String> a, out Windows.Foundation.Collections.IMapView<String, String> b);
-        Windows.Foundation.Collections.IVector<String> Collection5(Windows.Foundation.Collections.IVector<String> a, out Windows.Foundation.Collections.IVector<String> b);
-        Windows.Foundation.Collections.IVectorView<String> Collection6(Windows.Foundation.Collections.IVectorView<String> a, out Windows.Foundation.Collections.IVectorView<String> b);
-
-        void Collection1Call(Collection1Handler handler);
-        void Collection2Call(Collection2Handler handler);
-        void Collection3Call(Collection3Handler handler);
-        void Collection4Call(Collection4Handler handler);
-        void Collection5Call(Collection5Handler handler);
-        void Collection6Call(Collection6Handler handler);
-        */
-
-        /* TODO: The following require that we have an IAsyncAction in hand
-        Windows.Foundation.IAsyncAction Async1(Windows.Foundation.IAsyncAction suspend, Boolean fail);
-        Windows.Foundation.IAsyncActionWithProgress<Int32> Async2(Windows.Foundation.IAsyncAction suspend, Boolean fail, Int32 progress);
-        Windows.Foundation.IAsyncOperation<Int32> Async3(Windows.Foundation.IAsyncAction suspend, Boolean fail, Int32 result);
-        Windows.Foundation.IAsyncOperationWithProgress<Int32, Int32> Async4(Windows.Foundation.IAsyncAction suspend, Boolean fail, Int32 result, Int32 progress);
-
-        void Async1Call(Async1Handler handler);
-        void Async2Call(Async2Handler handler);
-        void Async3Call(Async3Handler handler);
-        void Async4Call(Async4Handler handler);
-        */
+        HierarchyBase();
+        String OverriddenHierarchyBaseMethod();
+        overridable String OverriddenHierarchyBaseMethodOverride();
+        String NonOverriddenHierarchyBaseMethod();
+        String OverloadedHierarchyBaseMethod(String param1);
+        protected void InaccessibleHierarchyBaseMethod();
+        static String StaticHierarchyBaseMethod();
     }
-#endif
+
+    [contract(TestContract, 1)]
+    unsealed runtimeclass HierarchyDerived : HierarchyBase
+    {
+        HierarchyDerived(String name);
+        String HierarchyDerivedMethod();
+        String OverloadedHierarchyBaseMethod(String param1, String param2);
+    }
+
 }

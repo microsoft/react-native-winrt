@@ -111,10 +111,14 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClInclude Include="HierarchyBase.h" />
+    <ClInclude Include="HierarchyDerived.h" />
     <ClInclude Include="pch.h" />
     <ClInclude Include="Test.h" />
   </ItemGroup>
   <ItemGroup>
+    <ClCompile Include="HierarchyBase.cpp" />
+    <ClCompile Include="HierarchyDerived.cpp" />
     <ClCompile Include="pch.cpp">
       <PrecompiledHeader>Create</PrecompiledHeader>
     </ClCompile>

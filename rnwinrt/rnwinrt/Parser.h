@@ -1,4 +1,5 @@
-//This file has been copied from cswinrt: https://github.com/microsoft/CsWinRT/blob/master/src/cswinrt/helpers.h and modified.
+// This file has been copied from cswinrt: https://github.com/microsoft/CsWinRT/blob/master/src/cswinrt/helpers.h and
+// modified.
 
 #pragma once
 
@@ -922,5 +923,3 @@ namespace jswinrt::typeparser
         }
     }
 }
-
-

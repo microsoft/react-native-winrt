@@ -14,15 +14,14 @@ import {
 } from 'react-native';
 import { Scenario } from './Scenario';
 import { styles } from './Styles';
-import {
-    TestResult,
-    assert
-} from './TestCommon'
+import { TestResult } from './TestCommon'
 import { makePropertiesTestScenarios } from './PropertiesTests'
 import { makeBasicFunctionTestScenarios } from './BasicFunctionTests'
 import { makeArrayTestScenarios } from './ArrayTests'
 import { makeDelegateAndEventTestScenarios } from './DelegateAndEventTests'
 import { makeAsyncTestScenarios } from './AsyncTests'
+import { makeCollectionsTests } from './CollectionsTests'
+import { makeInheritanceTestScenarios } from './InheritanceTests'
 
 class App extends Component {
     test = new TestComponent.Test();
@@ -37,6 +36,8 @@ class App extends Component {
         ...makeArrayTestScenarios(this),
         ...makeDelegateAndEventTestScenarios(this),
         ...makeAsyncTestScenarios(this),
+        ...makeCollectionsTests(this),
+        ...makeInheritanceTestScenarios(this),
     ];
 
     runSync(scenario, fn) {

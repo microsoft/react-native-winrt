@@ -8,9 +8,9 @@
     <ClCompile Include="Settings.cpp" />
     <ClCompile Include="Writer.cpp" />
     <ClCompile Include="FileGenerator.cpp" />
-    <ClCompile Include="ValueConverters.cpp" />
     <ClCompile Include="TypeFilter.cpp" />
     <ClCompile Include="TextWriter.cpp" />
+    <ClCompile Include="MetadataTypes.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="pch.h" />
@@ -19,11 +19,11 @@
     <ClInclude Include="MetadataHelpers.h" />
     <ClInclude Include="Writer.h" />
     <ClInclude Include="FileGenerator.h" />
-    <ClInclude Include="ValueConverters.h" />
     <ClInclude Include="TypeFilter.h" />
     <ClInclude Include="TextWriter.h" />
     <ClInclude Include="TypescriptWriter.h" />
     <ClInclude Include="Parser.h" />
+    <ClInclude Include="MetadataTypes.h" />
   </ItemGroup>
   <ItemGroup>
     <None Include="packages.config" />
