@@ -2,27 +2,27 @@
 
 declare namespace TestComponent {
     type BoolArrayDelegate = (values: boolean[]) => { subset: boolean[]; outValue: boolean[]; returnValue: boolean[] };
-
+    
     type BoolDelegate = (value: boolean) => boolean;
-
+    
     type BoolDelegateWithOutParam = (value: boolean) => boolean;
-
+    
     interface BooleanTypes {
          value: boolean;
     }
 
     type CharArrayDelegate = (values: string[]) => { subset: string[]; outValue: string[]; returnValue: string[] };
-
+    
     type CharDelegate = (value: string) => string;
-
+    
     type CharDelegateWithOutParam = (value: string) => string;
-
+    
     type CompositeStructArrayDelegate = (values: TestComponent.CompositeType[]) => { subset: TestComponent.CompositeType[]; outValue: TestComponent.CompositeType[]; returnValue: TestComponent.CompositeType[] };
-
+    
     type CompositeStructDelegate = (value: TestComponent.CompositeType) => TestComponent.CompositeType;
-
+    
     type CompositeStructDelegateWithOutParam = (value: TestComponent.CompositeType) => TestComponent.CompositeType;
-
+    
     interface CompositeType {
          numerics: TestComponent.NumericTypes;
          strings: TestComponent.StringTypes;
@@ -30,17 +30,17 @@ declare namespace TestComponent {
     }
 
     type EnumArrayDelegate = (values: TestComponent.TestEnum[]) => { subset: TestComponent.TestEnum[]; outValue: TestComponent.TestEnum[]; returnValue: TestComponent.TestEnum[] };
-
+    
     type EnumDelegate = (value: TestComponent.TestEnum) => TestComponent.TestEnum;
-
+    
     type EnumDelegateWithOutParam = (value: TestComponent.TestEnum) => TestComponent.TestEnum;
-
+    
     type GuidArrayDelegate = (values: string[]) => { subset: string[]; outValue: string[]; returnValue: string[] };
-
+    
     type GuidDelegate = (value: string) => string;
-
+    
     type GuidDelegateWithOutParam = (value: string) => string;
-
+    
     class HierarchyBase {
         constructor();
         overriddenHierarchyBaseMethod(): string;
@@ -59,11 +59,11 @@ declare namespace TestComponent {
     }
 
     type NumericArrayDelegate = (values: number[]) => { subset: number[]; outValue: number[]; returnValue: number[] };
-
+    
     type NumericDelegate = (value: number) => number;
-
+    
     type NumericDelegateWithOutParam = (value: number) => number;
-
+    
     interface NumericTypes {
          u8: number;
          u16: number;
@@ -78,23 +78,23 @@ declare namespace TestComponent {
     }
 
     type ObjectArrayDelegate = (values: Windows.Foundation.Collections.IVector<number>[]) => { subset: Windows.Foundation.Collections.IVector<number>[]; outValue: Windows.Foundation.Collections.IVector<number>[]; returnValue: Windows.Foundation.Collections.IVector<number>[] };
-
+    
     type ObjectDelegate = (value: Windows.Foundation.Collections.IVector<number>) => Windows.Foundation.Collections.IVector<number>;
-
+    
     type ObjectDelegateWithOutParam = (value: Windows.Foundation.Collections.IVector<number>) => Windows.Foundation.Collections.IVector<number>;
-
+    
     type RefArrayDelegate = (values: number[] | null) => { subset: number[] | null; outValue: number[] | null; returnValue: number[] | null };
-
+    
     type RefDelegate = (value: number | null) => number | null;
-
+    
     type RefDelegateWithOutParam = (value: number | null) => number | null;
-
+    
     type StringArrayDelegate = (values: string[]) => { subset: string[]; outValue: string[]; returnValue: string[] };
-
+    
     type StringDelegate = (value: string) => string;
-
+    
     type StringDelegateWithOutParam = (value: string) => string;
-
+    
     interface StringTypes {
          char: string;
          string: string;
@@ -281,13 +281,13 @@ declare namespace TestComponent {
         static returnSameCompositeStructVector(vector: Windows.Foundation.Collections.IVector<TestComponent.CompositeType>): Windows.Foundation.Collections.IVector<TestComponent.CompositeType>;
         static returnSameRefVector(vector: Windows.Foundation.Collections.IVector<number | null>): Windows.Foundation.Collections.IVector<number | null>;
         static returnSameObjectVector(vector: Windows.Foundation.Collections.IVector<any>): Windows.Foundation.Collections.IVector<any>;
+        static createStringToNumberMap(): Windows.Foundation.Collections.IMap<string, number>;
+        static copyToMapView(stringToNumberMap: Windows.Foundation.Collections.IMap<string, number>): Windows.Foundation.Collections.IMapView<string, number>;
         static pauseAsync(milliseconds: number): Windows.Foundation.WinRTPromise<void, void>;
         static countToNumberAsync(value: number): Windows.Foundation.WinRTPromise<void, number>;
         static addAsync(lhs: number, rhs: number): Windows.Foundation.WinRTPromise<number, void>;
         static countDoubleAsync(value: number): Windows.Foundation.WinRTPromise<number, number>;
         static throwAsyncException(): Windows.Foundation.WinRTPromise<void, void>;
-        static createStringToNumberMap(): Windows.Foundation.Collections.IMap<string, number>;
-        static copyToMapView(stringToNumberMap: Windows.Foundation.Collections.IMap<string, number>): Windows.Foundation.Collections.IMapView<string, number>;
         addEventListener(type: "booleventhandler", listener: Windows.Foundation.EventHandler<boolean>): void
         addEventListener(type: "chareventhandler", listener: Windows.Foundation.EventHandler<string>): void
         addEventListener(type: "compositestructeventhandler", listener: Windows.Foundation.EventHandler<TestComponent.CompositeType>): void

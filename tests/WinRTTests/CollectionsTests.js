@@ -687,8 +687,8 @@ function doCommonVectorAsArrayTest(makeVectorFn) {
     doVectorEntriesTest(makeVectorFn, [1, 2, 3, 4, 5]);
 
     // Array.prototype.every
-    assert.throwsException(() => makeVectorFn([]).every());
-    assert.throwsException(() => makeVectorFn([]).every(42));
+    assert.throwsError(() => makeVectorFn([]).every());
+    assert.throwsError(() => makeVectorFn([]).every(42));
     doVectorEveryTest(makeVectorFn, []);
     doVectorEveryTest(makeVectorFn, [1]);
     doVectorEveryTest(makeVectorFn, [2]);
@@ -696,8 +696,8 @@ function doCommonVectorAsArrayTest(makeVectorFn) {
     doVectorEveryTest(makeVectorFn, [2, 4, 6, 9, 10]);
 
     // Array.prototype.filter
-    assert.throwsException(() => makeVectorFn([]).filter());
-    assert.throwsException(() => makeVectorFn([]).filter(42));
+    assert.throwsError(() => makeVectorFn([]).filter());
+    assert.throwsError(() => makeVectorFn([]).filter(42));
     doVectorFilterTest(makeVectorFn, []);
     doVectorFilterTest(makeVectorFn, [1]);
     doVectorFilterTest(makeVectorFn, [2]);
@@ -714,8 +714,8 @@ function doCommonVectorAsArrayTest(makeVectorFn) {
     // TODO: flat & flatMap
 
     // Array.prototype.forEach
-    assert.throwsException(() => makeVectorFn([]).forEach());
-    assert.throwsException(() => makeVectorFn([]).forEach(42));
+    assert.throwsError(() => makeVectorFn([]).forEach());
+    assert.throwsError(() => makeVectorFn([]).forEach(42));
     doVectorForEachTest(makeVectorFn, []);
     doVectorForEachTest(makeVectorFn, [42]);
     doVectorForEachTest(makeVectorFn, numericVectorContents);
@@ -755,19 +755,19 @@ function doCommonVectorAsArrayTest(makeVectorFn) {
     doVectorKeysTest(makeVectorFn, numericVectorContents);
 
     // Array.prototype.map
-    assert.throwsException(() => makeVectorFn([]).map());
-    assert.throwsException(() => makeVectorFn([]).map(42));
+    assert.throwsError(() => makeVectorFn([]).map());
+    assert.throwsError(() => makeVectorFn([]).map(42));
     doVectorMapTest(makeVectorFn, []);
     doVectorMapTest(makeVectorFn, [42]);
     doVectorMapTest(makeVectorFn, numericVectorContents);
 
     // Array.prototype.reduce / Array.prototype.reduceRight
-    assert.throwsException(() => makeVectorFn([]).reduce());
-    assert.throwsException(() => makeVectorFn([]).reduce(42));
-    assert.throwsException(() => makeVectorFn([]).reduce(() => 42));
-    assert.throwsException(() => makeVectorFn([]).reduceRight());
-    assert.throwsException(() => makeVectorFn([]).reduceRight(42));
-    assert.throwsException(() => makeVectorFn([]).reduceRight(() => 42));
+    assert.throwsError(() => makeVectorFn([]).reduce());
+    assert.throwsError(() => makeVectorFn([]).reduce(42));
+    assert.throwsError(() => makeVectorFn([]).reduce(() => 42));
+    assert.throwsError(() => makeVectorFn([]).reduceRight());
+    assert.throwsError(() => makeVectorFn([]).reduceRight(42));
+    assert.throwsError(() => makeVectorFn([]).reduceRight(() => 42));
     doVectorReduceTest(makeVectorFn, [], 42);
     doVectorReduceTest(makeVectorFn, [42]);
     doVectorReduceTest(makeVectorFn, [42], 8);
@@ -794,8 +794,8 @@ function doCommonVectorAsArrayTest(makeVectorFn) {
     doVectorSliceTest(makeVectorFn, numericVectorContents, NaN);
 
     // Array.prototype.some
-    assert.throwsException(() => makeVectorFn([]).some());
-    assert.throwsException(() => makeVectorFn([]).some(42));
+    assert.throwsError(() => makeVectorFn([]).some());
+    assert.throwsError(() => makeVectorFn([]).some(42));
     doVectorSomeTest(makeVectorFn, [], 42);
     doVectorSomeTest(makeVectorFn, [42], 8);
     doVectorSomeTest(makeVectorFn, [42], 42);
@@ -1023,7 +1023,7 @@ function runVectorAsArrayTest(scenario) {
         doVectorCopyWithinTest(numericVectorContents, -1); // Copy first to last
 
         // Array.prototype.fill
-        assert.throwsException(() => { TestComponent.Test.copyNumericsToVector([0]).fill('42'); });
+        assert.throwsError(() => { TestComponent.Test.copyNumericsToVector([0]).fill('42'); });
         doVectorFillTest([], 0, 0, 100);
         doVectorFillTest(numericVectorContents, 42);
         doVectorFillTest(numericVectorContents, 42, 3);
@@ -1056,7 +1056,7 @@ function runVectorAsArrayTest(scenario) {
         doVectorShiftUnshiftTest(numericVectorContents);
 
         // Array.prototype.sort
-        assert.throwsException(() => TestComponent.Test.copyNumericsToVector([]).sort(42));
+        assert.throwsError(() => TestComponent.Test.copyNumericsToVector([]).sort(42));
         doVectorSortTest([]);
         doVectorSortTest([42]);
         doVectorSortTest([1, 9, 17, 22, 1024, 42, 88, 7]);
@@ -1142,7 +1142,7 @@ function runIMapAsJSObjectTest(scenario) {
         assert.equal(typeof(map.clear), "function");
         assert.equal(map.lookup("clear"), 3);
 
-        assert.throwsException(() => {
+        assert.throwsError(() => {
             map["a"] = "b";
         })
     });
@@ -1153,7 +1153,7 @@ function runIMapViewAsReadonlyJSObject(scenario) {
         const map = TestComponent.Test.createStringToNumberMap();
         map["hello"] = 1;
         map.insert("world", 2);
-        
+
         const mapView = TestComponent.Test.copyToMapView(map);
         assert.equal(mapView["hello"], 1);
         assert.equal(mapView["world"], 2);
