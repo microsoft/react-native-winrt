@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <Project DefaultTargets="Build" ToolsVersion="16.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
   <PropertyGroup>
-    <JsWinRTDir>..\packages\Microsoft.Windows.JsWinRT.20210323.3.0</JsWinRTDir>
+    <JsWinRTDir>..\packages\Microsoft.Windows.JsWinRT.20210414.4.0</JsWinRTDir>
   </PropertyGroup>
   <Import Project="$(JsWinRTDir)\build\native\WinRTTurboModule.props" Condition="Exists('$(JsWinRTDir)\build\native\WinRTTurboModule.props')" />
   <Import Project="..\packages\Microsoft.Windows.CppWinRT.2.0.201113.7\build\native\Microsoft.Windows.CppWinRT.props" Condition="Exists('..\packages\Microsoft.Windows.CppWinRT.2.0.201113.7\build\native\Microsoft.Windows.CppWinRT.props')" />
