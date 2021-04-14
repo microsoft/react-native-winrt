@@ -266,10 +266,8 @@ namespace winrt::TestComponent::implementation
         return reverse_array(values);
     }
 
-    com_array<IReference<int32_t>> Test::StaticRefArrayOutParam(
-        array_view<IReference<int32_t> const> values,
-        com_array<IReference<int32_t>>& rot1,
-        com_array<IReference<int32_t>>& rot2)
+    com_array<IReference<int32_t>> Test::StaticRefArrayOutParam(array_view<IReference<int32_t> const> values,
+        com_array<IReference<int32_t>>& rot1, com_array<IReference<int32_t>>& rot2)
     {
         rot1 = rotate_array(values, 1);
         rot2 = rotate_array(values, 2);
@@ -629,8 +627,7 @@ namespace winrt::TestComponent::implementation
     }
 
     IVector<int32_t> Test::StaticInvokeObjectDelegateWithOutParam(
-        IVector<int32_t> const& inputValue,
-        ObjectDelegateWithOutParam const& targetFn)
+        IVector<int32_t> const& inputValue, ObjectDelegateWithOutParam const& targetFn)
     {
         IVector<int32_t> result;
         targetFn(inputValue, result);
