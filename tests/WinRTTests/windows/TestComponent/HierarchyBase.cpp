@@ -1,7 +1,8 @@
 #include "pch.h"
 
-#include "HierarchyBase.g.cpp"
 #include "HierarchyBase.h"
+
+#include "HierarchyBase.g.cpp"
 
 namespace winrt::TestComponent::implementation
 {
