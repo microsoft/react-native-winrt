@@ -150,6 +150,6 @@
   </Target>
   <Target Name="Deploy" />
   <Target Name="BuildStrings" AfterTargets="PrepareForBuild" Inputs="./strings/base.h;./strings/base.cpp" Outputs="$(OutputPath)/strings.h">
-    <Exec Command="$(OutputPath)strings.exe ./strings $(OutputPath)" />
+    <Exec Command="&quot;$(OutputPath)strings.exe&quot; ./strings &quot;$(OutputPath.TrimEnd('\'))&quot;" />
   </Target>
 </Project>

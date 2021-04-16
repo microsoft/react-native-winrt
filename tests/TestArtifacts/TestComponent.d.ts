@@ -263,6 +263,15 @@ declare namespace TestComponent {
         static copyCompositeStructsToVector(values: TestComponent.CompositeType[]): Windows.Foundation.Collections.IVector<TestComponent.CompositeType>;
         static copyRefsToVector(values: number[] | null): Windows.Foundation.Collections.IVector<number | null>;
         static copyObjectsToVector(values: any): Windows.Foundation.Collections.IVector<any>;
+        static copyBoolsToVectorView(values: boolean[]): Windows.Foundation.Collections.IVectorView<boolean>;
+        static copyCharsToVectorView(values: string[]): Windows.Foundation.Collections.IVectorView<string>;
+        static copyNumericsToVectorView(values: number[]): Windows.Foundation.Collections.IVectorView<number>;
+        static copyStringsToVectorView(values: string[]): Windows.Foundation.Collections.IVectorView<string>;
+        static copyGuidsToVectorView(values: string[]): Windows.Foundation.Collections.IVectorView<string>;
+        static copyEnumValuesToVectorView(values: TestComponent.TestEnum[]): Windows.Foundation.Collections.IVectorView<TestComponent.TestEnum>;
+        static copyCompositeStructsToVectorView(values: TestComponent.CompositeType[]): Windows.Foundation.Collections.IVectorView<TestComponent.CompositeType>;
+        static copyRefsToVectorView(values: number[] | null): Windows.Foundation.Collections.IVectorView<number | null>;
+        static copyObjectsToVectorView(values: any): Windows.Foundation.Collections.IVectorView<any>;
         static returnSameBoolVector(vector: Windows.Foundation.Collections.IVector<boolean>): Windows.Foundation.Collections.IVector<boolean>;
         static returnSameCharVector(vector: Windows.Foundation.Collections.IVector<string>): Windows.Foundation.Collections.IVector<string>;
         static returnSameNumericVector(vector: Windows.Foundation.Collections.IVector<number>): Windows.Foundation.Collections.IVector<number>;
@@ -272,6 +281,8 @@ declare namespace TestComponent {
         static returnSameCompositeStructVector(vector: Windows.Foundation.Collections.IVector<TestComponent.CompositeType>): Windows.Foundation.Collections.IVector<TestComponent.CompositeType>;
         static returnSameRefVector(vector: Windows.Foundation.Collections.IVector<number | null>): Windows.Foundation.Collections.IVector<number | null>;
         static returnSameObjectVector(vector: Windows.Foundation.Collections.IVector<any>): Windows.Foundation.Collections.IVector<any>;
+        static createStringToNumberMap(): Windows.Foundation.Collections.IMap<string, number>;
+        static copyToMapView(stringToNumberMap: Windows.Foundation.Collections.IMap<string, number>): Windows.Foundation.Collections.IMapView<string, number>;
         static pauseAsync(milliseconds: number): Windows.Foundation.WinRTPromise<void, void>;
         static countToNumberAsync(value: number): Windows.Foundation.WinRTPromise<void, number>;
         static addAsync(lhs: number, rhs: number): Windows.Foundation.WinRTPromise<number, void>;
