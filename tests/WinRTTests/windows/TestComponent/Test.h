@@ -190,8 +190,7 @@ namespace winrt::TestComponent::implementation
         static Windows::Foundation::IReference<int32_t> StaticInvokeRefDelegateWithOutParam(
             Windows::Foundation::IReference<int32_t> const& inputValue, RefDelegateWithOutParam const& targetFn);
         static TestComponent::TestObject StaticInvokeObjectDelegateWithOutParam(
-            TestComponent::TestObject const& inputValue,
-            ObjectDelegateWithOutParam const& targetFn);
+            TestComponent::TestObject const& inputValue, ObjectDelegateWithOutParam const& targetFn);
 
         static bool StaticInvokeBoolArrayDelegate(array_view<bool const> values, BoolArrayDelegate const& targetFn);
         static bool StaticInvokeCharArrayDelegate(array_view<char16_t const> values, CharArrayDelegate const& targetFn);
