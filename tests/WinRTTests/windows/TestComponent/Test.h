@@ -245,6 +245,9 @@ namespace winrt::TestComponent::implementation
         static Windows::Foundation::Collections::IVectorView<Windows::Foundation::IInspectable> CopyObjectsToVectorView(
             array_view<Windows::Foundation::IInspectable const> values);
 
+        static Windows::Foundation::Collections::IObservableVector<int32_t> MakeObservableVector();
+        static Windows::Foundation::Collections::IObservableMap<hstring, int32_t> MakeObservableMap();
+
         static Windows::Foundation::Collections::IVector<bool> ReturnSameBoolVector(
             Windows::Foundation::Collections::IVector<bool> const& vector);
         static Windows::Foundation::Collections::IVector<char16_t> ReturnSameCharVector(
@@ -263,6 +266,46 @@ namespace winrt::TestComponent::implementation
             Windows::Foundation::Collections::IVector<Windows::Foundation::IReference<int32_t>> const& vector);
         static Windows::Foundation::Collections::IVector<TestComponent::TestObject> ReturnSameObjectVector(
             Windows::Foundation::Collections::IVector<TestComponent::TestObject> const& vector);
+
+        static Windows::Foundation::Collections::IVectorView<bool> ReturnSameBoolVectorView(
+            Windows::Foundation::Collections::IVectorView<bool> const& vector);
+        static Windows::Foundation::Collections::IVectorView<char16_t> ReturnSameCharVectorView(
+            Windows::Foundation::Collections::IVectorView<char16_t> const& vector);
+        static Windows::Foundation::Collections::IVectorView<int32_t> ReturnSameNumericVectorView(
+            Windows::Foundation::Collections::IVectorView<int32_t> const& vector);
+        static Windows::Foundation::Collections::IVectorView<hstring> ReturnSameStringVectorView(
+            Windows::Foundation::Collections::IVectorView<hstring> const& vector);
+        static Windows::Foundation::Collections::IVectorView<winrt::guid> ReturnSameGuidVectorView(
+            Windows::Foundation::Collections::IVectorView<winrt::guid> const& vector);
+        static Windows::Foundation::Collections::IVectorView<TestEnum> ReturnSameEnumVectorView(
+            Windows::Foundation::Collections::IVectorView<TestEnum> const& vector);
+        static Windows::Foundation::Collections::IVectorView<CompositeType> ReturnSameCompositeStructVectorView(
+            Windows::Foundation::Collections::IVectorView<CompositeType> const& vector);
+        static Windows::Foundation::Collections::IVectorView<Windows::Foundation::IReference<int32_t>>
+        ReturnSameRefVectorView(
+            Windows::Foundation::Collections::IVectorView<Windows::Foundation::IReference<int32_t>> const& vector);
+        static Windows::Foundation::Collections::IVectorView<TestComponent::TestObject> ReturnSameObjectVectorView(
+            Windows::Foundation::Collections::IVectorView<TestComponent::TestObject> const& vector);
+
+        static Windows::Foundation::Collections::IIterable<bool> ReturnSameBoolIterable(
+            Windows::Foundation::Collections::IIterable<bool> const& iterable);
+        static Windows::Foundation::Collections::IIterable<char16_t> ReturnSameCharIterable(
+            Windows::Foundation::Collections::IIterable<char16_t> const& iterable);
+        static Windows::Foundation::Collections::IIterable<int32_t> ReturnSameNumericIterable(
+            Windows::Foundation::Collections::IIterable<int32_t> const& iterable);
+        static Windows::Foundation::Collections::IIterable<hstring> ReturnSameStringIterable(
+            Windows::Foundation::Collections::IIterable<hstring> const& iterable);
+        static Windows::Foundation::Collections::IIterable<winrt::guid> ReturnSameGuidIterable(
+            Windows::Foundation::Collections::IIterable<winrt::guid> const& iterable);
+        static Windows::Foundation::Collections::IIterable<TestEnum> ReturnSameEnumIterable(
+            Windows::Foundation::Collections::IIterable<TestEnum> const& iterable);
+        static Windows::Foundation::Collections::IIterable<CompositeType> ReturnSameCompositeStructIterable(
+            Windows::Foundation::Collections::IIterable<CompositeType> const& iterable);
+        static Windows::Foundation::Collections::IIterable<Windows::Foundation::IReference<int32_t>>
+        ReturnSameRefIterable(
+            Windows::Foundation::Collections::IIterable<Windows::Foundation::IReference<int32_t>> const& iterable);
+        static Windows::Foundation::Collections::IIterable<TestComponent::TestObject> ReturnSameObjectIterable(
+            Windows::Foundation::Collections::IIterable<TestComponent::TestObject> const& iterable);
 
         static Windows::Foundation::IAsyncAction PauseAsync(int32_t milliseconds);
         static Windows::Foundation::IAsyncActionWithProgress<int32_t> CountToNumberAsync(int32_t value);

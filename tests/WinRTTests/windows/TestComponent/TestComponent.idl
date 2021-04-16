@@ -317,6 +317,10 @@ namespace TestComponent
             Windows.Foundation.IReference<Int32>[] values);
         static Windows.Foundation.Collections.IVectorView<Object> CopyObjectsToVectorView(Object[] values);
 
+        // Observable collections
+        static Windows.Foundation.Collections.IObservableVector<Int32> MakeObservableVector();
+        static Windows.Foundation.Collections.IObservableMap<String, Int32> MakeObservableMap();
+
         // Convert array to IVector
         static Windows.Foundation.Collections.IVector<Boolean> ReturnSameBoolVector(Windows.Foundation.Collections.IVector<Boolean> vector);
         static Windows.Foundation.Collections.IVector<Char> ReturnSameCharVector(Windows.Foundation.Collections.IVector<Char> vector);
@@ -329,7 +333,31 @@ namespace TestComponent
             Windows.Foundation.Collections.IVector<Windows.Foundation.IReference<Int32> > vector);
         static Windows.Foundation.Collections.IVector<TestObject> ReturnSameObjectVector(Windows.Foundation.Collections.IVector<TestObject> vector);
 
-        // IMap 
+        // Convert array to IVectorView
+        static Windows.Foundation.Collections.IVectorView<Boolean> ReturnSameBoolVectorView(Windows.Foundation.Collections.IVectorView<Boolean> vector);
+        static Windows.Foundation.Collections.IVectorView<Char> ReturnSameCharVectorView(Windows.Foundation.Collections.IVectorView<Char> vector);
+        static Windows.Foundation.Collections.IVectorView<Int32> ReturnSameNumericVectorView(Windows.Foundation.Collections.IVectorView<Int32> vector);
+        static Windows.Foundation.Collections.IVectorView<String> ReturnSameStringVectorView(Windows.Foundation.Collections.IVectorView<String> vector);
+        static Windows.Foundation.Collections.IVectorView<Guid> ReturnSameGuidVectorView(Windows.Foundation.Collections.IVectorView<Guid> vector);
+        static Windows.Foundation.Collections.IVectorView<TestEnum> ReturnSameEnumVectorView(Windows.Foundation.Collections.IVectorView<TestEnum> vector);
+        static Windows.Foundation.Collections.IVectorView<CompositeType> ReturnSameCompositeStructVectorView(Windows.Foundation.Collections.IVectorView<CompositeType> vector);
+        static Windows.Foundation.Collections.IVectorView<Windows.Foundation.IReference<Int32> > ReturnSameRefVectorView(
+            Windows.Foundation.Collections.IVectorView<Windows.Foundation.IReference<Int32> > vector);
+        static Windows.Foundation.Collections.IVectorView<TestObject> ReturnSameObjectVectorView(Windows.Foundation.Collections.IVectorView<TestObject> vector);
+
+        // Convert array to IIterable
+        static Windows.Foundation.Collections.IIterable<Boolean> ReturnSameBoolIterable(Windows.Foundation.Collections.IIterable<Boolean> iterable);
+        static Windows.Foundation.Collections.IIterable<Char> ReturnSameCharIterable(Windows.Foundation.Collections.IIterable<Char> iterable);
+        static Windows.Foundation.Collections.IIterable<Int32> ReturnSameNumericIterable(Windows.Foundation.Collections.IIterable<Int32> iterable);
+        static Windows.Foundation.Collections.IIterable<String> ReturnSameStringIterable(Windows.Foundation.Collections.IIterable<String> iterable);
+        static Windows.Foundation.Collections.IIterable<Guid> ReturnSameGuidIterable(Windows.Foundation.Collections.IIterable<Guid> iterable);
+        static Windows.Foundation.Collections.IIterable<TestEnum> ReturnSameEnumIterable(Windows.Foundation.Collections.IIterable<TestEnum> iterable);
+        static Windows.Foundation.Collections.IIterable<CompositeType> ReturnSameCompositeStructIterable(Windows.Foundation.Collections.IIterable<CompositeType> iterable);
+        static Windows.Foundation.Collections.IIterable<Windows.Foundation.IReference<Int32> > ReturnSameRefIterable(
+            Windows.Foundation.Collections.IIterable<Windows.Foundation.IReference<Int32> > iterable);
+        static Windows.Foundation.Collections.IIterable<TestObject> ReturnSameObjectIterable(Windows.Foundation.Collections.IIterable<TestObject> iterable);
+
+        // IMap
         static Windows.Foundation.Collections.IMap<String, Int32> CreateStringToNumberMap();
         static Windows.Foundation.Collections.IMapView<String, Int32> CopyToMapView(
             Windows.Foundation.Collections.IMap<String, Int32> stringToNumberMap);
@@ -517,11 +545,11 @@ namespace TestComponent
 
     [contract(TestContract, 2)]
     [exclusiveto(HierarchyBase)]
-    interface IHierarchyV2Contract 
-    { 
+    interface IHierarchyV2Contract
+    {
         String IHierarchyV2ContractMethod();
     };
-    
+
     [contract(TestContract, 1)]
     unsealed runtimeclass HierarchyBase : IHierarchyV2Contract
     {
