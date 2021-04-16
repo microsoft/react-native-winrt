@@ -145,11 +145,7 @@ function runStaticRefArrayOutParam(scenario) {
 function runStaticObjectArrayOutParam(scenario) {
     this.runSync(scenario, () => {
         var fn = (val) => TestComponent.Test.staticObjectArrayOutParam(val);
-        validateArrayOutParam([
-            TestComponent.Test.copyNumericsToVector([]),
-            TestComponent.Test.copyNumericsToVector([0]),
-            TestComponent.Test.copyNumericsToVector([0, 1, 2, 3, 4])
-        ], fn);
+        validateArrayOutParam(TestValues.s32.valid.map(val => new TestComponent.TestObject(val)), fn);
     });
 }
 
@@ -306,7 +302,7 @@ function runStaticRefFillParam(scenario) {
 
             var expect = 0;
             for (var val of arr) {
-                assert.equal(val, expect++);
+                assert.equal(expect++, val);
             }
         };
         run(0);
@@ -324,11 +320,7 @@ function runStaticObjectFillParam(scenario) {
 
             var expect = 0;
             for (var val of arr) {
-                assert.equal(val.size, expect);
-                for (var i = 0; i < expect; ++i) {
-                    assert.equal(val.getAt(i), i);
-                }
-                ++expect;
+                assert.equal(expect++, val.value);
             }
         };
         run(0);
@@ -398,11 +390,7 @@ function runRefArrayOutParam(scenario) {
 function runObjectArrayOutParam(scenario) {
     this.runSync(scenario, () => {
         var fn = (val) => this.test.objectArrayOutParam(val);
-        validateArrayOutParam([
-            TestComponent.Test.copyNumericsToVector([]),
-            TestComponent.Test.copyNumericsToVector([0]),
-            TestComponent.Test.copyNumericsToVector([0, 1, 2, 3, 4])
-        ], fn);
+        validateArrayOutParam(TestValues.s32.valid.map(val => new TestComponent.TestObject(val)), fn);
     });
 }
 
@@ -559,7 +547,7 @@ function runRefFillParam(scenario) {
 
             var expect = 0;
             for (var val of arr) {
-                assert.equal(val, expect++);
+                assert.equal(expect++, val);
             }
         };
         run(0);
@@ -577,11 +565,7 @@ function runObjectFillParam(scenario) {
 
             var expect = 0;
             for (var val of arr) {
-                assert.equal(val.size, expect);
-                for (var i = 0; i < expect; ++i) {
-                    assert.equal(val.getAt(i), i);
-                }
-                ++expect;
+                assert.equal(expect++, val.value);
             }
         };
         run(0);

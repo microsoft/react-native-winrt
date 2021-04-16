@@ -54,6 +54,8 @@ export function makeDelegateAndEventTestScenarios(pThis) {
         new TestScenario('Test::StaticInvokeRefArrayDelegate', runStaticRefArrayDelegate.bind(pThis)),
         new TestScenario('Test::StaticInvokeObjectArrayDelegate', runStaticObjectArrayDelegate.bind(pThis)),
 
+        new TestScenario('Test::StaticInvokeInterwovenDelegate', runStaticInterwovenDelegate.bind(pThis)),
+
         // Non-static events
         new TestScenario('Test::BoolEventHandler', runBoolEventHandler.bind(pThis)),
         new TestScenario('Test::CharEventHandler', runCharEventHandler.bind(pThis)),
@@ -134,7 +136,7 @@ function runStaticRefEventHandler(scenario) {
 }
 
 function runStaticObjectEventHandler(scenario) {
-    var vals = [TestComponent.Test.copyNumericsToVector([]), TestComponent.Test.copyNumericsToVector([0]), TestComponent.Test.copyNumericsToVector([0, 1, 2, 3, 4])];
+    var vals = TestValues.s32.valid.map(val => new TestComponent.TestObject(val));
     testStaticEventHandler.call(this, scenario, vals, 'staticobjecteventhandler', (arg) => TestComponent.Test.raiseStaticObjectEvent(arg));
 }
 
@@ -189,11 +191,7 @@ function runStaticRefDelegate(scenario) {
 }
 
 function runStaticObjectDelegate(scenario) {
-    var values = [];
-    for (var val of TestValues.s32.validArrays) {
-        values.push(TestComponent.Test.copyNumericsToVector(val));
-    }
-
+    var values = TestValues.s32.valid.map(val => new TestComponent.TestObject(val));
     runDelegateTest.call(this, scenario, values, (val, fn) => TestComponent.Test.staticInvokeObjectDelegate(val, fn));
 }
 
@@ -248,11 +246,7 @@ function runStaticRefDelegateWithOutParam(scenario) {
 }
 
 function runStaticObjectDelegateWithOutParam(scenario) {
-   var values = [];
-    for (var val of TestValues.s32.validArrays) {
-        values.push(TestComponent.Test.copyNumericsToVector(val));
-    }
-
+    var values = TestValues.s32.valid.map(val => new TestComponent.TestObject(val));
     runDelegateWithOutParamTest.call(this, scenario, values, (val, fn) => TestComponent.Test.staticInvokeObjectDelegateWithOutParam(val, fn));
 }
 
@@ -310,13 +304,34 @@ function runStaticRefArrayDelegate(scenario) {
 
 function runStaticObjectArrayDelegate(scenario) {
     runArrayDelegateTest.call(this, scenario, [
-        TestComponent.Test.copyNumericsToVector([]),
-        TestComponent.Test.copyNumericsToVector([1]),
-        TestComponent.Test.copyNumericsToVector([1, 2]),
-        TestComponent.Test.copyNumericsToVector([1, 2, 3]),
-        TestComponent.Test.copyNumericsToVector([1, 2, 3, 4]),
-        TestComponent.Test.copyNumericsToVector([1, 2, 3, 4, 5]),
+        new TestComponent.TestObject(1),
+        new TestComponent.TestObject(2),
+        new TestComponent.TestObject(3),
+        new TestComponent.TestObject(4),
+        new TestComponent.TestObject(5),
+        new TestComponent.TestObject(6),
     ], (vals, fn) => TestComponent.Test.staticInvokeObjectArrayDelegate(vals, fn));
+}
+
+function runStaticInterwovenDelegate(scenario) {
+    this.runSync(scenario, () => {
+        var callback = (inBool, inNumeric, inArray, refArray) => {
+            var resultLen = Math.min(inArray.length, refArray.length);
+            for (var i = 0; i < resultLen; ++i) {
+                refArray[i] = inArray[i] * 2;
+            }
+
+            return {
+                returnValue: resultLen,
+                outBool: !inBool,
+                outNumeric: inNumeric * 2,
+                outArray: inArray.map(val => val * 2)
+            };
+        };
+
+        assert.isTrue(TestComponent.Test.staticInvokeInterwovenDelegate(true, 42, [1, 2, 3], callback));
+        assert.isTrue(TestComponent.Test.staticInvokeInterwovenDelegate(false, 8, [1, 2, 3, 4, 5, 6, 7], callback));
+    });
 }
 
 // Non-static events
@@ -386,6 +401,6 @@ function runRefEventHandler(scenario) {
 }
 
 function runObjectEventHandler(scenario) {
-    var vals = [TestComponent.Test.copyNumericsToVector([]), TestComponent.Test.copyNumericsToVector([0]), TestComponent.Test.copyNumericsToVector([0, 1, 2, 3, 4])];
+    var vals = TestValues.s32.valid.map(val => new TestComponent.TestObject(val));
     testEventHandler.call(this, scenario, vals, 'objecteventhandler', (arg) => this.test.raiseObjectEvent(arg));
 }

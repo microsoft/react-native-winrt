@@ -278,15 +278,15 @@ function runObjectProperty(scenario) {
             assert.equal(typeof(prev), 'object'); // Should start as null, which is also an object
             assert.equal(prev, null);
 
-            for (var val of TestValues.s32.validArrays) {
-                var vector = TestComponent.Test.copyNumericsToVector(val);
+            for (var val of TestValues.s32.valid) {
+                var newVal = new TestComponent.TestObject(val);
                 var assignedVal;
-                assignedVal = this.test.objectProperty = vector;
+                assignedVal = this.test.objectProperty = newVal;
                 assert.equal(typeof(this.test.objectProperty), 'object');
                 assert.isTrue(this.test.objectProperty != prev);
-                assert.isTrue(this.test.objectProperty == vector);
-                assert.isTrue(assignedVal == vector);
-                prev = vector;
+                assert.isTrue(this.test.objectProperty == newVal);
+                assert.isTrue(assignedVal == newVal);
+                prev = newVal;
             }
         } finally {
             this.test.objectProperty = null; // In case the test gets run again
@@ -332,11 +332,7 @@ function runRefArrayProperty(scenario) {
 
 function runObjectArrayProperty(scenario) {
     this.runSync(scenario, () => {
-        var array = [];
-        for (var val of TestValues.s32.validArrays) {
-            array.push(TestComponent.Test.copyNumericsToVector(val));
-        }
-
+        var array = TestValues.s32.valid.map(val => new TestComponent.TestObject(val));
         this.test.objectArrayProperty = array;
         var curr = this.test.objectArrayProperty;
         assert.equal(curr.length, array.length);

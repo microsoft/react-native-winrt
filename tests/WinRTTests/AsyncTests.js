@@ -111,6 +111,8 @@ function runAsyncOperationTest(scenario) {
             TestComponent.Test.addAsync(34, 8)
                 .then(() => { throw 42; }, () => { throw new Error('Reject handler ran when it should not have'); })
                 .catch(val => assert.equal(42, val)),
+            TestComponent.Test.immediateReturnAsync(42)
+                .then(val => assert.equal(42, val)),
         ]).then(values => {
             assert.equal(42, values[0]);
 
@@ -236,6 +238,7 @@ function runAsyncAwaitTest(scenario) {
             assert.equal(42, result);
             result = await TestComponent.Test.countDoubleAsync(5);
             assert.equal(10, result);
+            assert.equal(42, await TestComponent.Test.immediateReturnAsync(42));
 
             try
             {

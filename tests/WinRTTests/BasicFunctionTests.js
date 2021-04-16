@@ -20,6 +20,16 @@ export function makeBasicFunctionTestScenarios(pThis) {
         new TestScenario('Test::StaticAppend', runStaticAppend.bind(pThis)),
         new TestScenario('Test::StaticAppendAll', runStaticAppendAll.bind(pThis)),
 
+        // Static overloads
+        new TestScenario('Test::StaticArityOverload', runStaticArityOverload.bind(pThis)),
+        new TestScenario('Test::StaticDefaultOverload', runStaticDefaultOverload.bind(pThis)),
+        new TestScenario('Test::StaticOutParamOverload', runStaticOutParamOverload.bind(pThis)),
+        new TestScenario('Test::StaticContractArityOverload', runStaticContractArityOverload.bind(pThis)),
+        new TestScenario('Test::StaticContractDefaultOverloadV1', runStaticContractDefaultOverloadV1.bind(pThis)),
+        new TestScenario('Test::StaticContractDefaultOverloadV2', runStaticContractDefaultOverloadV2.bind(pThis)),
+        new TestScenario('Test::StaticContractOutParamOverloadV1', runStaticContractOutParamOverloadV1.bind(pThis)),
+        new TestScenario('Test::StaticContractOutParamOverloadV2', runStaticContractOutParamOverloadV2.bind(pThis)),
+
         // Static out params
         new TestScenario('Test::StaticBoolOutParam', runStaticBoolOutParam.bind(pThis)),
         new TestScenario('Test::StaticCharOutParam', runStaticCharOutParam.bind(pThis)),
@@ -31,6 +41,12 @@ export function makeBasicFunctionTestScenarios(pThis) {
         new TestScenario('Test::StaticRefOutParam', runStaticRefOutParam.bind(pThis)),
         new TestScenario('Test::StaticObjectOutParam', runStaticObjectOutParam.bind(pThis)),
 
+        // Static "interwoven" params
+        new TestScenario('Test::StaticInterwovenParams', runStaticInterwovenParams.bind(pThis)),
+
+        // Constructors
+        new TestScenario('Constructor Test', runConstructorTest.bind(pThis)),
+
         // Non-static functions
         new TestScenario('Test::Or', runOr.bind(pThis)),
         new TestScenario('Test::OrAll', runOrAll.bind(pThis)),
@@ -38,6 +54,16 @@ export function makeBasicFunctionTestScenarios(pThis) {
         new TestScenario('Test::AddAll', runAddAll.bind(pThis)),
         new TestScenario('Test::Append', runAppend.bind(pThis)),
         new TestScenario('Test::AppendAll', runAppendAll.bind(pThis)),
+
+        // Non-static overloads
+        new TestScenario('Test::ArityOverload', runArityOverload.bind(pThis)),
+        new TestScenario('Test::DefaultOverload', runDefaultOverload.bind(pThis)),
+        new TestScenario('Test::OutParamOverload', runOutParamOverload.bind(pThis)),
+        new TestScenario('Test::ContractArityOverload', runContractArityOverload.bind(pThis)),
+        new TestScenario('Test::ContractDefaultOverloadV1', runContractDefaultOverloadV1.bind(pThis)),
+        new TestScenario('Test::ContractDefaultOverloadV2', runContractDefaultOverloadV2.bind(pThis)),
+        new TestScenario('Test::ContractOutParamOverloadV1', runContractOutParamOverloadV1.bind(pThis)),
+        new TestScenario('Test::ContractOutParamOverloadV2', runContractOutParamOverloadV2.bind(pThis)),
 
         // Non-static out params
         new TestScenario('Test::BoolOutParam', runBoolOutParam.bind(pThis)),
@@ -49,6 +75,9 @@ export function makeBasicFunctionTestScenarios(pThis) {
         new TestScenario('Test::CompositeStructOutParam', runCompositeStructOutParam.bind(pThis)),
         new TestScenario('Test::RefOutParam', runRefOutParam.bind(pThis)),
         new TestScenario('Test::ObjectOutParam', runObjectOutParam.bind(pThis)),
+
+        // Non-static "interwoven" params
+        new TestScenario('Test::InterwovenParams', runInterwovenParams.bind(pThis)),
     ];
 }
 
@@ -104,7 +133,7 @@ function runStaticAppend(scenario) {
     this.runSync(scenario, () => {
         assert.equal(TestComponent.Test.staticAppend('foo', '\0', 'bar'), 'foo\0bar');
         assert.equal(TestComponent.Test.staticAppend('Hello', ' ', 'world'), 'Hello world');
-    })
+    });
 }
 
 function runStaticAppendAll(scenario) {
@@ -115,7 +144,65 @@ function runStaticAppendAll(scenario) {
         run([], '');
         run(['foo'], 'foo');
         run(['f\0o\0o', '\0', 'b\0a\0r'], 'f\0o\0o\0b\0a\0r');
-    })
+    });
+}
+
+// Static overloads
+function runStaticArityOverload(scenario) {
+    this.runSync(scenario, () => {
+        assert.equal('No-arg overload', TestComponent.Test.staticArityOverload());
+        assert.equal('Testing', TestComponent.Test.staticArityOverload('Testing'));
+        assert.equal('foobar', TestComponent.Test.staticArityOverload('foo', 'bar'));
+    });
+}
+
+function runStaticDefaultOverload(scenario) {
+    this.runSync(scenario, () => {
+        assert.equal('foofoo', TestComponent.Test.staticDefaultOverload('foo', 2));
+    });
+}
+
+function runStaticOutParamOverload(scenario) {
+    this.runSync(scenario, () => {
+        var result = TestComponent.Test.staticOutParamOverload('foo');
+        assert.equal('Success!', result.outParam);
+        assert.equal('foo', result.returnValue);
+    });
+}
+
+function runStaticContractArityOverload(scenario) {
+    this.runSync(scenario, () => {
+        assert.equal('No-arg overload', TestComponent.Test.staticContractArityOverload());
+        assert.equal('Testing', TestComponent.Test.staticContractArityOverload('Testing'));
+    });
+}
+
+function runStaticContractDefaultOverloadV1(scenario) {
+    this.runSync(scenario, () => {
+        assert.equal('foofoo', TestComponent.Test.staticContractDefaultOverloadV1('foo', 2));
+    });
+}
+
+function runStaticContractDefaultOverloadV2(scenario) {
+    this.runSync(scenario, () => {
+        assert.equal('foofoo', TestComponent.Test.staticContractDefaultOverloadV2('foo', 2));
+    });
+}
+
+function runStaticContractOutParamOverloadV1(scenario) {
+    this.runSync(scenario, () => {
+        var result = TestComponent.Test.staticContractOutParamOverloadV1('foo');
+        assert.equal('Success!', result.outParam);
+        assert.equal('foo', result.returnValue);
+    });
+}
+
+function runStaticContractOutParamOverloadV2(scenario) {
+    this.runSync(scenario, () => {
+        var result = TestComponent.Test.staticContractOutParamOverloadV2('foo');
+        assert.equal('Success!', result.outParam);
+        assert.equal('foo', result.returnValue);
+    });
 }
 
 // Static out params
@@ -241,14 +328,50 @@ function runStaticRefOutParam(scenario) {
 
 function runStaticObjectOutParam(scenario) {
     this.runSync(scenario, () => {
-        var val = TestComponent.Test.copyNumericsToVector([0, 1, 2, 3, 4]);
-        var { returnValue, doubledValues, tripledValues } = TestComponent.Test.staticObjectOutParam(val);
-        assert.isTrue(val == returnValue);
+        var run = (val) => {
+            var obj = new TestComponent.TestObject(val);
+            var { returnValue, doubledValue, tripledValue } = TestComponent.Test.staticObjectOutParam(obj);
+            assert.equal(doubledValue.value, val * 2);
+            assert.equal(tripledValue.value, val * 3);
+            assert.equal(returnValue.value, val * 4);
+        };
+        run(0);
+        run(42);
+        run(-1);
+    });
+}
 
-        for (var i = 0; i < val.size; ++i) {
-            assert.equal(doubledValues.getAt(i), val.getAt(i) * 2);
-            assert.equal(tripledValues.getAt(i), val.getAt(i) * 3);
-        }
+// Static "interwoven" params
+function runStaticInterwovenParams(scenario) {
+    this.runSync(scenario, () => {
+        var run = (inBool, inNumeric, inArray, refArray) => {
+            var expectedSize = Math.min(inArray.length, refArray.length);
+            var result = TestComponent.Test.staticInterwovenParams(inBool, inNumeric, inArray, refArray);
+            assert.equal(expectedSize, result.returnValue);
+            assert.equal(!inBool, result.outBool);
+            assert.equal(inNumeric * 2, result.outNumeric);
+            for (var i = 0; i < expectedSize; ++i) {
+                assert.equal(inArray[i] * 2, refArray[i]);
+            }
+            for (var i = 0; i < inArray.length; ++i) {
+                assert.equal(inArray[i] * 2, result.outArray[i]);
+            }
+        };
+
+        run(true, 42, [1, 2, 3], new Array(5));
+        run(true, 8, [1, 2, 3, 4, 5, 6, 7], new Array(5));
+    });
+}
+
+// Constructors
+function runConstructorTest(scenario) {
+    this.runSync(scenario, () => {
+        var test = new TestComponent.Test();
+        assert.equal(0, test.constructorParamCount);
+        test = new TestComponent.Test(42);
+        assert.equal(1, test.constructorParamCount);
+        test = new TestComponent.Test(42, 'foo');
+        assert.equal(2, test.constructorParamCount);
     });
 }
 
@@ -316,6 +439,72 @@ function runAppendAll(scenario) {
         run(['foo'], 'foo');
         run(['f\0o\0o', '\0', 'b\0a\0r'], 'f\0o\0o\0b\0a\0r');
     })
+}
+
+// Static overloads
+function runArityOverload(scenario) {
+    this.runSync(scenario, () => {
+        var test = new TestComponent.Test();
+        assert.equal('No-arg overload', test.arityOverload());
+        assert.equal('Testing', test.arityOverload('Testing'));
+        assert.equal('foobar', test.arityOverload('foo', 'bar'));
+    });
+}
+
+function runDefaultOverload(scenario) {
+    this.runSync(scenario, () => {
+        var test = new TestComponent.Test();
+        assert.equal('foofoo', test.defaultOverload('foo', 2));
+    });
+}
+
+function runOutParamOverload(scenario) {
+    this.runSync(scenario, () => {
+        var test = new TestComponent.Test();
+        var result = test.outParamOverload('foo');
+        assert.equal('Success!', result.outParam);
+        assert.equal('foo', result.returnValue);
+    });
+}
+
+function runContractArityOverload(scenario) {
+    this.runSync(scenario, () => {
+        var test = new TestComponent.Test();
+        assert.equal('No-arg overload', test.contractArityOverload());
+        assert.equal('Testing', test.contractArityOverload('Testing'));
+    });
+}
+
+function runContractDefaultOverloadV1(scenario) {
+    this.runSync(scenario, () => {
+        var test = new TestComponent.Test();
+        assert.equal('foofoo', test.contractDefaultOverloadV1('foo', 2));
+    });
+}
+
+function runContractDefaultOverloadV2(scenario) {
+    this.runSync(scenario, () => {
+        var test = new TestComponent.Test();
+        assert.equal('foofoo', test.contractDefaultOverloadV2('foo', 2));
+    });
+}
+
+function runContractOutParamOverloadV1(scenario) {
+    this.runSync(scenario, () => {
+        var test = new TestComponent.Test();
+        var result = test.contractOutParamOverloadV1('foo');
+        assert.equal('Success!', result.outParam);
+        assert.equal('foo', result.returnValue);
+    });
+}
+
+function runContractOutParamOverloadV2(scenario) {
+    this.runSync(scenario, () => {
+        var test = new TestComponent.Test();
+        var result = test.contractOutParamOverloadV2('foo');
+        assert.equal('Success!', result.outParam);
+        assert.equal('foo', result.returnValue);
+    });
 }
 
 // Static out params
@@ -441,13 +630,37 @@ function runRefOutParam(scenario) {
 
 function runObjectOutParam(scenario) {
     this.runSync(scenario, () => {
-        var val = TestComponent.Test.copyNumericsToVector([0, 1, 2, 3, 4]);
-        var { returnValue, doubledValues, tripledValues } = this.test.objectOutParam(val);
-        assert.isTrue(val == returnValue);
+        var run = (val) => {
+            var obj = new TestComponent.TestObject(val);
+            var { returnValue, doubledValue, tripledValue } = this.test.objectOutParam(obj);
+            assert.equal(doubledValue.value, val * 2);
+            assert.equal(tripledValue.value, val * 3);
+            assert.equal(returnValue.value, val * 4);
+        };
+        run(0);
+        run(42);
+        run(-1);
+    });
+}
 
-        for (var i = 0; i < val.size; ++i) {
-            assert.equal(doubledValues.getAt(i), val.getAt(i) * 2);
-            assert.equal(tripledValues.getAt(i), val.getAt(i) * 3);
-        }
+// Non-static "interwoven" params
+function runInterwovenParams(scenario) {
+    this.runSync(scenario, () => {
+        var run = (inBool, inNumeric, inArray, refArray) => {
+            var expectedSize = Math.min(inArray.length, refArray.length);
+            var result = this.test.interwovenParams(inBool, inNumeric, inArray, refArray);
+            assert.equal(expectedSize, result.returnValue);
+            assert.equal(!inBool, result.outBool);
+            assert.equal(inNumeric * 2, result.outNumeric);
+            for (var i = 0; i < expectedSize; ++i) {
+                assert.equal(inArray[i] * 2, refArray[i]);
+            }
+            for (var i = 0; i < inArray.length; ++i) {
+                assert.equal(inArray[i] * 2, result.outArray[i]);
+            }
+        };
+
+        run(true, 42, [1, 2, 3], new Array(5));
+        run(true, 8, [1, 2, 3, 4, 5, 6, 7], new Array(5));
     });
 }

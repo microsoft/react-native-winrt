@@ -20,7 +20,7 @@ import { makeBasicFunctionTestScenarios } from './BasicFunctionTests'
 import { makeArrayTestScenarios } from './ArrayTests'
 import { makeDelegateAndEventTestScenarios } from './DelegateAndEventTests'
 import { makeAsyncTestScenarios } from './AsyncTests'
-import { makeCollectionsTests } from './CollectionsTests'
+import { makeCollectionsTestScenarios } from './CollectionsTests'
 import { makeInheritanceTestScenarios } from './InheritanceTests'
 
 class App extends Component {
@@ -36,7 +36,7 @@ class App extends Component {
         ...makeArrayTestScenarios(this),
         ...makeDelegateAndEventTestScenarios(this),
         ...makeAsyncTestScenarios(this),
-        ...makeCollectionsTests(this),
+        ...makeCollectionsTestScenarios(this),
         ...makeInheritanceTestScenarios(this),
     ];
 

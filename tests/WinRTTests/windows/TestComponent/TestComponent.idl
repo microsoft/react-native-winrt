@@ -59,6 +59,16 @@ namespace TestComponent
         BooleanTypes Bools;
     };
 
+    // Used in places where we want to validate returning/accepting/etc. types of an object type
+    [contract(TestContract, 1)]
+    runtimeclass TestObject
+    {
+        // This is purposefully not no-arg constructible so that we get compilation errors if the code gen gets this wrong
+        TestObject(Int32 val);
+
+        Int32 Value{ get; };
+    }
+
     // Delegates
     delegate Boolean BoolDelegate(Boolean value);
     delegate Char CharDelegate(Char value);
@@ -68,7 +78,7 @@ namespace TestComponent
     delegate TestEnum EnumDelegate(TestEnum value);
     delegate CompositeType CompositeStructDelegate(CompositeType value);
     delegate Windows.Foundation.IReference<Int32> RefDelegate(Windows.Foundation.IReference<Int32> value);
-    delegate Windows.Foundation.Collections.IVector<Int32> ObjectDelegate(Windows.Foundation.Collections.IVector<Int32> value);
+    delegate TestObject ObjectDelegate(TestObject value);
 
     // Delegates with out params
     delegate void BoolDelegateWithOutParam(Boolean value, out Boolean outValue);
@@ -79,7 +89,7 @@ namespace TestComponent
     delegate void EnumDelegateWithOutParam(TestEnum value, out TestEnum outValue);
     delegate void CompositeStructDelegateWithOutParam(CompositeType value, out CompositeType outValue);
     delegate void RefDelegateWithOutParam(Windows.Foundation.IReference<Int32> value, out Windows.Foundation.IReference<Int32> outValue);
-    delegate void ObjectDelegateWithOutParam(Windows.Foundation.Collections.IVector<Int32> value, out Windows.Foundation.Collections.IVector<Int32> outValue);
+    delegate void ObjectDelegateWithOutParam(TestObject value, out TestObject outValue);
 
     // Delegates with array types
     delegate Boolean[] BoolArrayDelegate(Boolean[] values, ref Boolean[] subset, out Boolean[] outValue);
@@ -93,16 +103,21 @@ namespace TestComponent
         Windows.Foundation.IReference<Int32>[] values,
         ref Windows.Foundation.IReference<Int32>[] subset,
         out Windows.Foundation.IReference<Int32>[] outValue);
-    delegate Windows.Foundation.Collections.IVector<Int32>[] ObjectArrayDelegate(
-        Windows.Foundation.Collections.IVector<Int32>[] values,
-        ref Windows.Foundation.Collections.IVector<Int32>[] subset,
-        out Windows.Foundation.Collections.IVector<Int32>[] outValue);
+    delegate TestObject[] ObjectArrayDelegate(TestObject[] values, ref TestObject[] subset, out TestObject[] outValue);
+
+    // Delegate with "interwoven" in/out params
+    delegate UInt32 InterwovenDelegate(Boolean inBool, out Boolean outBool, Int32 inNumeric, out Int32 outNumeric,
+        Int32[] inArray, out Int32[] outArray, ref Int32[] fillArray);
 
     [contract(TestContract, 1)]
     runtimeclass Test
     {
         // Constructors
         Test();
+        Test(Int32 val);
+        Test(Int32 val, String str);
+
+        Int32 ConstructorParamCount{ get; }; // To validate which constructor was called
 
         // Infra helpers
         static void LogFailures(String failures);
@@ -121,6 +136,63 @@ namespace TestComponent
         static String StaticAppend(String a, Char b, String c);
         static String StaticAppendAll(String[] values);
 
+        // Static function overloads
+        static String StaticArityOverload();
+        static String StaticArityOverload(String str);
+        static String StaticArityOverload(String first, String second);
+
+        static String StaticDefaultOverload(String str, Boolean val);
+        [default_overload]
+        static String StaticDefaultOverload(String str, Int32 repeat);
+        static String StaticDefaultOverload(String str, UInt32 val);
+
+        static String StaticOutParamOverload(String str);
+        [default_overload]
+        static String StaticOutParamOverload(String str, out String outParam);
+        [default_overload]
+        static String StaticOutParamOverload(String str, String other);
+
+        static String StaticContractArityOverload();
+
+        static String StaticContractDefaultOverloadV1(String str, Boolean val);
+        [default_overload]
+        static String StaticContractDefaultOverloadV1(String str, Int32 repeat);
+        static String StaticContractDefaultOverloadV1(String str, UInt32 val);
+
+        static String StaticContractDefaultOverloadV2(String str, Double val);
+
+        static String StaticContractOutParamOverloadV1(String str);
+        [default_overload]
+        static String StaticContractOutParamOverloadV1(String str, out String outParam);
+        [default_overload]
+        static String StaticContractOutParamOverloadV1(String str, String other);
+
+        static String StaticContractOutParamOverloadV2(Char ch);
+
+        // "v2" overloads
+        [contract(TestContract, 2)]
+        {
+            [overload("StaticContractArityOverload")]
+            static String StaticContractArityOverload(String str);
+
+            [overload("StaticContractDefaultOverloadV1")]
+            static String StaticContractDefaultOverloadV1(String str, Double val);
+
+            static String StaticContractDefaultOverloadV2(String str, Boolean val);
+            [default_overload]
+            static String StaticContractDefaultOverloadV2(String str, Int32 val);
+            static String StaticContractDefaultOverloadV2(String str, UInt32 val);
+
+            [overload("StaticContractOutParamOverloadV1")]
+            static String StaticContractOutParamOverloadV1(Char ch);
+
+            static String StaticContractOutParamOverloadV2(String str);
+            [default_overload]
+            static String StaticContractOutParamOverloadV2(String str, out String outParam);
+            [default_overload]
+            static String StaticContractOutParamOverloadV2(String str, String other);
+        }
+
         // Static out params
         static Boolean StaticBoolOutParam(Boolean lhs, Boolean rhs, out Boolean andResult, out Boolean orResult);
         static Char StaticCharOutParam(Char value, out Char next, out Char prev);
@@ -133,10 +205,7 @@ namespace TestComponent
             Windows.Foundation.IReference<Int32> value,
             out Windows.Foundation.IReference<Int32> doubledValue,
             out Windows.Foundation.IReference<Int32> tripledValue);
-        static Windows.Foundation.Collections.IVector<Int32> StaticObjectOutParam(
-            Windows.Foundation.Collections.IVector<Int32> values,
-            out Windows.Foundation.Collections.IVector<Int32> doubledValues,
-            out Windows.Foundation.Collections.IVector<Int32> tripledValues);
+        static TestObject StaticObjectOutParam(TestObject value, out TestObject doubledValue, out TestObject tripledValue);
 
         // Static array out params
         static Boolean[] StaticBoolArrayOutParam(Boolean[] values, out Boolean[] rot1, out Boolean[] rot2);
@@ -150,10 +219,7 @@ namespace TestComponent
             Windows.Foundation.IReference<Int32>[] values,
             out Windows.Foundation.IReference<Int32>[] rot1,
             out Windows.Foundation.IReference<Int32>[] rot2);
-        static Windows.Foundation.Collections.IVector<Int32>[] StaticObjectArrayOutParam(
-            Windows.Foundation.Collections.IVector<Int32>[] values,
-            out Windows.Foundation.Collections.IVector<Int32>[] rot1,
-            out Windows.Foundation.Collections.IVector<Int32>[] rot2);
+        static TestObject[] StaticObjectArrayOutParam(TestObject[] values, out TestObject[] rot1, out TestObject[] rot2);
 
         // Static array fill params
         static void StaticBoolFillParam(ref Boolean[] values);
@@ -164,7 +230,11 @@ namespace TestComponent
         static void StaticEnumFillParam(ref TestEnum[] values);
         static void StaticCompositeStructFillParam(ref CompositeType[] values);
         static void StaticRefFillParam(ref Windows.Foundation.IReference<Int32>[] values);
-        static void StaticObjectFillParam(ref Windows.Foundation.Collections.IVector<Int32>[] values);
+        static void StaticObjectFillParam(ref TestObject[] values);
+
+        // Static "interwoven" in/out params
+        static UInt32 StaticInterwovenParams(Boolean inBool, out Boolean outBool, Int32 inNumeric, out Int32 outNumeric,
+            Int32[] inArray, out Int32[] outArray, ref Int32[] refArray);
 
         // Static events
         static event Windows.Foundation.EventHandler<Boolean> StaticBoolEventHandler;
@@ -175,7 +245,7 @@ namespace TestComponent
         static event Windows.Foundation.EventHandler<TestEnum> StaticEnumEventHandler;
         static event Windows.Foundation.EventHandler<CompositeType> StaticCompositeStructEventHandler;
         static event Windows.Foundation.EventHandler<Windows.Foundation.IReference<Int32> > StaticRefEventHandler;
-        static event Windows.Foundation.EventHandler<Windows.Foundation.Collections.IVector<Int32> > StaticObjectEventHandler;
+        static event Windows.Foundation.EventHandler<TestObject> StaticObjectEventHandler;
 
         // Static event triggers
         static void RaiseStaticBoolEvent(Boolean value);
@@ -186,7 +256,7 @@ namespace TestComponent
         static void RaiseStaticEnumEvent(TestEnum value);
         static void RaiseStaticCompositeStructEvent(CompositeType value);
         static void RaiseStaticRefEvent(Windows.Foundation.IReference<Int32> value);
-        static void RaiseStaticObjectEvent(Windows.Foundation.Collections.IVector<Int32> value);
+        static void RaiseStaticObjectEvent(TestObject value);
 
         // Static delegate invocation
         static Boolean StaticInvokeBoolDelegate(Boolean value, BoolDelegate targetFn);
@@ -197,9 +267,7 @@ namespace TestComponent
         static TestEnum StaticInvokeEnumDelegate(TestEnum value, EnumDelegate targetFn);
         static CompositeType StaticInvokeCompositeStructDelegate(CompositeType value, CompositeStructDelegate targetFn);
         static Windows.Foundation.IReference<Int32> StaticInvokeRefDelegate(Windows.Foundation.IReference<Int32> value, RefDelegate targetFn);
-        static Windows.Foundation.Collections.IVector<Int32> StaticInvokeObjectDelegate(
-            Windows.Foundation.Collections.IVector<Int32> value,
-            ObjectDelegate targetFn);
+        static TestObject StaticInvokeObjectDelegate(TestObject value, ObjectDelegate targetFn);
 
         static Boolean StaticInvokeBoolDelegateWithOutParam(Boolean value, BoolDelegateWithOutParam targetFn);
         static Char StaticInvokeCharDelegateWithOutParam(Char value, CharDelegateWithOutParam targetFn);
@@ -211,9 +279,7 @@ namespace TestComponent
         static Windows.Foundation.IReference<Int32> StaticInvokeRefDelegateWithOutParam(
             Windows.Foundation.IReference<Int32> value,
             RefDelegateWithOutParam targetFn);
-        static Windows.Foundation.Collections.IVector<Int32> StaticInvokeObjectDelegateWithOutParam(
-            Windows.Foundation.Collections.IVector<Int32> value,
-            ObjectDelegateWithOutParam targetFn);
+        static TestObject StaticInvokeObjectDelegateWithOutParam(TestObject value, ObjectDelegateWithOutParam targetFn);
 
         static Boolean StaticInvokeBoolArrayDelegate(Boolean[] values, BoolArrayDelegate targetFn);
         static Boolean StaticInvokeCharArrayDelegate(Char[] values, CharArrayDelegate targetFn);
@@ -223,7 +289,9 @@ namespace TestComponent
         static Boolean StaticInvokeEnumArrayDelegate(TestEnum[] values, EnumArrayDelegate targetFn);
         static Boolean StaticInvokeCompositeStructArrayDelegate(CompositeType[] values, CompositeStructArrayDelegate targetFn);
         static Boolean StaticInvokeRefArrayDelegate(Windows.Foundation.IReference<Int32>[] values, RefArrayDelegate targetFn);
-        static Boolean StaticInvokeObjectArrayDelegate(Windows.Foundation.Collections.IVector<Int32>[] values, ObjectArrayDelegate targetFn);
+        static Boolean StaticInvokeObjectArrayDelegate(TestObject[] values, ObjectArrayDelegate targetFn);
+
+        static Boolean StaticInvokeInterwovenDelegate(Boolean inBool, Int32 inNumeric, Int32[] inArray, InterwovenDelegate targetFn);
 
         // Copy array to IVector
         static Windows.Foundation.Collections.IVector<Boolean> CopyBoolsToVector(Boolean[] values);
@@ -235,7 +303,7 @@ namespace TestComponent
         static Windows.Foundation.Collections.IVector<CompositeType> CopyCompositeStructsToVector(CompositeType[] values);
         static Windows.Foundation.Collections.IVector<Windows.Foundation.IReference<Int32> > CopyRefsToVector(
             Windows.Foundation.IReference<Int32>[] values);
-        static Windows.Foundation.Collections.IVector<Object> CopyObjectsToVector(Object[] values);
+        static Windows.Foundation.Collections.IVector<TestObject> CopyObjectsToVector(TestObject[] values);
 
         // TODO: These exist mostly because C++/WinRT's 'GetView' implementation currently returns the 'this' object
         static Windows.Foundation.Collections.IVectorView<Boolean> CopyBoolsToVectorView(Boolean[] values);
@@ -259,7 +327,7 @@ namespace TestComponent
         static Windows.Foundation.Collections.IVector<CompositeType> ReturnSameCompositeStructVector(Windows.Foundation.Collections.IVector<CompositeType> vector);
         static Windows.Foundation.Collections.IVector<Windows.Foundation.IReference<Int32> > ReturnSameRefVector(
             Windows.Foundation.Collections.IVector<Windows.Foundation.IReference<Int32> > vector);
-        static Windows.Foundation.Collections.IVector<Object> ReturnSameObjectVector(Windows.Foundation.Collections.IVector<Object> vector);
+        static Windows.Foundation.Collections.IVector<TestObject> ReturnSameObjectVector(Windows.Foundation.Collections.IVector<TestObject> vector);
 
         // IMap 
         static Windows.Foundation.Collections.IMap<String, Int32> CreateStringToNumberMap();
@@ -272,6 +340,7 @@ namespace TestComponent
         static Windows.Foundation.IAsyncOperation<Int32> AddAsync(Int32 lhs, Int32 rhs);
         static Windows.Foundation.IAsyncOperationWithProgress<Int32, Int32> CountDoubleAsync(Int32 value);
         static Windows.Foundation.IAsyncAction ThrowAsyncException();
+        static Windows.Foundation.IAsyncOperation<Int32> ImmediateReturnAsync(Int32 value);
 
         // Member properties
         Boolean BoolProperty;
@@ -296,7 +365,7 @@ namespace TestComponent
         Windows.Foundation.IReference<Char> RefCharProperty;
         Windows.Foundation.IReference<Int32> RefNumericProperty;
         Windows.Foundation.IReference<TestEnum> RefEnumProperty;
-        Windows.Foundation.Collections.IVector<Int32> ObjectProperty;
+        TestObject ObjectProperty;
         Windows.Foundation.DateTime DateTimeProperty;
         String DateTimePropertyCppValue();
         Windows.Foundation.TimeSpan TimeSpanProperty;
@@ -313,7 +382,7 @@ namespace TestComponent
         TestEnum[] EnumArrayProperty;
         CompositeType[] CompositeStructArrayProperty;
         Windows.Foundation.IReference<Int32>[] RefArrayProperty;
-        Windows.Foundation.Collections.IVector<Int32>[] ObjectArrayProperty;
+        TestObject[] ObjectArrayProperty;
 
         // Member functions
         Boolean Or(Boolean lhs, Boolean rhs);
@@ -322,6 +391,63 @@ namespace TestComponent
         Int32 AddAll(Int32[] values);
         String Append(String a, Char b, String c);
         String AppendAll(String[] values);
+
+        // Static function overloads
+        String ArityOverload();
+        String ArityOverload(String str);
+        String ArityOverload(String first, String second);
+
+        String DefaultOverload(String str, Boolean val);
+        [default_overload]
+        String DefaultOverload(String str, Int32 repeat);
+        String DefaultOverload(String str, UInt32 val);
+
+        String OutParamOverload(String str);
+        [default_overload]
+        String OutParamOverload(String str, out String outParam);
+        [default_overload]
+        String OutParamOverload(String str, String other);
+
+        String ContractArityOverload();
+
+        String ContractDefaultOverloadV1(String str, Boolean val);
+        [default_overload]
+        String ContractDefaultOverloadV1(String str, Int32 repeat);
+        String ContractDefaultOverloadV1(String str, UInt32 val);
+
+        String ContractDefaultOverloadV2(String str, Double val);
+
+        String ContractOutParamOverloadV1(String str);
+        [default_overload]
+        String ContractOutParamOverloadV1(String str, out String outParam);
+        [default_overload]
+        String ContractOutParamOverloadV1(String str, String other);
+
+        String ContractOutParamOverloadV2(Char ch);
+
+        // "v2" overloads
+        [contract(TestContract, 2)]
+        {
+            [overload("ContractArityOverload")]
+            String ContractArityOverload(String str);
+
+            [overload("ContractDefaultOverloadV1")]
+            String ContractDefaultOverloadV1(String str, Double val);
+
+            String ContractDefaultOverloadV2(String str, Boolean val);
+            [default_overload]
+            String ContractDefaultOverloadV2(String str, Int32 val);
+            String ContractDefaultOverloadV2(String str, UInt32 val);
+
+            [overload("ContractOutParamOverloadV1")]
+            String ContractOutParamOverloadV1(Char ch);
+
+            String ContractOutParamOverloadV2(String str);
+            [default_overload]
+            String ContractOutParamOverloadV2(String str, out String outParam);
+            [default_overload]
+            String ContractOutParamOverloadV2(String str, String other);
+        }
 
         // Member out params
         Boolean BoolOutParam(Boolean lhs, Boolean rhs, out Boolean andResult, out Boolean orResult);
@@ -335,10 +461,7 @@ namespace TestComponent
             Windows.Foundation.IReference<Int32> value,
             out Windows.Foundation.IReference<Int32> doubledValue,
             out Windows.Foundation.IReference<Int32> tripledValue);
-        Windows.Foundation.Collections.IVector<Int32> ObjectOutParam(
-            Windows.Foundation.Collections.IVector<Int32> values,
-            out Windows.Foundation.Collections.IVector<Int32> doubledValues,
-            out Windows.Foundation.Collections.IVector<Int32> tripledValues);
+        TestObject ObjectOutParam(TestObject value, out TestObject doubledValue, out TestObject tripledValue);
 
         // Member array out params
         Boolean[] BoolArrayOutParam(Boolean[] values, out Boolean[] rot1, out Boolean[] rot2);
@@ -352,10 +475,7 @@ namespace TestComponent
             Windows.Foundation.IReference<Int32>[] values,
             out Windows.Foundation.IReference<Int32>[] rot1,
             out Windows.Foundation.IReference<Int32>[] rot2);
-        Windows.Foundation.Collections.IVector<Int32>[] ObjectArrayOutParam(
-            Windows.Foundation.Collections.IVector<Int32>[] values,
-            out Windows.Foundation.Collections.IVector<Int32>[] rot1,
-            out Windows.Foundation.Collections.IVector<Int32>[] rot2);
+        TestObject[] ObjectArrayOutParam(TestObject[] values, out TestObject[] rot1, out TestObject[] rot2);
 
         // Member array fill params
         void BoolFillParam(ref Boolean[] values);
@@ -366,18 +486,22 @@ namespace TestComponent
         void EnumFillParam(ref TestEnum[] values);
         void CompositeStructFillParam(ref CompositeType[] values);
         void RefFillParam(ref Windows.Foundation.IReference<Int32>[] values);
-        void ObjectFillParam(ref Windows.Foundation.Collections.IVector<Int32>[] values);
+        void ObjectFillParam(ref TestObject[] values);
+
+        // Member "interwoven" in/out params
+        UInt32 InterwovenParams(Boolean inBool, out Boolean outBool, Int32 inNumeric, out Int32 outNumeric,
+            Int32[] inArray, out Int32[] outArray, ref Int32[] refArray);
 
         // Member events
-        event Windows.Foundation.EventHandler<Boolean> BoolEventHandler;
-        event Windows.Foundation.EventHandler<Char> CharEventHandler;
-        event Windows.Foundation.EventHandler<Int32> NumericEventHandler;
-        event Windows.Foundation.EventHandler<String> StringEventHandler;
-        event Windows.Foundation.EventHandler<Guid> GuidEventHandler;
-        event Windows.Foundation.EventHandler<TestEnum> EnumEventHandler;
-        event Windows.Foundation.EventHandler<CompositeType> CompositeStructEventHandler;
-        event Windows.Foundation.EventHandler<Windows.Foundation.IReference<Int32> > RefEventHandler;
-        event Windows.Foundation.EventHandler<Windows.Foundation.Collections.IVector<Int32> > ObjectEventHandler;
+        event Windows.Foundation.TypedEventHandler<Test, Boolean> BoolEventHandler;
+        event Windows.Foundation.TypedEventHandler<Test, Char> CharEventHandler;
+        event Windows.Foundation.TypedEventHandler<Test, Int32> NumericEventHandler;
+        event Windows.Foundation.TypedEventHandler<Test, String> StringEventHandler;
+        event Windows.Foundation.TypedEventHandler<Test, Guid> GuidEventHandler;
+        event Windows.Foundation.TypedEventHandler<Test, TestEnum> EnumEventHandler;
+        event Windows.Foundation.TypedEventHandler<Test, CompositeType> CompositeStructEventHandler;
+        event Windows.Foundation.TypedEventHandler<Test, Windows.Foundation.IReference<Int32> > RefEventHandler;
+        event Windows.Foundation.TypedEventHandler<Test, TestObject> ObjectEventHandler;
 
         // Member event triggers
         void RaiseBoolEvent(Boolean value);
@@ -388,7 +512,7 @@ namespace TestComponent
         void RaiseEnumEvent(TestEnum value);
         void RaiseCompositeStructEvent(CompositeType value);
         void RaiseRefEvent(Windows.Foundation.IReference<Int32> value);
-        void RaiseObjectEvent(Windows.Foundation.Collections.IVector<Int32> value);
+        void RaiseObjectEvent(TestObject value);
     }
 
     [contract(TestContract, 2)]
