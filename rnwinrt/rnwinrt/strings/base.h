@@ -3042,32 +3042,33 @@ namespace jswinrt
                 static std::pair<std::optional<jsi::Value>, std::optional<jsi::Value>> runtime_get_property(
                     jsi::Runtime& runtime, const IInspectable& thisValue, std::string_view name)
                 {
-                    // If the "property" is any other string, then that translates to a 'Lookup' call
-                    // The native map should have string keys.
-                    if constexpr (!std::is_same_v<K, winrt::hstring>)
+                    // TODO: Should we also include 'Char' and 'Guid' as well?
+                    if constexpr (std::is_same_v<K, winrt::hstring>)
                     {
-                        return { std::nullopt, std::nullopt };
+                        // If the "property" is any other string, then that translates to a 'Lookup' call
+                        auto map = thisValue.as<native_type>();
+                        auto key = winrt::to_hstring(name);
+                        if (map.HasKey(key))
+                        {
+                            return { convert_native_to_value(runtime, map.Lookup(key)), std::nullopt };
+                        }
                     }
-                    auto map = thisValue.as<native_type>();
-                    auto key = winrt::to_hstring(name);
-                    if (!map.HasKey(key))
-                    {
-                        return { std::nullopt, std::nullopt };
-                    }
-                    return { convert_native_to_value(runtime, map.Lookup(key)), std::nullopt };
+
+                    return { std::nullopt, std::nullopt };
                 };
 
                 static bool runtime_set_property(jsi::Runtime& runtime, const IInspectable& thisValue,
                     std::string_view name, const jsi::Value& value)
                 {
-                    if constexpr (!std::is_same_v<K, winrt::hstring>)
+                    if constexpr (std::is_same_v<K, winrt::hstring>)
                     {
-                        return false;
+                        auto map = thisValue.as<native_type>();
+                        auto key = winrt::to_hstring(name);
+                        map.Insert(key, convert_value_to_native<V>(runtime, value));
+                        return true;
                     }
-                    auto map = thisValue.as<native_type>();
-                    auto key = winrt::to_hstring(name);
-                    map.Insert(key, convert_value_to_native<V>(runtime, value));
-                    return true;
+
+                    return false;
                 }
             };
 
@@ -3158,19 +3159,19 @@ namespace jswinrt
                 static std::pair<std::optional<jsi::Value>, std::optional<jsi::Value>> runtime_get_property(
                     jsi::Runtime& runtime, const IInspectable& thisValue, std::string_view name)
                 {
-                    // If the "property" is any other string, then that translates to a 'Lookup' call
-                    // The native map should have string keys.
-                    if constexpr (!std::is_same_v<K, winrt::hstring>)
+                    // TODO: Should we also include 'Char' and 'Guid' as well?
+                    if constexpr (std::is_same_v<K, winrt::hstring>)
                     {
-                        return { std::nullopt, std::nullopt };
+                        // If the "property" is any other string, then that translates to a 'Lookup' call
+                        auto map = thisValue.as<native_type>();
+                        auto key = winrt::to_hstring(name);
+                        if (map.HasKey(key))
+                        {
+                            return { convert_native_to_value(runtime, map.Lookup(key)), std::nullopt };
+                        }
                     }
-                    auto map = thisValue.as<native_type>();
-                    auto key = winrt::to_hstring(name);
-                    if (!map.HasKey(key))
-                    {
-                        return { std::nullopt, std::nullopt };
-                    }
-                    return { convert_native_to_value(runtime, map.Lookup(key)), std::nullopt };
+
+                    return { std::nullopt, std::nullopt };
                 };
             };
 
