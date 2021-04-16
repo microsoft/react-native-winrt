@@ -136,7 +136,7 @@ Copyright (C) Microsoft Corporation. All rights reserved.
           Inputs="$(IntDir)rnwinrt.rsp"
           Outputs="$(GeneratedFilesDir)rnwinrt\Projections.g.h';$(GeneratedFilesDir)rnwinrt\Projections.g.cpp;$(GeneratedFilesDir)rnwinrt\ProjectedValueConverters.g.h';">
         <PropertyGroup>
-            <RnWinRTPathCommand>$(RnWinRTExe) %40"$(IntDir)rnwinrt.rsp"</RnWinRTPathCommand>
+            <RnWinRTPathCommand>&quot;$(RnWinRTExe)&quot; %40"$(IntDir)rnwinrt.rsp"</RnWinRTPathCommand>
         </PropertyGroup>
         <Message Text="$(RnWinRTPathCommand)" Importance="$(RnWinRTVerbosity)" />
         <Exec Command="$(RnWinRTPathCommand)" />

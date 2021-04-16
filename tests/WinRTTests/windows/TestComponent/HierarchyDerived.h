@@ -1,8 +1,8 @@
 #pragma once
-#include "HierarchyDerived.g.h"
 #include "HierarchyBase.h"
+#include "HierarchyDerived.g.h"
 
-namespace winrt::TestComponent::implementation 
+namespace winrt::TestComponent::implementation
 {
     struct HierarchyDerived : HierarchyDerivedT<HierarchyDerived, HierarchyBase>
     {
