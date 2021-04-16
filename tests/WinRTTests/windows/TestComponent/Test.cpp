@@ -11,6 +11,7 @@
 #include "Test.h"
 
 #include "Test.g.cpp"
+#include "TestObject.g.cpp"
 
 using namespace std::literals;
 
@@ -18,6 +19,19 @@ namespace winrt
 {
     using namespace Windows::Foundation;
     using namespace Windows::Foundation::Collections;
+}
+
+template <typename T>
+static T default_value()
+{
+    if constexpr (std::is_base_of_v<winrt::Windows::Foundation::IInspectable, T>)
+    {
+        return T{ nullptr };
+    }
+    else
+    {
+        return T{};
+    }
 }
 
 winrt::hstring to_lower(const winrt::hstring& hstr)
@@ -44,7 +58,7 @@ template <typename T>
 winrt::com_array<T> rotate_array(const winrt::array_view<const T>& values, int amt)
 {
     assert(values.size() > static_cast<std::size_t>(amt));
-    winrt::com_array<T> result(values.size());
+    winrt::com_array<T> result(values.size(), default_value<T>());
     std::rotate_copy(values.rbegin(), values.rbegin() + amt, values.rend(), result.rbegin());
     return result;
 }
@@ -118,6 +132,162 @@ namespace winrt::TestComponent::implementation
         }
 
         return hstring(result);
+    }
+
+    hstring Test::StaticArityOverload()
+    {
+        return L"No-arg overload";
+    }
+
+    hstring Test::StaticArityOverload(hstring const& str)
+    {
+        return str;
+    }
+
+    hstring Test::StaticArityOverload(hstring const& first, hstring const& second)
+    {
+        return first + second;
+    }
+
+    hstring Test::StaticDefaultOverload(hstring const&, bool)
+    {
+        return L"Test failed! Incorrect overload called";
+    }
+
+    hstring Test::StaticDefaultOverload(hstring const& str, int32_t repeat)
+    {
+        hstring result;
+        for (int32_t i = 0; i < repeat; ++i)
+        {
+            result = result + str;
+        }
+
+        return result;
+    }
+
+    hstring Test::StaticDefaultOverload(hstring const&, uint32_t)
+    {
+        return L"Test failed! Incorrect overload called";
+    }
+
+    hstring Test::StaticOutParamOverload(hstring const&)
+    {
+        return L"Test failed! Incorrect overload called";
+    }
+
+    hstring Test::StaticOutParamOverload(hstring const& str, hstring& outParam)
+    {
+        outParam = L"Success!";
+        return str;
+    }
+
+    hstring Test::StaticOutParamOverload(hstring const&, hstring const&)
+    {
+        return L"Test failed! Incorrect overload called";
+    }
+
+    hstring Test::StaticContractArityOverload()
+    {
+        return L"No-arg overload";
+    }
+
+    hstring Test::StaticContractArityOverload(hstring const& str)
+    {
+        return str;
+    }
+
+    hstring Test::StaticContractDefaultOverloadV1(hstring const&, bool)
+    {
+        return L"Test failed! Incorrect overload called";
+    }
+
+    hstring Test::StaticContractDefaultOverloadV1(hstring const& str, int32_t repeat)
+    {
+        hstring result;
+        for (int32_t i = 0; i < repeat; ++i)
+        {
+            result = result + str;
+        }
+
+        return result;
+    }
+
+    hstring Test::StaticContractDefaultOverloadV1(hstring const&, uint32_t)
+    {
+        return L"Test failed! Incorrect overload called";
+    }
+
+    hstring Test::StaticContractDefaultOverloadV1(hstring const&, double)
+    {
+        return L"Test failed! Incorrect overload called";
+    }
+
+    hstring Test::StaticContractDefaultOverloadV2(hstring const&, double)
+    {
+        return L"Test failed! Incorrect overload called";
+    }
+
+    hstring Test::StaticContractDefaultOverloadV2(hstring const&, bool)
+    {
+        return L"Test failed! Incorrect overload called";
+    }
+
+    hstring Test::StaticContractDefaultOverloadV2(hstring const& str, int32_t repeat)
+    {
+        hstring result;
+        for (int32_t i = 0; i < repeat; ++i)
+        {
+            result = result + str;
+        }
+
+        return result;
+    }
+
+    hstring Test::StaticContractDefaultOverloadV2(hstring const&, uint32_t)
+    {
+        return L"Test failed! Incorrect overload called";
+    }
+
+    hstring Test::StaticContractOutParamOverloadV1(hstring const&)
+    {
+        return L"Test failed! Incorrect overload called";
+    }
+
+    hstring Test::StaticContractOutParamOverloadV1(hstring const& str, hstring& outParam)
+    {
+        outParam = L"Success!";
+        return str;
+    }
+
+    hstring Test::StaticContractOutParamOverloadV1(hstring const&, hstring const&)
+    {
+        return L"Test failed! Incorrect overload called";
+    }
+
+    hstring Test::StaticContractOutParamOverloadV1(char16_t)
+    {
+        return L"Test failed! Incorrect overload called";
+    }
+
+    hstring Test::StaticContractOutParamOverloadV2(hstring const&)
+    {
+        return L"Test failed! Incorrect overload called";
+    }
+
+    hstring Test::StaticContractOutParamOverloadV2(hstring const& str, hstring& outParam)
+    {
+        outParam = L"Success!";
+        return str;
+    }
+
+    hstring Test::StaticContractOutParamOverloadV2(hstring const&, hstring const&)
+    {
+        return L"Test failed! Incorrect overload called";
+    }
+
+    hstring Test::StaticContractOutParamOverloadV2(char16_t)
+    {
+        return L"Test failed! Incorrect overload called";
     }
 
     bool Test::StaticBoolOutParam(bool lhs, bool rhs, bool& andResult, bool& or)
@@ -196,18 +366,12 @@ namespace winrt::TestComponent::implementation
         return value.Value() * 4;
     }
 
-    IVector<int32_t> Test::StaticObjectOutParam(
-        IVector<int32_t> const& values, IVector<int32_t>& doubledValues, IVector<int32_t>& tripledValues)
+    TestComponent::TestObject Test::StaticObjectOutParam(TestComponent::TestObject const& value,
+        TestComponent::TestObject& doubledValue, TestComponent::TestObject& tripledValue)
     {
-        doubledValues = single_threaded_vector<int32_t>();
-        tripledValues = single_threaded_vector<int32_t>();
-        for (auto val : values)
-        {
-            doubledValues.Append(val * 2);
-            tripledValues.Append(val * 3);
-        }
-
-        return values;
+        doubledValue = winrt::make<TestObject>(value.Value() * 2);
+        tripledValue = winrt::make<TestObject>(value.Value() * 3);
+        return winrt::make<TestObject>(value.Value() * 4);
     }
 
     com_array<bool> Test::StaticBoolArrayOutParam(
@@ -274,8 +438,9 @@ namespace winrt::TestComponent::implementation
         return reverse_array(values);
     }
 
-    com_array<IVector<int32_t>> Test::StaticObjectArrayOutParam(
-        array_view<IVector<int32_t> const> values, com_array<IVector<int32_t>>& rot1, com_array<IVector<int32_t>>& rot2)
+    com_array<TestComponent::TestObject> Test::StaticObjectArrayOutParam(
+        array_view<TestComponent::TestObject const> values, com_array<TestComponent::TestObject>& rot1,
+        com_array<TestComponent::TestObject>& rot2)
     {
         rot1 = rotate_array(values, 1);
         rot2 = rotate_array(values, 2);
@@ -367,15 +532,34 @@ namespace winrt::TestComponent::implementation
         std::iota(values.begin(), values.end(), 0);
     }
 
-    void Test::StaticObjectFillParam(array_view<IVector<int32_t>> values)
+    void Test::StaticObjectFillParam(array_view<TestComponent::TestObject> values)
     {
         int32_t next = 0;
-        std::vector<int32_t> v;
         for (auto& val : values)
         {
-            val = single_threaded_vector<int32_t>(std::vector{ v });
-            v.push_back(next++);
+            val = winrt::make<TestObject>(next++);
         }
+    }
+
+    uint32_t Test::StaticInterwovenParams(bool inBool, bool& outBool, int32_t inNumeric, int32_t& outNumeric,
+        array_view<int32_t const> inArray, com_array<int32_t>& outArray, array_view<int32_t> refArray)
+    {
+        outBool = !inBool;
+        outNumeric = inNumeric * 2;
+
+        auto resultSize = std::min(inArray.size(), refArray.size());
+        for (uint32_t i = 0; i < resultSize; ++i)
+        {
+            refArray[i] = inArray[i] * 2;
+        }
+
+        outArray = com_array<int32_t>(inArray.size());
+        for (uint32_t i = 0; i < inArray.size(); ++i)
+        {
+            outArray[i] = inArray[i] * 2;
+        }
+
+        return resultSize;
     }
 
     winrt::event_token Test::StaticBoolEventHandler(EventHandler<bool> const& handler)
@@ -458,7 +642,7 @@ namespace winrt::TestComponent::implementation
         s_refEventSource.remove(token);
     }
 
-    winrt::event_token Test::StaticObjectEventHandler(EventHandler<IVector<int32_t>> const& handler)
+    winrt::event_token Test::StaticObjectEventHandler(EventHandler<TestComponent::TestObject> const& handler)
     {
         return s_objectEventSource.add(handler);
     }
@@ -508,7 +692,7 @@ namespace winrt::TestComponent::implementation
         s_refEventSource(nullptr, value);
     }
 
-    void Test::RaiseStaticObjectEvent(IVector<int32_t> const& value)
+    void Test::RaiseStaticObjectEvent(TestComponent::TestObject const& value)
     {
         s_objectEventSource(nullptr, value);
     }
@@ -555,8 +739,8 @@ namespace winrt::TestComponent::implementation
         return targetFn(inputValue);
     }
 
-    IVector<int32_t> Test::StaticInvokeObjectDelegate(
-        IVector<int32_t> const& inputValue, ObjectDelegate const& targetFn)
+    TestComponent::TestObject Test::StaticInvokeObjectDelegate(
+        TestComponent::TestObject const& inputValue, ObjectDelegate const& targetFn)
     {
         return targetFn(inputValue);
     }
@@ -623,10 +807,10 @@ namespace winrt::TestComponent::implementation
         return result;
     }
 
-    IVector<int32_t> Test::StaticInvokeObjectDelegateWithOutParam(
-        IVector<int32_t> const& inputValue, ObjectDelegateWithOutParam const& targetFn)
+    TestComponent::TestObject Test::StaticInvokeObjectDelegateWithOutParam(
+        TestComponent::TestObject const& inputValue, ObjectDelegateWithOutParam const& targetFn)
     {
-        IVector<int32_t> result;
+        TestComponent::TestObject result{ nullptr };
         targetFn(inputValue, result);
         return result;
     }
@@ -634,7 +818,8 @@ namespace winrt::TestComponent::implementation
     template <typename T, typename Delegate>
     static bool DoInvokeArrayDelegate(array_view<const T> values, const Delegate& targetFn)
     {
-        T fillResult[5];
+        T fillResult[] = { default_value<T>(), default_value<T>(), default_value<T>(), default_value<T>(),
+            default_value<T>() };
         if (values.size() < std::size(fillResult))
             throw hresult_invalid_argument(); // Since we aren't reporting result size; assume complete fill
 
@@ -712,9 +897,36 @@ namespace winrt::TestComponent::implementation
     }
 
     bool Test::StaticInvokeObjectArrayDelegate(
-        array_view<IVector<int32_t> const> values, ObjectArrayDelegate const& targetFn)
+        array_view<TestComponent::TestObject const> values, ObjectArrayDelegate const& targetFn)
     {
         return DoInvokeArrayDelegate(values, targetFn);
+    }
+
+    bool Test::StaticInvokeInterwovenDelegate(
+        bool inBool, int32_t inNumeric, array_view<int32_t const> inArray, InterwovenDelegate const& targetFn)
+    {
+        bool outBool;
+        int32_t outNumeric;
+        int32_t refArray[5];
+        com_array<int32_t> outArray;
+        auto refArrayLen = targetFn(inBool, outBool, inNumeric, outNumeric, inArray, outArray, refArray);
+
+        bool result = !inBool == outBool;
+        result = result && ((inNumeric * 2) == outNumeric);
+
+        result = result && (refArrayLen == std::min(5u, inArray.size()));
+        for (uint32_t i = 0; i < refArrayLen; ++i)
+        {
+            result = result && ((inArray[i] * 2) == refArray[i]);
+        }
+
+        result = result && (outArray.size() == inArray.size());
+        for (uint32_t i = 0; i < outArray.size(); ++i)
+        {
+            result = result && ((inArray[i] * 2) == outArray[i]);
+        }
+
+        return result;
     }
 
     template <typename T>
@@ -763,7 +975,7 @@ namespace winrt::TestComponent::implementation
         return CopyToVector(values);
     }
 
-    IVector<IInspectable> Test::CopyObjectsToVector(array_view<IInspectable const> values)
+    IVector<TestComponent::TestObject> Test::CopyObjectsToVector(array_view<TestComponent::TestObject const> values)
     {
         return CopyToVector(values);
     }
@@ -861,35 +1073,43 @@ namespace winrt::TestComponent::implementation
     {
         return vector;
     }
+
     IVector<char16_t> Test::ReturnSameCharVector(IVector<char16_t> const& vector)
     {
         return vector;
     }
+
     IVector<int32_t> Test::ReturnSameNumericVector(IVector<int32_t> const& vector)
     {
         return vector;
     }
+
     IVector<hstring> Test::ReturnSameStringVector(IVector<hstring> const& vector)
     {
         return vector;
     }
+
     IVector<winrt::guid> Test::ReturnSameGuidVector(IVector<winrt::guid> const& vector)
     {
         return vector;
     }
+
     IVector<TestEnum> Test::ReturnSameEnumVector(IVector<TestEnum> const& vector)
     {
         return vector;
     }
+
     IVector<CompositeType> Test::ReturnSameCompositeStructVector(IVector<CompositeType> const& vector)
     {
         return vector;
     }
+
     IVector<IReference<int32_t>> Test::ReturnSameRefVector(IVector<IReference<int32_t>> const& vector)
     {
         return vector;
     }
-    IVector<IInspectable> Test::ReturnSameObjectVector(IVector<IInspectable> const& vector)
+
+    IVector<TestComponent::TestObject> Test::ReturnSameObjectVector(IVector<TestComponent::TestObject> const& vector)
     {
         return vector;
     }
@@ -937,6 +1157,11 @@ namespace winrt::TestComponent::implementation
         co_await winrt::resume_background();
         co_await 50ms;
         throw std::invalid_argument("test");
+    }
+
+    Windows::Foundation::IAsyncOperation<int32_t> Test::ImmediateReturnAsync(int32_t value)
+    {
+        co_return value;
     }
 
     bool Test::BoolProperty()
@@ -1159,12 +1384,12 @@ namespace winrt::TestComponent::implementation
         m_refEnumProperty = value;
     }
 
-    IVector<int32_t> Test::ObjectProperty()
+    TestComponent::TestObject Test::ObjectProperty()
     {
         return m_objectProperty;
     }
 
-    void Test::ObjectProperty(IVector<int32_t> const& value)
+    void Test::ObjectProperty(TestComponent::TestObject const& value)
     {
         m_objectProperty = value;
     }
@@ -1249,12 +1474,12 @@ namespace winrt::TestComponent::implementation
         m_refArrayProperty.assign(value.begin(), value.end());
     }
 
-    com_array<IVector<int32_t>> Test::ObjectArrayProperty()
+    com_array<TestComponent::TestObject> Test::ObjectArrayProperty()
     {
-        return com_array<IVector<int32_t>>(m_objectArrayProperty);
+        return com_array<TestComponent::TestObject>(m_objectArrayProperty);
     }
 
-    void Test::ObjectArrayProperty(array_view<IVector<int32_t> const> value)
+    void Test::ObjectArrayProperty(array_view<TestComponent::TestObject const> value)
     {
         m_objectArrayProperty.assign(value.begin(), value.end());
     }
@@ -1351,6 +1576,162 @@ namespace winrt::TestComponent::implementation
         return hstring(result);
     }
 
+    hstring Test::ArityOverload()
+    {
+        return L"No-arg overload";
+    }
+
+    hstring Test::ArityOverload(hstring const& str)
+    {
+        return str;
+    }
+
+    hstring Test::ArityOverload(hstring const& first, hstring const& second)
+    {
+        return first + second;
+    }
+
+    hstring Test::DefaultOverload(hstring const&, bool)
+    {
+        return L"Test failed! Incorrect overload called";
+    }
+
+    hstring Test::DefaultOverload(hstring const& str, int32_t repeat)
+    {
+        hstring result;
+        for (int32_t i = 0; i < repeat; ++i)
+        {
+            result = result + str;
+        }
+
+        return result;
+    }
+
+    hstring Test::DefaultOverload(hstring const&, uint32_t)
+    {
+        return L"Test failed! Incorrect overload called";
+    }
+
+    hstring Test::OutParamOverload(hstring const&)
+    {
+        return L"Test failed! Incorrect overload called";
+    }
+
+    hstring Test::OutParamOverload(hstring const& str, hstring& outParam)
+    {
+        outParam = L"Success!";
+        return str;
+    }
+
+    hstring Test::OutParamOverload(hstring const&, hstring const&)
+    {
+        return L"Test failed! Incorrect overload called";
+    }
+
+    hstring Test::ContractArityOverload()
+    {
+        return L"No-arg overload";
+    }
+
+    hstring Test::ContractArityOverload(hstring const& str)
+    {
+        return str;
+    }
+
+    hstring Test::ContractDefaultOverloadV1(hstring const&, bool)
+    {
+        return L"Test failed! Incorrect overload called";
+    }
+
+    hstring Test::ContractDefaultOverloadV1(hstring const& str, int32_t repeat)
+    {
+        hstring result;
+        for (int32_t i = 0; i < repeat; ++i)
+        {
+            result = result + str;
+        }
+
+        return result;
+    }
+
+    hstring Test::ContractDefaultOverloadV1(hstring const&, uint32_t)
+    {
+        return L"Test failed! Incorrect overload called";
+    }
+
+    hstring Test::ContractDefaultOverloadV1(hstring const&, double)
+    {
+        return L"Test failed! Incorrect overload called";
+    }
+
+    hstring Test::ContractDefaultOverloadV2(hstring const&, double)
+    {
+        return L"Test failed! Incorrect overload called";
+    }
+
+    hstring Test::ContractDefaultOverloadV2(hstring const&, bool)
+    {
+        return L"Test failed! Incorrect overload called";
+    }
+
+    hstring Test::ContractDefaultOverloadV2(hstring const& str, int32_t repeat)
+    {
+        hstring result;
+        for (int32_t i = 0; i < repeat; ++i)
+        {
+            result = result + str;
+        }
+
+        return result;
+    }
+
+    hstring Test::ContractDefaultOverloadV2(hstring const&, uint32_t)
+    {
+        return L"Test failed! Incorrect overload called";
+    }
+
+    hstring Test::ContractOutParamOverloadV1(hstring const&)
+    {
+        return L"Test failed! Incorrect overload called";
+    }
+
+    hstring Test::ContractOutParamOverloadV1(hstring const& str, hstring& outParam)
+    {
+        outParam = L"Success!";
+        return str;
+    }
+
+    hstring Test::ContractOutParamOverloadV1(hstring const&, hstring const&)
+    {
+        return L"Test failed! Incorrect overload called";
+    }
+
+    hstring Test::ContractOutParamOverloadV1(char16_t)
+    {
+        return L"Test failed! Incorrect overload called";
+    }
+
+    hstring Test::ContractOutParamOverloadV2(hstring const&)
+    {
+        return L"Test failed! Incorrect overload called";
+    }
+
+    hstring Test::ContractOutParamOverloadV2(hstring const& str, hstring& outParam)
+    {
+        outParam = L"Success!";
+        return str;
+    }
+
+    hstring Test::ContractOutParamOverloadV2(hstring const&, hstring const&)
+    {
+        return L"Test failed! Incorrect overload called";
+    }
+
+    hstring Test::ContractOutParamOverloadV2(char16_t)
+    {
+        return L"Test failed! Incorrect overload called";
+    }
+
     bool Test::BoolOutParam(bool lhs, bool rhs, bool& andResult, bool& or)
     {
         andResult = lhs && rhs;
@@ -1404,18 +1785,12 @@ namespace winrt::TestComponent::implementation
         return value.Value() * 4;
     }
 
-    IVector<int32_t> Test::ObjectOutParam(
-        IVector<int32_t> const& values, IVector<int32_t>& doubledValues, IVector<int32_t>& tripledValues)
+    TestComponent::TestObject Test::ObjectOutParam(TestComponent::TestObject const& value,
+        TestComponent::TestObject& doubledValue, TestComponent::TestObject& tripledValue)
     {
-        doubledValues = single_threaded_vector<int32_t>();
-        tripledValues = single_threaded_vector<int32_t>();
-        for (auto val : values)
-        {
-            doubledValues.Append(val * 2);
-            tripledValues.Append(val * 3);
-        }
-
-        return values;
+        doubledValue = winrt::make<TestObject>(value.Value() * 2);
+        tripledValue = winrt::make<TestObject>(value.Value() * 3);
+        return winrt::make<TestObject>(value.Value() * 4);
     }
 
     com_array<bool> Test::BoolArrayOutParam(array_view<bool const> values, com_array<bool>& rot1, com_array<bool>& rot2)
@@ -1481,8 +1856,8 @@ namespace winrt::TestComponent::implementation
         return reverse_array(values);
     }
 
-    com_array<IVector<int32_t>> Test::ObjectArrayOutParam(
-        array_view<IVector<int32_t> const> values, com_array<IVector<int32_t>>& rot1, com_array<IVector<int32_t>>& rot2)
+    com_array<TestComponent::TestObject> Test::ObjectArrayOutParam(array_view<TestComponent::TestObject const> values,
+        com_array<TestComponent::TestObject>& rot1, com_array<TestComponent::TestObject>& rot2)
     {
         rot1 = rotate_array(values, 1);
         rot2 = rotate_array(values, 2);
@@ -1574,18 +1949,37 @@ namespace winrt::TestComponent::implementation
         std::iota(values.begin(), values.end(), 0);
     }
 
-    void Test::ObjectFillParam(array_view<IVector<int32_t>> values)
+    void Test::ObjectFillParam(array_view<TestComponent::TestObject> values)
     {
         int32_t next = 0;
-        std::vector<int32_t> v;
         for (auto& val : values)
         {
-            val = single_threaded_vector<int32_t>(std::vector{ v });
-            v.push_back(next++);
+            val = winrt::make<TestObject>(next++);
         }
     }
 
-    winrt::event_token Test::BoolEventHandler(EventHandler<bool> const& handler)
+    uint32_t Test::InterwovenParams(bool inBool, bool& outBool, int32_t inNumeric, int32_t& outNumeric,
+        array_view<int32_t const> inArray, com_array<int32_t>& outArray, array_view<int32_t> refArray)
+    {
+        outBool = !inBool;
+        outNumeric = inNumeric * 2;
+
+        auto resultSize = std::min(inArray.size(), refArray.size());
+        for (uint32_t i = 0; i < resultSize; ++i)
+        {
+            refArray[i] = inArray[i] * 2;
+        }
+
+        outArray = com_array<int32_t>(inArray.size());
+        for (uint32_t i = 0; i < inArray.size(); ++i)
+        {
+            outArray[i] = inArray[i] * 2;
+        }
+
+        return resultSize;
+    }
+
+    winrt::event_token Test::BoolEventHandler(TypedEventHandler<TestComponent::Test, bool> const& handler)
     {
         return m_boolEventSource.add(handler);
     }
@@ -1595,7 +1989,7 @@ namespace winrt::TestComponent::implementation
         m_boolEventSource.remove(token);
     }
 
-    winrt::event_token Test::CharEventHandler(EventHandler<char16_t> const& handler)
+    winrt::event_token Test::CharEventHandler(TypedEventHandler<TestComponent::Test, char16_t> const& handler)
     {
         return m_charEventSource.add(handler);
     }
@@ -1605,7 +1999,7 @@ namespace winrt::TestComponent::implementation
         m_charEventSource.remove(token);
     }
 
-    winrt::event_token Test::NumericEventHandler(EventHandler<int32_t> const& handler)
+    winrt::event_token Test::NumericEventHandler(TypedEventHandler<TestComponent::Test, int32_t> const& handler)
     {
         return m_numericEventSource.add(handler);
     }
@@ -1615,7 +2009,7 @@ namespace winrt::TestComponent::implementation
         m_numericEventSource.remove(token);
     }
 
-    winrt::event_token Test::StringEventHandler(EventHandler<hstring> const& handler)
+    winrt::event_token Test::StringEventHandler(TypedEventHandler<TestComponent::Test, hstring> const& handler)
     {
         return m_stringEventSource.add(handler);
     }
@@ -1625,7 +2019,7 @@ namespace winrt::TestComponent::implementation
         m_stringEventSource.remove(token);
     }
 
-    winrt::event_token Test::GuidEventHandler(EventHandler<winrt::guid> const& handler)
+    winrt::event_token Test::GuidEventHandler(TypedEventHandler<TestComponent::Test, winrt::guid> const& handler)
     {
         return m_guidEventSource.add(handler);
     }
@@ -1635,7 +2029,7 @@ namespace winrt::TestComponent::implementation
         m_guidEventSource.remove(token);
     }
 
-    winrt::event_token Test::EnumEventHandler(EventHandler<TestEnum> const& handler)
+    winrt::event_token Test::EnumEventHandler(TypedEventHandler<TestComponent::Test, TestEnum> const& handler)
     {
         return m_enumEventSource.add(handler);
     }
@@ -1645,7 +2039,8 @@ namespace winrt::TestComponent::implementation
         m_enumEventSource.remove(token);
     }
 
-    winrt::event_token Test::CompositeStructEventHandler(EventHandler<CompositeType> const& handler)
+    winrt::event_token Test::CompositeStructEventHandler(
+        TypedEventHandler<TestComponent::Test, CompositeType> const& handler)
     {
         return m_compositeStructEventSource.add(handler);
     }
@@ -1655,7 +2050,7 @@ namespace winrt::TestComponent::implementation
         m_compositeStructEventSource.remove(token);
     }
 
-    winrt::event_token Test::RefEventHandler(EventHandler<IReference<int32_t>> const& handler)
+    winrt::event_token Test::RefEventHandler(TypedEventHandler<TestComponent::Test, IReference<int32_t>> const& handler)
     {
         return m_refEventSource.add(handler);
     }
@@ -1665,7 +2060,8 @@ namespace winrt::TestComponent::implementation
         m_refEventSource.remove(token);
     }
 
-    winrt::event_token Test::ObjectEventHandler(EventHandler<IVector<int32_t>> const& handler)
+    winrt::event_token Test::ObjectEventHandler(
+        TypedEventHandler<TestComponent::Test, TestComponent::TestObject> const& handler)
     {
         return m_objectEventSource.add(handler);
     }
@@ -1715,7 +2111,7 @@ namespace winrt::TestComponent::implementation
         m_refEventSource(*this, value);
     }
 
-    void Test::RaiseObjectEvent(IVector<int32_t> const& value)
+    void Test::RaiseObjectEvent(TestComponent::TestObject const& value)
     {
         m_objectEventSource(*this, value);
     }

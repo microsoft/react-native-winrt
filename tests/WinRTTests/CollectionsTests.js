@@ -83,7 +83,7 @@ const refValuesToAdd = [4, 5, null, 6];
 
 // TODO: Objects; probably need to create on the fly?
 
-export function makeCollectionsTests(pThis) {
+export function makeCollectionsTestScenarios(pThis) {
     return [
         // Vectors created from copies of arrays
         new TestScenario('IVector<Boolean>', runBoolVectorCopyTest.bind(pThis)),
@@ -94,7 +94,7 @@ export function makeCollectionsTests(pThis) {
         new TestScenario('IVector<TestEnum>', runEnumVectorCopyTest.bind(pThis)),
         new TestScenario('IVector<CompositeType>', runCompositeStructVectorCopyTest.bind(pThis)),
         new TestScenario('IVector<IReference<Int32>>', runRefVectorCopyTest.bind(pThis)),
-        // TODO: new TestScenario('IVector<Object>', runObjectVectorCopyTest.bind(pThis)),
+        new TestScenario('IVector<TestObject>', runObjectVectorCopyTest.bind(pThis)),
 
         // Vectors that wrap arrays
         new TestScenario('Array as IVector<Boolean>', runBoolArrayAsVectorTest.bind(pThis)),
@@ -105,13 +105,13 @@ export function makeCollectionsTests(pThis) {
         new TestScenario('Array as IVector<TestEnum>', runEnumArrayAsVectorTest.bind(pThis)),
         new TestScenario('Array as IVector<CompositeType>', runCompositeStructArrayAsVectorTest.bind(pThis)),
         new TestScenario('Array as IVector<IReference<Int32>>', runRefArrayAsVectorTest.bind(pThis)),
-       // TODO: new TestScenario('Array as IVector<Object>', runObjectArrayAsVectorTest.bind(pThis)),
+        new TestScenario('Array as IVector<TestObject>', runObjectArrayAsVectorTest.bind(pThis)),
 
-       // Vectors behave like arrays
-       new TestScenario('IVector behaves like Array', runVectorAsArrayTest.bind(pThis)),
-       new TestScenario('IVectorView behaves like Array', runVectorViewAsArrayTest.bind(pThis)),
-       new TestScenario('IMap with string keys behaves like JS object', runIMapAsJSObjectTest.bind(pThis)),
-       new TestScenario('IMapView with string keys behaves like readonly JS object', runIMapViewAsReadonlyJSObject.bind(pThis)),
+        // Vectors behave like arrays
+        new TestScenario('IVector behaves like Array', runVectorAsArrayTest.bind(pThis)),
+        new TestScenario('IVectorView behaves like Array', runVectorViewAsArrayTest.bind(pThis)),
+        new TestScenario('IMap with string keys behaves like JS object', runIMapAsJSObjectTest.bind(pThis)),
+        new TestScenario('IMapView with string keys behaves like readonly JS object', runIMapViewAsReadonlyJSObject.bind(pThis)),
     ];
 }
 
@@ -268,6 +268,14 @@ function runRefVectorCopyTest(scenario) {
     });
 }
 
+function runObjectVectorCopyTest(scenario) {
+    this.runSync(scenario, () => {
+        var values = numericVectorContents.map(val => new TestComponent.TestObject(val));
+        var valuesToAdd = numericValuesToAdd.map(val => new TestComponent.TestObject(val));
+        doVectorCopyTest(TestComponent.Test.copyObjectsToVector(values), values, valuesToAdd);
+    });
+}
+
 // Vectors that wrap arrays
 function doArrayAsVectorTest(vector, array, valuesToAdd) {
     // Modifications to 'vector' should be reflected in 'array'
@@ -362,6 +370,14 @@ function runRefArrayAsVectorTest(scenario) {
     this.runSync(scenario, () => {
         var array = [...refVectorContents];
         doArrayAsVectorTest(TestComponent.Test.returnSameRefVector(array), array, refValuesToAdd);
+    });
+}
+
+function runObjectArrayAsVectorTest(scenario) {
+    this.runSync(scenario, () => {
+        var values = numericVectorContents.map(val => new TestComponent.TestObject(val));
+        var valuesToAdd = numericValuesToAdd.map(val => new TestComponent.TestObject(val));
+        doArrayAsVectorTest(TestComponent.Test.returnSameObjectVector(values), values, valuesToAdd);
     });
 }
 
