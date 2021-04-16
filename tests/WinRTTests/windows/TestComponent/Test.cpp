@@ -1979,7 +1979,7 @@ namespace winrt::TestComponent::implementation
         return resultSize;
     }
 
-    winrt::event_token Test::BoolEventHandler(EventHandler<bool> const& handler)
+    winrt::event_token Test::BoolEventHandler(TypedEventHandler<TestComponent::Test, bool> const& handler)
     {
         return m_boolEventSource.add(handler);
     }
