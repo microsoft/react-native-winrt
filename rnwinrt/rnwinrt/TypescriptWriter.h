@@ -85,7 +85,7 @@ public:
 
     void WriteClassOrInterface(winmd::reader::TypeDef const& type, TextWriter& textWriter)
     {
-        if (get_category(type) == winmd::reader::category::interface_type && exclusiveto_class(type)) 
+        if (get_category(type) == winmd::reader::category::interface_type && exclusiveto_class(type))
         {
             return;
         }
@@ -156,7 +156,7 @@ public:
                     return;
                 }
                 // filter out exclusiveto interfaces
-                std::vector<jswinrt::typeparser::type_semantics> filteredInterfaces; 
+                std::vector<jswinrt::typeparser::type_semantics> filteredInterfaces;
                 for (auto&& interfaceimpl : type.InterfaceImpl())
                 {
                     auto const& implementsTypeSem = jswinrt::typeparser::get_type_semantics(interfaceimpl.Interface());
@@ -169,16 +169,17 @@ public:
                     }
                     if (std::holds_alternative<jswinrt::typeparser::generic_type_instance>(implementsTypeSem))
                     {
-                        if (exclusiveto_class(std::get<jswinrt::typeparser::generic_type_instance>(implementsTypeSem).generic_type))
+                        if (exclusiveto_class(
+                                std::get<jswinrt::typeparser::generic_type_instance>(implementsTypeSem).generic_type))
                         {
                             continue;
                         }
                     }
-                    filteredInterfaces.push_back(implementsTypeSem);   
+                    filteredInterfaces.push_back(implementsTypeSem);
                 }
                 if (filteredInterfaces.size() == 0)
                 {
-                    return; 
+                    return;
                 }
                 textWriter.Write(
                     get_category(type) == winmd::reader::category::interface_type ? " extends " : " implements ");
@@ -219,6 +220,7 @@ public:
 
                     textWriter.Write(";");
                 }
+
                 // Methods:
                 std::map<std::string_view, winmd::reader::MethodDef> eventListeners;
                 for (auto&& method : type.MethodList())
@@ -239,6 +241,7 @@ public:
                         WriteMethod(method, type, textWriter);
                     }
                 }
+
                 // Event Listeners:
                 for (auto const& [name, method] : eventListeners)
                 {
@@ -256,10 +259,73 @@ public:
                     }
                 }
 
+                WriteSpecialPropertiesAndMethods(textWriter, type);
+
                 textWriter.ReduceIndent();
                 textWriter.WriteIndentedLine();
             });
         textWriter.WriteBlankLine();
+    }
+
+    void WriteSpecialPropertiesAndMethods(TextWriter& textWriter, winmd::reader::TypeDef const& type)
+    {
+        if (type.TypeNamespace() == "Windows.Foundation.Collections" && type.TypeName() == "IMapView`2")
+        {
+            textWriter.Write("%", R"(
+        readonly [key: string]: any;)");
+        }
+        else if (type.TypeNamespace() == "Windows.Foundation.Collections" && type.TypeName() == "IMap`2")
+        {
+            textWriter.Write("%", R"(
+        [key: string]: any;)");
+        }
+        else if (type.TypeNamespace() == "Windows.Foundation.Collections" && type.TypeName() == "IVector`1")
+        {
+            textWriter.Write("%", R"(
+        length: number; 
+        [index: number]: T;
+        concat(...items: (T | ConcatArray<T>)[]): T[];
+        copyWithin(target: number, start: number, end?: number): this;
+        every<S extends T>(predicate: (value: T, index: number, array: T[]) => value is S, thisArg?: any): this is S[];
+        some(predicate: (value: T, index: number, array: T[]) => unknown, thisArg?: any): boolean;
+        filter<S extends T>(predicate: (value: T, index: number, array: T[]) => value is S, thisArg?: any): S[];
+        filter(predicate: (value: T, index: number, array: T[]) => unknown, thisArg?: any): T[];
+        forEach(callbackfn: (value: T, index: number, array: T[]) => void, thisArg?: any): void;
+        lastIndexOf(searchElement: T, fromIndex?: number): number;
+        pop(): T | undefined;
+        push(...items: T[]): number;
+        map<U>(callbackfn: (value: T, index: number, array: T[]) => U, thisArg?: any): U[];
+        reduce(callbackfn: (previousValue: T, currentValue: T, currentIndex: number, array: T[]) => T): T;
+        reduce(callbackfn: (previousValue: T, currentValue: T, currentIndex: number, array: T[]) => T, initialValue: T): T;
+        reduceRight(callbackfn: (previousValue: T, currentValue: T, currentIndex: number, array: T[]) => T): T;
+        reduceRight(callbackfn: (previousValue: T, currentValue: T, currentIndex: number, array: T[]) => T, initialValue: T): T;
+        reverse(): T[];
+        shift(): T | undefined;
+        slice(start?: number, end?: number): T[];
+        sort(compareFn?: (a: T, b: T) => number): this;
+        splice(start: number, deleteCount?: number): T[];
+        some(predicate: (value: T, index: number, array: T[]) => unknown, thisArg?: any): boolean;
+        unshift(...items: T[]): number;)");
+        }
+        else if (type.TypeNamespace() == "Windows.Foundation.Collections" && type.TypeName() == "IVectorView`1")
+        {
+            textWriter.Write("%", R"(
+        length: number; 
+        readonly [index: number]: T;
+        concat(...items: (T | ConcatArray<T>)[]): T[];
+        every<S extends T>(predicate: (value: T, index: number, array: T[]) => value is S, thisArg?: any): this is S[];
+        filter<S extends T>(predicate: (value: T, index: number, array: T[]) => value is S, thisArg?: any): S[];
+        filter(predicate: (value: T, index: number, array: T[]) => unknown, thisArg?: any): T[];
+        forEach(callbackfn: (value: T, index: number, array: T[]) => void, thisArg?: any): void;
+        lastIndexOf(searchElement: T, fromIndex?: number): number;
+        map<U>(callbackfn: (value: T, index: number, array: T[]) => U, thisArg?: any): U[];
+        reduce(callbackfn: (previousValue: T, currentValue: T, currentIndex: number, array: T[]) => T): T;
+        reduce(callbackfn: (previousValue: T, currentValue: T, currentIndex: number, array: T[]) => T, initialValue: T): T;
+        reduceRight(callbackfn: (previousValue: T, currentValue: T, currentIndex: number, array: T[]) => T): T;
+        reduceRight(callbackfn: (previousValue: T, currentValue: T, currentIndex: number, array: T[]) => T, initialValue: T): T;
+        slice(start?: number, end?: number): T[];
+        some(predicate: (value: T, index: number, array: T[]) => unknown, thisArg?: any): boolean;)");
+        }
     }
 
     static bool HasGetterWithName(winmd::reader::TypeDef const& type, std::string_view const& name)
@@ -574,5 +640,4 @@ public:
     {
         return name.find("`") != std::string::npos;
     }
-
 };

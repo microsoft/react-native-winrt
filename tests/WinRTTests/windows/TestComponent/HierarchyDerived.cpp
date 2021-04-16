@@ -1,5 +1,7 @@
 #include "pch.h"
+
 #include "HierarchyDerived.h"
+
 #include "HierarchyDerived.g.cpp"
 
 namespace winrt::TestComponent::implementation
@@ -9,7 +11,7 @@ namespace winrt::TestComponent::implementation
     }
 
     winrt::hstring HierarchyDerived::OverriddenHierarchyBaseMethodOverride()
-    { 
+    {
         return L"HierarchyDerived.OverriddenHierarchyBaseMethod";
     }
 

@@ -33,6 +33,25 @@ jsi::String jswinrt::make_string(jsi::Runtime& runtime, std::wstring_view str)
     return jsi::String::createFromUtf8(runtime, reinterpret_cast<const uint8_t*>(buffer.get()), bytes);
 }
 
+std::u16string jswinrt::string_to_utf16(jsi::Runtime& runtime, const jsi::String& string)
+{
+    auto str = string.utf8(runtime);
+    if (str.empty())
+    {
+        return {};
+    }
+
+    auto len = ::MultiByteToWideChar(CP_UTF8, MB_ERR_INVALID_CHARS, str.c_str(), static_cast<int32_t>(str.size()),
+        nullptr /*lpWideCharStr*/, 0 /*cchWideChar*/);
+    winrt::check_bool(len);
+
+    std::u16string result(len, 0);
+    winrt::check_bool(::MultiByteToWideChar(CP_UTF8, MB_ERR_INVALID_CHARS, str.c_str(),
+        static_cast<int32_t>(str.size()), reinterpret_cast<LPWSTR>(result.data()), len));
+
+    return result;
+}
+
 // NOTE: Most lists are sorted, so in theory this could be a binary search-turns to linear search. The only thing
 // blocking this are enums, where their values are not currently sorted by name. Note however, that if this happens,
 // there can still be duplicates in a list (e.g. function overloads), so this would have to act more like
@@ -651,7 +670,21 @@ jsi::Value projected_object_instance::get(jsi::Runtime& runtime, const jsi::Prop
         }
     }
 
-    return jsi::Value::undefined();
+    // If we've made it this far, check to see if any interface wants to handle the call (e.g. operator[] etc.)
+    jsi::Value fallbackValue;
+    for (auto iface : m_interfaces)
+    {
+        if (!iface->runtime_get_property)
+            continue;
+
+        auto [result, fallback] = iface->runtime_get_property(runtime, m_instance, name);
+        if (result)
+            return std::move(*result);
+        else if (fallback)
+            fallbackValue = std::move(*fallback);
+    }
+
+    return std::move(fallbackValue);
 }
 
 void projected_object_instance::set(jsi::Runtime& runtime, const jsi::PropNameID& id, const jsi::Value& value)
@@ -664,6 +697,16 @@ void projected_object_instance::set(jsi::Runtime& runtime, const jsi::PropNameID
             itr->setter(runtime, m_instance, value);
             return;
         }
+    }
+
+    // If we've made it this far, check to see if any interface wants to handle the call (e.g. operator[] etc.)
+    for (auto iface : m_interfaces)
+    {
+        if (!iface->runtime_set_property)
+            continue;
+
+        if (iface->runtime_set_property(runtime, m_instance, name, value))
+            return;
     }
 
     // If no property exists with the given name, then ignore the call rather than throwing. This is more-or-less

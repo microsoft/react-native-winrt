@@ -167,6 +167,24 @@ namespace winrt::TestComponent::implementation
         static Windows::Foundation::Collections::IVector<Windows::Foundation::IInspectable> CopyObjectsToVector(
             array_view<Windows::Foundation::IInspectable const> values);
 
+        static Windows::Foundation::Collections::IVectorView<bool> CopyBoolsToVectorView(array_view<bool const> values);
+        static Windows::Foundation::Collections::IVectorView<char16_t> CopyCharsToVectorView(
+            array_view<char16_t const> values);
+        static Windows::Foundation::Collections::IVectorView<int32_t> CopyNumericsToVectorView(
+            array_view<int32_t const> values);
+        static Windows::Foundation::Collections::IVectorView<hstring> CopyStringsToVectorView(
+            array_view<hstring const> values);
+        static Windows::Foundation::Collections::IVectorView<winrt::guid> CopyGuidsToVectorView(
+            array_view<winrt::guid const> values);
+        static Windows::Foundation::Collections::IVectorView<TestEnum> CopyEnumValuesToVectorView(
+            array_view<TestEnum const> values);
+        static Windows::Foundation::Collections::IVectorView<CompositeType> CopyCompositeStructsToVectorView(
+            array_view<CompositeType const> values);
+        static Windows::Foundation::Collections::IVectorView<Windows::Foundation::IReference<int32_t>>
+        CopyRefsToVectorView(array_view<Windows::Foundation::IReference<int32_t> const> values);
+        static Windows::Foundation::Collections::IVectorView<Windows::Foundation::IInspectable> CopyObjectsToVectorView(
+            array_view<Windows::Foundation::IInspectable const> values);
+
         static Windows::Foundation::Collections::IVector<bool> ReturnSameBoolVector(
             Windows::Foundation::Collections::IVector<bool> const& vector);
         static Windows::Foundation::Collections::IVector<char16_t> ReturnSameCharVector(
@@ -352,6 +370,11 @@ namespace winrt::TestComponent::implementation
         void RaiseCompositeStructEvent(CompositeType const& value);
         void RaiseRefEvent(Windows::Foundation::IReference<int32_t> const& value);
         void RaiseObjectEvent(Windows::Foundation::Collections::IVector<int32_t> const& value);
+
+        // IMap
+        static Windows::Foundation::Collections::IMap<winrt::hstring, int32_t> CreateStringToNumberMap();
+        static Windows::Foundation::Collections::IMapView<winrt::hstring, int32_t> CopyToMapView(
+            Windows::Foundation::Collections::IMap<winrt::hstring, int32_t> const& stringToNumberMap);
 
     private:
         // Static properties
