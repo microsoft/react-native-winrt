@@ -1,8 +1,8 @@
 #pragma once
 
-#include "winrt/Windows.Foundation.h"
-#include "winrt/Windows.Foundation.Collections.h"
 #include "StaticOnlyTest.g.h"
+#include "winrt/Windows.Foundation.Collections.h"
+#include "winrt/Windows.Foundation.h"
 
 namespace winrt::TestComponent::implementation
 {
@@ -101,7 +101,6 @@ namespace winrt::TestComponent::implementation
         inline static hresult m_hresultProperty;
         inline static event<Windows::Foundation::EventHandler<TestComponent::TestObject>> s_objectEventSource;
     };
-
 
 }
 
