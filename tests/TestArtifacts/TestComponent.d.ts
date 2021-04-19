@@ -91,6 +91,37 @@ declare namespace TestComponent {
     
     type RefDelegateWithOutParam = (value: number | null) => number | null;
     
+    abstract class StaticOnlyTest {
+        static u8Property: number;
+        static u64Property: number;
+        static u32Property: number;
+        static u16Property: number;
+        static stringsStructProperty: TestComponent.StringTypes;
+        static stringProperty: string;
+        static s64Property: number;
+        static s32Property: number;
+        static s16Property: number;
+        static refNumericProperty: number | null;
+        static refEnumProperty: TestComponent.TestEnum | null;
+        static refCharProperty: string | null;
+        static refBooleanProperty: boolean | null;
+        static objectProperty: TestComponent.TestObject;
+        static numericsStructProperty: TestComponent.NumericTypes;
+        static hResultProperty: number;
+        static guidProperty: string;
+        static f64Property: number;
+        static f32Property: number;
+        static enumProperty: TestComponent.TestEnum;
+        static compositeStructProperty: TestComponent.CompositeType;
+        static charProperty: string;
+        static booleansStructProperty: TestComponent.BooleanTypes;
+        static boolProperty: boolean;
+        static copyString(value: string): string;
+        static raiseObjectEvent(value: TestComponent.TestObject): void;
+        addEventListener(type: "objecteventhandler", listener: Windows.Foundation.EventHandler<TestComponent.TestObject>): void
+        removeEventListener(type: "objecteventhandler", listener: Windows.Foundation.EventHandler<TestComponent.TestObject>): void
+    }
+
     type StringArrayDelegate = (values: string[]) => { subset: string[]; outValue: string[]; returnValue: string[] };
     
     type StringDelegate = (value: string) => string;

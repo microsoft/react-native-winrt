@@ -543,6 +543,43 @@ namespace TestComponent
         void RaiseObjectEvent(TestObject value);
     }
 
+    [contract(TestContract, 1)] 
+    runtimeclass StaticOnlyTest
+    {
+        // Static properties
+        static Boolean BoolProperty;
+        static Char CharProperty;
+        static UInt8 U8Property;
+        static UInt16 U16Property;
+        static UInt32 U32Property;
+        static UInt64 U64Property;
+        static Int16 S16Property;
+        static Int32 S32Property;
+        static Int64 S64Property;
+        static Single F32Property;
+        static Double F64Property;
+        static String StringProperty;
+        static Guid GuidProperty;
+        static TestEnum EnumProperty;
+        static NumericTypes NumericsStructProperty;
+        static StringTypes StringsStructProperty;
+        static BooleanTypes BooleansStructProperty;
+        static CompositeType CompositeStructProperty;
+        static Windows.Foundation.IReference<Boolean> RefBooleanProperty;
+        static Windows.Foundation.IReference<Char> RefCharProperty;
+        static Windows.Foundation.IReference<Int32> RefNumericProperty;
+        static Windows.Foundation.IReference<TestEnum> RefEnumProperty;
+        static TestObject ObjectProperty;
+        static HRESULT HResultProperty;
+
+        //Static Method
+        static String CopyString(String value);
+
+        //Event
+        static event Windows.Foundation.EventHandler<TestObject> ObjectEventHandler;
+        static void RaiseObjectEvent(TestObject value);
+    }
+
     [contract(TestContract, 2)]
     [exclusiveto(HierarchyBase)]
     interface IHierarchyV2Contract
