@@ -78,6 +78,9 @@ export function makeBasicFunctionTestScenarios(pThis) {
 
         // Non-static "interwoven" params
         new TestScenario('Test::InterwovenParams', runInterwovenParams.bind(pThis)),
+
+        //Static methods for non activable classes
+        new TestScenario('StaticOnlyTest::CopyString', runStaticMethodForNonActivableMethod.bind(pThis)),
     ];
 }
 
@@ -662,5 +665,11 @@ function runInterwovenParams(scenario) {
 
         run(true, 42, [1, 2, 3], new Array(5));
         run(true, 8, [1, 2, 3, 4, 5, 6, 7], new Array(5));
+    });
+}
+
+function runStaticMethodForNonActivableMethod(scenario) {
+    this.runSync(scenario, () => {
+        assert.equal("Hello", TestComponent.StaticOnlyTest.copyString("Hello"));
     });
 }

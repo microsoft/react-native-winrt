@@ -6,12 +6,14 @@
     <ClCompile Include="Test.cpp" />
     <ClCompile Include="HierarchyBase.cpp" />
     <ClCompile Include="HierarchyDerived.cpp" />
+    <ClCompile Include="StaticOnlyTest.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="pch.h" />
     <ClInclude Include="Test.h" />
     <ClInclude Include="HierarchyBase.h" />
     <ClInclude Include="HierarchyDerived.h" />
+    <ClInclude Include="StaticOnlyTest.h" />
   </ItemGroup>
   <ItemGroup>
     <None Include="TestComponent.def" />

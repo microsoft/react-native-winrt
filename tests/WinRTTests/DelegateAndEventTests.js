@@ -66,11 +66,13 @@ export function makeDelegateAndEventTestScenarios(pThis) {
         new TestScenario('Test::CompositeStructEventHandler', runCompositeStructEventHandler.bind(pThis)),
         new TestScenario('Test::RefEventHandler', runRefEventHandler.bind(pThis)),
         new TestScenario('Test::ObjectEventHandler', runObjectEventHandler.bind(pThis)),
+
+        new TestScenario('StaticOnlyTest::ObjectEventHandler', runStaticObjectEventHandlerForNonActivableClass.bind(pThis)),
     ];
 }
 
 // Static events
-function testStaticEventHandler(scenario, args, name, invoke) {
+function testStaticEventHandler(scenario, args, name, invoke, isStaticOnlyTest = false) {
     this.runSync(scenario, () => {
         var i = 0;
         var invokeCount = 0;
@@ -87,7 +89,7 @@ function testStaticEventHandler(scenario, args, name, invoke) {
             ++invokeCount;
         };
 
-        TestComponent.Test.addEventListener(name, handler);
+        isStaticOnlyTest ? TestComponent.StaticOnlyTest.addEventListener(name, handler) : TestComponent.Test.addEventListener(name, handler);
         for (var arg of args) {
             invoke(arg);
             if (exception) {
@@ -97,7 +99,7 @@ function testStaticEventHandler(scenario, args, name, invoke) {
         }
         assert.equal(invokeCount, args.length);
 
-        TestComponent.Test.removeEventListener(name, handler);
+        isStaticOnlyTest ? TestComponent.StaticOnlyTest.removeEventListener(name, handler) : TestComponent.Test.removeEventListener(name, handler);
         invoke(args[0]);
         assert.equal(invokeCount, args.length);
     });
@@ -138,6 +140,11 @@ function runStaticRefEventHandler(scenario) {
 function runStaticObjectEventHandler(scenario) {
     var vals = TestValues.s32.valid.map(val => new TestComponent.TestObject(val));
     testStaticEventHandler.call(this, scenario, vals, 'staticobjecteventhandler', (arg) => TestComponent.Test.raiseStaticObjectEvent(arg));
+}
+
+function runStaticObjectEventHandlerForNonActivableClass(scenario) {
+    var vals = TestValues.s32.valid.map(val => new TestComponent.TestObject(val));
+    testStaticEventHandler.call(this, scenario, vals, 'objecteventhandler', (arg) => TestComponent.StaticOnlyTest.raiseObjectEvent(arg), true);
 }
 
 // Static delegates

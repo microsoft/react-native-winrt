@@ -114,6 +114,7 @@
     <ClInclude Include="HierarchyBase.h" />
     <ClInclude Include="HierarchyDerived.h" />
     <ClInclude Include="pch.h" />
+    <ClInclude Include="StaticOnlyTest.h" />
     <ClInclude Include="Test.h" />
   </ItemGroup>
   <ItemGroup>
@@ -123,6 +124,7 @@
       <PrecompiledHeader>Create</PrecompiledHeader>
     </ClCompile>
     <ClCompile Include="$(GeneratedFilesDir)module.g.cpp" />
+    <ClCompile Include="StaticOnlyTest.cpp" />
     <ClCompile Include="Test.cpp" />
   </ItemGroup>
   <ItemGroup>
