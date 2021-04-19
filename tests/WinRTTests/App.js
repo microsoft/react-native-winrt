@@ -74,7 +74,7 @@ class App extends Component {
 
 
     runSync(scenario, fn) {
-        let previousResult = scenario.result === TestResult.NotRun ? null : scenario.result;
+        let previousResult = scenario.result;
         var result = TestResult.Fail;
         try {
             fn();
@@ -89,7 +89,7 @@ class App extends Component {
     }
 
     runAsync(scenario, fn) {
-        let previousResult = scenario.result === TestResult.NotRun ? null : scenario.result;
+        let previousResult = scenario.result;
         var result = TestResult.Fail;
         new Promise(fn).then(() => {
             result = TestResult.Pass;
@@ -106,14 +106,14 @@ class App extends Component {
 
     onSingleTestCompleted(scenario, previousResult) {
         const testSuiteName = this.scenarioNameToTestSuiteMap[scenario.name];
-        if (!previousResult) ++this.completedCount;
+        if (previousResult === TestResult.NotRun) ++this.completedCount;
         let resultState = {
             completedCount: this.completedCount,
             passCount: this.passCount,
             testSuiteCompletedCount: this.state.testSuiteCompletedCount,
             testSuitePassCount: this.state.testSuitePassCount,
         }
-        if (!previousResult) resultState.testSuiteCompletedCount[testSuiteName] = this.state.testSuiteCompletedCount[testSuiteName] + 1;
+        if (previousResult === TestResult.NotRun) resultState.testSuiteCompletedCount[testSuiteName] = this.state.testSuiteCompletedCount[testSuiteName] + 1;
 
         if (scenario.result === TestResult.Pass && previousResult !== TestResult.Pass) {
             ++this.passCount;
