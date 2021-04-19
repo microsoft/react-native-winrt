@@ -109,8 +109,15 @@ namespace TestComponent
     delegate UInt32 InterwovenDelegate(Boolean inBool, out Boolean outBool, Int32 inNumeric, out Int32 outNumeric,
         Int32[] inArray, out Int32[] outArray, ref Int32[] fillArray);
 
+    [contract(TestContract, 2)]
+    [exclusiveto(Test)] 
+    interface ITest2
+    { 
+        Boolean BoolProperty{ set; };
+    };
+
     [contract(TestContract, 1)]
-    runtimeclass Test
+    runtimeclass Test : ITest2
     {
         // Constructors
         Test();
@@ -371,7 +378,7 @@ namespace TestComponent
         static Windows.Foundation.IAsyncOperation<Int32> ImmediateReturnAsync(Int32 value);
 
         // Member properties
-        Boolean BoolProperty;
+        Boolean BoolProperty { get; }; //Setter comes from ITest2 interface
         Char CharProperty;
         UInt8 U8Property;
         UInt16 U16Property;
