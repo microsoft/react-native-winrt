@@ -1069,6 +1069,16 @@ namespace winrt::TestComponent::implementation
         return CopyToVectorView(values);
     }
 
+    IObservableVector<int32_t> Test::MakeObservableVector()
+    {
+        return winrt::single_threaded_observable_vector<int32_t>();
+    }
+
+    IObservableMap<hstring, int32_t> Test::MakeObservableMap()
+    {
+        return winrt::single_threaded_observable_map<hstring, int32_t>();
+    }
+
     IVector<bool> Test::ReturnSameBoolVector(IVector<bool> const& vector)
     {
         return vector;
@@ -1112,6 +1122,98 @@ namespace winrt::TestComponent::implementation
     IVector<TestComponent::TestObject> Test::ReturnSameObjectVector(IVector<TestComponent::TestObject> const& vector)
     {
         return vector;
+    }
+
+    IVectorView<bool> Test::ReturnSameBoolVectorView(IVectorView<bool> const& vector)
+    {
+        return vector;
+    }
+
+    IVectorView<char16_t> Test::ReturnSameCharVectorView(IVectorView<char16_t> const& vector)
+    {
+        return vector;
+    }
+
+    IVectorView<int32_t> Test::ReturnSameNumericVectorView(IVectorView<int32_t> const& vector)
+    {
+        return vector;
+    }
+
+    IVectorView<hstring> Test::ReturnSameStringVectorView(IVectorView<hstring> const& vector)
+    {
+        return vector;
+    }
+
+    IVectorView<winrt::guid> Test::ReturnSameGuidVectorView(IVectorView<winrt::guid> const& vector)
+    {
+        return vector;
+    }
+
+    IVectorView<TestEnum> Test::ReturnSameEnumVectorView(IVectorView<TestEnum> const& vector)
+    {
+        return vector;
+    }
+
+    IVectorView<CompositeType> Test::ReturnSameCompositeStructVectorView(IVectorView<CompositeType> const& vector)
+    {
+        return vector;
+    }
+
+    IVectorView<IReference<int32_t>> Test::ReturnSameRefVectorView(IVectorView<IReference<int32_t>> const& vector)
+    {
+        return vector;
+    }
+
+    IVectorView<TestComponent::TestObject> Test::ReturnSameObjectVectorView(
+        IVectorView<TestComponent::TestObject> const& vector)
+    {
+        return vector;
+    }
+
+    IIterable<bool> Test::ReturnSameBoolIterable(IIterable<bool> const& iterable)
+    {
+        return iterable;
+    }
+
+    IIterable<char16_t> Test::ReturnSameCharIterable(IIterable<char16_t> const& iterable)
+    {
+        return iterable;
+    }
+
+    IIterable<int32_t> Test::ReturnSameNumericIterable(IIterable<int32_t> const& iterable)
+    {
+        return iterable;
+    }
+
+    IIterable<hstring> Test::ReturnSameStringIterable(IIterable<hstring> const& iterable)
+    {
+        return iterable;
+    }
+
+    IIterable<winrt::guid> Test::ReturnSameGuidIterable(IIterable<winrt::guid> const& iterable)
+    {
+        return iterable;
+    }
+
+    IIterable<TestEnum> Test::ReturnSameEnumIterable(IIterable<TestEnum> const& iterable)
+    {
+        return iterable;
+    }
+
+    IIterable<CompositeType> Test::ReturnSameCompositeStructIterable(IIterable<CompositeType> const& iterable)
+    {
+        return iterable;
+    }
+
+    IIterable<IReference<int32_t>> Test::ReturnSameRefIterable(IIterable<IReference<int32_t>> const& iterable)
+    {
+        return iterable;
+    }
+
+    IIterable<TestComponent::TestObject> Test::ReturnSameObjectIterable(
+        IIterable<TestComponent::TestObject> const& iterable)
+    {
+        return iterable;
     }
 
     IAsyncAction Test::PauseAsync(int32_t milliseconds)

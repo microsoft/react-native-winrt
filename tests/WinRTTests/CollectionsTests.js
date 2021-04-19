@@ -85,7 +85,7 @@ const refValuesToAdd = [4, 5, null, 6];
 
 export function makeCollectionsTestScenarios(pThis) {
     return [
-        // Vectors created from copies of arrays
+        // IVectors created from copies of arrays
         new TestScenario('IVector<Boolean>', runBoolVectorCopyTest.bind(pThis)),
         new TestScenario('IVector<Char>', runCharVectorCopyTest.bind(pThis)),
         new TestScenario('IVector<Int32>', runNumericVectorCopyTest.bind(pThis)),
@@ -96,7 +96,22 @@ export function makeCollectionsTestScenarios(pThis) {
         new TestScenario('IVector<IReference<Int32>>', runRefVectorCopyTest.bind(pThis)),
         new TestScenario('IVector<TestObject>', runObjectVectorCopyTest.bind(pThis)),
 
-        // Vectors that wrap arrays
+        // IVectorViews created from copies of arrays
+        new TestScenario('IVectorView<Boolean>', runBoolVectorViewCopyTest.bind(pThis)),
+        new TestScenario('IVectorView<Char>', runCharVectorViewCopyTest.bind(pThis)),
+        new TestScenario('IVectorView<Int32>', runNumericVectorViewCopyTest.bind(pThis)),
+        new TestScenario('IVectorView<String>', runStringVectorViewCopyTest.bind(pThis)),
+        new TestScenario('IVectorView<Guid>', runGuidVectorViewCopyTest.bind(pThis)),
+        new TestScenario('IVectorView<TestEnum>', runEnumVectorViewCopyTest.bind(pThis)),
+        new TestScenario('IVectorView<CompositeType>', runCompositeStructVectorViewCopyTest.bind(pThis)),
+        new TestScenario('IVectorView<IReference<Int32>>', runRefVectorViewCopyTest.bind(pThis)),
+        new TestScenario('IVectorView<TestObject>', runObjectVectorViewCopyTest.bind(pThis)),
+
+        // Observable collections
+        new TestScenario('IObservableVector<Int32>', runObservableVectorTest.bind(pThis)),
+        new TestScenario('IObservableMap<Int32>', runObservableMapTest.bind(pThis)),
+
+        // IVectors that wrap arrays
         new TestScenario('Array as IVector<Boolean>', runBoolArrayAsVectorTest.bind(pThis)),
         new TestScenario('Array as IVector<Char>', runCharArrayAsVectorTest.bind(pThis)),
         new TestScenario('Array as IVector<Int32>', runNumericArrayAsVectorTest.bind(pThis)),
@@ -106,6 +121,28 @@ export function makeCollectionsTestScenarios(pThis) {
         new TestScenario('Array as IVector<CompositeType>', runCompositeStructArrayAsVectorTest.bind(pThis)),
         new TestScenario('Array as IVector<IReference<Int32>>', runRefArrayAsVectorTest.bind(pThis)),
         new TestScenario('Array as IVector<TestObject>', runObjectArrayAsVectorTest.bind(pThis)),
+
+        // IVectorViews that wrap arrays
+        new TestScenario('Array as IVectorView<Boolean>', runBoolArrayAsVectorViewTest.bind(pThis)),
+        new TestScenario('Array as IVectorView<Char>', runCharArrayAsVectorViewTest.bind(pThis)),
+        new TestScenario('Array as IVectorView<Int32>', runNumericArrayAsVectorViewTest.bind(pThis)),
+        new TestScenario('Array as IVectorView<String>', runStringArrayAsVectorViewTest.bind(pThis)),
+        new TestScenario('Array as IVectorView<Guid>', runGuidArrayAsVectorViewTest.bind(pThis)),
+        new TestScenario('Array as IVectorView<TestEnum>', runEnumArrayAsVectorViewTest.bind(pThis)),
+        new TestScenario('Array as IVectorView<CompositeType>', runCompositeStructArrayAsVectorViewTest.bind(pThis)),
+        new TestScenario('Array as IVectorView<IReference<Int32>>', runRefArrayAsVectorViewTest.bind(pThis)),
+        new TestScenario('Array as IVectorView<TestObject>', runObjectArrayAsVectorViewTest.bind(pThis)),
+
+        // IIterables that wrap arrays
+        new TestScenario('Array as IIterable<Boolean>', runBoolArrayAsIterableTest.bind(pThis)),
+        new TestScenario('Array as IIterable<Char>', runCharArrayAsIterableTest.bind(pThis)),
+        new TestScenario('Array as IIterable<Int32>', runNumericArrayAsIterableTest.bind(pThis)),
+        new TestScenario('Array as IIterable<String>', runStringArrayAsIterableTest.bind(pThis)),
+        new TestScenario('Array as IIterable<Guid>', runGuidArrayAsIterableTest.bind(pThis)),
+        new TestScenario('Array as IIterable<TestEnum>', runEnumArrayAsIterableTest.bind(pThis)),
+        new TestScenario('Array as IIterable<CompositeType>', runCompositeStructArrayAsIterableTest.bind(pThis)),
+        new TestScenario('Array as IIterable<IReference<Int32>>', runRefArrayAsIterableTest.bind(pThis)),
+        new TestScenario('Array as IIterable<TestObject>', runObjectArrayAsIterableTest.bind(pThis)),
 
         // Vectors behave like arrays
         new TestScenario('IVector behaves like Array', runVectorAsArrayTest.bind(pThis)),
@@ -172,15 +209,19 @@ function verifyContentsWithIteratorGetMany(itr, expected) {
     assert.equal(expected.length, count);
 }
 
+function verifyIterable(iterable, expected) {
+    verifyContentsWithIterator(iterable.first(), expected);
+    verifyContentsWithIteratorGetMany(iterable.first(), expected);
+}
+
 function verifyVector(vector, expected) {
     verifyVectorContents(vector, expected);
     verifyVectorContentsWithIndexOperator(vector, expected);
     verifyVectorContentsWithGetMany(vector, expected);
-    verifyContentsWithIterator(vector.first(), expected);
-    verifyContentsWithIteratorGetMany(vector.first(), expected);
+    verifyIterable(vector, expected);
 }
 
-// Vectors created from copies of arrays
+// IVectors created from copies of arrays
 function doVectorCopyTest(vector, expectedInitial, valuesToAdd) {
     // NOTE: Assumes 5 elements in the vector to begin and 4 values to add
     var expected = [...expectedInitial];
@@ -276,9 +317,166 @@ function runObjectVectorCopyTest(scenario) {
     });
 }
 
-// Vectors that wrap arrays
+// IVectorViews created from copies of arrays
+function runBoolVectorViewCopyTest(scenario) {
+    this.runSync(scenario, () => {
+        verifyVector(TestComponent.Test.copyBoolsToVectorView(boolVectorContents), boolVectorContents);
+    });
+}
+
+function runCharVectorViewCopyTest(scenario) {
+    this.runSync(scenario, () => {
+        verifyVector(TestComponent.Test.copyCharsToVectorView(charVectorContents), charVectorContents);
+    });
+}
+
+function runNumericVectorViewCopyTest(scenario) {
+    this.runSync(scenario, () => {
+        verifyVector(TestComponent.Test.copyNumericsToVectorView(numericVectorContents), numericVectorContents);
+    });
+}
+
+function runStringVectorViewCopyTest(scenario) {
+    this.runSync(scenario, () => {
+        verifyVector(TestComponent.Test.copyStringsToVectorView(stringVectorContents), stringVectorContents);
+    });
+}
+
+function runGuidVectorViewCopyTest(scenario) {
+    this.runSync(scenario, () => {
+        verifyVector(TestComponent.Test.copyGuidsToVectorView(guidVectorContents), guidVectorContents);
+    });
+}
+
+function runEnumVectorViewCopyTest(scenario) {
+    this.runSync(scenario, () => {
+        verifyVector(TestComponent.Test.copyEnumValuesToVectorView(enumVectorContents), enumVectorContents);
+    });
+}
+
+function runCompositeStructVectorViewCopyTest(scenario) {
+    this.runSync(scenario, () => {
+        verifyVector(TestComponent.Test.copyCompositeStructsToVectorView(compositeVectorContents), compositeVectorContents);
+    });
+}
+
+function runRefVectorViewCopyTest(scenario) {
+    this.runSync(scenario, () => {
+        verifyVector(TestComponent.Test.copyRefsToVectorView(refVectorContents), refVectorContents);
+    });
+}
+
+function runObjectVectorViewCopyTest(scenario) {
+    this.runSync(scenario, () => {
+        var values = numericVectorContents.map(val => new TestComponent.TestObject(val));
+        verifyVector(TestComponent.Test.copyObjectsToVectorView(values), values);
+    });
+}
+
+// Observable collections
+function runObservableVectorTest(scenario) {
+    this.runSync(scenario, () => {
+        var vector = TestComponent.Test.makeObservableVector();
+        vector.replaceAll([0, 1, 2, 3, 4]);
+
+        // NOTE: Exceptions get swallowed by events, so instead we hold onto them and propagate them later
+        var eventCount = 0;
+        var error;
+        const checkEvent = (expectedCount) => {
+            if (error) throw error;
+            assert.equal(expectedCount, eventCount);
+        }
+
+        var expectedIndex;
+        var expectedType;
+        vector.addEventListener('vectorchanged', (sender, args) => {
+            ++eventCount;
+            try
+            {
+                assert.isTrue(sender == vector);
+                assert.equal(expectedIndex, args.index);
+                assert.equal(expectedType, args.collectionChange);
+            } catch (err) {
+                error = err;
+            }
+        });
+
+        expectedIndex = 5;
+        expectedType = Windows.Foundation.Collections.CollectionChange.itemInserted;
+        vector.append(0);
+        checkEvent(1);
+
+        expectedIndex = 2;
+        expectedType = Windows.Foundation.Collections.CollectionChange.itemChanged;
+        vector.setAt(2, 42);
+        checkEvent(2);
+
+        expectedIndex = 1;
+        expectedType = Windows.Foundation.Collections.CollectionChange.itemRemoved;
+        vector.removeAt(1);
+        checkEvent(3);
+
+        expectedIndex = 0;
+        expectedType = Windows.Foundation.Collections.CollectionChange.reset;
+        vector.clear();
+        checkEvent(4);
+    });
+}
+
+function runObservableMapTest(scenario) {
+    this.runSync(scenario, () => {
+        var map = TestComponent.Test.makeObservableMap();
+        map.insert('foo', 0);
+        map.insert('bar', 1);
+        map.insert('baz', 2);
+
+        // NOTE: Exceptions get swallowed by events, so instead we hold onto them and propagate them later
+        var eventCount = 0;
+        var error;
+        const checkEvent = (expectedCount) => {
+            if (error) throw error;
+            assert.equal(expectedCount, eventCount);
+        }
+
+        var expectedKey;
+        var expectedType;
+        map.addEventListener('mapchanged', (sender, args) => {
+            ++eventCount;
+            try
+            {
+                assert.isTrue(sender == map);
+                assert.equal(expectedKey, args.key);
+                assert.equal(expectedType, args.collectionChange);
+            } catch (err) {
+                error = err;
+            }
+        });
+
+        expectedKey = 'foobar';
+        expectedType = Windows.Foundation.Collections.CollectionChange.itemInserted;
+        map.insert('foobar', 42);
+        checkEvent(1);
+
+        expectedKey = 'foo';
+        // TODO: Is this a bug in C++/WinRT?
+        // expectedType = Windows.Foundation.Collections.CollectionChange.itemChanged;
+        map.insert('foo', 8);
+        checkEvent(2);
+
+        expectedType = Windows.Foundation.Collections.CollectionChange.itemRemoved;
+        map.remove('foo');
+        checkEvent(3);
+
+        expectedKey = '';
+        expectedType = Windows.Foundation.Collections.CollectionChange.reset;
+        map.clear();
+        checkEvent(4);
+    });
+}
+
+// IVectors that wrap arrays
 function doArrayAsVectorTest(vector, array, valuesToAdd) {
-    // Modifications to 'vector' should be reflected in 'array'
+    // Modifications to 'vector' should be reflected in 'array' & vice-versa
     var expectedInitial = [...array];
     var expected = [...array];
     verifyVector(vector, expected);
@@ -312,6 +510,10 @@ function doArrayAsVectorTest(vector, array, valuesToAdd) {
 
     vector.replaceAll(expectedInitial);
     assert.equal(array, expectedInitial);
+
+    array.fill(valuesToAdd[0]);
+    expected.fill(valuesToAdd[0]);
+    verifyVector(vector, expected);
 
     vector.clear();
     assert.equal(array, []);
@@ -378,6 +580,200 @@ function runObjectArrayAsVectorTest(scenario) {
         var values = numericVectorContents.map(val => new TestComponent.TestObject(val));
         var valuesToAdd = numericValuesToAdd.map(val => new TestComponent.TestObject(val));
         doArrayAsVectorTest(TestComponent.Test.returnSameObjectVector(values), values, valuesToAdd);
+    });
+}
+
+// IVectorViews that wrap arrays
+function doArrayAsVectorViewTest(vector, array, valuesToAdd) {
+    // Modifications to 'array' should be reflected in 'vector'
+    var expected = [...array];
+    verifyVector(vector, expected);
+
+    // Add values
+    array.push(valuesToAdd[0]);
+    expected.push(valuesToAdd[0]);
+    verifyVector(vector, expected);
+
+    array.splice(2, 0, valuesToAdd[1]);
+    expected.splice(2, 0, valuesToAdd[1]);
+    verifyVector(vector, expected);
+
+    // Modify values
+    array[1] = valuesToAdd[2];
+    expected[1] = valuesToAdd[2];
+    verifyVector(vector, expected);
+
+    // Remove/replace values
+    array.pop();
+    expected.pop();
+    verifyVector(vector, expected);
+
+    array.splice(0, 1);
+    expected.splice(0, 1);
+    verifyVector(vector, expected);
+
+    array.splice(0);
+    verifyVector(vector, []);
+}
+
+function runBoolArrayAsVectorViewTest(scenario) {
+    this.runSync(scenario, () => {
+        var array = [...boolVectorContents];
+        doArrayAsVectorViewTest(TestComponent.Test.returnSameBoolVectorView(array), array, boolValuesToAdd);
+    });
+}
+
+function runCharArrayAsVectorViewTest(scenario) {
+    this.runSync(scenario, () => {
+        var array = [...charVectorContents];
+        doArrayAsVectorViewTest(TestComponent.Test.returnSameCharVectorView(array), array, charValuesToAdd);
+    });
+}
+
+function runNumericArrayAsVectorViewTest(scenario) {
+    this.runSync(scenario, () => {
+        var array = [...numericVectorContents];
+        doArrayAsVectorViewTest(TestComponent.Test.returnSameNumericVectorView(array), array, numericValuesToAdd);
+    });
+}
+
+function runStringArrayAsVectorViewTest(scenario) {
+    this.runSync(scenario, () => {
+        var array = [...stringVectorContents];
+        doArrayAsVectorViewTest(TestComponent.Test.returnSameStringVectorView(array), array, stringValuesToAdd);
+    });
+}
+
+function runGuidArrayAsVectorViewTest(scenario) {
+    this.runSync(scenario, () => {
+        var array = [...guidVectorContents];
+        doArrayAsVectorViewTest(TestComponent.Test.returnSameGuidVectorView(array), array, guidValuesToAdd);
+    });
+}
+
+function runEnumArrayAsVectorViewTest(scenario) {
+    this.runSync(scenario, () => {
+        var array = [...enumVectorContents];
+        doArrayAsVectorViewTest(TestComponent.Test.returnSameEnumVectorView(array), array, enumValuesToAdd);
+    });
+}
+
+function runCompositeStructArrayAsVectorViewTest(scenario) {
+    this.runSync(scenario, () => {
+        var array = [...compositeVectorContents];
+        doArrayAsVectorViewTest(TestComponent.Test.returnSameCompositeStructVectorView(array), array, compositeValuesToAdd);
+    });
+}
+
+function runRefArrayAsVectorViewTest(scenario) {
+    this.runSync(scenario, () => {
+        var array = [...refVectorContents];
+        doArrayAsVectorViewTest(TestComponent.Test.returnSameRefVectorView(array), array, refValuesToAdd);
+    });
+}
+
+function runObjectArrayAsVectorViewTest(scenario) {
+    this.runSync(scenario, () => {
+        var values = numericVectorContents.map(val => new TestComponent.TestObject(val));
+        var valuesToAdd = numericValuesToAdd.map(val => new TestComponent.TestObject(val));
+        doArrayAsVectorViewTest(TestComponent.Test.returnSameObjectVectorView(values), values, valuesToAdd);
+    });
+}
+
+// IIterables that wrap arrays
+function doArrayAsIterableTest(iterable, array, valuesToAdd) {
+    // Modifications to 'array' should be reflected in 'iterable'
+    var expected = [...array];
+    verifyIterable(iterable, expected);
+
+    // Add values
+    array.push(valuesToAdd[0]);
+    expected.push(valuesToAdd[0]);
+    verifyIterable(iterable, expected);
+
+    array.splice(2, 0, valuesToAdd[1]);
+    expected.splice(2, 0, valuesToAdd[1]);
+    verifyIterable(iterable, expected);
+
+    // Modify values
+    array[1] = valuesToAdd[2];
+    expected[1] = valuesToAdd[2];
+    verifyIterable(iterable, expected);
+
+    // Remove/replace values
+    array.pop();
+    expected.pop();
+    verifyIterable(iterable, expected);
+
+    array.splice(0, 1);
+    expected.splice(0, 1);
+    verifyIterable(iterable, expected);
+
+    array.splice(0);
+    verifyIterable(iterable, []);
+}
+
+function runBoolArrayAsIterableTest(scenario) {
+    this.runSync(scenario, () => {
+        var array = [...boolVectorContents];
+        doArrayAsIterableTest(TestComponent.Test.returnSameBoolIterable(array), array, boolValuesToAdd);
+    });
+}
+
+function runCharArrayAsIterableTest(scenario) {
+    this.runSync(scenario, () => {
+        var array = [...charVectorContents];
+        doArrayAsIterableTest(TestComponent.Test.returnSameCharIterable(array), array, charValuesToAdd);
+    });
+}
+
+function runNumericArrayAsIterableTest(scenario) {
+    this.runSync(scenario, () => {
+        var array = [...numericVectorContents];
+        doArrayAsIterableTest(TestComponent.Test.returnSameNumericIterable(array), array, numericValuesToAdd);
+    });
+}
+
+function runStringArrayAsIterableTest(scenario) {
+    this.runSync(scenario, () => {
+        var array = [...stringVectorContents];
+        doArrayAsIterableTest(TestComponent.Test.returnSameStringIterable(array), array, stringValuesToAdd);
+    });
+}
+
+function runGuidArrayAsIterableTest(scenario) {
+    this.runSync(scenario, () => {
+        var array = [...guidVectorContents];
+        doArrayAsIterableTest(TestComponent.Test.returnSameGuidIterable(array), array, guidValuesToAdd);
+    });
+}
+
+function runEnumArrayAsIterableTest(scenario) {
+    this.runSync(scenario, () => {
+        var array = [...enumVectorContents];
+        doArrayAsIterableTest(TestComponent.Test.returnSameEnumIterable(array), array, enumValuesToAdd);
+    });
+}
+
+function runCompositeStructArrayAsIterableTest(scenario) {
+    this.runSync(scenario, () => {
+        var array = [...compositeVectorContents];
+        doArrayAsIterableTest(TestComponent.Test.returnSameCompositeStructIterable(array), array, compositeValuesToAdd);
+    });
+}
+
+function runRefArrayAsIterableTest(scenario) {
+    this.runSync(scenario, () => {
+        var array = [...refVectorContents];
+        doArrayAsIterableTest(TestComponent.Test.returnSameRefIterable(array), array, refValuesToAdd);
+    });
+}
+
+function runObjectArrayAsIterableTest(scenario) {
+    this.runSync(scenario, () => {
+        var values = numericVectorContents.map(val => new TestComponent.TestObject(val));
+        var valuesToAdd = numericValuesToAdd.map(val => new TestComponent.TestObject(val));
+        doArrayAsIterableTest(TestComponent.Test.returnSameObjectIterable(values), values, valuesToAdd);
     });
 }
 
