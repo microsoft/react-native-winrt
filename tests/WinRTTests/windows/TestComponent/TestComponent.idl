@@ -371,7 +371,11 @@ namespace TestComponent
         static Windows.Foundation.IAsyncOperation<Int32> ImmediateReturnAsync(Int32 value);
 
         // Member properties
-        Boolean BoolProperty;
+        Boolean BoolProperty { get; };
+        [contract(TestContract, 2)] 
+        {
+            Boolean BoolProperty { set; };
+        }
         Char CharProperty;
         UInt8 U8Property;
         UInt16 U16Property;
