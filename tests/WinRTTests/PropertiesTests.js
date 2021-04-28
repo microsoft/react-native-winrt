@@ -291,7 +291,7 @@ function runPropertyValueProperty(scenario) {
         {
             this.test.assignPropertyValueAsType(value, type);
             assert.equal(this.test.propertyValue, value);
-            assert.equal(this.test.propertyValueCppType(), type);     
+            assert.equal(this.test.propertyValueCppType, type);     
         }
     });
 }

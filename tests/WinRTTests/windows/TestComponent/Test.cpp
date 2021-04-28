@@ -1645,12 +1645,15 @@ namespace winrt::TestComponent::implementation
         {
             return doubleArray;
         }
-        winrt::com_array<T> result(doubleArray.size());
-        for (int i = 0; i < doubleArray.size(); i++)
+        else
         {
-            result[i] = (T)doubleArray[i];
+            winrt::com_array<T> result(doubleArray.size());
+            for (int i = 0; i < doubleArray.size(); i++)
+            {
+                result[i] = (T)doubleArray[i];
+            }
+            return result;
         }
-        return result;
     }
 
     com_array<char16_t> PropertyValueAsCharArray(Windows::Foundation::IPropertyValue const& value)
