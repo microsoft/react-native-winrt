@@ -370,6 +370,9 @@ namespace winrt::TestComponent::implementation
         void HResultProperty(hresult value);
         Windows::Foundation::IPropertyValue PropertyValue();
         void PropertyValue(Windows::Foundation::IPropertyValue value);
+        winrt::hstring PropertyValueCppType();
+        void AssignPropertyValueAsType(
+            Windows::Foundation::IPropertyValue const& value, winrt::hstring const& winrtPropertyValueType);
 
         com_array<bool> BooleanArrayProperty();
         void BooleanArrayProperty(array_view<bool const> value);

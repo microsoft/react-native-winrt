@@ -304,8 +304,25 @@ export const TestValues = {
         invalid: [{hresult: 98217}, {}]
     },
     propertyValues: {
-        valid: [true, 12723, "hello", [21, 23, 43], ["sasa", "sa"]],
-        invalid: [{}, ["hi", true]]
+        valid1: [true, 12723, "hello", { x: 12, y: 23 }, { width: 10, height: 20 }, { x: 12, y: 23, width: 10, height: 20 },
+                    [true, false], [21, 23, 43], ["sasa", "sa"], [{ x: 12, y: 23 }, {x: 24, y: 34}], [{width: 10, height: 20}],
+                    [{ x: 12, y: 23, width: 10, height: 20 }, { x: 12, y: 23, width: 10, height: 20 }], [new TestComponent.TestObject(1)]                
+                ],
+        valid: [],
+        validValueTypePairs: [
+            [8, "UInt8"], [8, "Int16"], [8, "UInt16"], [8, "Int32"], [8, "UInt32"], [8, "Int64"], [8, "UInt64"], [8, "Single"], [8, "Double"], 
+            ["a", "Char16"], [true, "Boolean"], ["Hello", "String"], [new Date(2020, 2, 3, 4, 5, 6, 7), "DateTime"], [223213, "TimeSpan"],
+            [{x: 10, y: 20}, "Point"], [{width: 100, height: 200}, "Size"], [{x: 10, y: 20, width: 100, height: 200}, "Rect"],
+            [[8, 9], "UInt8Array"], [[8, 9], "Int16Array"], [[8, 9], "UInt16Array"], [[8, 9], "Int32Array"], [[8, 9], "UInt32Array"], [[8, 9], "Int64Array"], [[8, 9], "UInt64Array"],
+            [[8, 9], "SingleArray"], [[8, 9], "DoubleArray"], [["a", "b"], "Char16Array"], [[true, false], "BooleanArray"], [["Hello", "World"], "StringArray"],
+            [[new Date(2020, 2, 3, 4, 5, 6, 7), new Date(2021, 2, 2, 1, 5, 6, 7)], "DateTimeArray"], [[81212, 932322], "TimeSpanArray"],
+            [[{x: 10, y: 20}, {x: 10, y: 20}], "PointArray"], [[{width: 100, height: 200}, {width: 100, height: 200}], "SizeArray"], 
+            [[{x: 10, y: 20, width: 100, height: 200}], "RectArray"],
+        ],
+        validValueTypePairs1: [
+            [{x: 10, y: 20, width: 100, height: 200}, "Rect"]
+        ],
+        invalid: [{}, ["hi", true], [{ width: 10, height: 20 }, { x: 12, y: 23, width: 10, height: 20 }]]
     },
     composite: {
         valid: [

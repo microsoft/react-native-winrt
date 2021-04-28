@@ -404,6 +404,8 @@ namespace TestComponent
         String TimeSpanPropertyCppValue();
         HRESULT HResultProperty;
         Windows.Foundation.IPropertyValue PropertyValue;
+        String PropertyValueCppType();
+        void AssignPropertyValueAsType(Windows.Foundation.IPropertyValue value, String winrtPropertyValueType);
 
         // Member array properties
         Boolean[] BooleanArrayProperty;

@@ -1357,7 +1357,16 @@ winrt::IInspectable jswinrt::convert_to_property_value(jsi::Runtime& runtime, co
                             convert_value_to_native<winrt::array_view<const winrt::Size>>(runtime, value));
                     }
 
-                    // TODO: DateTimeArray?
+                    auto isDateTimeLike =
+                        elemObj.hasProperty(runtime, "getDate") && elemObj.hasProperty(runtime, "setDate") &&
+                        elemObj.hasProperty(runtime, "getTime") && elemObj.hasProperty(runtime, "setTime") &&
+                        elemObj.hasProperty(runtime, "valueOf");
+                    if (isDateTimeLike)
+                    {
+                        return winrt::PropertyValue::CreateDateTimeArray(
+                            convert_value_to_native<winrt::array_view<const winrt::Windows::Foundation::DateTime>>(
+                                runtime, value));
+                    }
                 }
             }
         }
@@ -1378,7 +1387,14 @@ winrt::IInspectable jswinrt::convert_to_property_value(jsi::Runtime& runtime, co
                 return winrt::PropertyValue::CreateSize(convert_value_to_native<winrt::Size>(runtime, value));
             }
 
-            // TODO: DateTime?
+            auto isDateTimeLike = obj.hasProperty(runtime, "getDate") && obj.hasProperty(runtime, "setDate") &&
+                                  obj.hasProperty(runtime, "getTime") && obj.hasProperty(runtime, "setTime") &&
+                                  obj.hasProperty(runtime, "valueOf");
+            if (isDateTimeLike)
+            {
+                return winrt::PropertyValue::CreateDateTime(
+                    convert_value_to_native<winrt::Windows::Foundation::DateTime>(runtime, value));
+            }
         }
     }
 
