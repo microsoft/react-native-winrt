@@ -59,14 +59,22 @@ namespace TestComponent
         BooleanTypes Bools;
     };
 
+    [contract(TestContract, 1)]
+    interface ISerializable 
+    { 
+        String Serialize();
+    };
+
     // Used in places where we want to validate returning/accepting/etc. types of an object type
     [contract(TestContract, 1)]
-    runtimeclass TestObject
+    runtimeclass TestObject : ISerializable
     {
         // This is purposefully not no-arg constructible so that we get compilation errors if the code gen gets this wrong
         TestObject(Int32 val);
 
         Int32 Value{ get; };
+
+        ISerializable AsSerializable();
     }
 
     // Delegates
