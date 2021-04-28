@@ -1636,6 +1636,356 @@ namespace winrt::TestComponent::implementation
         m_propertyValue = value;
     }
 
+    template <typename T>
+    com_array<T> PropertyValueAsNumberArray(Windows::Foundation::IPropertyValue const& value)
+    {
+        winrt::com_array<double> doubleArray;
+        value.GetDoubleArray(doubleArray);
+        if constexpr (std::is_same<T, double>())
+        {
+            return doubleArray;
+        }
+        else
+        {
+            winrt::com_array<T> result(doubleArray.size());
+            for (int i = 0; i < doubleArray.size(); i++)
+            {
+                result[i] = (T)doubleArray[i];
+            }
+            return result;
+        }
+    }
+
+    com_array<char16_t> PropertyValueAsCharArray(Windows::Foundation::IPropertyValue const& value)
+    {
+        winrt::com_array<winrt::hstring> stringArray;
+        value.GetStringArray(stringArray);
+
+        winrt::com_array<char16_t> result(stringArray.size());
+        for (int i = 0; i < stringArray.size(); i++)
+        {
+            auto stringI = stringArray[i];
+            result[i] = winrt::to_string(stringI).at(0);
+        }
+        return result;
+    }
+
+    com_array<winrt::TimeSpan> PropertyValueAsTimeSpanArray(Windows::Foundation::IPropertyValue const& value)
+    {
+        winrt::com_array<double> doubleArray;
+        value.GetDoubleArray(doubleArray);
+
+        winrt::com_array<winrt::TimeSpan> result(doubleArray.size());
+        for (int i = 0; i < doubleArray.size(); i++)
+        {
+            result[i] = std::chrono::duration_cast<winrt::TimeSpan>(std::chrono::milliseconds((long)(doubleArray[i])));
+        }
+        return result;
+    }
+
+    void Test::AssignPropertyValueAsType(
+        Windows::Foundation::IPropertyValue const& value, winrt::hstring const& winrtPropertyValueType)
+    {
+        if (winrtPropertyValueType == L"Empty")
+        {
+            m_propertyValue = winrt::PropertyValue::CreateEmpty().as<winrt::Windows::Foundation::IPropertyValue>();
+        }
+        else if (winrtPropertyValueType == L"UInt8")
+        {
+            m_propertyValue =
+                winrt::PropertyValue::CreateUInt8(value.GetDouble()).as<winrt::Windows::Foundation::IPropertyValue>();
+        }
+        else if (winrtPropertyValueType == L"Int16")
+        {
+            m_propertyValue =
+                winrt::PropertyValue::CreateInt16(value.GetDouble()).as<winrt::Windows::Foundation::IPropertyValue>();
+        }
+        else if (winrtPropertyValueType == L"UInt16")
+        {
+            m_propertyValue =
+                winrt::PropertyValue::CreateUInt16(value.GetDouble()).as<winrt::Windows::Foundation::IPropertyValue>();
+        }
+        else if (winrtPropertyValueType == L"Int32")
+        {
+            m_propertyValue =
+                winrt::PropertyValue::CreateInt32(value.GetDouble()).as<winrt::Windows::Foundation::IPropertyValue>();
+        }
+        else if (winrtPropertyValueType == L"UInt32")
+        {
+            m_propertyValue =
+                winrt::PropertyValue::CreateUInt32(value.GetDouble()).as<winrt::Windows::Foundation::IPropertyValue>();
+        }
+        else if (winrtPropertyValueType == L"Int64")
+        {
+            m_propertyValue =
+                winrt::PropertyValue::CreateInt64(value.GetDouble()).as<winrt::Windows::Foundation::IPropertyValue>();
+        }
+        else if (winrtPropertyValueType == L"UInt64")
+        {
+            m_propertyValue =
+                winrt::PropertyValue::CreateUInt64(value.GetDouble()).as<winrt::Windows::Foundation::IPropertyValue>();
+        }
+        else if (winrtPropertyValueType == L"Single")
+        {
+            m_propertyValue =
+                winrt::PropertyValue::CreateSingle(value.GetDouble()).as<winrt::Windows::Foundation::IPropertyValue>();
+        }
+        else if (winrtPropertyValueType == L"Double")
+        {
+            m_propertyValue =
+                winrt::PropertyValue::CreateDouble(value.GetDouble()).as<winrt::Windows::Foundation::IPropertyValue>();
+        }
+        else if (winrtPropertyValueType == L"Char16")
+        {
+            m_propertyValue = winrt::PropertyValue::CreateChar16(winrt::to_string(value.GetString()).at(0))
+                                  .as<winrt::Windows::Foundation::IPropertyValue>();
+        }
+        else if (winrtPropertyValueType == L"Boolean")
+        {
+            m_propertyValue = winrt::PropertyValue::CreateBoolean(value.GetBoolean())
+                                  .as<winrt::Windows::Foundation::IPropertyValue>();
+        }
+        else if (winrtPropertyValueType == L"String")
+        {
+            m_propertyValue =
+                winrt::PropertyValue::CreateString(value.GetString()).as<winrt::Windows::Foundation::IPropertyValue>();
+        }
+        else if (winrtPropertyValueType == L"Inspectable")
+        {
+            m_propertyValue =
+                winrt::PropertyValue::CreateInspectable(value).as<winrt::Windows::Foundation::IPropertyValue>();
+        }
+        else if (winrtPropertyValueType == L"DateTime")
+        {
+            m_propertyValue = winrt::PropertyValue::CreateDateTime(value.GetDateTime())
+                                  .as<winrt::Windows::Foundation::IPropertyValue>();
+        }
+        else if (winrtPropertyValueType == L"TimeSpan")
+        {
+            m_propertyValue = winrt::PropertyValue::CreateTimeSpan(
+                std::chrono::duration_cast<winrt::TimeSpan>(std::chrono::milliseconds((long)value.GetDouble())))
+                                  .as<winrt::Windows::Foundation::IPropertyValue>();
+        }
+        else if (winrtPropertyValueType == L"Guid")
+        {
+            // TODO: Convert string to guid
+            throw hresult_not_implemented();
+        }
+        else if (winrtPropertyValueType == L"Point")
+        {
+            m_propertyValue =
+                winrt::PropertyValue::CreatePoint(value.GetPoint()).as<winrt::Windows::Foundation::IPropertyValue>();
+        }
+        else if (winrtPropertyValueType == L"Size")
+        {
+            m_propertyValue =
+                winrt::PropertyValue::CreateSize(value.GetSize()).as<winrt::Windows::Foundation::IPropertyValue>();
+        }
+        else if (winrtPropertyValueType == L"Rect")
+        {
+            m_propertyValue =
+                winrt::PropertyValue::CreateRect(value.GetRect()).as<winrt::Windows::Foundation::IPropertyValue>();
+        }
+
+        else if (winrtPropertyValueType == L"UInt8Array")
+        {
+            m_propertyValue = winrt::PropertyValue::CreateUInt8Array(PropertyValueAsNumberArray<uint8_t>(value))
+                                  .as<winrt::Windows::Foundation::IPropertyValue>();
+        }
+        else if (winrtPropertyValueType == L"Int16Array")
+        {
+            m_propertyValue = winrt::PropertyValue::CreateInt16Array(PropertyValueAsNumberArray<int16_t>(value))
+                                  .as<winrt::Windows::Foundation::IPropertyValue>();
+        }
+        else if (winrtPropertyValueType == L"UInt16Array")
+        {
+            m_propertyValue = winrt::PropertyValue::CreateUInt16Array(PropertyValueAsNumberArray<uint16_t>(value))
+                                  .as<winrt::Windows::Foundation::IPropertyValue>();
+        }
+        else if (winrtPropertyValueType == L"Int32Array")
+        {
+            m_propertyValue = winrt::PropertyValue::CreateInt32Array(PropertyValueAsNumberArray<int32_t>(value))
+                                  .as<winrt::Windows::Foundation::IPropertyValue>();
+        }
+        else if (winrtPropertyValueType == L"UInt32Array")
+        {
+            m_propertyValue = winrt::PropertyValue::CreateUInt32Array(PropertyValueAsNumberArray<uint32_t>(value))
+                                  .as<winrt::Windows::Foundation::IPropertyValue>();
+        }
+        else if (winrtPropertyValueType == L"Int64Array")
+        {
+            m_propertyValue = winrt::PropertyValue::CreateInt64Array(PropertyValueAsNumberArray<int64_t>(value))
+                                  .as<winrt::Windows::Foundation::IPropertyValue>();
+        }
+        else if (winrtPropertyValueType == L"UInt64Array")
+        {
+            m_propertyValue = winrt::PropertyValue::CreateUInt64Array(PropertyValueAsNumberArray<uint64_t>(value))
+                                  .as<winrt::Windows::Foundation::IPropertyValue>();
+        }
+        else if (winrtPropertyValueType == L"SingleArray")
+        {
+            m_propertyValue = winrt::PropertyValue::CreateSingleArray(PropertyValueAsNumberArray<float>(value))
+                                  .as<winrt::Windows::Foundation::IPropertyValue>();
+        }
+        else if (winrtPropertyValueType == L"DoubleArray")
+        {
+            m_propertyValue = winrt::PropertyValue::CreateDoubleArray(PropertyValueAsNumberArray<double>(value))
+                                  .as<winrt::Windows::Foundation::IPropertyValue>();
+        }
+        else if (winrtPropertyValueType == L"Char16Array")
+        {
+            m_propertyValue = winrt::PropertyValue::CreateChar16Array(PropertyValueAsCharArray(value))
+                                  .as<winrt::Windows::Foundation::IPropertyValue>();
+        }
+        else if (winrtPropertyValueType == L"BooleanArray")
+        {
+            com_array<bool> boolArray;
+            value.GetBooleanArray(boolArray);
+            m_propertyValue =
+                winrt::PropertyValue::CreateBooleanArray(boolArray).as<winrt::Windows::Foundation::IPropertyValue>();
+        }
+        else if (winrtPropertyValueType == L"StringArray")
+        {
+            com_array<winrt::hstring> stringArray;
+            value.GetStringArray(stringArray);
+            m_propertyValue =
+                winrt::PropertyValue::CreateStringArray(stringArray).as<winrt::Windows::Foundation::IPropertyValue>();
+        }
+        else if (winrtPropertyValueType == L"DateTimeArray")
+        {
+            com_array<winrt::DateTime> dateTimeArray;
+            value.GetDateTimeArray(dateTimeArray);
+            m_propertyValue = winrt::PropertyValue::CreateDateTimeArray(dateTimeArray)
+                                  .as<winrt::Windows::Foundation::IPropertyValue>();
+        }
+        else if (winrtPropertyValueType == L"TimeSpanArray")
+        {
+            m_propertyValue = winrt::PropertyValue::CreateTimeSpanArray(PropertyValueAsTimeSpanArray(value))
+                                  .as<winrt::Windows::Foundation::IPropertyValue>();
+        }
+        else if (winrtPropertyValueType == L"GuidArray")
+        {
+            // TODO: Convert string to guid
+            throw hresult_not_implemented();
+        }
+        else if (winrtPropertyValueType == L"PointArray")
+        {
+            com_array<winrt::Point> pointArray;
+            value.GetPointArray(pointArray);
+            m_propertyValue =
+                winrt::PropertyValue::CreatePointArray(pointArray).as<winrt::Windows::Foundation::IPropertyValue>();
+        }
+        else if (winrtPropertyValueType == L"SizeArray")
+        {
+            com_array<winrt::Size> sizeArray;
+            value.GetSizeArray(sizeArray);
+            m_propertyValue =
+                winrt::PropertyValue::CreateSizeArray(sizeArray).as<winrt::Windows::Foundation::IPropertyValue>();
+        }
+        else if (winrtPropertyValueType == L"RectArray")
+        {
+            com_array<winrt::Rect> rectArray;
+            value.GetRectArray(rectArray);
+            m_propertyValue =
+                winrt::PropertyValue::CreateRectArray(rectArray).as<winrt::Windows::Foundation::IPropertyValue>();
+        }
+        else
+        {
+            throw hresult_invalid_argument();
+        }
+    }
+
+    winrt::hstring Test::PropertyValueCppType()
+    {
+        switch (m_propertyValue.Type())
+        {
+        case winrt::PropertyType::Empty:
+            return L"Empty";
+        case winrt::PropertyType::UInt8:
+            return L"UInt8";
+        case winrt::PropertyType::Int16:
+            return L"Int16";
+        case winrt::PropertyType::UInt16:
+            return L"UInt16";
+        case winrt::PropertyType::Int32:
+            return L"Int32";
+        case winrt::PropertyType::UInt32:
+            return L"UInt32";
+        case winrt::PropertyType::Int64:
+            return L"Int64";
+        case winrt::PropertyType::UInt64:
+            return L"UInt64";
+        case winrt::PropertyType::Single:
+            return L"Single";
+        case winrt::PropertyType::Double:
+            return L"Double";
+        case winrt::PropertyType::Char16:
+            return L"Char16";
+        case winrt::PropertyType::Boolean:
+            return L"Boolean";
+        case winrt::PropertyType::String:
+            return L"String";
+        case winrt::PropertyType::Inspectable:
+            return L"Inspectable";
+        case winrt::PropertyType::DateTime:
+            return L"DateTime";
+        case winrt::PropertyType::TimeSpan:
+            return L"TimeSpan";
+        case winrt::PropertyType::Guid:
+            return L"Guid";
+        case winrt::PropertyType::Point:
+            return L"Point";
+        case winrt::PropertyType::Size:
+            return L"Size";
+        case winrt::PropertyType::Rect:
+            return L"Rect";
+        case winrt::PropertyType::OtherType:
+            return L"OtherType";
+        case winrt::PropertyType::UInt8Array:
+            return L"UInt8Array";
+        case winrt::PropertyType::Int16Array:
+            return L"Int16Array";
+        case winrt::PropertyType::UInt16Array:
+            return L"UInt16Array";
+        case winrt::PropertyType::Int32Array:
+            return L"Int32Array";
+        case winrt::PropertyType::UInt32Array:
+            return L"UInt32Array";
+        case winrt::PropertyType::Int64Array:
+            return L"Int64Array";
+        case winrt::PropertyType::UInt64Array:
+            return L"UInt64Array";
+        case winrt::PropertyType::SingleArray:
+            return L"SingleArray";
+        case winrt::PropertyType::DoubleArray:
+            return L"DoubleArray";
+        case winrt::PropertyType::Char16Array:
+            return L"Char16Array";
+        case winrt::PropertyType::BooleanArray:
+            return L"BooleanArray";
+        case winrt::PropertyType::StringArray:
+            return L"StringArray";
+        case winrt::PropertyType::InspectableArray:
+            return L"InspectableArray";
+        case winrt::PropertyType::DateTimeArray:
+            return L"DateTimeArray";
+        case winrt::PropertyType::TimeSpanArray:
+            return L"TimeSpanArray";
+        case winrt::PropertyType::GuidArray:
+            return L"GuidArray";
+        case winrt::PropertyType::PointArray:
+            return L"PointArray";
+        case winrt::PropertyType::SizeArray:
+            return L"SizeArray";
+        case winrt::PropertyType::RectArray:
+            return L"RectArray";
+        case winrt::PropertyType::OtherTypeArray:
+            return L"OtherTypeArray";
+        default:
+            return L"OTHERS";
+        }
+    }
+
     bool Test::Or(bool lhs, bool rhs)
     {
         return lhs || rhs;

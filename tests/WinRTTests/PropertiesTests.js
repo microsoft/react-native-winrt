@@ -287,6 +287,12 @@ function runPropertyValueProperty(scenario) {
             let returnedValue = this.test.propertyValue;
             assert.equal(assignedValue, returnedValue);
         }
+        for (let [value, type] of TestValues.propertyValues.validValueTypePairs)
+        {
+            this.test.assignPropertyValueAsType(value, type);
+            assert.equal(this.test.propertyValue, value);
+            assert.equal(this.test.propertyValueCppType, type);     
+        }
     });
 }
 

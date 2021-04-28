@@ -178,6 +178,8 @@ declare namespace TestComponent {
         constructor();
         dateTimePropertyCppValue(): string;
         timeSpanPropertyCppValue(): string;
+        propertyValueCppType(): string;
+        assignPropertyValueAsType(value: Windows.Foundation.IPropertyValue, winrtPropertyValueType: string): void;
         or(lhs: boolean, rhs: boolean): boolean;
         orAll(values: boolean[]): boolean;
         add(lhs: number, rhs: number): number;
