@@ -680,6 +680,6 @@ function runObjectIdentityTest(scenario) {
     this.runSync(scenario, () => {
         const testObject = new TestComponent.TestObject(2);
         const testObjectAsSerializable = testObject.asSerializable();
-        assert.equal(testObject, testObjectAsSerializable);
+        assert.isTrue(testObject === testObjectAsSerializable);
     });
 }
