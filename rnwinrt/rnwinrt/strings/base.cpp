@@ -52,6 +52,40 @@ std::u16string jswinrt::string_to_utf16(jsi::Runtime& runtime, const jsi::String
     return result;
 }
 
+[[noreturn]] __declspec(noinline) void jswinrt::throw_no_constructor(
+    jsi::Runtime& runtime, std::string_view typeNamespace, std::string_view typeName, size_t argCount)
+{
+    auto msg = "TypeError: No constructor overload exists for "s;
+    msg.append(typeNamespace);
+    msg += ".";
+    msg.append(typeName);
+    msg = msg + " with " + std::to_string(argCount) + " args";
+    throw jsi::JSError(runtime, std::move(msg));
+}
+
+[[noreturn]] __declspec(noinline) void jswinrt::throw_no_function_overload(jsi::Runtime& runtime,
+    std::string_view typeNamespace, std::string_view typeName, std::string_view fnName, size_t argCount)
+{
+    auto msg = "TypeError: No function overload exists for "s;
+    msg.append(typeNamespace);
+    msg += ".";
+    msg.append(typeName);
+    msg += ".";
+    msg.append(fnName);
+    msg = msg + " with " + std::to_string(argCount) + " args";
+    throw jsi::JSError(runtime, std::move(msg));
+}
+
+[[noreturn]] __declspec(noinline) void jswinrt::throw_invalid_delegate_arg_count(
+    jsi::Runtime& runtime, std::string_view typeNamespace, std::string_view typeName)
+{
+    auto msg = "TypeError: Invalid number of arguments to delegate "s;
+    msg.append(typeNamespace);
+    msg += ".";
+    msg.append(typeName);
+    throw jsi::JSError(runtime, std::move(msg));
+}
+
 // NOTE: Most lists are sorted, so in theory this could be a binary search-turns to linear search. The only thing
 // blocking this are enums, where their values are not currently sorted by name. Note however, that if this happens,
 // there can still be duplicates in a list (e.g. function overloads), so this would have to act more like

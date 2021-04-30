@@ -1025,6 +1025,16 @@ namespace jswinrt
         auto integer = std::floor(std::abs(result));
         return (result < 0) ? -integer : integer;
     }
+
+    // Exception methods, to help reduce binary size
+    [[noreturn]] __declspec(noinline) void throw_no_constructor(
+        jsi::Runtime& runtime, std::string_view typeNamespace, std::string_view typeName, size_t argCount);
+
+    [[noreturn]] __declspec(noinline) void throw_no_function_overload(jsi::Runtime& runtime,
+        std::string_view typeNamespace, std::string_view typeName, std::string_view fnName, size_t argCount);
+
+    [[noreturn]] __declspec(noinline) void throw_invalid_delegate_arg_count(
+        jsi::Runtime& runtime, std::string_view typeNamespace, std::string_view typeName);
 }
 
 // JS thread context data
@@ -2734,7 +2744,7 @@ namespace jswinrt
                 [value](jsi::Runtime& runtime, const jsi::Value&, const jsi::Value* args, size_t count) {
                     if (count != 2)
                     {
-                        throw jsi::JSError(runtime, "TypeError: Invalid number of arguments to EventHandler");
+                        throw_invalid_delegate_arg_count(runtime, "Windows.Foundation"sv, "EventHandler");
                     }
 
                     auto arg0 = convert_value_to_native<winrt::Windows::Foundation::IInspectable>(runtime, args[0]);
@@ -2769,7 +2779,7 @@ namespace jswinrt
                 [value](jsi::Runtime& runtime, const jsi::Value&, const jsi::Value* args, size_t count) {
                     if (count != 2)
                     {
-                        throw jsi::JSError(runtime, "TypeError: Invalid number of arguments to TypedEventHandler");
+                        throw_invalid_delegate_arg_count(runtime, "Windows.Foundation"sv, "TypedEventHandler");
                     }
 
                     auto arg0 = convert_value_to_native<TSender>(runtime, args[0]);
@@ -2802,7 +2812,8 @@ namespace jswinrt
                 [value](jsi::Runtime& runtime, const jsi::Value&, const jsi::Value* args, size_t count) {
                     if (count != 2)
                     {
-                        throw jsi::JSError(runtime, "TypeError: Invalid number of arguments to MapChangedEventHandler");
+                        throw_invalid_delegate_arg_count(
+                            runtime, "Windows.Foundation.Collections"sv, "MapChangedEventHandler");
                     }
 
                     auto arg0 = convert_value_to_native<winrt::Windows::Foundation::Collections::IObservableMap<K, V>>(
@@ -2840,8 +2851,8 @@ namespace jswinrt
                 [value](jsi::Runtime& runtime, const jsi::Value&, const jsi::Value* args, size_t count) {
                     if (count != 2)
                     {
-                        throw jsi::JSError(
-                            runtime, "TypeError: Invalid number of arguments to VectorChangedEventHandler");
+                        throw_invalid_delegate_arg_count(
+                            runtime, "Windows.Foundation.Collections"sv, "VectorChangedEventHandler");
                     }
 
                     auto arg0 = convert_value_to_native<winrt::Windows::Foundation::Collections::IObservableVector<T>>(
@@ -3067,8 +3078,8 @@ namespace jswinrt
                         map.Insert(key, convert_value_to_native<V>(runtime, value));
                         return true;
                     }
-
-                    return false;
+                    else
+                        return false;
                 }
             };
 
@@ -3312,16 +3323,19 @@ namespace jswinrt
             return std::nullopt;
         }
 
-        // NOTE: From Array.prototype.concat. Returns the vector concatenated with the arguments
-        template <typename TVector>
-        inline jsi::Value vector_concat(
-            jsi::Runtime& runtime, const jsi::Value& thisValue, const jsi::Value* args, size_t count)
+        // NOTE: From Array.prototype.concat
+        template <typename TVector, typename ValueType>
+        inline __declspec(noinline) jsi::Value
+            vector_concat_impl(jsi::Runtime& runtime, const TVector& vector, const jsi::Value* args, size_t count,
+                winrt::Windows::Foundation::Collections::IVector<ValueType> (*vectorCast)(
+                    const winrt::Windows::Foundation::IInspectable&),
+                winrt::Windows::Foundation::Collections::IVectorView<ValueType> (*vectorViewCast)(
+                    const winrt::Windows::Foundation::IInspectable&))
         {
             using namespace winrt::Windows::Foundation::Collections;
 
             // TODO: We could in theory try and pre-calculate the final size, but it's not quite clear that would be
             // worth it
-            auto vector = convert_value_to_native<TVector>(runtime, thisValue);
             jsi::Array result(runtime, vector.Size());
 
             size_t i = 0;
@@ -3353,23 +3367,22 @@ namespace jswinrt
                 {
                     auto arr = obj.getArray(runtime);
                     auto arrLen = arr.length(runtime);
-                    for (auto j = 0; j < arrLen; ++j)
+                    for (size_t j = 0; j < arrLen; ++j)
                     {
                         pushFn.callWithThis(runtime, result, arr.getValueAtIndex(runtime, j));
                     }
                 }
                 else if (obj.isHostObject<projected_object_instance>(runtime))
                 {
-                    using value_type = typename pinterface_traits<TVector>::value_type;
                     auto hostObj = obj.getHostObject<projected_object_instance>(runtime);
-                    if (auto v = hostObj->instance().try_as<IVector<value_type>>())
+                    if (auto v = vectorCast(hostObj->instance()))
                     {
                         for (auto&& value : v)
                         {
                             pushFn.callWithThis(runtime, result, convert_native_to_value(runtime, value));
                         }
                     }
-                    else if (auto view = hostObj->instance().try_as<IVectorView<value_type>>())
+                    else if (auto view = vectorViewCast(hostObj->instance()))
                     {
                         for (auto&& value : v)
                         {
@@ -3392,13 +3405,28 @@ namespace jswinrt
         }
 
         template <typename TVector>
-        inline jsi::Value vector_every(
+        inline jsi::Value vector_concat(
             jsi::Runtime& runtime, const jsi::Value& thisValue, const jsi::Value* args, size_t count)
+        {
+            // NOTE: This causes IVector<T> and IVectorView<T> to get COMDAT folded together along with IVector*<U> for
+            // similar enough 'U' (e.g. classes/interfaces get folded together)
+            using namespace winrt::Windows::Foundation;
+            using namespace winrt::Windows::Foundation::Collections;
+            using value_type = typename pinterface_traits<TVector>::value_type;
+            return vector_concat_impl<TVector, value_type>(
+                runtime, convert_value_to_native<TVector>(runtime, thisValue), args, count,
+                [](const IInspectable& insp) { return insp.try_as<IVector<value_type>>(); },
+                [](const IInspectable& insp) { return insp.try_as<IVectorView<value_type>>(); });
+        }
+
+        // NOTE: From Array.prototype.every
+        template <typename TVector>
+        inline __declspec(noinline) jsi::Value vector_every_impl(jsi::Runtime& runtime, const jsi::Value& thisValue,
+            const TVector& vector, const jsi::Value* args, size_t count)
         {
             auto fn = callback_from_arg(runtime, args, count);
             auto thisArg = callback_this_arg(runtime, args, count);
 
-            auto vector = convert_value_to_native<TVector>(runtime, thisValue);
             double index = 0;
             for (auto&& value : vector)
             {
@@ -3421,8 +3449,19 @@ namespace jswinrt
         }
 
         template <typename TVector>
-        inline jsi::Value vector_filter(
+        inline jsi::Value vector_every(
             jsi::Runtime& runtime, const jsi::Value& thisValue, const jsi::Value* args, size_t count)
+        {
+            // NOTE: This causes IVector<T> and IVectorView<T> to get COMDAT folded together along with IVector*<U> for
+            // similar enough 'U' (e.g. classes/interfaces get folded together)
+            return vector_every_impl(
+                runtime, thisValue, convert_value_to_native<TVector>(runtime, thisValue), args, count);
+        }
+
+        // NOTE: From Array.prototype.filter
+        template <typename TVector>
+        inline __declspec(noinline) jsi::Value vector_filter_impl(jsi::Runtime& runtime, const jsi::Value& thisValue,
+            const TVector& vector, const jsi::Value* args, size_t count)
         {
             auto fn = callback_from_arg(runtime, args, count);
             auto thisArg = callback_this_arg(runtime, args, count);
@@ -3430,7 +3469,6 @@ namespace jswinrt
             jsi::Array result(runtime, 0);
             auto pushFn = result.getPropertyAsFunction(runtime, "push");
 
-            auto vector = convert_value_to_native<TVector>(runtime, thisValue);
             double index = 0;
             for (auto&& value : vector)
             {
@@ -3455,13 +3493,23 @@ namespace jswinrt
         }
 
         template <typename TVector>
-        inline jsi::Value vector_forEach(
+        inline jsi::Value vector_filter(
             jsi::Runtime& runtime, const jsi::Value& thisValue, const jsi::Value* args, size_t count)
+        {
+            // NOTE: This causes IVector<T> and IVectorView<T> to get COMDAT folded together along with IVector*<U> for
+            // similar enough 'U' (e.g. classes/interfaces get folded together)
+            return vector_filter_impl(
+                runtime, thisValue, convert_value_to_native<TVector>(runtime, thisValue), args, count);
+        }
+
+        // NOTE: From Array.prototype.forEach
+        template <typename TVector>
+        inline __declspec(noinline) jsi::Value vector_forEach_impl(jsi::Runtime& runtime, const jsi::Value& thisValue,
+            const TVector& vector, const jsi::Value* args, size_t count)
         {
             auto fn = callback_from_arg(runtime, args, count);
             auto thisArg = callback_this_arg(runtime, args, count);
 
-            auto vector = convert_value_to_native<TVector>(runtime, thisValue);
             double index = 0;
             for (auto&& value : vector)
             {
@@ -3479,12 +3527,21 @@ namespace jswinrt
         }
 
         template <typename TVector>
-        inline jsi::Value vector_lastIndexOf(
+        inline jsi::Value vector_forEach(
             jsi::Runtime& runtime, const jsi::Value& thisValue, const jsi::Value* args, size_t count)
         {
-            auto vector = convert_value_to_native<TVector>(runtime, thisValue);
-            auto size = vector.Size();
+            // NOTE: This causes IVector<T> and IVectorView<T> to get COMDAT folded together along with IVector*<U> for
+            // similar enough 'U' (e.g. classes/interfaces get folded together)
+            return vector_forEach_impl(
+                runtime, thisValue, convert_value_to_native<TVector>(runtime, thisValue), args, count);
+        }
 
+        // NOTE: From Array.prototype.lastIndexOf
+        template <typename TVector>
+        inline __declspec(noinline) jsi::Value
+            vector_lastIndexOf_impl(jsi::Runtime& runtime, const TVector& vector, const jsi::Value* args, size_t count)
+        {
+            auto size = vector.Size();
             if ((size == 0) || (count < 1))
                 return -1;
 
@@ -3516,15 +3573,23 @@ namespace jswinrt
         }
 
         template <typename TVector>
-        inline jsi::Value vector_map(
+        inline jsi::Value vector_lastIndexOf(
             jsi::Runtime& runtime, const jsi::Value& thisValue, const jsi::Value* args, size_t count)
+        {
+            // NOTE: This causes IVector<T> and IVectorView<T> to get COMDAT folded together along with IVector*<U> for
+            // similar enough 'U' (e.g. classes/interfaces get folded together)
+            return vector_lastIndexOf_impl(runtime, convert_value_to_native<TVector>(runtime, thisValue), args, count);
+        }
+
+        // NOTE: From Array.prototype.map
+        template <typename TVector>
+        inline __declspec(noinline) jsi::Value vector_map_impl(jsi::Runtime& runtime, const jsi::Value& thisValue,
+            const TVector& vector, const jsi::Value* args, size_t count)
         {
             auto fn = callback_from_arg(runtime, args, count);
             auto thisArg = callback_this_arg(runtime, args, count);
 
-            auto vector = convert_value_to_native<TVector>(runtime, thisValue);
             jsi::Array result(runtime, vector.Size());
-
             uint32_t index = 0;
             for (auto&& value : vector)
             {
@@ -3548,10 +3613,20 @@ namespace jswinrt
         }
 
         template <typename TVector>
-        inline jsi::Value vector_reduce(
+        inline jsi::Value vector_map(
             jsi::Runtime& runtime, const jsi::Value& thisValue, const jsi::Value* args, size_t count)
         {
-            auto vector = convert_value_to_native<TVector>(runtime, thisValue);
+            // NOTE: This causes IVector<T> and IVectorView<T> to get COMDAT folded together along with IVector*<U> for
+            // similar enough 'U' (e.g. classes/interfaces get folded together)
+            return vector_map_impl(
+                runtime, thisValue, convert_value_to_native<TVector>(runtime, thisValue), args, count);
+        }
+
+        // NOTE: From Array.prototype.reduce
+        template <typename TVector>
+        inline __declspec(noinline) jsi::Value vector_reduce_impl(jsi::Runtime& runtime, const jsi::Value& thisValue,
+            const TVector& vector, const jsi::Value* args, size_t count)
+        {
             auto size = vector.Size();
             auto fn = callback_from_arg(runtime, args, count);
 
@@ -3581,10 +3656,20 @@ namespace jswinrt
         }
 
         template <typename TVector>
-        inline jsi::Value vector_reduceRight(
+        inline jsi::Value vector_reduce(
             jsi::Runtime& runtime, const jsi::Value& thisValue, const jsi::Value* args, size_t count)
         {
-            auto vector = convert_value_to_native<TVector>(runtime, thisValue);
+            // NOTE: This causes IVector<T> and IVectorView<T> to get COMDAT folded together along with IVector*<U> for
+            // similar enough 'U' (e.g. classes/interfaces get folded together)
+            return vector_reduce_impl(
+                runtime, thisValue, convert_value_to_native<TVector>(runtime, thisValue), args, count);
+        }
+
+        // NOTE: From Array.prototype.reduceRight
+        template <typename TVector>
+        inline __declspec(noinline) jsi::Value vector_reduceRight_impl(jsi::Runtime& runtime,
+            const jsi::Value& thisValue, const TVector& vector, const jsi::Value* args, size_t count)
+        {
             auto size = vector.Size();
             auto fn = callback_from_arg(runtime, args, count);
 
@@ -3614,12 +3699,21 @@ namespace jswinrt
         }
 
         template <typename TVector>
-        inline jsi::Value vector_slice(
+        inline jsi::Value vector_reduceRight(
             jsi::Runtime& runtime, const jsi::Value& thisValue, const jsi::Value* args, size_t count)
         {
-            auto vector = convert_value_to_native<TVector>(runtime, thisValue);
-            auto size = vector.Size();
+            // NOTE: This causes IVector<T> and IVectorView<T> to get COMDAT folded together along with IVector*<U> for
+            // similar enough 'U' (e.g. classes/interfaces get folded together)
+            return vector_reduceRight_impl(
+                runtime, thisValue, convert_value_to_native<TVector>(runtime, thisValue), args, count);
+        }
 
+        // NOTE: From Array.prototype.slice
+        template <typename TVector>
+        inline __declspec(noinline) jsi::Value
+            vector_slice_impl(jsi::Runtime& runtime, const TVector& vector, const jsi::Value* args, size_t count)
+        {
+            auto size = vector.Size();
             auto start = vector_index_from_arg(runtime, args, count, 0, size);
             auto end = vector_index_from_arg(runtime, args, count, 1, size, size);
             if (start > end)
@@ -3636,13 +3730,22 @@ namespace jswinrt
         }
 
         template <typename TVector>
-        inline jsi::Value vector_some(
+        inline jsi::Value vector_slice(
             jsi::Runtime& runtime, const jsi::Value& thisValue, const jsi::Value* args, size_t count)
+        {
+            // NOTE: This causes IVector<T> and IVectorView<T> to get COMDAT folded together along with IVector*<U> for
+            // similar enough 'U' (e.g. classes/interfaces get folded together)
+            return vector_slice_impl(runtime, convert_value_to_native<TVector>(runtime, thisValue), args, count);
+        }
+
+        // NOTE: From Array.prototype.some
+        template <typename TVector>
+        inline __declspec(noinline) jsi::Value vector_some_impl(jsi::Runtime& runtime, const jsi::Value& thisValue,
+            const TVector& vector, const jsi::Value* args, size_t count)
         {
             auto fn = callback_from_arg(runtime, args, count);
             auto thisArg = callback_this_arg(runtime, args, count);
 
-            auto vector = convert_value_to_native<TVector>(runtime, thisValue);
             double index = 0;
             for (auto&& value : vector)
             {
@@ -3662,6 +3765,16 @@ namespace jswinrt
             }
 
             return false;
+        }
+
+        template <typename TVector>
+        inline jsi::Value vector_some(
+            jsi::Runtime& runtime, const jsi::Value& thisValue, const jsi::Value* args, size_t count)
+        {
+            // NOTE: This causes IVector<T> and IVectorView<T> to get COMDAT folded together along with IVector*<U> for
+            // similar enough 'U' (e.g. classes/interfaces get folded together)
+            return vector_some_impl(
+                runtime, thisValue, convert_value_to_native<TVector>(runtime, thisValue), args, count);
         }
 
         namespace IVector
@@ -3784,12 +3897,23 @@ namespace jswinrt
                         2, false },
                 };
 
-                static jsi::Value copyWithin(
-                    jsi::Runtime& runtime, const jsi::Value& thisValue, const jsi::Value* args, size_t count)
-                {
-                    auto vector = convert_value_to_native<native_type>(runtime, thisValue);
-                    auto size = vector.Size();
+                using convert_item_t = T (*)(jsi::Runtime&, const jsi::Value&);
 
+                static convert_item_t item_converter()
+                {
+                    // NOTE: The optimizer seems to be very agressive at optimizing away function pointers to static
+                    // member functions, but a lot less agressive at optimizing away function pointers created from
+                    // lambdas, hence why we return a lambda here.
+                    return [](jsi::Runtime& runtime, const jsi::Value& value) {
+                        return convert_value_to_native<T>(runtime, value);
+                    };
+                }
+
+                // NOTE: From Array.prototype.copyWithin
+                static __declspec(noinline) jsi::Value copyWithin_impl(jsi::Runtime& runtime,
+                    const jsi::Value& thisValue, const native_type& vector, const jsi::Value* args, size_t count)
+                {
+                    auto size = vector.Size();
                     auto target = vector_index_from_arg(runtime, args, count, 0, size);
                     auto start = vector_index_from_arg(runtime, args, count, 1, size);
                     auto end = vector_index_from_arg(runtime, args, count, 2, size, size);
@@ -3819,9 +3943,19 @@ namespace jswinrt
                     return jsi::Value(runtime, thisValue);
                 }
 
-                static jsi::Value pop(jsi::Runtime& runtime, const jsi::Value& thisValue, const jsi::Value*, size_t)
+                static jsi::Value copyWithin(
+                    jsi::Runtime& runtime, const jsi::Value& thisValue, const jsi::Value* args, size_t count)
                 {
-                    auto vector = convert_value_to_native<native_type>(runtime, thisValue);
+                    // NOTE: This causes IVector<T> and IVector<U> to get COMDAT folded together for a similar enough
+                    // 'U' (e.g. classes/interfaces get folded together)
+                    return copyWithin_impl(
+                        runtime, thisValue, convert_value_to_native<native_type>(runtime, thisValue), args, count);
+                }
+
+                // NOTE: From Array.prototype.pop
+                static __declspec(noinline) jsi::Value
+                    pop_impl(jsi::Runtime& runtime, const native_type& vector, const jsi::Value*, size_t)
+                {
                     auto size = vector.Size();
                     if (size == 0)
                         return jsi::Value::undefined();
@@ -3831,25 +3965,42 @@ namespace jswinrt
                     return result;
                 }
 
-                static jsi::Value push(
+                static jsi::Value pop(
                     jsi::Runtime& runtime, const jsi::Value& thisValue, const jsi::Value* args, size_t count)
+                {
+                    // NOTE: This causes IVector<T> and IVector<U> to get COMDAT folded together for a similar enough
+                    // 'U' (e.g. classes/interfaces get folded together)
+                    return pop_impl(runtime, convert_value_to_native<native_type>(runtime, thisValue), args, count);
+                }
+
+                // NOTE: From Array.prototype.push
+                static __declspec(noinline) jsi::Value push_impl(jsi::Runtime& runtime, const native_type& vector,
+                    const jsi::Value* args, size_t count, convert_item_t converter)
                 {
                     // TODO: Why do we have to define this function? Based off the specification, we should satisfy all
                     // requements for Array.prototype.push to work
-                    auto vector = convert_value_to_native<native_type>(runtime, thisValue);
                     for (size_t i = 0; i < count; ++i)
                     {
-                        vector.Append(convert_value_to_native<T>(runtime, args[i]));
+                        vector.Append(converter(runtime, args[i]));
                     }
 
                     return static_cast<double>(vector.Size());
                 }
 
-                static jsi::Value reverse(jsi::Runtime& runtime, const jsi::Value& thisValue, const jsi::Value*, size_t)
+                static jsi::Value push(
+                    jsi::Runtime& runtime, const jsi::Value& thisValue, const jsi::Value* args, size_t count)
                 {
-                    auto vector = convert_value_to_native<native_type>(runtime, thisValue);
-                    auto size = vector.Size();
+                    // NOTE: This causes IVector<T> and IVector<U> to get COMDAT folded together for a similar enough
+                    // 'U' (e.g. classes/interfaces get folded together)
+                    return push_impl(runtime, convert_value_to_native<native_type>(runtime, thisValue), args, count,
+                        item_converter());
+                }
 
+                // NOTE: From Array.prototype.reverse
+                static __declspec(noinline) jsi::Value reverse_impl(jsi::Runtime& runtime, const jsi::Value& thisValue,
+                    const native_type& vector, const jsi::Value*, size_t)
+                {
+                    auto size = vector.Size();
                     uint32_t left = 0;
                     uint32_t right = (size != 0) ? size - 1 : 0;
                     for (; left < right; ++left, --right)
@@ -3862,9 +4013,19 @@ namespace jswinrt
                     return jsi::Value(runtime, thisValue);
                 }
 
-                static jsi::Value shift(jsi::Runtime& runtime, const jsi::Value& thisValue, const jsi::Value*, size_t)
+                static jsi::Value reverse(
+                    jsi::Runtime& runtime, const jsi::Value& thisValue, const jsi::Value* args, size_t count)
                 {
-                    auto vector = convert_value_to_native<native_type>(runtime, thisValue);
+                    // NOTE: This causes IVector<T> and IVector<U> to get COMDAT folded together for a similar enough
+                    // 'U' (e.g. classes/interfaces get folded together)
+                    return reverse_impl(
+                        runtime, thisValue, convert_value_to_native<native_type>(runtime, thisValue), args, count);
+                }
+
+                // NOTE: From Array.prototype.shift
+                static __declspec(noinline) jsi::Value
+                    shift_impl(jsi::Runtime& runtime, const native_type& vector, const jsi::Value*, size_t)
+                {
                     auto size = vector.Size();
                     if (size == 0)
                         return jsi::Value::undefined();
@@ -3879,12 +4040,19 @@ namespace jswinrt
                     return result;
                 }
 
-                static jsi::Value sort(
+                static jsi::Value shift(
                     jsi::Runtime& runtime, const jsi::Value& thisValue, const jsi::Value* args, size_t count)
                 {
-                    auto vector = convert_value_to_native<native_type>(runtime, thisValue);
-                    auto size = vector.Size();
+                    // NOTE: This causes IVector<T> and IVector<U> to get COMDAT folded together for a similar enough
+                    // 'U' (e.g. classes/interfaces get folded together)
+                    return shift_impl(runtime, convert_value_to_native<native_type>(runtime, thisValue), args, count);
+                }
 
+                // NOTE: From Array.prototype.sort
+                static __declspec(noinline) jsi::Value sort_impl(jsi::Runtime& runtime, const jsi::Value& thisValue,
+                    const native_type& vector, const jsi::Value* args, size_t count, convert_item_t converter)
+                {
+                    auto size = vector.Size();
                     if (count >= 1)
                     {
                         auto compareFn = args[0].asObject(runtime).asFunction(runtime);
@@ -3902,7 +4070,7 @@ namespace jswinrt
 
                         for (uint32_t i = 0; i < size; ++i)
                         {
-                            vector.SetAt(i, convert_value_to_native<T>(runtime, values[i]));
+                            vector.SetAt(i, converter(runtime, values[i]));
                         }
                     }
                     else
@@ -3929,18 +4097,25 @@ namespace jswinrt
                     return jsi::Value(runtime, thisValue);
                 }
 
-                static jsi::Value splice(
+                static jsi::Value sort(
                     jsi::Runtime& runtime, const jsi::Value& thisValue, const jsi::Value* args, size_t count)
                 {
-                    auto vector = convert_value_to_native<native_type>(runtime, thisValue);
-                    auto size = vector.Size();
+                    return sort_impl(runtime, thisValue, convert_value_to_native<native_type>(runtime, thisValue), args,
+                        count, item_converter());
+                }
 
+                // NOTE: From Array.prototype.splice
+                static __declspec(noinline) jsi::Value splice_impl(jsi::Runtime& runtime, const native_type& vector,
+                    const jsi::Value* args, size_t count, convert_item_t converter)
+                {
+                    auto size = vector.Size();
                     auto start = vector_index_from_arg(runtime, args, count, 0, size);
 
                     uint32_t deleteCount =
                         (count >= 2) ? static_cast<uint32_t>(std::clamp(to_integer_or_infinity(runtime, args[1]), 0.0,
                                            static_cast<double>(size - start))) :
-                                       (count >= 1) ? (size - start) : 0;
+                        (count >= 1) ? (size - start) :
+                                       0;
 
                     uint32_t insertCount = (count >= 3) ? static_cast<uint32_t>(count - 2) : 0;
                     auto assignCount = std::min(deleteCount, insertCount);
@@ -3952,7 +4127,7 @@ namespace jswinrt
                     while (assignCount-- > 0)
                     {
                         result.setValueAtIndex(runtime, i, convert_native_to_value(runtime, vector.GetAt(start)));
-                        vector.SetAt(start, convert_value_to_native<T>(runtime, args[2 + i]));
+                        vector.SetAt(start, converter(runtime, args[2 + i]));
                         ++i;
                         ++start;
                     }
@@ -3968,7 +4143,7 @@ namespace jswinrt
 
                     while (insertCount-- > 0)
                     {
-                        vector.InsertAt(start, convert_value_to_native<T>(runtime, args[2 + i]));
+                        vector.InsertAt(start, converter(runtime, args[2 + i]));
                         ++i;
                         ++start;
                     }
@@ -3976,16 +4151,34 @@ namespace jswinrt
                     return result;
                 }
 
-                static jsi::Value unshift(
+                static jsi::Value splice(
                     jsi::Runtime& runtime, const jsi::Value& thisValue, const jsi::Value* args, size_t count)
                 {
-                    auto vector = convert_value_to_native<native_type>(runtime, thisValue);
+                    // NOTE: This causes IVector<T> and IVector<U> to get COMDAT folded together for a similar enough
+                    // 'U' (e.g. classes/interfaces get folded together)
+                    return splice_impl(runtime, convert_value_to_native<native_type>(runtime, thisValue), args, count,
+                        item_converter());
+                }
+
+                // NOTE: From Array.prototype.unshift
+                static __declspec(noinline) jsi::Value unshift_impl(jsi::Runtime& runtime, const native_type& vector,
+                    const jsi::Value* args, size_t count, convert_item_t converter)
+                {
                     for (size_t i = count; i-- > 0;)
                     {
-                        vector.InsertAt(0, convert_value_to_native<T>(runtime, args[i]));
+                        vector.InsertAt(0, converter(runtime, args[i]));
                     }
 
                     return static_cast<double>(vector.Size());
+                }
+
+                static jsi::Value unshift(
+                    jsi::Runtime& runtime, const jsi::Value& thisValue, const jsi::Value* args, size_t count)
+                {
+                    // NOTE: This causes IVector<T> and IVector<U> to get COMDAT folded together for a similar enough
+                    // 'U' (e.g. classes/interfaces get folded together)
+                    return unshift_impl(runtime, convert_value_to_native<native_type>(runtime, thisValue), args, count,
+                        item_converter());
                 }
 
                 static std::pair<std::optional<jsi::Value>, std::optional<jsi::Value>> runtime_get_property(

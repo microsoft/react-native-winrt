@@ -723,11 +723,10 @@ namespace jswinrt::classes::%
             }
 
             writer.write_fmt(R"^-^(
-                throw jsi::JSError(runtime, "TypeError: No function overload exists for "s + "%." + "%" +
-                    " with " + std::to_string(count) + " args");
+                throw_no_function_overload(runtime, "%"sv, "%"sv, "%"sv, count);
             }
         },)^-^",
-                classData.type_def.TypeNamespace(), classData.type_def.TypeName());
+                classData.type_def.TypeNamespace(), classData.type_def.TypeName(), camel_case{ data.name });
         }
 
         writer.write("\n    };\n");
@@ -778,8 +777,7 @@ namespace jswinrt::classes::%
         // TODO: Actually validate this
         // TODO: Make throwing function a separate non-inlined function? Would also decrease disk footprint
         writer.write_fmt(R"^-^(
-        throw jsi::JSError(runtime, "TypeError: No constructor overload exists for "s + "%." + "%" +
-            " with " + std::to_string(count) + " args");
+        throw_no_constructor(runtime, "%"sv, "%"sv, count);
     }
 
     constexpr const static_activatable_class_data data{ "%"sv, constructor_function, %, %, % };
@@ -1079,11 +1077,12 @@ namespace jswinrt::namespaces::%
             [value](jsi::Runtime& runtime, const jsi::Value&, [[maybe_unused]] const jsi::Value* args, size_t count) {
                 if (count != %)
                 {
-                    throw jsi::JSError(runtime, "TypeError: Invalid number of arguments to %");
+                    throw_invalid_delegate_arg_count(runtime, "%"sv, "%"sv);
                 }
 )^-^",
                 cpp_typename{ delegateData->type_def }, cpp_typename{ delegateData->type_def },
-                delegateData->type_def.TypeName(), fn.param_count, fn.param_count, delegateData->type_def.TypeName());
+                delegateData->type_def.TypeName(), fn.param_count, fn.param_count,
+                delegateData->type_def.TypeNamespace(), delegateData->type_def.TypeName());
 
             write_params_value_to_native(writer, fn, 4);
             writer.write_fmt("\n                %value(", fn.has_return_value ? "auto result = " : "");
