@@ -1,4 +1,5 @@
 #include "pch.h"
+
 #include "StaticOnlyTest.h"
 #include "StaticOnlyTest.g.cpp"
 

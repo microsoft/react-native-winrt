@@ -135,6 +135,7 @@ declare namespace TestComponent {
     }
 
     class Test {
+        numericsStructProperty: TestComponent.NumericTypes;
         numericArrayProperty: number[];
         hResultProperty: number;
         guidProperty: string;
@@ -144,7 +145,7 @@ declare namespace TestComponent {
         enumProperty: TestComponent.TestEnum;
         enumArrayProperty: TestComponent.TestEnum[];
         dateTimeProperty: Windows.Foundation.DateTime;
-        numericsStructProperty: TestComponent.NumericTypes;
+        objectArrayProperty: TestComponent.TestObject[];
         compositeStructProperty: TestComponent.CompositeType;
         compositeStructArrayProperty: TestComponent.CompositeType[];
         charProperty: string;
@@ -152,7 +153,7 @@ declare namespace TestComponent {
         booleansStructProperty: TestComponent.BooleanTypes;
         booleanArrayProperty: boolean[];
         u8Property: number;
-        objectArrayProperty: TestComponent.TestObject[];
+        objectProperty: TestComponent.TestObject;
         boolProperty: boolean;
         u64Property: number;
         u32Property: number;
@@ -170,15 +171,14 @@ declare namespace TestComponent {
         refBooleanProperty: boolean | null;
         refArrayProperty: number[] | null;
         propertyValue: Windows.Foundation.IPropertyValue;
-        objectProperty: TestComponent.TestObject;
         readonly constructorParamCount: number;
+        readonly propertyValueCppType: string;
         static staticBoolProperty: boolean;
         constructor(val: number);
         constructor(val: number, str: string);
         constructor();
         dateTimePropertyCppValue(): string;
         timeSpanPropertyCppValue(): string;
-        propertyValueCppType(): string;
         assignPropertyValueAsType(value: Windows.Foundation.IPropertyValue, winrtPropertyValueType: string): void;
         or(lhs: boolean, rhs: boolean): boolean;
         orAll(values: boolean[]): boolean;
