@@ -1994,6 +1994,11 @@ namespace jswinrt
         {
         }
 
+        winrt::hstring GetRuntimeClassName() const
+        {
+            return L"JsArrayIterator";
+        }
+
         T Current()
         {
             return target->GetAt(index);
@@ -2167,6 +2172,11 @@ namespace jswinrt
         array_vector_base<array_iterable<T>, T>
     {
         using array_vector_base<array_iterable<T>, T>::array_vector_base;
+
+        winrt::hstring GetRuntimeClassName() const
+        {
+            return L"JsArrayIterable";
+        }
     };
 
     template <typename T>
@@ -2176,6 +2186,11 @@ namespace jswinrt
         array_vector_base<array_vector_view<T>, T>
     {
         using array_vector_base<array_vector_view<T>, T>::array_vector_base;
+
+        winrt::hstring GetRuntimeClassName() const
+        {
+            return L"JsArrayVectorView";
+        }
     };
 
     template <typename T>
@@ -2185,6 +2200,11 @@ namespace jswinrt
         array_vector_base<array_vector<T>, T>
     {
         using array_vector_base<array_vector<T>, T>::array_vector_base;
+
+        winrt::hstring GetRuntimeClassName() const
+        {
+            return L"JsArrayVector";
+        }
 
         winrt::Windows::Foundation::Collections::IVectorView<T> GetView()
         {
