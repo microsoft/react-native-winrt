@@ -7,17 +7,20 @@ JavaScript WinRT (JS/WinRT) is a module for React Native Windows which provides 
 * Open a dev command prompt pointing at the root of the repo.
 * Run `npm install` under ["\samples\RNWinRTTestApp\"](./samples/RNWinRTTestApp)
 * Open the [`RNWinRTTestApp.sln`](./samples/RNWinRTTestApp/windows/RNWinRTTestApp.sln) solution.
-* Build the x64 Release or DebugBundle configuration.
+* Build the x64 Release or Debug configuration.
+* If running Debug: Run 'yarn start' under ["\samples\RNWinRTTestApp\"](./samples/RNWinRTTestApp)
 * F5 deploy the sample app.
 
 # Adding the projection to your own solution
 > **DISCLAIMER**: These steps are temporary and subject to change as the projection evolves.
 
-* Copy the [`strings`](./rnwinrt/strings), [`rnwinrt`](./rnwinrt/rnwinrt), and [`WinRTTurboModule`](./samples/RNWinRTTestApp/windows/WinRTTurboModule) (from the sample) source directories to your project.
-* Add the [`strings.vcxproj`](./rnwinrt/strings/strings.vcxproj), [`rnwinrt.vcxproj`](./rnwinrt/rnwinrt/rnwinrt.vcxproj), and [`WinRTTurboModule.vcxproj`](./samples/RNWinRTTestApp/windows/WinRTTurboModule/WinRTTurboModule.vcxproj) to your solution.
+* Copy the [`WinRTTurboModule`](./samples/RNWinRTTestApp/windows/WinRTTurboModule) (from the sample) source directory to your project.
+* Add [`WinRTTurboModule.vcxproj`](./samples/RNWinRTTestApp/windows/WinRTTurboModule/WinRTTurboModule.vcxproj) to your solution.
 * Make sure your project depends on the WinRTTurboModule project.
-* Turn off deploy for the strings, rnwinrt, and WinRTTurboModule projects.
+* Turn off deploy for the WinRTTurboModule project.
 * Add `import './WinRTTurboModule';` to your project's index.js.
+* Add 'PackageProviders().Append(winrt::WinRTTurboModule::ReactPackageProvider());' to your project's App.cpp
+* Add '#include <winrt\WinRTTurboModule.h>' to your project's pch.h
 * Create `WinRTTurboModule.js` under your project (next to index.js) and copy the contents of [rnwinrt/js/WinRTTurboModule.js](./rnwinrt/js/WinRTTurboModule.js) to it.  This should be something like the following:
 ```
     import * as TurboModuleRegistry from 'react-native/Libraries/TurboModule/TurboModuleRegistry';
