@@ -303,14 +303,12 @@ jsi::Value projected_statics_class::get(jsi::Runtime& runtime, const jsi::PropNa
         {
             if (name == add_event_name)
             {
-                auto fn = jsi::Function::createFromHostFunction(
-                    runtime, id, 0, bind_host_function(&projected_statics_class::add_event_listener));
+                auto fn = bind_host_function(runtime, id, 2, &projected_statics_class::add_event_listener);
                 itr = m_functions.emplace(add_event_name, jsi::Value(runtime, std::move(fn))).first;
             }
             else if (name == remove_event_name)
             {
-                auto fn = jsi::Function::createFromHostFunction(
-                    runtime, id, 0, bind_host_function(&projected_statics_class::remove_event_listener));
+                auto fn = bind_host_function(runtime, id, 2, &projected_statics_class::remove_event_listener);
                 itr = m_functions.emplace(remove_event_name, jsi::Value(runtime, std::move(fn))).first;
             }
         }
@@ -692,14 +690,12 @@ jsi::Value projected_object_instance::get(jsi::Runtime& runtime, const jsi::Prop
     {
         if (name == add_event_name)
         {
-            auto fn = jsi::Function::createFromHostFunction(
-                runtime, id, 2, bind_host_function(&projected_object_instance::add_event_listener));
+            auto fn = bind_host_function(runtime, id, 2, &projected_object_instance::add_event_listener);
             return jsi::Value(runtime, m_functions.emplace(add_event_name, std::move(fn)).first->second);
         }
         else if (name == remove_event_name)
         {
-            auto fn = jsi::Function::createFromHostFunction(
-                runtime, id, 2, bind_host_function(&projected_object_instance::remove_event_listener));
+            auto fn = bind_host_function(runtime, id, 2, &projected_object_instance::remove_event_listener);
             return jsi::Value(runtime, m_functions.emplace(remove_event_name, std::move(fn)).first->second);
         }
     }

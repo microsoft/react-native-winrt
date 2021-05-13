@@ -613,21 +613,25 @@ namespace jswinrt
     }
 
     template <typename T>
-    auto bind_host_function(jsi::Value (T::*fn)(jsi::Runtime&, const jsi::Value*, size_t))
+    jsi::Function bind_host_function(jsi::Runtime& runtime, const jsi::PropNameID& name, unsigned int paramCount,
+        jsi::Value (T::*fn)(jsi::Runtime&, const jsi::Value*, size_t))
     {
-        return [fn](jsi::Runtime& runtime, const jsi::Value& thisValue, const jsi::Value* args, size_t count) {
-            auto strongThis = thisValue.asObject(runtime).asHostObject<T>(runtime);
-            return (strongThis.get()->*fn)(runtime, args, count);
-        };
+        return jsi::Function::createFromHostFunction(runtime, name, paramCount,
+            [fn](jsi::Runtime& runtime, const jsi::Value& thisValue, const jsi::Value* args, size_t count) {
+                auto strongThis = thisValue.asObject(runtime).asHostObject<T>(runtime);
+                return (strongThis.get()->*fn)(runtime, args, count);
+            });
     }
 
     template <typename T>
-    auto bind_host_function(jsi::Value (T::*fn)(jsi::Runtime&, const jsi::Value*, size_t) const)
+    jsi::Function bind_host_function(jsi::Runtime& runtime, const jsi::PropNameID& name, unsigned int paramCount,
+        jsi::Value (T::*fn)(jsi::Runtime&, const jsi::Value*, size_t) const)
     {
-        return [fn](jsi::Runtime& runtime, const jsi::Value& thisValue, const jsi::Value* args, size_t count) {
-            auto strongThis = thisValue.asObject(runtime).asHostObject<T>(runtime);
-            return (strongThis.get()->*fn)(runtime, args, count);
-        };
+        return jsi::Function::createFromHostFunction(runtime, name, paramCount,
+            [fn](jsi::Runtime& runtime, const jsi::Value& thisValue, const jsi::Value* args, size_t count) {
+                auto strongThis = thisValue.asObject(runtime).asHostObject<T>(runtime);
+                return (strongThis.get()->*fn)(runtime, args, count);
+            });
     }
 
     template <typename T>
@@ -1679,38 +1683,15 @@ namespace jswinrt
         // HostObject functions
         virtual jsi::Value get(jsi::Runtime& runtime, const jsi::PropNameID& id) override
         {
-            auto name = id.utf8(runtime);
-            if (name == "cancel"sv)
-            {
-                return jsi::Value(runtime, jsi::Function::createFromHostFunction(runtime, id, 0,
-                                               bind_host_function(&projected_async_instance::on_cancel)));
-            }
-            else if (name == "catch"sv)
-            {
-                return jsi::Value(runtime, jsi::Function::createFromHostFunction(runtime, id, 1,
-                                               bind_host_function(&projected_async_instance::on_catch)));
-            }
-            else if (name == "done"sv)
-            {
-                return jsi::Value(runtime, jsi::Function::createFromHostFunction(
-                                               runtime, id, 3, bind_host_function(&projected_async_instance::on_done)));
-            }
-            else if (name == "finally"sv)
-            {
-                return jsi::Value(runtime, jsi::Function::createFromHostFunction(runtime, id, 3,
-                                               bind_host_function(&projected_async_instance::on_finally)));
-            }
-            else if (name == "then"sv)
-            {
-                return jsi::Value(runtime, jsi::Function::createFromHostFunction(
-                                               runtime, id, 3, bind_host_function(&projected_async_instance::on_then)));
-            }
-            else if (name == "operation"sv)
-            {
-                return current_runtime_context()->instance_cache.get_instance(runtime, m_instance);
-            }
+            static constexpr const struct get_function_t get_functions[] = {
+                { "cancel"sv, 0, &projected_async_instance::on_cancel },
+                { "catch"sv, 1, &projected_async_instance::on_catch },
+                { "done"sv, 3, &projected_async_instance::on_done },
+                { "finally"sv, 3, &projected_async_instance::on_finally },
+                { "then"sv, 3, &projected_async_instance::on_then },
+            };
 
-            return jsi::Value::undefined();
+            return get_impl(runtime, id, get_functions);
         }
 
         virtual void set(jsi::Runtime& runtime, const jsi::PropNameID& name, const jsi::Value&) override
@@ -1735,6 +1716,29 @@ namespace jswinrt
         }
 
     private:
+        struct get_function_t
+        {
+            std::string_view name;
+            int arg_count;
+            jsi::Value (projected_async_instance::*function)(jsi::Runtime&, const jsi::Value*, size_t);
+        };
+
+        jsi::Value get_impl(jsi::Runtime& runtime, const jsi::PropNameID& id, span<const get_function_t> getFns)
+        {
+            auto name = id.utf8(runtime);
+            auto itr = std::find_if(getFns.begin(), getFns.end(), [&](auto&& pair) { return pair.name == name; });
+            if (itr != getFns.end())
+            {
+                return jsi::Value(runtime, bind_host_function(runtime, id, itr->arg_count, itr->function));
+            }
+            else if (name == "operation"sv)
+            {
+                return current_runtime_context()->instance_cache.get_instance(runtime, m_instance);
+            }
+
+            return jsi::Value::undefined();
+        }
+
         struct continuation
         {
             enum
@@ -1804,28 +1808,42 @@ namespace jswinrt
             return handle_then(runtime, undefined, count >= 1 ? args[0] : undefined);
         }
 
-        jsi::Value on_done(jsi::Runtime& runtime, const jsi::Value* args, size_t count)
+        using handle_continuation_t = void (projected_async_instance::*)(jsi::Runtime&, continuation&&);
+
+        __declspec(noinline) jsi::Value on_done_impl(
+            jsi::Runtime& runtime, const jsi::Value* args, size_t count, handle_continuation_t handleContinuation)
         {
             // Prototype: done(resolveCallback, rejectCallback, progressCallback)
             continuation c{ continuation::done_type, {},
                 { count >= 1 ? jsi::Value(runtime, args[0]) : jsi::Value::undefined(),
                     count >= 2 ? jsi::Value(runtime, args[1]) : jsi::Value::undefined(),
                     count >= 3 ? jsi::Value(runtime, args[2]) : jsi::Value::undefined() } };
-            handle_continuation(runtime, std::move(c));
+            (this->*handleContinuation)(runtime, std::move(c));
 
             return jsi::Value::undefined();
         }
 
-        jsi::Value on_finally(jsi::Runtime& runtime, const jsi::Value* args, size_t count)
+        jsi::Value on_done(jsi::Runtime& runtime, const jsi::Value* args, size_t count)
+        {
+            return on_done_impl(runtime, args, count, &projected_async_instance::handle_continuation);
+        }
+
+        __declspec(noinline) jsi::Value on_finally_impl(
+            jsi::Runtime& runtime, const jsi::Value* args, size_t count, handle_continuation_t handleContinuation)
         {
             // Prototype: finally(callback) -> Promise
             continuation c{ continuation::finally_type, promise_wrapper::create(runtime),
                 { count >= 1 ? jsi::Value(runtime, args[0]) : jsi::Value::undefined() } };
 
             auto result = jsi::Value(runtime, c.promise->get());
-            handle_continuation(runtime, std::move(c));
+            (this->*handleContinuation)(runtime, std::move(c));
 
             return result;
+        }
+
+        jsi::Value on_finally(jsi::Runtime& runtime, const jsi::Value* args, size_t count)
+        {
+            return on_finally_impl(runtime, args, count, &projected_async_instance::handle_continuation);
         }
 
         jsi::Value on_then(jsi::Runtime& runtime, const jsi::Value* args, size_t count)
@@ -1835,34 +1853,50 @@ namespace jswinrt
             return handle_then(runtime, count >= 1 ? args[0] : undefined, count >= 2 ? args[1] : undefined);
         }
 
-        jsi::Value handle_then(
-            jsi::Runtime& runtime, const jsi::Value& resolvedHandler, const jsi::Value& rejectedHandler)
+        __declspec(noinline) jsi::Value handle_then_impl(jsi::Runtime& runtime, const jsi::Value& resolvedHandler,
+            const jsi::Value& rejectedHandler, handle_continuation_t handleContinuation)
         {
             continuation c{ continuation::then_type, promise_wrapper::create(runtime),
                 { jsi::Value(runtime, resolvedHandler), jsi::Value(runtime, rejectedHandler) } };
 
             auto result = jsi::Value(runtime, c.promise->get());
-            handle_continuation(runtime, std::move(c));
+            (this->*handleContinuation)(runtime, std::move(c));
 
             return result;
         }
 
-        void handle_continuation(jsi::Runtime& runtime, continuation&& c)
+        jsi::Value handle_then(
+            jsi::Runtime& runtime, const jsi::Value& resolvedHandler, const jsi::Value& rejectedHandler)
+        {
+            return handle_then_impl(
+                runtime, resolvedHandler, rejectedHandler, &projected_async_instance::handle_continuation);
+        }
+
+        __declspec(noinline) void handle_continuation_impl(jsi::Runtime& runtime, continuation&& c,
+            std::function<void()> (*makeCallback)(projected_async_instance*, jsi::Runtime&, continuation&&))
         {
             if (m_state != state::pending)
             {
                 // NOTE: Still expected to be async
                 // NOTE: The callback will occur on the same thread, implying that the 'Runtime' instance will still be
                 // alive and valid, hence the ref is safe
-                current_runtime_context()->call_async(
-                    move_only_lambda([&runtime, strongThis = this->shared_from_this(), cont = std::move(c)]() mutable {
-                        strongThis->dispatch_continuation(runtime, cont);
-                    }));
+                current_runtime_context()->call_async(makeCallback(this, runtime, std::move(c)));
             }
             else
             {
                 m_continuations.push_back(std::move(c));
             }
+        }
+
+        void handle_continuation(jsi::Runtime& runtime, continuation&& c)
+        {
+            handle_continuation_impl(runtime, std::move(c),
+                [](projected_async_instance* pThis, jsi::Runtime& runtime, continuation&& c) -> std::function<void()> {
+                    return move_only_lambda(
+                        [&runtime, strongThis = pThis->shared_from_this(), cont = std::move(c)]() mutable {
+                            strongThis->dispatch_continuation(runtime, cont);
+                        });
+                });
         }
 
         void on_progress(jsi::Runtime& runtime, const jsi::Value& progress)
