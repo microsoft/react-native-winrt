@@ -2596,7 +2596,8 @@ namespace jswinrt
     }
 
     template <typename T>
-    T convert_value_to_object_instance(jsi::Runtime& runtime, const jsi::Value& value)
+    __declspec(noinline) std::optional<T> convert_value_to_object_instance_impl(jsi::Runtime& runtime,
+        const jsi::Value& value, T (*asTargetType)(const winrt::Windows::Foundation::IInspectable&))
     {
         if (value.isNull() || value.isUndefined())
         {
@@ -2608,16 +2609,29 @@ namespace jswinrt
             auto obj = value.getObject(runtime);
             if (obj.isHostObject<projected_object_instance>(runtime))
             {
-                const auto& result = obj.getHostObject<projected_object_instance>(runtime)->instance();
-                if constexpr (std::is_same_v<T, winrt::Windows::Foundation::IInspectable>)
-                {
-                    return result;
-                }
-                else
-                {
-                    return result.as<T>();
-                }
+                return asTargetType(obj.getHostObject<projected_object_instance>(runtime)->instance());
             }
+        }
+
+        return std::nullopt;
+    }
+
+    template <typename T>
+    T convert_value_to_object_instance(jsi::Runtime& runtime, const jsi::Value& value)
+    {
+        if (auto result = convert_value_to_object_instance_impl<T>(
+                runtime, value, [](const winrt::Windows::Foundation::IInspectable& insp) {
+                    if constexpr (std::is_same_v<T, winrt::Windows::Foundation::IInspectable>)
+                    {
+                        return insp;
+                    }
+                    else
+                    {
+                        return insp.as<T>();
+                    }
+                }))
+        {
+            return std::move(*result);
         }
 
         if constexpr (std::is_same_v<T, winrt::Windows::Foundation::IInspectable> ||
@@ -2663,8 +2677,7 @@ namespace jswinrt
 
         // TODO: Also IMap/IMapView?
 
-        throw jsi::JSError(
-            runtime, "TypeError: Cannot derive a WinRT interface for the JS value. Expecting: "s + typeid(T).name());
+        throw jsi::JSError(runtime, "TypeError: Cannot derive a WinRT interface for the JS value");
     }
 
     template <typename T>
