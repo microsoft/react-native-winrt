@@ -780,11 +780,11 @@ namespace jswinrt::classes::%
         throw_no_constructor(runtime, "%"sv, "%"sv, count);
     }
 
-    constexpr const static_activatable_class_data data{ "%"sv, constructor_function, %, %, % };
+    constexpr const static_activatable_class_data data{ "%"sv, "%"sv, constructor_function, %, %, % };
 }
 )^-^",
-            classData.type_def.TypeNamespace(), classData.type_def.TypeName(), classData.name,
-            classData.methods.properties.empty() ? "{}"sv : "property_data"sv,
+            classData.type_def.TypeNamespace(), classData.type_def.TypeName(), classData.type_def.TypeNamespace(),
+            classData.name, classData.methods.properties.empty() ? "{}"sv : "property_data"sv,
             classData.methods.events.empty() ? "{}"sv : "event_data"sv,
             classData.methods.functions.empty() ? "{}"sv : "function_data"sv);
     }

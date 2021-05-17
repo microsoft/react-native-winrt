@@ -1493,16 +1493,17 @@ namespace jswinrt
 
     struct static_activatable_class_data final : static_class_data
     {
-        constexpr static_activatable_class_data(std::string_view name, call_function_t constructor,
+        constexpr static_activatable_class_data(std::string_view ns, std::string_view name, call_function_t constructor,
             span<const property_mapping> properties, span<const event_mapping> events,
             span<const function_mapping> functions) :
             static_class_data(name, properties, events, functions),
-            constructor(constructor)
+            full_namespace(ns), constructor(constructor)
         {
         }
 
         virtual jsi::Value create(jsi::Runtime& runtime) const override;
 
+        std::string_view full_namespace;
         call_function_t constructor;
     };
 

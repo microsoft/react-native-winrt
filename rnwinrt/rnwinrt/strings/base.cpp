@@ -450,9 +450,18 @@ private:
 
 jsi::Value static_activatable_class_data::create(jsi::Runtime& runtime) const
 {
+    auto code = "(function() { return "s;
+    code.append(full_namespace);
+    code.append(".");
+    code.append(name);
+    code.append(".ctor.apply(this, arguments); })");
+    auto result = runtime.evaluateJavaScript(std::make_shared<jsi::StringBuffer>(std::move(code)), "Activatable Class")
+                      .asObject(runtime);
+
     // TODO: param count? Seems to not matter? It would be rather simple to calculate when generating the constructor
     // function, but would also be more data...
-    auto result = jsi::Function::createFromHostFunction(runtime, make_propid(runtime, name), 0, constructor);
+    result.setProperty(
+        runtime, "ctor", jsi::Function::createFromHostFunction(runtime, make_propid(runtime, name), 0, constructor));
 
     // JSI does not allow us to create a 'Function' that is also a 'HostObject' and therefore cannot provide virtual
     // get/set functions and instead must attach them to the function object
