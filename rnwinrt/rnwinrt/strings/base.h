@@ -613,21 +613,25 @@ namespace jswinrt
     }
 
     template <typename T>
-    auto bind_host_function(jsi::Value (T::*fn)(jsi::Runtime&, const jsi::Value*, size_t))
+    jsi::Function bind_host_function(jsi::Runtime& runtime, const jsi::PropNameID& name, unsigned int paramCount,
+        jsi::Value (T::*fn)(jsi::Runtime&, const jsi::Value*, size_t))
     {
-        return [fn](jsi::Runtime& runtime, const jsi::Value& thisValue, const jsi::Value* args, size_t count) {
-            auto strongThis = thisValue.asObject(runtime).asHostObject<T>(runtime);
-            return (strongThis.get()->*fn)(runtime, args, count);
-        };
+        return jsi::Function::createFromHostFunction(runtime, name, paramCount,
+            [fn](jsi::Runtime& runtime, const jsi::Value& thisValue, const jsi::Value* args, size_t count) {
+                auto strongThis = thisValue.asObject(runtime).asHostObject<T>(runtime);
+                return (strongThis.get()->*fn)(runtime, args, count);
+            });
     }
 
     template <typename T>
-    auto bind_host_function(jsi::Value (T::*fn)(jsi::Runtime&, const jsi::Value*, size_t) const)
+    jsi::Function bind_host_function(jsi::Runtime& runtime, const jsi::PropNameID& name, unsigned int paramCount,
+        jsi::Value (T::*fn)(jsi::Runtime&, const jsi::Value*, size_t) const)
     {
-        return [fn](jsi::Runtime& runtime, const jsi::Value& thisValue, const jsi::Value* args, size_t count) {
-            auto strongThis = thisValue.asObject(runtime).asHostObject<T>(runtime);
-            return (strongThis.get()->*fn)(runtime, args, count);
-        };
+        return jsi::Function::createFromHostFunction(runtime, name, paramCount,
+            [fn](jsi::Runtime& runtime, const jsi::Value& thisValue, const jsi::Value* args, size_t count) {
+                auto strongThis = thisValue.asObject(runtime).asHostObject<T>(runtime);
+                return (strongThis.get()->*fn)(runtime, args, count);
+            });
     }
 
     template <typename T>
@@ -1679,38 +1683,15 @@ namespace jswinrt
         // HostObject functions
         virtual jsi::Value get(jsi::Runtime& runtime, const jsi::PropNameID& id) override
         {
-            auto name = id.utf8(runtime);
-            if (name == "cancel"sv)
-            {
-                return jsi::Value(runtime, jsi::Function::createFromHostFunction(runtime, id, 0,
-                                               bind_host_function(&projected_async_instance::on_cancel)));
-            }
-            else if (name == "catch"sv)
-            {
-                return jsi::Value(runtime, jsi::Function::createFromHostFunction(runtime, id, 1,
-                                               bind_host_function(&projected_async_instance::on_catch)));
-            }
-            else if (name == "done"sv)
-            {
-                return jsi::Value(runtime, jsi::Function::createFromHostFunction(
-                                               runtime, id, 3, bind_host_function(&projected_async_instance::on_done)));
-            }
-            else if (name == "finally"sv)
-            {
-                return jsi::Value(runtime, jsi::Function::createFromHostFunction(runtime, id, 3,
-                                               bind_host_function(&projected_async_instance::on_finally)));
-            }
-            else if (name == "then"sv)
-            {
-                return jsi::Value(runtime, jsi::Function::createFromHostFunction(
-                                               runtime, id, 3, bind_host_function(&projected_async_instance::on_then)));
-            }
-            else if (name == "operation"sv)
-            {
-                return current_runtime_context()->instance_cache.get_instance(runtime, m_instance);
-            }
+            static constexpr const struct get_function_t get_functions[] = {
+                { "cancel"sv, 0, &projected_async_instance::on_cancel },
+                { "catch"sv, 1, &projected_async_instance::on_catch },
+                { "done"sv, 3, &projected_async_instance::on_done },
+                { "finally"sv, 3, &projected_async_instance::on_finally },
+                { "then"sv, 3, &projected_async_instance::on_then },
+            };
 
-            return jsi::Value::undefined();
+            return get_impl(runtime, id, get_functions);
         }
 
         virtual void set(jsi::Runtime& runtime, const jsi::PropNameID& name, const jsi::Value&) override
@@ -1735,6 +1716,29 @@ namespace jswinrt
         }
 
     private:
+        struct get_function_t
+        {
+            std::string_view name;
+            int arg_count;
+            jsi::Value (projected_async_instance::*function)(jsi::Runtime&, const jsi::Value*, size_t);
+        };
+
+        jsi::Value get_impl(jsi::Runtime& runtime, const jsi::PropNameID& id, span<const get_function_t> getFns)
+        {
+            auto name = id.utf8(runtime);
+            auto itr = std::find_if(getFns.begin(), getFns.end(), [&](auto&& pair) { return pair.name == name; });
+            if (itr != getFns.end())
+            {
+                return jsi::Value(runtime, bind_host_function(runtime, id, itr->arg_count, itr->function));
+            }
+            else if (name == "operation"sv)
+            {
+                return current_runtime_context()->instance_cache.get_instance(runtime, m_instance);
+            }
+
+            return jsi::Value::undefined();
+        }
+
         struct continuation
         {
             enum
@@ -1804,28 +1808,42 @@ namespace jswinrt
             return handle_then(runtime, undefined, count >= 1 ? args[0] : undefined);
         }
 
-        jsi::Value on_done(jsi::Runtime& runtime, const jsi::Value* args, size_t count)
+        using handle_continuation_t = void (projected_async_instance::*)(jsi::Runtime&, continuation&&);
+
+        __declspec(noinline) jsi::Value on_done_impl(
+            jsi::Runtime& runtime, const jsi::Value* args, size_t count, handle_continuation_t handleContinuation)
         {
             // Prototype: done(resolveCallback, rejectCallback, progressCallback)
             continuation c{ continuation::done_type, {},
                 { count >= 1 ? jsi::Value(runtime, args[0]) : jsi::Value::undefined(),
                     count >= 2 ? jsi::Value(runtime, args[1]) : jsi::Value::undefined(),
                     count >= 3 ? jsi::Value(runtime, args[2]) : jsi::Value::undefined() } };
-            handle_continuation(runtime, std::move(c));
+            (this->*handleContinuation)(runtime, std::move(c));
 
             return jsi::Value::undefined();
         }
 
-        jsi::Value on_finally(jsi::Runtime& runtime, const jsi::Value* args, size_t count)
+        jsi::Value on_done(jsi::Runtime& runtime, const jsi::Value* args, size_t count)
+        {
+            return on_done_impl(runtime, args, count, &projected_async_instance::handle_continuation);
+        }
+
+        __declspec(noinline) jsi::Value on_finally_impl(
+            jsi::Runtime& runtime, const jsi::Value* args, size_t count, handle_continuation_t handleContinuation)
         {
             // Prototype: finally(callback) -> Promise
             continuation c{ continuation::finally_type, promise_wrapper::create(runtime),
                 { count >= 1 ? jsi::Value(runtime, args[0]) : jsi::Value::undefined() } };
 
             auto result = jsi::Value(runtime, c.promise->get());
-            handle_continuation(runtime, std::move(c));
+            (this->*handleContinuation)(runtime, std::move(c));
 
             return result;
+        }
+
+        jsi::Value on_finally(jsi::Runtime& runtime, const jsi::Value* args, size_t count)
+        {
+            return on_finally_impl(runtime, args, count, &projected_async_instance::handle_continuation);
         }
 
         jsi::Value on_then(jsi::Runtime& runtime, const jsi::Value* args, size_t count)
@@ -1835,34 +1853,50 @@ namespace jswinrt
             return handle_then(runtime, count >= 1 ? args[0] : undefined, count >= 2 ? args[1] : undefined);
         }
 
-        jsi::Value handle_then(
-            jsi::Runtime& runtime, const jsi::Value& resolvedHandler, const jsi::Value& rejectedHandler)
+        __declspec(noinline) jsi::Value handle_then_impl(jsi::Runtime& runtime, const jsi::Value& resolvedHandler,
+            const jsi::Value& rejectedHandler, handle_continuation_t handleContinuation)
         {
             continuation c{ continuation::then_type, promise_wrapper::create(runtime),
                 { jsi::Value(runtime, resolvedHandler), jsi::Value(runtime, rejectedHandler) } };
 
             auto result = jsi::Value(runtime, c.promise->get());
-            handle_continuation(runtime, std::move(c));
+            (this->*handleContinuation)(runtime, std::move(c));
 
             return result;
         }
 
-        void handle_continuation(jsi::Runtime& runtime, continuation&& c)
+        jsi::Value handle_then(
+            jsi::Runtime& runtime, const jsi::Value& resolvedHandler, const jsi::Value& rejectedHandler)
+        {
+            return handle_then_impl(
+                runtime, resolvedHandler, rejectedHandler, &projected_async_instance::handle_continuation);
+        }
+
+        __declspec(noinline) void handle_continuation_impl(jsi::Runtime& runtime, continuation&& c,
+            std::function<void()> (*makeCallback)(projected_async_instance*, jsi::Runtime&, continuation&&))
         {
             if (m_state != state::pending)
             {
                 // NOTE: Still expected to be async
                 // NOTE: The callback will occur on the same thread, implying that the 'Runtime' instance will still be
                 // alive and valid, hence the ref is safe
-                current_runtime_context()->call_async(
-                    move_only_lambda([&runtime, strongThis = this->shared_from_this(), cont = std::move(c)]() mutable {
-                        strongThis->dispatch_continuation(runtime, cont);
-                    }));
+                current_runtime_context()->call_async(makeCallback(this, runtime, std::move(c)));
             }
             else
             {
                 m_continuations.push_back(std::move(c));
             }
+        }
+
+        void handle_continuation(jsi::Runtime& runtime, continuation&& c)
+        {
+            handle_continuation_impl(runtime, std::move(c),
+                [](projected_async_instance* pThis, jsi::Runtime& runtime, continuation&& c) -> std::function<void()> {
+                    return move_only_lambda(
+                        [&runtime, strongThis = pThis->shared_from_this(), cont = std::move(c)]() mutable {
+                            strongThis->dispatch_continuation(runtime, cont);
+                        });
+                });
         }
 
         void on_progress(jsi::Runtime& runtime, const jsi::Value& progress)
@@ -1992,6 +2026,11 @@ namespace jswinrt
     {
         array_iterator(D* target) : target(target->get_strong())
         {
+        }
+
+        winrt::hstring GetRuntimeClassName() const
+        {
+            return L"JsArrayIterator";
         }
 
         T Current()
@@ -2167,6 +2206,11 @@ namespace jswinrt
         array_vector_base<array_iterable<T>, T>
     {
         using array_vector_base<array_iterable<T>, T>::array_vector_base;
+
+        winrt::hstring GetRuntimeClassName() const
+        {
+            return L"JsArrayIterable";
+        }
     };
 
     template <typename T>
@@ -2176,6 +2220,11 @@ namespace jswinrt
         array_vector_base<array_vector_view<T>, T>
     {
         using array_vector_base<array_vector_view<T>, T>::array_vector_base;
+
+        winrt::hstring GetRuntimeClassName() const
+        {
+            return L"JsArrayVectorView";
+        }
     };
 
     template <typename T>
@@ -2185,6 +2234,11 @@ namespace jswinrt
         array_vector_base<array_vector<T>, T>
     {
         using array_vector_base<array_vector<T>, T>::array_vector_base;
+
+        winrt::hstring GetRuntimeClassName() const
+        {
+            return L"JsArrayVector";
+        }
 
         winrt::Windows::Foundation::Collections::IVectorView<T> GetView()
         {
@@ -2542,7 +2596,8 @@ namespace jswinrt
     }
 
     template <typename T>
-    T convert_value_to_object_instance(jsi::Runtime& runtime, const jsi::Value& value)
+    __declspec(noinline) std::optional<T> convert_value_to_object_instance_impl(jsi::Runtime& runtime,
+        const jsi::Value& value, T (*asTargetType)(const winrt::Windows::Foundation::IInspectable&))
     {
         if (value.isNull() || value.isUndefined())
         {
@@ -2554,16 +2609,29 @@ namespace jswinrt
             auto obj = value.getObject(runtime);
             if (obj.isHostObject<projected_object_instance>(runtime))
             {
-                const auto& result = obj.getHostObject<projected_object_instance>(runtime)->instance();
-                if constexpr (std::is_same_v<T, winrt::Windows::Foundation::IInspectable>)
-                {
-                    return result;
-                }
-                else
-                {
-                    return result.as<T>();
-                }
+                return asTargetType(obj.getHostObject<projected_object_instance>(runtime)->instance());
             }
+        }
+
+        return std::nullopt;
+    }
+
+    template <typename T>
+    T convert_value_to_object_instance(jsi::Runtime& runtime, const jsi::Value& value)
+    {
+        if (auto result = convert_value_to_object_instance_impl<T>(
+                runtime, value, [](const winrt::Windows::Foundation::IInspectable& insp) {
+                    if constexpr (std::is_same_v<T, winrt::Windows::Foundation::IInspectable>)
+                    {
+                        return insp;
+                    }
+                    else
+                    {
+                        return insp.as<T>();
+                    }
+                }))
+        {
+            return std::move(*result);
         }
 
         if constexpr (std::is_same_v<T, winrt::Windows::Foundation::IInspectable> ||
@@ -2609,8 +2677,7 @@ namespace jswinrt
 
         // TODO: Also IMap/IMapView?
 
-        throw jsi::JSError(
-            runtime, "TypeError: Cannot derive a WinRT interface for the JS value. Expecting: "s + typeid(T).name());
+        throw jsi::JSError(runtime, "TypeError: Cannot derive a WinRT interface for the JS value");
     }
 
     template <typename T>
@@ -4181,13 +4248,72 @@ namespace jswinrt
                         item_converter());
                 }
 
-                static std::pair<std::optional<jsi::Value>, std::optional<jsi::Value>> runtime_get_property(
-                    jsi::Runtime& runtime, const IInspectable& thisValue, std::string_view name)
+                static constexpr const struct array_proto_functions_t
+                {
+                    std::string_view name;
+                    call_function_t function;
+                    int arg_count;
+                } array_proto_functions[] = {
+                    { "concat"sv, &vector_concat<native_type>, 1 }, // NOTE: Cannot use Array.prototype.concat since we
+                                                                    // cannot satisfy 'IsConcatSpreadable'
+                    { "copyWithin"sv, &copyWithin, 2 }, // NOTE: Cannot use Array.prototype.copyWithin since we cannot
+                                                        // satisfy 'HasProperty'
+                    // NOTE: Forward to Array.prototype.entries since we satisfy 'CreateArrayIterator' requirements
+                    { "every"sv, &vector_every<native_type>, 1 }, // NOTE: Cannot use Array.prototype.every since we
+                                                                  // cannot satisfy 'HasProperty'
+                    // NOTE: Forward to Array.prototype.fill since we satisfy all requirements
+                    { "filter"sv, &vector_filter<native_type>, 1 }, // NOTE: Cannot use Array.prototype.filter since we
+                                                                    // cannot satisfy 'HasProperty'
+                    // NOTE: Forward to Array.prototype.find since we satisfy all requirements
+                    // NOTE: Forward to Array.prototype.findIndex since we satisfy all requirements
+                    // TODO: flat & flatMap
+                    { "forEach"sv, &vector_forEach<native_type>, 1 }, // NOTE: Cannot use Array.prototype.forEach since
+                                                                      // we cannot satisfy 'HasProperty'
+                    // NOTE: Forward to Array.prototype.includes since we satisfy all requirements
+                    // NOTE: 'indexOf' is a function that exists on IVector, so that takes precedence
+                    // NOTE: Forward to Array.prototype.join since we satisfy all requirements
+                    // NOTE: Forward to Array.prototype.keys since we satisfy all requirements
+                    { "lastIndexOf"sv, &vector_lastIndexOf<native_type>,
+                        1 }, // NOTE: Cannot use Array.prototype.lastIndexOf since we
+                             // cannot satisfy 'HasProperty'
+                    { "map"sv, &vector_map<native_type>, 1 }, // NOTE: Cannot use Array.prototype.map since we cannot
+                                                              // satisfy 'HasProperty'
+                    { "pop"sv, &pop,
+                        0 }, // NOTE: Cannot use Array.prototype.pop since we cannot satisfy 'DeletePropertyOrThrow'
+                    { "push"sv, &push,
+                        1 }, // TODO: It's not actually clear why we can't just forward to Array.prototype.push
+                    { "reduce"sv, &vector_reduce<native_type>, 1 }, // NOTE: Cannot use Array.prototype.reduce since we
+                                                                    // cannot satisfy 'HasProperty'
+                    { "reduceRight"sv, &vector_reduceRight<native_type>,
+                        1 }, // NOTE: Cannot use Array.prototype.reduceRight since we
+                             // cannot satisfy 'HasProperty'
+                    { "reverse"sv, &reverse,
+                        0 }, // NOTE: Cannot use Array.prototype.reverse since we cannot satisfy 'HasProperty'
+                    { "shift"sv, &shift,
+                        0 }, // NOTE: Cannot use Array.prototype.shift since we cannot satisfy 'HasProperty'
+                    { "slice"sv, &vector_slice<native_type>, 2 }, // NOTE: Cannot use Array.prototype.slice since we
+                                                                  // cannot satisfy 'HasProperty'
+                    { "some"sv, &vector_some<native_type>, 1 }, // NOTE: Cannot use Array.prototype.some since we cannot
+                                                                // satisfy 'HasProperty'
+                    { "sort"sv, &sort,
+                        1 }, // NOTE: Cannot use Array.prototype.sort since we cannot satisfy 'HasProperty'
+                    { "splice"sv, &splice,
+                        2 }, // NOTE: Cannot use Array.prototype.splice since we cannot satisfy 'HasProperty'
+                    // NOTE: Forward to Array.prototype.toLocaleString since we satisfy all requirements
+                    // NOTE: Forward to Array.prototype.toString since we satisfy all requirements
+                    { "unshift"sv, &unshift,
+                        1 }, // NOTE: Cannot use Array.prototype.unshift since we cannot satisfy 'HasProperty'
+                    // NOTE: Forward to Array.prototype.values since we satisfy 'CreateArrayIterator' requirements
+                };
+
+                static std::pair<std::optional<jsi::Value>, std::optional<jsi::Value>> runtime_get_property_impl(
+                    jsi::Runtime& runtime, const IInspectable& thisValue, std::string_view name,
+                    span<const array_proto_functions_t> protoFunctions, native_type (*queryThis)(const IInspectable&))
                 {
                     // If the "property" is a number, then that translates to a 'GetAt' call
                     if (auto index = index_from_name(name))
                     {
-                        auto vector = thisValue.as<native_type>();
+                        auto vector = queryThis(thisValue);
                         if (*index >= vector.Size())
                         {
                             return { jsi::Value::undefined(), std::nullopt };
@@ -4195,141 +4321,24 @@ namespace jswinrt
 
                         return { convert_native_to_value(runtime, vector.GetAt(*index)), std::nullopt };
                     }
-                    else if (name == "concat"sv)
+
+                    auto itr = std::find_if(
+                        protoFunctions.begin(), protoFunctions.end(), [&](auto& pair) { return pair.name == name; });
+                    if (itr != protoFunctions.end())
                     {
-                        // NOTE: Cannot use Array.prototype.concat since we cannot satisfy 'IsConcatSpreadable'
                         return { jsi::Function::createFromHostFunction(
-                                     runtime, make_propid(runtime, name), 1, &vector_concat<native_type>),
+                                     runtime, make_propid(runtime, name), itr->arg_count, itr->function),
                             std::nullopt };
                     }
-                    else if (name == "copyWithin"sv)
-                    {
-                        // NOTE: Cannot use Array.prototype.copyWithin since we cannot satisfy 'HasProperty'
-                        return { jsi::Function::createFromHostFunction(
-                                     runtime, make_propid(runtime, name), 2, &copyWithin),
-                            std::nullopt };
-                    }
-                    // NOTE: Forward to Array.prototype.entries since we satisfy 'CreateArrayIterator' requirements
-                    else if (name == "every"sv)
-                    {
-                        // NOTE: Cannot use Array.prototype.every since we cannot satisfy 'HasProperty'
-                        return { jsi::Function::createFromHostFunction(
-                                     runtime, make_propid(runtime, name), 1, &vector_every<native_type>),
-                            std::nullopt };
-                    }
-                    // NOTE: Forward to Array.prototype.fill since we satisfy all requirements
-                    else if (name == "filter"sv)
-                    {
-                        // NOTE: Cannot use Array.prototype.filter since we cannot satisfy 'HasProperty'
-                        return { jsi::Function::createFromHostFunction(
-                                     runtime, make_propid(runtime, name), 1, &vector_filter<native_type>),
-                            std::nullopt };
-                    }
-                    // NOTE: Forward to Array.prototype.find since we satisfy all requirements
-                    // NOTE: Forward to Array.prototype.findIndex since we satisfy all requirements
-                    // TODO: flat & flatMap
-                    else if (name == "forEach"sv)
-                    {
-                        // NOTE: Cannot use Array.prototype.forEach since we cannot satisfy 'HasProperty'
-                        return { jsi::Function::createFromHostFunction(
-                                     runtime, make_propid(runtime, name), 1, &vector_forEach<native_type>),
-                            std::nullopt };
-                    }
-                    // NOTE: Forward to Array.prototype.includes since we satisfy all requirements
-                    // NOTE: 'indexOf' is a function that exists on IVector, so that takes precedence
-                    // NOTE: Forward to Array.prototype.join since we satisfy all requirements
-                    // NOTE: Forward to Array.prototype.keys since we satisfy all requirements
-                    else if (name == "lastIndexOf"sv)
-                    {
-                        // NOTE: Cannot use Array.prototype.lastIndexOf since we cannot satisfy 'HasProperty'
-                        return { jsi::Function::createFromHostFunction(
-                                     runtime, make_propid(runtime, name), 1, &vector_lastIndexOf<native_type>),
-                            std::nullopt };
-                    }
-                    else if (name == "map"sv)
-                    {
-                        // NOTE: Cannot use Array.prototype.map since we cannot satisfy 'HasProperty'
-                        return { jsi::Function::createFromHostFunction(
-                                     runtime, make_propid(runtime, name), 1, &vector_map<native_type>),
-                            std::nullopt };
-                    }
-                    else if (name == "pop"sv)
-                    {
-                        // NOTE: Cannot use Array.prototype.pop since we cannot satisfy 'DeletePropertyOrThrow'
-                        return { jsi::Function::createFromHostFunction(runtime, make_propid(runtime, name), 0, &pop),
-                            std::nullopt };
-                    }
-                    else if (name == "push"sv)
-                    {
-                        // TODO: It's not actually clear why we can't just forward to Array.prototype.push
-                        return { jsi::Function::createFromHostFunction(runtime, make_propid(runtime, name), 1, &push),
-                            std::nullopt };
-                    }
-                    else if (name == "reduce"sv)
-                    {
-                        // NOTE: Cannot use Array.prototype.reduce since we cannot satisfy 'HasProperty'
-                        return { jsi::Function::createFromHostFunction(
-                                     runtime, make_propid(runtime, name), 1, &vector_reduce<native_type>),
-                            std::nullopt };
-                    }
-                    else if (name == "reduceRight"sv)
-                    {
-                        // NOTE: Cannot use Array.prototype.reduceRight since we cannot satisfy 'HasProperty'
-                        return { jsi::Function::createFromHostFunction(
-                                     runtime, make_propid(runtime, name), 1, &vector_reduceRight<native_type>),
-                            std::nullopt };
-                    }
-                    else if (name == "reverse"sv)
-                    {
-                        // NOTE: Cannot use Array.prototype.reverse since we cannot satisfy 'HasProperty'
-                        return { jsi::Function::createFromHostFunction(
-                                     runtime, make_propid(runtime, name), 1, &reverse),
-                            std::nullopt };
-                    }
-                    else if (name == "shift"sv)
-                    {
-                        // NOTE: Cannot use Array.prototype.shift since we cannot satisfy 'HasProperty'
-                        return { jsi::Function::createFromHostFunction(runtime, make_propid(runtime, name), 1, &shift),
-                            std::nullopt };
-                    }
-                    else if (name == "slice"sv)
-                    {
-                        // NOTE: Cannot use Array.prototype.slice since we cannot satisfy 'HasProperty'
-                        return { jsi::Function::createFromHostFunction(
-                                     runtime, make_propid(runtime, name), 1, &vector_slice<native_type>),
-                            std::nullopt };
-                    }
-                    else if (name == "some"sv)
-                    {
-                        // NOTE: Cannot use Array.prototype.some since we cannot satisfy 'HasProperty'
-                        return { jsi::Function::createFromHostFunction(
-                                     runtime, make_propid(runtime, name), 1, &vector_some<native_type>),
-                            std::nullopt };
-                    }
-                    else if (name == "sort"sv)
-                    {
-                        // NOTE: Cannot use Array.prototype.sort since we cannot satisfy 'HasProperty'
-                        return { jsi::Function::createFromHostFunction(runtime, make_propid(runtime, name), 1, &sort),
-                            std::nullopt };
-                    }
-                    else if (name == "splice"sv)
-                    {
-                        // NOTE: Cannot use Array.prototype.splice since we cannot satisfy 'HasProperty'
-                        return { jsi::Function::createFromHostFunction(runtime, make_propid(runtime, name), 2, &splice),
-                            std::nullopt };
-                    }
-                    // NOTE: Forward to Array.prototype.toLocaleString since we satisfy all requirements
-                    // NOTE: Forward to Array.prototype.toString since we satisfy all requirements
-                    else if (name == "unshift"sv)
-                    {
-                        // NOTE: Cannot use Array.prototype.unshift since we cannot satisfy 'HasProperty'
-                        return { jsi::Function::createFromHostFunction(
-                                     runtime, make_propid(runtime, name), 1, &unshift),
-                            std::nullopt };
-                    }
-                    // NOTE: Forward to Array.prototype.values since we satisfy 'CreateArrayIterator' requirements
 
                     return { std::nullopt, fwd_array_prototype(runtime, name) };
+                }
+
+                static std::pair<std::optional<jsi::Value>, std::optional<jsi::Value>> runtime_get_property(
+                    jsi::Runtime& runtime, const IInspectable& thisValue, std::string_view name)
+                {
+                    return runtime_get_property_impl(runtime, thisValue, name, array_proto_functions,
+                        [](const IInspectable& thisVal) { return thisVal.as<native_type>(); });
                 }
 
                 static bool runtime_set_property(jsi::Runtime& runtime, const IInspectable& thisValue,
@@ -4414,13 +4423,64 @@ namespace jswinrt
                         1, false },
                 };
 
-                static std::pair<std::optional<jsi::Value>, std::optional<jsi::Value>> runtime_get_property(
-                    jsi::Runtime& runtime, const IInspectable& thisValue, std::string_view name)
+                static constexpr const struct array_proto_functions_t
+                {
+                    std::string_view name;
+                    call_function_t function;
+                    int arg_count;
+                } array_proto_functions[] = {
+                    { "concat"sv, &vector_concat<native_type>, 1 }, // NOTE: Cannot use Array.prototype.concat since we
+                                                                    // cannot satisfy 'IsConcatSpreadable'
+                    // NOTE: Array.prototype.copyWithin is a modify operation. Let this fall through
+                    // NOTE: Forward to Array.prototype.entries since we satisfy 'CreateArrayIterator' requirements
+                    { "every"sv, &vector_every<native_type>, 1 }, // NOTE: Cannot use Array.prototype.every since we
+                                                                  // cannot satisfy 'HasProperty'
+                    // NOTE: Forward to Array.prototype.fill since we satisfy all requirements
+                    { "filter"sv, &vector_filter<native_type>, 1 }, // NOTE: Cannot use Array.prototype.filter since we
+                                                                    // cannot satisfy 'HasProperty'
+                    // NOTE: Forward to Array.prototype.find since we satisfy all requirements
+                    // NOTE: Forward to Array.prototype.findIndex since we satisfy all requirements
+                    // TODO: flat & flatMap
+                    { "forEach"sv, &vector_forEach<native_type>, 1 }, // NOTE: Cannot use Array.prototype.forEach since
+                                                                      // we cannot satisfy 'HasProperty'
+                    // NOTE: Forward to Array.prototype.includes since we satisfy all requirements
+                    // NOTE: 'indexOf' is a function that exists on IVector, so that takes precedence
+                    // NOTE: Forward to Array.prototype.join since we satisfy all requirements
+                    // NOTE: Forward to Array.prototype.keys since we satisfy all requirements
+                    { "lastIndexOf"sv, &vector_lastIndexOf<native_type>,
+                        1 }, // NOTE: Cannot use Array.prototype.lastIndexOf since we
+                             // cannot satisfy 'HasProperty'
+                    { "map"sv, &vector_map<native_type>, 1 }, // NOTE: Cannot use Array.prototype.map since we cannot
+                                                              // satisfy 'HasProperty'
+                    // NOTE: Array.prototype.pop is a modify operation. Let this fall through
+                    // NOTE: Array.prototype.push is a modify operation. Let this fall through
+                    { "reduce"sv, &vector_reduce<native_type>, 1 }, // NOTE: Cannot use Array.prototype.reduce since we
+                                                                    // cannot satisfy 'HasProperty'
+                    { "reduceRight"sv, &vector_reduceRight<native_type>,
+                        1 }, // NOTE: Cannot use Array.prototype.reduceRight since we
+                             // cannot satisfy 'HasProperty'
+                    // NOTE: Array.prototype.reverse is a modify operation. Let this fall through
+                    // NOTE: Array.prototype.shift is a modify operation. Let this fall through
+                    { "slice"sv, &vector_slice<native_type>, 2 }, // NOTE: Cannot use Array.prototype.slice since we
+                                                                  // cannot satisfy 'HasProperty'
+                    { "some"sv, &vector_some<native_type>, 1 }, // NOTE: Cannot use Array.prototype.some since we cannot
+                                                                // satisfy 'HasProperty'
+                    // NOTE: Array.prototype.sort is a modify operation. Let this fall through
+                    // NOTE: Array.prototype.splic is a modify operation. Let this fall through
+                    // NOTE: Forward to Array.prototype.toLocaleString since we satisfy all requirements
+                    // NOTE: Forward to Array.prototype.toString since we satisfy all requirements
+                    // NOTE: Array.prototype.unshift is a modify operation. Let this fall through
+                    // NOTE: Forward to Array.prototype.values since we satisfy 'CreateArrayIterator' requirements
+                };
+
+                static std::pair<std::optional<jsi::Value>, std::optional<jsi::Value>> runtime_get_property_impl(
+                    jsi::Runtime& runtime, const IInspectable& thisValue, std::string_view name,
+                    span<const array_proto_functions_t> protoFunctions, native_type (*queryThis)(const IInspectable&))
                 {
                     // If the "property" is a number, then that translates to a 'GetAt' call
                     if (auto index = index_from_name(name))
                     {
-                        auto vector = thisValue.as<native_type>();
+                        auto vector = queryThis(thisValue);
                         if (*index >= vector.Size())
                         {
                             return { jsi::Value::undefined(), std::nullopt };
@@ -4428,98 +4488,24 @@ namespace jswinrt
 
                         return { convert_native_to_value(runtime, vector.GetAt(*index)), std::nullopt };
                     }
-                    else if (name == "concat"sv)
+
+                    auto itr = std::find_if(
+                        protoFunctions.begin(), protoFunctions.end(), [&](auto& pair) { return pair.name == name; });
+                    if (itr != protoFunctions.end())
                     {
-                        // NOTE: Cannot use Array.prototype.concat since we cannot satisfy 'IsConcatSpreadable'
                         return { jsi::Function::createFromHostFunction(
-                                     runtime, make_propid(runtime, name), 1, &vector_concat<native_type>),
+                                     runtime, make_propid(runtime, name), itr->arg_count, itr->function),
                             std::nullopt };
                     }
-                    // NOTE: Array.prototype.copyWithin is a modify operation. Let this fall through
-                    // NOTE: Forward to Array.prototype.entries since we satisfy 'CreateArrayIterator' requirements
-                    else if (name == "every"sv)
-                    {
-                        // NOTE: Cannot use Array.prototype.every since we cannot satisfy 'HasProperty'
-                        return { jsi::Function::createFromHostFunction(
-                                     runtime, make_propid(runtime, name), 1, &vector_every<native_type>),
-                            std::nullopt };
-                    }
-                    // NOTE: Forward to Array.prototype.fill since we satisfy all requirements
-                    else if (name == "filter"sv)
-                    {
-                        // NOTE: Cannot use Array.prototype.filter since we cannot satisfy 'HasProperty'
-                        return { jsi::Function::createFromHostFunction(
-                                     runtime, make_propid(runtime, name), 1, &vector_filter<native_type>),
-                            std::nullopt };
-                    }
-                    // NOTE: Forward to Array.prototype.find since we satisfy all requirements
-                    // NOTE: Forward to Array.prototype.findIndex since we satisfy all requirements
-                    // TODO: flat & flatMap
-                    else if (name == "forEach"sv)
-                    {
-                        // NOTE: Cannot use Array.prototype.forEach since we cannot satisfy 'HasProperty'
-                        return { jsi::Function::createFromHostFunction(
-                                     runtime, make_propid(runtime, name), 1, &vector_forEach<native_type>),
-                            std::nullopt };
-                    }
-                    // NOTE: Forward to Array.prototype.includes since we satisfy all requirements
-                    // NOTE: 'indexOf' is a function that exists on IVector, so that takes precedence
-                    // NOTE: Forward to Array.prototype.join since we satisfy all requirements
-                    // NOTE: Forward to Array.prototype.keys since we satisfy all requirements
-                    else if (name == "lastIndexOf"sv)
-                    {
-                        // NOTE: Cannot use Array.prototype.lastIndexOf since we cannot satisfy 'HasProperty'
-                        return { jsi::Function::createFromHostFunction(
-                                     runtime, make_propid(runtime, name), 1, &vector_lastIndexOf<native_type>),
-                            std::nullopt };
-                    }
-                    else if (name == "map"sv)
-                    {
-                        // NOTE: Cannot use Array.prototype.map since we cannot satisfy 'HasProperty'
-                        return { jsi::Function::createFromHostFunction(
-                                     runtime, make_propid(runtime, name), 1, &vector_map<native_type>),
-                            std::nullopt };
-                    }
-                    // NOTE: Array.prototype.pop is a modify operation. Let this fall through
-                    // NOTE: Array.prototype.push is a modify operation. Let this fall through
-                    else if (name == "reduce"sv)
-                    {
-                        // NOTE: Cannot use Array.prototype.reduce since we cannot satisfy 'HasProperty'
-                        return { jsi::Function::createFromHostFunction(
-                                     runtime, make_propid(runtime, name), 1, &vector_reduce<native_type>),
-                            std::nullopt };
-                    }
-                    else if (name == "reduceRight"sv)
-                    {
-                        // NOTE: Cannot use Array.prototype.reduceRight since we cannot satisfy 'HasProperty'
-                        return { jsi::Function::createFromHostFunction(
-                                     runtime, make_propid(runtime, name), 1, &vector_reduceRight<native_type>),
-                            std::nullopt };
-                    }
-                    // NOTE: Array.prototype.reverse is a modify operation. Let this fall through
-                    // NOTE: Array.prototype.shift is a modify operation. Let this fall through
-                    else if (name == "slice"sv)
-                    {
-                        // NOTE: Cannot use Array.prototype.slice since we cannot satisfy 'HasProperty'
-                        return { jsi::Function::createFromHostFunction(
-                                     runtime, make_propid(runtime, name), 1, &vector_slice<native_type>),
-                            std::nullopt };
-                    }
-                    else if (name == "some"sv)
-                    {
-                        // NOTE: Cannot use Array.prototype.some since we cannot satisfy 'HasProperty'
-                        return { jsi::Function::createFromHostFunction(
-                                     runtime, make_propid(runtime, name), 1, &vector_some<native_type>),
-                            std::nullopt };
-                    }
-                    // NOTE: Array.prototype.sort is a modify operation. Let this fall through
-                    // NOTE: Array.prototype.splic is a modify operation. Let this fall through
-                    // NOTE: Forward to Array.prototype.toLocaleString since we satisfy all requirements
-                    // NOTE: Forward to Array.prototype.toString since we satisfy all requirements
-                    // NOTE: Array.prototype.unshift is a modify operation. Let this fall through
-                    // NOTE: Forward to Array.prototype.values since we satisfy 'CreateArrayIterator' requirements
 
                     return { std::nullopt, fwd_array_prototype(runtime, name) };
+                }
+
+                static std::pair<std::optional<jsi::Value>, std::optional<jsi::Value>> runtime_get_property(
+                    jsi::Runtime& runtime, const IInspectable& thisValue, std::string_view name)
+                {
+                    return runtime_get_property_impl(runtime, thisValue, name, array_proto_functions,
+                        [](const IInspectable& thisVal) { return thisVal.as<native_type>(); });
                 }
             };
 

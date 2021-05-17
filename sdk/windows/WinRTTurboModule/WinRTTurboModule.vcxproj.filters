@@ -8,12 +8,11 @@
     <ClCompile Include="$(GeneratedFilesDir)module.g.cpp" />
     <ClCompile Include="ReactPackageProvider.cpp" />
     <ClCompile Include="$(ModuleImplementationDir)*.cpp" />
-    <ClCompile Include="$(ModuleImplementationDir)*.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="pch.h" />
     <ClInclude Include="ReactPackageProvider.h" />
-    <ClInclude Include="..\..\..\..\rnwinrt\module\WinRTTurboModule.h" />
+    <ClInclude Include="$(ModuleImplementationDir)WinRTTurboModule.h" />
   </ItemGroup>
   <ItemGroup>
     <None Include="packages.config" />
