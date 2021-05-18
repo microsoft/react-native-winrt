@@ -92,6 +92,226 @@ namespace winrt::TestComponent::implementation
         s_boolProperty = value;
     }
 
+    char16_t Test::StaticCharProperty()
+    {
+        return m_staticCharProperty;
+    }
+
+    void Test::StaticCharProperty(char16_t value)
+    {
+        m_staticCharProperty = value;
+    }
+
+    uint8_t Test::StaticU8Property()
+    {
+        return m_staticU8Property;
+    }
+
+    void Test::StaticU8Property(uint8_t value)
+    {
+        m_staticU8Property = value;
+    }
+
+    uint16_t Test::StaticU16Property()
+    {
+        return m_staticU16Property;
+    }
+
+    void Test::StaticU16Property(uint16_t value)
+    {
+        m_staticU16Property = value;
+    }
+
+    uint32_t Test::StaticU32Property()
+    {
+        return m_staticU32Property;
+    }
+
+    void Test::StaticU32Property(uint32_t value)
+    {
+        m_staticU32Property = value;
+    }
+
+    uint64_t Test::StaticU64Property()
+    {
+        return m_staticU64Property;
+    }
+
+    void Test::StaticU64Property(uint64_t value)
+    {
+        m_staticU64Property = value;
+    }
+
+    int16_t Test::StaticS16Property()
+    {
+        return m_staticS16Property;
+    }
+
+    void Test::StaticS16Property(int16_t value)
+    {
+        m_staticS16Property = value;
+    }
+
+    int32_t Test::StaticS32Property()
+    {
+        return m_staticS32Property;
+    }
+
+    void Test::StaticS32Property(int32_t value)
+    {
+        m_staticS32Property = value;
+    }
+
+    int64_t Test::StaticS64Property()
+    {
+        return m_staticS64Property;
+    }
+
+    void Test::StaticS64Property(int64_t value)
+    {
+        m_staticS64Property = value;
+    }
+
+    float Test::StaticF32Property()
+    {
+        return m_staticF32Property;
+    }
+
+    void Test::StaticF32Property(float value)
+    {
+        m_staticF32Property = value;
+    }
+
+    double Test::StaticF64Property()
+    {
+        return m_staticF64Property;
+    }
+
+    void Test::StaticF64Property(double value)
+    {
+        m_staticF64Property = value;
+    }
+
+    hstring Test::StaticStringProperty()
+    {
+        return m_staticStringProperty;
+    }
+
+    void Test::StaticStringProperty(hstring const& value)
+    {
+        m_staticStringProperty = value;
+    }
+
+    winrt::guid Test::StaticGuidProperty()
+    {
+        return m_staticGuidProperty;
+    }
+
+    void Test::StaticGuidProperty(winrt::guid const& value)
+    {
+        m_staticGuidProperty = value;
+    }
+
+    TestEnum Test::StaticEnumProperty()
+    {
+        return m_staticEnumProperty;
+    }
+
+    void Test::StaticEnumProperty(TestEnum const& value)
+    {
+        m_staticEnumProperty = value;
+    }
+
+    NumericTypes Test::StaticNumericsStructProperty()
+    {
+        return m_staticNumericsStructProperty;
+    }
+
+    void Test::StaticNumericsStructProperty(NumericTypes const& value)
+    {
+        m_staticNumericsStructProperty = value;
+    }
+
+    StringTypes Test::StaticStringsStructProperty()
+    {
+        return m_staticStringsStructProperty;
+    }
+
+    void Test::StaticStringsStructProperty(StringTypes const& value)
+    {
+        m_staticStringsStructProperty = value;
+    }
+
+    BooleanTypes Test::StaticBooleansStructProperty()
+    {
+        return m_staticBooleansStructProperty;
+    }
+
+    void Test::StaticBooleansStructProperty(BooleanTypes const& value)
+    {
+        m_staticBooleansStructProperty = value;
+    }
+
+    CompositeType Test::StaticCompositeStructProperty()
+    {
+        return m_staticCompositeStructProperty;
+    }
+
+    void Test::StaticCompositeStructProperty(CompositeType const& value)
+    {
+        m_staticCompositeStructProperty = value;
+    }
+
+    IReference<bool> Test::StaticRefBooleanProperty()
+    {
+        return m_staticRefBoolProperty;
+    }
+
+    void Test::StaticRefBooleanProperty(IReference<bool> const& value)
+    {
+        m_staticRefBoolProperty = value;
+    }
+
+    IReference<char16_t> Test::StaticRefCharProperty()
+    {
+        return m_staticRefCharProperty;
+    }
+
+    void Test::StaticRefCharProperty(IReference<char16_t> const& value)
+    {
+        m_staticRefCharProperty = value;
+    }
+
+    IReference<int32_t> Test::StaticRefNumericProperty()
+    {
+        return m_staticRefNumericProperty;
+    }
+
+    void Test::StaticRefNumericProperty(IReference<int32_t> const& value)
+    {
+        m_staticRefNumericProperty = value;
+    }
+
+    IReference<TestEnum> Test::StaticRefEnumProperty()
+    {
+        return m_staticRefEnumProperty;
+    }
+
+    void Test::StaticRefEnumProperty(IReference<TestEnum> const& value)
+    {
+        m_staticRefEnumProperty = value;
+    }
+
+    TestComponent::TestObject Test::StaticObjectProperty()
+    {
+        return m_staticObjectProperty;
+    }
+
+    void Test::StaticObjectProperty(TestComponent::TestObject const& value)
+    {
+        m_staticObjectProperty = value;
+    }
+
     bool Test::StaticOr(bool lhs, bool rhs)
     {
         return lhs || rhs;
@@ -1648,7 +1868,7 @@ namespace winrt::TestComponent::implementation
         else
         {
             winrt::com_array<T> result(doubleArray.size());
-            for (int i = 0; i < doubleArray.size(); i++)
+            for (uint32_t i = 0; i < doubleArray.size(); i++)
             {
                 result[i] = (T)doubleArray[i];
             }
@@ -1662,7 +1882,7 @@ namespace winrt::TestComponent::implementation
         value.GetStringArray(stringArray);
 
         winrt::com_array<char16_t> result(stringArray.size());
-        for (int i = 0; i < stringArray.size(); i++)
+        for (uint32_t i = 0; i < stringArray.size(); i++)
         {
             auto stringI = stringArray[i];
             result[i] = winrt::to_string(stringI).at(0);
@@ -1676,7 +1896,7 @@ namespace winrt::TestComponent::implementation
         value.GetDoubleArray(doubleArray);
 
         winrt::com_array<winrt::TimeSpan> result(doubleArray.size());
-        for (int i = 0; i < doubleArray.size(); i++)
+        for (uint32_t i = 0; i < doubleArray.size(); i++)
         {
             result[i] = std::chrono::duration_cast<winrt::TimeSpan>(std::chrono::milliseconds((long)(doubleArray[i])));
         }
@@ -1692,43 +1912,43 @@ namespace winrt::TestComponent::implementation
         }
         else if (winrtPropertyValueType == L"UInt8")
         {
-            m_propertyValue =
-                winrt::PropertyValue::CreateUInt8(value.GetDouble()).as<winrt::Windows::Foundation::IPropertyValue>();
+            m_propertyValue = winrt::PropertyValue::CreateUInt8(static_cast<uint8_t>(value.GetDouble()))
+                                  .as<winrt::Windows::Foundation::IPropertyValue>();
         }
         else if (winrtPropertyValueType == L"Int16")
         {
-            m_propertyValue =
-                winrt::PropertyValue::CreateInt16(value.GetDouble()).as<winrt::Windows::Foundation::IPropertyValue>();
+            m_propertyValue = winrt::PropertyValue::CreateInt16(static_cast<int16_t>(value.GetDouble()))
+                                  .as<winrt::Windows::Foundation::IPropertyValue>();
         }
         else if (winrtPropertyValueType == L"UInt16")
         {
-            m_propertyValue =
-                winrt::PropertyValue::CreateUInt16(value.GetDouble()).as<winrt::Windows::Foundation::IPropertyValue>();
+            m_propertyValue = winrt::PropertyValue::CreateUInt16(static_cast<uint16_t>(value.GetDouble()))
+                                  .as<winrt::Windows::Foundation::IPropertyValue>();
         }
         else if (winrtPropertyValueType == L"Int32")
         {
-            m_propertyValue =
-                winrt::PropertyValue::CreateInt32(value.GetDouble()).as<winrt::Windows::Foundation::IPropertyValue>();
+            m_propertyValue = winrt::PropertyValue::CreateInt32(static_cast<int32_t>(value.GetDouble()))
+                                  .as<winrt::Windows::Foundation::IPropertyValue>();
         }
         else if (winrtPropertyValueType == L"UInt32")
         {
-            m_propertyValue =
-                winrt::PropertyValue::CreateUInt32(value.GetDouble()).as<winrt::Windows::Foundation::IPropertyValue>();
+            m_propertyValue = winrt::PropertyValue::CreateUInt32(static_cast<uint32_t>(value.GetDouble()))
+                                  .as<winrt::Windows::Foundation::IPropertyValue>();
         }
         else if (winrtPropertyValueType == L"Int64")
         {
-            m_propertyValue =
-                winrt::PropertyValue::CreateInt64(value.GetDouble()).as<winrt::Windows::Foundation::IPropertyValue>();
+            m_propertyValue = winrt::PropertyValue::CreateInt64(static_cast<int64_t>(value.GetDouble()))
+                                  .as<winrt::Windows::Foundation::IPropertyValue>();
         }
         else if (winrtPropertyValueType == L"UInt64")
         {
-            m_propertyValue =
-                winrt::PropertyValue::CreateUInt64(value.GetDouble()).as<winrt::Windows::Foundation::IPropertyValue>();
+            m_propertyValue = winrt::PropertyValue::CreateUInt64(static_cast<uint64_t>(value.GetDouble()))
+                                  .as<winrt::Windows::Foundation::IPropertyValue>();
         }
         else if (winrtPropertyValueType == L"Single")
         {
-            m_propertyValue =
-                winrt::PropertyValue::CreateSingle(value.GetDouble()).as<winrt::Windows::Foundation::IPropertyValue>();
+            m_propertyValue = winrt::PropertyValue::CreateSingle(static_cast<float>(value.GetDouble()))
+                                  .as<winrt::Windows::Foundation::IPropertyValue>();
         }
         else if (winrtPropertyValueType == L"Double")
         {

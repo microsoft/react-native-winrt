@@ -43,6 +43,50 @@ namespace winrt::TestComponent::implementation
 
         static bool StaticBoolProperty();
         static void StaticBoolProperty(bool value);
+        static char16_t StaticCharProperty();
+        static void StaticCharProperty(char16_t value);
+        static uint8_t StaticU8Property();
+        static void StaticU8Property(uint8_t value);
+        static uint16_t StaticU16Property();
+        static void StaticU16Property(uint16_t value);
+        static uint32_t StaticU32Property();
+        static void StaticU32Property(uint32_t value);
+        static uint64_t StaticU64Property();
+        static void StaticU64Property(uint64_t value);
+        static int16_t StaticS16Property();
+        static void StaticS16Property(int16_t value);
+        static int32_t StaticS32Property();
+        static void StaticS32Property(int32_t value);
+        static int64_t StaticS64Property();
+        static void StaticS64Property(int64_t value);
+        static float StaticF32Property();
+        static void StaticF32Property(float value);
+        static double StaticF64Property();
+        static void StaticF64Property(double value);
+        static hstring StaticStringProperty();
+        static void StaticStringProperty(hstring const& value);
+        static winrt::guid StaticGuidProperty();
+        static void StaticGuidProperty(winrt::guid const& value);
+        static TestEnum StaticEnumProperty();
+        static void StaticEnumProperty(TestEnum const& value);
+        static NumericTypes StaticNumericsStructProperty();
+        static void StaticNumericsStructProperty(NumericTypes const& value);
+        static StringTypes StaticStringsStructProperty();
+        static void StaticStringsStructProperty(StringTypes const& value);
+        static BooleanTypes StaticBooleansStructProperty();
+        static void StaticBooleansStructProperty(BooleanTypes const& value);
+        static CompositeType StaticCompositeStructProperty();
+        static void StaticCompositeStructProperty(CompositeType const& value);
+        static Windows::Foundation::IReference<bool> StaticRefBooleanProperty();
+        static void StaticRefBooleanProperty(Windows::Foundation::IReference<bool> const& value);
+        static Windows::Foundation::IReference<char16_t> StaticRefCharProperty();
+        static void StaticRefCharProperty(Windows::Foundation::IReference<char16_t> const& value);
+        static Windows::Foundation::IReference<int32_t> StaticRefNumericProperty();
+        static void StaticRefNumericProperty(Windows::Foundation::IReference<int32_t> const& value);
+        static Windows::Foundation::IReference<TestEnum> StaticRefEnumProperty();
+        static void StaticRefEnumProperty(Windows::Foundation::IReference<TestEnum> const& value);
+        static TestComponent::TestObject StaticObjectProperty();
+        static void StaticObjectProperty(TestComponent::TestObject const& value);
 
         static bool StaticOr(bool lhs, bool rhs);
         static bool StaticOrAll(array_view<bool const> values);
@@ -521,6 +565,28 @@ namespace winrt::TestComponent::implementation
     private:
         // Static properties
         inline static bool s_boolProperty = false;
+        inline static char16_t m_staticCharProperty = 0;
+        inline static uint8_t m_staticU8Property = 0;
+        inline static uint16_t m_staticU16Property = 0;
+        inline static uint32_t m_staticU32Property = 0;
+        inline static uint64_t m_staticU64Property = 0;
+        inline static int16_t m_staticS16Property = 0;
+        inline static int32_t m_staticS32Property = 0;
+        inline static int64_t m_staticS64Property = 0;
+        inline static float m_staticF32Property = 0;
+        inline static double m_staticF64Property = 0;
+        inline static hstring m_staticStringProperty;
+        inline static guid m_staticGuidProperty = {};
+        inline static TestEnum m_staticEnumProperty = TestEnum::First;
+        inline static NumericTypes m_staticNumericsStructProperty = {};
+        inline static StringTypes m_staticStringsStructProperty = {};
+        inline static BooleanTypes m_staticBooleansStructProperty = {};
+        inline static CompositeType m_staticCompositeStructProperty = {};
+        inline static Windows::Foundation::IReference<bool> m_staticRefBoolProperty;
+        inline static Windows::Foundation::IReference<char16_t> m_staticRefCharProperty;
+        inline static Windows::Foundation::IReference<int32_t> m_staticRefNumericProperty;
+        inline static Windows::Foundation::IReference<TestEnum> m_staticRefEnumProperty;
+        inline static TestComponent::TestObject m_staticObjectProperty{ nullptr };
 
         // Static event sources
         inline static event<Windows::Foundation::EventHandler<bool>> s_boolEventSource;
