@@ -372,82 +372,6 @@ jsi::Value projected_statics_class::remove_event_listener(jsi::Runtime& runtime,
     return static_remove_event_listener(runtime, args, count, m_data, m_events);
 }
 
-struct projected_property final : public jsi::HostObject
-{
-    projected_property(static_get_property_t getter, static_set_property_t setter) : m_getter(getter), m_setter(setter)
-    {
-    }
-
-    // HostObject functions
-    virtual jsi::Value get(jsi::Runtime& runtime, const jsi::PropNameID& id) override
-    {
-        auto name = id.utf8(runtime);
-        if (name == "get")
-        {
-            if (m_getFn.isUndefined())
-            {
-                m_getFn = jsi::Function::createFromHostFunction(runtime, make_propid(runtime, "get"), 0,
-                    [getter = m_getter](jsi::Runtime& runtime, const jsi::Value&, const jsi::Value*, size_t count) {
-                        if (count != 0)
-                        {
-                            throw jsi::JSError(runtime, "TypeError: Property getter expects 0 arguments");
-                        }
-
-                        return getter(runtime);
-                    });
-            }
-
-            return jsi::Value(runtime, m_getFn);
-        }
-        else if (name == "set")
-        {
-            if (m_setFn.isUndefined() && m_setter)
-            {
-                m_setFn = jsi::Function::createFromHostFunction(runtime, make_propid(runtime, "set"), 1,
-                    [setter = m_setter](
-                        jsi::Runtime& runtime, const jsi::Value&, const jsi::Value* args, size_t count) {
-                        if (count != 1)
-                        {
-                            throw jsi::JSError(runtime, "TypeError: Property setter expects 1 argument");
-                        }
-
-                        setter(runtime, args[0]);
-                        return jsi::Value::undefined();
-                    });
-            }
-
-            return jsi::Value(runtime, m_setFn);
-        }
-
-        return jsi::Value::undefined();
-    }
-
-    virtual void set(jsi::Runtime& runtime, const jsi::PropNameID& name, const jsi::Value&) override
-    {
-        throw jsi::JSError(runtime, std::string("TypeError: Cannot assign to property '") + name.utf8(runtime) +
-                                        "' of a projected property definition");
-    }
-
-    virtual std::vector<jsi::PropNameID> getPropertyNames(jsi::Runtime& runtime) override
-    {
-        std::vector<jsi::PropNameID> result;
-        if (m_setter)
-        {
-            result.reserve(2);
-            result.push_back(make_propid(runtime, "set"));
-        }
-
-        result.push_back(make_propid(runtime, "get"));
-        return result;
-    }
-
-private:
-    static_get_property_t m_getter;
-    jsi::Value m_getFn;
-    static_set_property_t m_setter;
-    jsi::Value m_setFn;
-};
-
 jsi::Value static_activatable_class_data::create(jsi::Runtime& runtime) const
 {
     auto code = "(function() { return "s;
@@ -469,9 +393,34 @@ jsi::Value static_activatable_class_data::create(jsi::Runtime& runtime) const
         runtime.global().getPropertyAsFunction(runtime, "Object").getPropertyAsFunction(runtime, "defineProperty");
     for (auto&& prop : properties)
     {
-        defineProperty.call(runtime, result, make_string(runtime, prop.name),
-            jsi::Value(runtime, jsi::Object::createFromHostObject(
-                                    runtime, std::make_shared<projected_property>(prop.getter, prop.setter))));
+        jsi::Object propDesc(runtime);
+        propDesc.setProperty(runtime, "get",
+            jsi::Function::createFromHostFunction(runtime, make_propid(runtime, "get"), 0,
+                [getter = prop.getter](jsi::Runtime& runtime, const jsi::Value&, const jsi::Value*, size_t count) {
+                    if (count != 0)
+                    {
+                        throw jsi::JSError(runtime, "TypeError: Property getter expects 0 arguments");
+                    }
+
+                    return getter(runtime);
+                }));
+        if (prop.setter)
+        {
+            propDesc.setProperty(runtime, "set",
+                jsi::Function::createFromHostFunction(runtime, make_propid(runtime, "set"), 1,
+                    [setter = prop.setter](
+                        jsi::Runtime& runtime, const jsi::Value&, const jsi::Value* args, size_t count) {
+                        if (count != 1)
+                        {
+                            throw jsi::JSError(runtime, "TypeError: Property setter expects 1 argument");
+                        }
+
+                        setter(runtime, args[0]);
+                        return jsi::Value::undefined();
+                    }));
+        }
+
+        defineProperty.call(runtime, result, make_string(runtime, prop.name), std::move(propDesc));
     }
 
     for (auto&& fn : functions)
