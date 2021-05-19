@@ -150,16 +150,17 @@ namespace TestComponent
         static Windows.Foundation.IReference<Int32> StaticRefNumericProperty;
         static Windows.Foundation.IReference<TestEnum> StaticRefEnumProperty;
         static TestObject StaticObjectProperty;
-        // static Windows.Foundation.DateTime DateTimeProperty;
-        // static String DateTimePropertyCppValue();
-        // static Windows.Foundation.TimeSpan TimeSpanProperty;
-        // static String TimeSpanPropertyCppValue();
-        // static HRESULT HResultProperty;
-        // static Windows.Foundation.IPropertyValue PropertyValue;
-        // static String PropertyValueCppType { get; };
-        // static void AssignPropertyValueAsType(Windows.Foundation.IPropertyValue value, String winrtPropertyValueType);
 
-        // TODO: Static array properties, once static properties work
+        // Static array properties
+        static Boolean[] StaticBooleanArrayProperty;
+        static Char[] StaticCharArrayProperty;
+        static Int32[] StaticNumericArrayProperty;
+        static String[] StaticStringArrayProperty;
+        static Guid[] StaticGuidArrayProperty;
+        static TestEnum[] StaticEnumArrayProperty;
+        static CompositeType[] StaticCompositeStructArrayProperty;
+        static Windows.Foundation.IReference<Int32>[] StaticRefArrayProperty;
+        static TestObject[] StaticObjectArrayProperty;
 
         // Static functions
         static Boolean StaticOr(Boolean lhs, Boolean rhs);

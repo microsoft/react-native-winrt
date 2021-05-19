@@ -36,6 +36,17 @@ export function makePropertiesTestScenarios(pThis) {
         new TestScenario('Test::StaticRefEnumProperty', runStaticRefEnumProperty.bind(pThis)),
         new TestScenario('Test::StaticObjectProperty', runStaticObjectProperty.bind(pThis)),
 
+        // Static array properties
+        new TestScenario('Test::StaticBooleanArrayProperty', runStaticBooleanArrayProperty.bind(pThis)),
+        new TestScenario('Test::StaticCharArrayProperty', runStaticCharArrayProperty.bind(pThis)),
+        new TestScenario('Test::StaticNumericArrayProperty', runStaticNumericArrayProperty.bind(pThis)),
+        new TestScenario('Test::StaticStringArrayProperty', runStaticStringArrayProperty.bind(pThis)),
+        new TestScenario('Test::StaticGuidArrayProperty', runStaticGuidArrayProperty.bind(pThis)),
+        new TestScenario('Test::StaticEnumArrayProperty', runStaticEnumArrayProperty.bind(pThis)),
+        new TestScenario('Test::StaticCompositeStructArrayProperty', runStaticCompositeStructArrayProperty.bind(pThis)),
+        new TestScenario('Test::StaticRefArrayProperty', runStaticRefArrayProperty.bind(pThis)),
+        new TestScenario('Test::StaticObjectArrayProperty', runStaticObjectArrayProperty.bind(pThis)),
+
         // Static properties for non-activable class
         new TestScenario('Static StaticOnlyTest::BoolProperty', runStaticBoolPropertyForNonActivableClass.bind(pThis)),
         new TestScenario('Static StaticOnlyTest::CharProperty', runStaticCharPropertyForNonActivableClass.bind(pThis)),
@@ -261,7 +272,55 @@ function runStaticObjectProperty(scenario) {
     runSyncObjectPropertyTest.call(this, scenario, TestValues.s32.valid, () => TestComponent.Test.staticObjectProperty, (val) => TestComponent.Test.staticObjectProperty = val);
 }
 
-//Static Properties for non activable classes
+// Static array properties
+function runStaticBooleanArrayProperty(scenario) {
+    runSyncPropertyTest.call(this, scenario, 'object', TestValues.bools.validArrays, TestValues.bools.invalidArrays, () => TestComponent.Test.staticBooleanArrayProperty, (val) => TestComponent.Test.staticBooleanArrayProperty = val);
+}
+
+function runStaticCharArrayProperty(scenario) {
+    runSyncPropertyTest.call(this, scenario, 'object', TestValues.chars.validArrays, TestValues.chars.invalidArrays, () => TestComponent.Test.staticCharArrayProperty, (val) => TestComponent.Test.staticCharArrayProperty = val);
+}
+
+function runStaticNumericArrayProperty(scenario) {
+    runSyncPropertyTest.call(this, scenario, 'object', TestValues.s32.validArrays, TestValues.s32.invalidArrays, () => TestComponent.Test.staticNumericArrayProperty, (val) => TestComponent.Test.staticNumericArrayProperty = val);
+}
+
+function runStaticStringArrayProperty(scenario) {
+    runSyncPropertyTest.call(this, scenario, 'object', TestValues.strings.validArrays, TestValues.strings.invalidArrays, () => TestComponent.Test.staticStringArrayProperty, (val) => TestComponent.Test.staticStringArrayProperty = val);
+}
+
+function runStaticGuidArrayProperty(scenario) {
+    runSyncPropertyTest.call(this, scenario, 'object', TestValues.guids.validArrays, TestValues.guids.invalidArrays, () => TestComponent.Test.staticGuidArrayProperty, (val) => TestComponent.Test.staticGuidArrayProperty = val);
+}
+
+function runStaticEnumArrayProperty(scenario) {
+    runSyncPropertyTest.call(this, scenario, 'object', TestValues.enums.validArrays, TestValues.enums.invalidArrays, () => TestComponent.Test.staticEnumArrayProperty, (val) => TestComponent.Test.staticEnumArrayProperty = val);
+}
+
+function runStaticCompositeStructArrayProperty(scenario) {
+    runSyncPropertyTest.call(this, scenario, 'object', TestValues.composite.validArrays, TestValues.composite.invalidArrays, () => TestComponent.Test.staticCompositeStructArrayProperty, (val) => TestComponent.Test.staticCompositeStructArrayProperty = val);
+}
+
+function runStaticRefArrayProperty(scenario) {
+    runSyncPropertyTest.call(this, scenario, 'object',
+        [[], [42], [0, 1, 2, 3, 4, 5, 6, 7, 8, 9], TestValues.s32.valid],
+        [42, ['A'], [true], ['42'], TestValues.s32.invalid],
+        () => TestComponent.Test.staticRefArrayProperty, (val) => TestComponent.Test.staticRefArrayProperty = val);
+}
+
+function runStaticObjectArrayProperty(scenario) {
+    this.runSync(scenario, () => {
+        var array = TestValues.s32.valid.map(val => new TestComponent.TestObject(val));
+        TestComponent.Test.staticObjectArrayProperty = array;
+        var curr = TestComponent.Test.staticObjectArrayProperty;
+        assert.equal(curr.length, array.length);
+        for (var i = 0; i < array.length; ++i) {
+            assert.isTrue(curr[i] == array[i]);
+        }
+    });
+}
+
+// Static Properties for non activable classes
 function runStaticBoolPropertyForNonActivableClass(scenario) {
     runSyncPropertyTest.call(this, scenario, 'boolean', TestValues.bools.valid, TestValues.bools.invalid, () => TestComponent.StaticOnlyTest.boolProperty, (val) => TestComponent.StaticOnlyTest.boolProperty = val);
 }

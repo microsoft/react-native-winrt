@@ -312,6 +312,96 @@ namespace winrt::TestComponent::implementation
         m_staticObjectProperty = value;
     }
 
+    com_array<bool> Test::StaticBooleanArrayProperty()
+    {
+        return com_array<bool>(m_staticBoolArrayProperty);
+    }
+
+    void Test::StaticBooleanArrayProperty(array_view<bool const> value)
+    {
+        m_staticBoolArrayProperty.assign(value.begin(), value.end());
+    }
+
+    com_array<char16_t> Test::StaticCharArrayProperty()
+    {
+        return com_array<char16_t>(m_staticCharArrayProperty);
+    }
+
+    void Test::StaticCharArrayProperty(array_view<char16_t const> value)
+    {
+        m_staticCharArrayProperty.assign(value.begin(), value.end());
+    }
+
+    com_array<int32_t> Test::StaticNumericArrayProperty()
+    {
+        return com_array<int32_t>(m_staticNumericArrayProperty);
+    }
+
+    void Test::StaticNumericArrayProperty(array_view<int32_t const> value)
+    {
+        m_staticNumericArrayProperty.assign(value.begin(), value.end());
+    }
+
+    com_array<hstring> Test::StaticStringArrayProperty()
+    {
+        return com_array<hstring>(m_staticStringArrayProperty);
+    }
+
+    void Test::StaticStringArrayProperty(array_view<hstring const> value)
+    {
+        m_staticStringArrayProperty.assign(value.begin(), value.end());
+    }
+
+    com_array<winrt::guid> Test::StaticGuidArrayProperty()
+    {
+        return com_array<guid>(m_staticGuidArrayProperty);
+    }
+
+    void Test::StaticGuidArrayProperty(array_view<winrt::guid const> value)
+    {
+        m_staticGuidArrayProperty.assign(value.begin(), value.end());
+    }
+
+    com_array<TestEnum> Test::StaticEnumArrayProperty()
+    {
+        return com_array<TestEnum>(m_staticEnumArrayProperty);
+    }
+
+    void Test::StaticEnumArrayProperty(array_view<TestEnum const> value)
+    {
+        m_staticEnumArrayProperty.assign(value.begin(), value.end());
+    }
+
+    com_array<CompositeType> Test::StaticCompositeStructArrayProperty()
+    {
+        return com_array<CompositeType>(m_staticCompositeStructArrayProperty);
+    }
+
+    void Test::StaticCompositeStructArrayProperty(array_view<CompositeType const> value)
+    {
+        m_staticCompositeStructArrayProperty.assign(value.begin(), value.end());
+    }
+
+    com_array<IReference<int32_t>> Test::StaticRefArrayProperty()
+    {
+        return com_array<IReference<int32_t>>(m_staticRefArrayProperty);
+    }
+
+    void Test::StaticRefArrayProperty(array_view<IReference<int32_t> const> value)
+    {
+        m_staticRefArrayProperty.assign(value.begin(), value.end());
+    }
+
+    com_array<TestComponent::TestObject> Test::StaticObjectArrayProperty()
+    {
+        return com_array<TestComponent::TestObject>(m_staticObjectArrayProperty);
+    }
+
+    void Test::StaticObjectArrayProperty(array_view<TestComponent::TestObject const> value)
+    {
+        m_staticObjectArrayProperty.assign(value.begin(), value.end());
+    }
+
     bool Test::StaticOr(bool lhs, bool rhs)
     {
         return lhs || rhs;

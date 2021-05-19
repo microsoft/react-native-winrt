@@ -88,6 +88,25 @@ namespace winrt::TestComponent::implementation
         static TestComponent::TestObject StaticObjectProperty();
         static void StaticObjectProperty(TestComponent::TestObject const& value);
 
+        static com_array<bool> StaticBooleanArrayProperty();
+        static void StaticBooleanArrayProperty(array_view<bool const> value);
+        static com_array<char16_t> StaticCharArrayProperty();
+        static void StaticCharArrayProperty(array_view<char16_t const> value);
+        static com_array<int32_t> StaticNumericArrayProperty();
+        static void StaticNumericArrayProperty(array_view<int32_t const> value);
+        static com_array<hstring> StaticStringArrayProperty();
+        static void StaticStringArrayProperty(array_view<hstring const> value);
+        static com_array<winrt::guid> StaticGuidArrayProperty();
+        static void StaticGuidArrayProperty(array_view<winrt::guid const> value);
+        static com_array<TestEnum> StaticEnumArrayProperty();
+        static void StaticEnumArrayProperty(array_view<TestEnum const> value);
+        static com_array<CompositeType> StaticCompositeStructArrayProperty();
+        static void StaticCompositeStructArrayProperty(array_view<CompositeType const> value);
+        static com_array<Windows::Foundation::IReference<int32_t>> StaticRefArrayProperty();
+        static void StaticRefArrayProperty(array_view<Windows::Foundation::IReference<int32_t> const> value);
+        static com_array<TestComponent::TestObject> StaticObjectArrayProperty();
+        static void StaticObjectArrayProperty(array_view<TestComponent::TestObject const> value);
+
         static bool StaticOr(bool lhs, bool rhs);
         static bool StaticOrAll(array_view<bool const> values);
         static int32_t StaticAdd(int32_t lhs, int32_t rhs);
@@ -587,6 +606,15 @@ namespace winrt::TestComponent::implementation
         inline static Windows::Foundation::IReference<int32_t> m_staticRefNumericProperty;
         inline static Windows::Foundation::IReference<TestEnum> m_staticRefEnumProperty;
         inline static TestComponent::TestObject m_staticObjectProperty{ nullptr };
+        inline static std::vector<bool> m_staticBoolArrayProperty;
+        inline static std::vector<char16_t> m_staticCharArrayProperty;
+        inline static std::vector<int32_t> m_staticNumericArrayProperty;
+        inline static std::vector<hstring> m_staticStringArrayProperty;
+        inline static std::vector<guid> m_staticGuidArrayProperty;
+        inline static std::vector<TestEnum> m_staticEnumArrayProperty;
+        inline static std::vector<CompositeType> m_staticCompositeStructArrayProperty;
+        inline static std::vector<Windows::Foundation::IReference<int32_t>> m_staticRefArrayProperty;
+        inline static std::vector<TestComponent::TestObject> m_staticObjectArrayProperty;
 
         // Static event sources
         inline static event<Windows::Foundation::EventHandler<bool>> s_boolEventSource;
@@ -626,6 +654,10 @@ namespace winrt::TestComponent::implementation
         Windows::Foundation::IReference<int32_t> m_refNumericProperty;
         Windows::Foundation::IReference<TestEnum> m_refEnumProperty;
         TestComponent::TestObject m_objectProperty{ nullptr };
+        Windows::Foundation::DateTime m_dateTimeProperty;
+        Windows::Foundation::TimeSpan m_timeSpanProperty;
+        hresult m_hresultProperty;
+        Windows::Foundation::IPropertyValue m_propertyValue;
         std::vector<bool> m_boolArrayProperty;
         std::vector<char16_t> m_charArrayProperty;
         std::vector<int32_t> m_numericArrayProperty;
@@ -635,10 +667,6 @@ namespace winrt::TestComponent::implementation
         std::vector<CompositeType> m_compositeStructArrayProperty;
         std::vector<Windows::Foundation::IReference<int32_t>> m_refArrayProperty;
         std::vector<TestComponent::TestObject> m_objectArrayProperty;
-        Windows::Foundation::DateTime m_dateTimeProperty;
-        Windows::Foundation::TimeSpan m_timeSpanProperty;
-        hresult m_hresultProperty;
-        Windows::Foundation::IPropertyValue m_propertyValue;
 
         // Non-static event sources
         event<Windows::Foundation::TypedEventHandler<TestComponent::Test, bool>> m_boolEventSource;
