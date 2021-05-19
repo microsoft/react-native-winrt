@@ -12,7 +12,40 @@ export function makePropertiesTestScenarios(pThis) {
     return [
         // Static properties for activable class
         // TODO: Figure out why static properties are not working: https://github.com/microsoft/jswinrt/issues/7
-        // new TestScenario('Test::StaticBoolProperty', runStaticBoolProperty.bind(pThis)),
+        new TestScenario('Test::StaticBoolProperty', runStaticBoolProperty.bind(pThis)),
+        new TestScenario('Test::StaticCharProperty', runStaticCharProperty.bind(pThis)),
+        new TestScenario('Test::StaticU8Property', runStaticU8Property.bind(pThis)),
+        new TestScenario('Test::StaticU16Property', runStaticU16Property.bind(pThis)),
+        new TestScenario('Test::StaticU32Property', runStaticU32Property.bind(pThis)),
+        new TestScenario('Test::StaticU64Property', runStaticU64Property.bind(pThis)),
+        new TestScenario('Test::StaticS16Property', runStaticS16Property.bind(pThis)),
+        new TestScenario('Test::StaticS32Property', runStaticS32Property.bind(pThis)),
+        new TestScenario('Test::StaticS64Property', runStaticS64Property.bind(pThis)),
+        new TestScenario('Test::StaticF32Property', runStaticF32Property.bind(pThis)),
+        new TestScenario('Test::StaticF64Property', runStaticF64Property.bind(pThis)),
+        new TestScenario('Test::StaticStringProperty', runStaticStringProperty.bind(pThis)),
+        new TestScenario('Test::StaticGuidProperty', runStaticGuidProperty.bind(pThis)),
+        new TestScenario('Test::StaticEnumProperty', runStaticEnumProperty.bind(pThis)),
+        new TestScenario('Test::StaticNumericsStructProperty', runStaticNumericsStructProperty.bind(pThis)),
+        new TestScenario('Test::StaticStringsStructProperty', runStaticStringsStructProperty.bind(pThis)),
+        new TestScenario('Test::StaticBooleansStructProperty', runStaticBooleansStructProperty.bind(pThis)),
+        new TestScenario('Test::StaticCompositeStructProperty', runStaticCompositeStructProperty.bind(pThis)),
+        new TestScenario('Test::StaticRefBooleanProperty', runStaticRefBooleanProperty.bind(pThis)),
+        new TestScenario('Test::StaticRefCharProperty', runStaticRefCharProperty.bind(pThis)),
+        new TestScenario('Test::StaticRefNumericProperty', runStaticRefNumericProperty.bind(pThis)),
+        new TestScenario('Test::StaticRefEnumProperty', runStaticRefEnumProperty.bind(pThis)),
+        new TestScenario('Test::StaticObjectProperty', runStaticObjectProperty.bind(pThis)),
+
+        // Static array properties
+        new TestScenario('Test::StaticBooleanArrayProperty', runStaticBooleanArrayProperty.bind(pThis)),
+        new TestScenario('Test::StaticCharArrayProperty', runStaticCharArrayProperty.bind(pThis)),
+        new TestScenario('Test::StaticNumericArrayProperty', runStaticNumericArrayProperty.bind(pThis)),
+        new TestScenario('Test::StaticStringArrayProperty', runStaticStringArrayProperty.bind(pThis)),
+        new TestScenario('Test::StaticGuidArrayProperty', runStaticGuidArrayProperty.bind(pThis)),
+        new TestScenario('Test::StaticEnumArrayProperty', runStaticEnumArrayProperty.bind(pThis)),
+        new TestScenario('Test::StaticCompositeStructArrayProperty', runStaticCompositeStructArrayProperty.bind(pThis)),
+        new TestScenario('Test::StaticRefArrayProperty', runStaticRefArrayProperty.bind(pThis)),
+        new TestScenario('Test::StaticObjectArrayProperty', runStaticObjectArrayProperty.bind(pThis)),
 
         // Static properties for non-activable class
         new TestScenario('Static StaticOnlyTest::BoolProperty', runStaticBoolPropertyForNonActivableClass.bind(pThis)),
@@ -146,14 +179,148 @@ function runSyncObjectPropertyTest(scenario, vals, get, set) {
     });
 }
 
-
-
 // Static properties for activable classes
 function runStaticBoolProperty(scenario) {
     runSyncPropertyTest.call(this, scenario, 'boolean', TestValues.bools.valid, TestValues.bools.invalid, () => TestComponent.Test.staticBoolProperty, (val) => TestComponent.Test.staticBoolProperty = val);
 }
 
-//Static Properties for non activable classes
+function runStaticCharProperty(scenario) {
+    runSyncPropertyTest.call(this, scenario, 'string', TestValues.chars.valid, TestValues.chars.invalid, () => TestComponent.Test.staticCharProperty, (val) => TestComponent.Test.staticCharProperty = val);
+}
+
+function runStaticU8Property(scenario) {
+    runSyncPropertyTest.call(this, scenario, 'number', TestValues.u8.valid, TestValues.u8.invalid, () => TestComponent.Test.staticU8Property, (val) => TestComponent.Test.staticU8Property = val);
+}
+
+function runStaticU16Property(scenario) {
+    runSyncPropertyTest.call(this, scenario, 'number', TestValues.u16.valid, TestValues.u16.invalid, () => TestComponent.Test.staticU16Property, (val) => TestComponent.Test.staticU16Property = val);
+}
+
+function runStaticU32Property(scenario) {
+    runSyncPropertyTest.call(this, scenario, 'number', TestValues.u32.valid, TestValues.u32.invalid, () => TestComponent.Test.staticU32Property, (val) => TestComponent.Test.staticU32Property = val);
+}
+
+function runStaticU64Property(scenario) {
+    runSyncPropertyTest.call(this, scenario, 'number', TestValues.u64.valid, TestValues.u64.invalid, () => TestComponent.Test.staticU64Property, (val) => TestComponent.Test.staticU64Property = val);
+}
+
+function runStaticS16Property(scenario) {
+    runSyncPropertyTest.call(this, scenario, 'number', TestValues.s16.valid, TestValues.s16.invalid, () => TestComponent.Test.staticS16Property, (val) => TestComponent.Test.staticS16Property = val);
+}
+
+function runStaticS32Property(scenario) {
+    runSyncPropertyTest.call(this, scenario, 'number', TestValues.s32.valid, TestValues.s32.invalid, () => TestComponent.Test.staticS32Property, (val) => TestComponent.Test.staticS32Property = val);
+}
+
+function runStaticS64Property(scenario) {
+    runSyncPropertyTest.call(this, scenario, 'number', TestValues.s64.valid, TestValues.s64.invalid, () => TestComponent.Test.staticS64Property, (val) => TestComponent.Test.staticS64Property = val);
+}
+
+function runStaticF32Property(scenario) {
+    runSyncPropertyTest.call(this, scenario, 'number', TestValues.f32.valid, TestValues.f32.invalid, () => TestComponent.Test.staticF32Property, (val) => TestComponent.Test.staticF32Property = val);
+}
+
+function runStaticF64Property(scenario) {
+    runSyncPropertyTest.call(this, scenario, 'number', TestValues.f64.valid, [], () => TestComponent.Test.staticF64Property, (val) => TestComponent.Test.staticF64Property = val);
+}
+
+function runStaticStringProperty(scenario) {
+    runSyncPropertyTest.call(this, scenario, 'string', TestValues.strings.valid, [], () => TestComponent.Test.staticStringProperty, (val) => TestComponent.Test.staticStringProperty = val);
+}
+
+function runStaticGuidProperty(scenario) {
+    runSyncPropertyTest.call(this, scenario, 'string', TestValues.guids.valid, TestValues.guids.invalid, () => TestComponent.Test.staticGuidProperty, (val) => TestComponent.Test.staticGuidProperty = val);
+}
+
+function runStaticEnumProperty(scenario) {
+    runSyncPropertyTest.call(this, scenario, 'number', TestValues.enums.valid, TestValues.enums.invalid, () => TestComponent.Test.staticEnumProperty, (val) => TestComponent.Test.staticEnumProperty = val);
+}
+
+function runStaticNumericsStructProperty(scenario) {
+    runSyncPropertyTest.call(this, scenario, 'object', TestValues.numericTypes.valid, TestValues.numericTypes.invalid, () => TestComponent.Test.staticNumericsStructProperty, (val) => TestComponent.Test.staticNumericsStructProperty = val);
+}
+
+function runStaticStringsStructProperty(scenario) {
+    runSyncPropertyTest.call(this, scenario, 'object', TestValues.stringTypes.valid, TestValues.stringTypes.invalid, () => TestComponent.Test.staticStringsStructProperty, (val) => TestComponent.Test.staticStringsStructProperty = val);
+}
+
+function runStaticBooleansStructProperty(scenario) {
+    runSyncPropertyTest.call(this, scenario, 'object', TestValues.boolTypes.valid, TestValues.boolTypes.invalid, () => TestComponent.Test.staticBooleansStructProperty, (val) => TestComponent.Test.staticBooleansStructProperty = val);
+}
+
+function runStaticCompositeStructProperty(scenario) {
+    runSyncPropertyTest.call(this, scenario, 'object', TestValues.composite.valid, TestValues.composite.invalid, () => TestComponent.Test.staticCompositeStructProperty, (val) => TestComponent.Test.staticCompositeStructProperty = val);
+}
+
+function runStaticRefBooleanProperty(scenario) {
+    runSyncRefPropertyTest.call(this, scenario, TestValues.bools.valid, () => TestComponent.Test.staticRefBooleanProperty, (val) => TestComponent.Test.staticRefBooleanProperty = val);
+}
+
+function runStaticRefCharProperty(scenario) {
+    runSyncRefPropertyTest.call(this, scenario, TestValues.chars.valid, () => TestComponent.Test.staticRefCharProperty, (val) => TestComponent.Test.staticRefCharProperty = val);
+}
+
+function runStaticRefNumericProperty(scenario) {
+    runSyncRefPropertyTest.call(this, scenario, TestValues.s32.valid, () => TestComponent.Test.staticRefNumericProperty, (val) => TestComponent.Test.staticRefNumericProperty = val);
+}
+
+function runStaticRefEnumProperty(scenario) {
+    runSyncRefPropertyTest.call(this, scenario, TestValues.enums.valid, () => TestComponent.Test.staticRefEnumProperty, (val) => TestComponent.Test.staticRefEnumProperty = val);
+}
+
+function runStaticObjectProperty(scenario) {
+    runSyncObjectPropertyTest.call(this, scenario, TestValues.s32.valid, () => TestComponent.Test.staticObjectProperty, (val) => TestComponent.Test.staticObjectProperty = val);
+}
+
+// Static array properties
+function runStaticBooleanArrayProperty(scenario) {
+    runSyncPropertyTest.call(this, scenario, 'object', TestValues.bools.validArrays, TestValues.bools.invalidArrays, () => TestComponent.Test.staticBooleanArrayProperty, (val) => TestComponent.Test.staticBooleanArrayProperty = val);
+}
+
+function runStaticCharArrayProperty(scenario) {
+    runSyncPropertyTest.call(this, scenario, 'object', TestValues.chars.validArrays, TestValues.chars.invalidArrays, () => TestComponent.Test.staticCharArrayProperty, (val) => TestComponent.Test.staticCharArrayProperty = val);
+}
+
+function runStaticNumericArrayProperty(scenario) {
+    runSyncPropertyTest.call(this, scenario, 'object', TestValues.s32.validArrays, TestValues.s32.invalidArrays, () => TestComponent.Test.staticNumericArrayProperty, (val) => TestComponent.Test.staticNumericArrayProperty = val);
+}
+
+function runStaticStringArrayProperty(scenario) {
+    runSyncPropertyTest.call(this, scenario, 'object', TestValues.strings.validArrays, TestValues.strings.invalidArrays, () => TestComponent.Test.staticStringArrayProperty, (val) => TestComponent.Test.staticStringArrayProperty = val);
+}
+
+function runStaticGuidArrayProperty(scenario) {
+    runSyncPropertyTest.call(this, scenario, 'object', TestValues.guids.validArrays, TestValues.guids.invalidArrays, () => TestComponent.Test.staticGuidArrayProperty, (val) => TestComponent.Test.staticGuidArrayProperty = val);
+}
+
+function runStaticEnumArrayProperty(scenario) {
+    runSyncPropertyTest.call(this, scenario, 'object', TestValues.enums.validArrays, TestValues.enums.invalidArrays, () => TestComponent.Test.staticEnumArrayProperty, (val) => TestComponent.Test.staticEnumArrayProperty = val);
+}
+
+function runStaticCompositeStructArrayProperty(scenario) {
+    runSyncPropertyTest.call(this, scenario, 'object', TestValues.composite.validArrays, TestValues.composite.invalidArrays, () => TestComponent.Test.staticCompositeStructArrayProperty, (val) => TestComponent.Test.staticCompositeStructArrayProperty = val);
+}
+
+function runStaticRefArrayProperty(scenario) {
+    runSyncPropertyTest.call(this, scenario, 'object',
+        [[], [42], [0, 1, 2, 3, 4, 5, 6, 7, 8, 9], TestValues.s32.valid],
+        [42, ['A'], [true], ['42'], TestValues.s32.invalid],
+        () => TestComponent.Test.staticRefArrayProperty, (val) => TestComponent.Test.staticRefArrayProperty = val);
+}
+
+function runStaticObjectArrayProperty(scenario) {
+    this.runSync(scenario, () => {
+        var array = TestValues.s32.valid.map(val => new TestComponent.TestObject(val));
+        TestComponent.Test.staticObjectArrayProperty = array;
+        var curr = TestComponent.Test.staticObjectArrayProperty;
+        assert.equal(curr.length, array.length);
+        for (var i = 0; i < array.length; ++i) {
+            assert.isTrue(curr[i] == array[i]);
+        }
+    });
+}
+
+// Static Properties for non activable classes
 function runStaticBoolPropertyForNonActivableClass(scenario) {
     runSyncPropertyTest.call(this, scenario, 'boolean', TestValues.bools.valid, TestValues.bools.invalid, () => TestComponent.StaticOnlyTest.boolProperty, (val) => TestComponent.StaticOnlyTest.boolProperty = val);
 }
@@ -255,51 +422,6 @@ function runBoolProperty(scenario) {
     runSyncPropertyTest.call(this, scenario, 'boolean', TestValues.bools.valid, TestValues.bools.invalid, () => this.test.boolProperty, (val) => this.test.boolProperty = val);
 }
 
-function runDateTimeProperty(scenario) {
-    this.runSync(scenario, () => {
-        for (let i = 0; i < TestValues.dates.valid.length; i++) {
-            let assignedValue = TestValues.dates.valid[i];
-            this.test.dateTimeProperty = assignedValue;
-            assert.equal(TestValues.dates.cppValuesForValidDates[i], this.test.dateTimePropertyCppValue());
-            let returnedValue = this.test.dateTimeProperty;
-            assert.equal(assignedValue, returnedValue);
-        }
-    });
-}
-
-function runTimeSpanProperty(scenario) {
-    this.runSync(scenario, () => {
-        for (let i = 0; i < TestValues.timeSpans.valid.length; i++) {
-            let assignedValue = TestValues.timeSpans.valid[i];
-            this.test.timeSpanProperty = assignedValue;
-            assert.equal(TestValues.timeSpans.cppValuesForValidTimeSpans[i], this.test.timeSpanPropertyCppValue());
-            let returnedValue = this.test.timeSpanProperty;
-            assert.equal(assignedValue, returnedValue);
-        }
-    });
-}
-
-function runPropertyValueProperty(scenario) {
-    this.runSync(scenario, () => {
-        for (let i = 0; i < TestValues.propertyValues.valid.length; i++) {
-            let assignedValue = TestValues.propertyValues.valid[i];
-            this.test.propertyValue = assignedValue;
-            let returnedValue = this.test.propertyValue;
-            assert.equal(assignedValue, returnedValue);
-        }
-        for (let [value, type] of TestValues.propertyValues.validValueTypePairs)
-        {
-            this.test.assignPropertyValueAsType(value, type);
-            assert.equal(this.test.propertyValue, value);
-            assert.equal(this.test.propertyValueCppType, type);     
-        }
-    });
-}
-
-function runHResultProperty(scenario) {
-    runSyncPropertyTest.call(this, scenario, 'number', TestValues.hResults.valid, TestValues.hResults.invalid, () => this.test.hResultProperty, (val) => this.test.hResultProperty = val);
-}
-
 function runCharProperty(scenario) {
     runSyncPropertyTest.call(this, scenario, 'string', TestValues.chars.valid, TestValues.chars.invalid, () => this.test.charProperty, (val) => this.test.charProperty = val);
 }
@@ -386,6 +508,51 @@ function runRefEnumProperty(scenario) {
 
 function runObjectProperty(scenario) {
     runSyncObjectPropertyTest.call(this, scenario, TestValues.s32.valid, () => this.test.objectProperty, (val) => this.test.objectProperty = val);
+}
+
+function runDateTimeProperty(scenario) {
+    this.runSync(scenario, () => {
+        for (let i = 0; i < TestValues.dates.valid.length; i++) {
+            let assignedValue = TestValues.dates.valid[i];
+            this.test.dateTimeProperty = assignedValue;
+            assert.equal(TestValues.dates.cppValuesForValidDates[i], this.test.dateTimePropertyCppValue());
+            let returnedValue = this.test.dateTimeProperty;
+            assert.equal(assignedValue, returnedValue);
+        }
+    });
+}
+
+function runTimeSpanProperty(scenario) {
+    this.runSync(scenario, () => {
+        for (let i = 0; i < TestValues.timeSpans.valid.length; i++) {
+            let assignedValue = TestValues.timeSpans.valid[i];
+            this.test.timeSpanProperty = assignedValue;
+            assert.equal(TestValues.timeSpans.cppValuesForValidTimeSpans[i], this.test.timeSpanPropertyCppValue());
+            let returnedValue = this.test.timeSpanProperty;
+            assert.equal(assignedValue, returnedValue);
+        }
+    });
+}
+
+function runPropertyValueProperty(scenario) {
+    this.runSync(scenario, () => {
+        for (let i = 0; i < TestValues.propertyValues.valid.length; i++) {
+            let assignedValue = TestValues.propertyValues.valid[i];
+            this.test.propertyValue = assignedValue;
+            let returnedValue = this.test.propertyValue;
+            assert.equal(assignedValue, returnedValue);
+        }
+        for (let [value, type] of TestValues.propertyValues.validValueTypePairs)
+        {
+            this.test.assignPropertyValueAsType(value, type);
+            assert.equal(this.test.propertyValue, value);
+            assert.equal(this.test.propertyValueCppType, type);
+        }
+    });
+}
+
+function runHResultProperty(scenario) {
+    runSyncPropertyTest.call(this, scenario, 'number', TestValues.hResults.valid, TestValues.hResults.invalid, () => this.test.hResultProperty, (val) => this.test.hResultProperty = val);
 }
 
 // Non-static array properties

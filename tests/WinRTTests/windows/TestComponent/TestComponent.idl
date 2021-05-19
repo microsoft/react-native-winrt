@@ -123,10 +123,44 @@ namespace TestComponent
         static void LogFailures(String failures);
 
         // Static properties
-        static Boolean StaticBoolProperty;
-        // TODO: More, but static properties don't seem to work
+        static Boolean StaticBoolProperty { get; };
+        [contract(TestContract, 2)]
+        {
+            static Boolean StaticBoolProperty { set; };
+        }
+        static Char StaticCharProperty;
+        static UInt8 StaticU8Property;
+        static UInt16 StaticU16Property;
+        static UInt32 StaticU32Property;
+        static UInt64 StaticU64Property;
+        static Int16 StaticS16Property;
+        static Int32 StaticS32Property;
+        static Int64 StaticS64Property;
+        static Single StaticF32Property;
+        static Double StaticF64Property;
+        static String StaticStringProperty;
+        static Guid StaticGuidProperty;
+        static TestEnum StaticEnumProperty;
+        static NumericTypes StaticNumericsStructProperty;
+        static StringTypes StaticStringsStructProperty;
+        static BooleanTypes StaticBooleansStructProperty;
+        static CompositeType StaticCompositeStructProperty;
+        static Windows.Foundation.IReference<Boolean> StaticRefBooleanProperty;
+        static Windows.Foundation.IReference<Char> StaticRefCharProperty;
+        static Windows.Foundation.IReference<Int32> StaticRefNumericProperty;
+        static Windows.Foundation.IReference<TestEnum> StaticRefEnumProperty;
+        static TestObject StaticObjectProperty;
 
-        // TODO: Static array properties, once static properties work
+        // Static array properties
+        static Boolean[] StaticBooleanArrayProperty;
+        static Char[] StaticCharArrayProperty;
+        static Int32[] StaticNumericArrayProperty;
+        static String[] StaticStringArrayProperty;
+        static Guid[] StaticGuidArrayProperty;
+        static TestEnum[] StaticEnumArrayProperty;
+        static CompositeType[] StaticCompositeStructArrayProperty;
+        static Windows.Foundation.IReference<Int32>[] StaticRefArrayProperty;
+        static TestObject[] StaticObjectArrayProperty;
 
         // Static functions
         static Boolean StaticOr(Boolean lhs, Boolean rhs);
@@ -372,7 +406,7 @@ namespace TestComponent
 
         // Member properties
         Boolean BoolProperty { get; };
-        [contract(TestContract, 2)] 
+        [contract(TestContract, 2)]
         {
             Boolean BoolProperty { set; };
         }
@@ -549,7 +583,7 @@ namespace TestComponent
         void RaiseObjectEvent(TestObject value);
     }
 
-    [contract(TestContract, 1)] 
+    [contract(TestContract, 1)]
     runtimeclass StaticOnlyTest
     {
         // Static properties
