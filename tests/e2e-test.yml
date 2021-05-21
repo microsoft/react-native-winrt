@@ -33,7 +33,6 @@ jobs:
         inputs:
           targetType: filePath
           filePath: $(Build.SourcesDirectory)\\tests\\TestArtifacts\\enableHermes.ps1
-          arguments: -buildDir '$(Build.SourcesDirectory)'
         condition: eq('${{ parameters.useHermes }}', 'true')
 
       - task: VSBuild@1

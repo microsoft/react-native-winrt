@@ -1,6 +1,1 @@
-[CmdLetBinding()]
-Param(
-    [string] $buildDir
-)
-
-Copy-Item $buildDir\tests\TestArtifacts\ExperimentalFeatures.props -Destination $buildDir\tests\WinRTTests\windows
+Copy-Item $PSScriptRoot\ExperimentalFeatures.props -Destination $PSScriptRoot\..\WinRTTests\windows
