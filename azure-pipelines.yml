@@ -94,7 +94,7 @@ jobs:
 
   - template: tests/e2e-test.yml
     parameters:
-      jobName: E2ETest
+      jobName: E2ETestHermes
       buildEnvironment: PullRequest
       dependsOn: Build
       useHermes: true
