@@ -1,0 +1,1 @@
+Copy-Item $PSScriptRoot\ExperimentalFeatures.props -Destination $PSScriptRoot\..\WinRTTests\windows

@@ -27,14 +27,13 @@ async function updateJumpListAsync(): Promise<void> {
         const customCategoryName = "Custom Category";
         {
             const date = new Date();
-            const customCategoryItem = StartScreenApi.JumpListItem.createWithArguments("custom1", `Updated at ${date.toLocaleTimeString()} on ${date.toLocaleDateString()}`);
+            const customCategoryItem = StartScreenApi.JumpListItem.createWithArguments("custom1", `Updated at ${date.toTimeString()} on ${date.toDateString()}`);
             customCategoryItem.groupName = customCategoryName;
             customCategoryItem.logo = new Windows.Foundation.Uri("ms-appx:///Assets/Square44x44Logo.png");
             items.append(customCategoryItem);
         }
 
         {
-            const date = new Date();
             const customCategoryItem = StartScreenApi.JumpListItem.createWithArguments("custom2", `Proof JumpList is still updating!`);
             customCategoryItem.description = "and that IAsyncOperation and IVector are reflected correctly!";
             customCategoryItem.groupName = customCategoryName;
@@ -43,7 +42,6 @@ async function updateJumpListAsync(): Promise<void> {
         }
 
         {
-            const date = new Date();
             const customCategoryItem = StartScreenApi.JumpListItem.createWithArguments("custom3", `We should handle app launcher args too`);
             customCategoryItem.description = "to prove that JumpList will work fully end-to-end beyond WinRT projections.";
             customCategoryItem.groupName = customCategoryName;
