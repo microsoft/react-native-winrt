@@ -92,6 +92,13 @@ jobs:
       buildEnvironment: PullRequest
       dependsOn: Build
 
+  - template: tests/e2e-test.yml
+    parameters:
+      jobName: E2ETest
+      buildEnvironment: PullRequest
+      dependsOn: Build
+      useHermes: true
+
   - job: Publish
     dependsOn: E2ETest
     steps:

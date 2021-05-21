@@ -28,6 +28,14 @@ jobs:
           feedsToUse: 'config'
           nugetConfigPath: ''
 
+      - task: PowerShell@2
+        displayName: "Enable Hermes if selected"
+        inputs:
+          targetType: filePath
+          filePath: $(Build.SourcesDirectory)\\tests\\TestArtifacts\\enableHermes.ps1
+          arguments: -buildDir '$(Build.SourcesDirectory)'
+        condition: eq('${{ parameters.useHermes }}', 'true')
+
       - task: VSBuild@1
         displayName: 'Build solution WinRTTests.sln'
         continueOnError: true
