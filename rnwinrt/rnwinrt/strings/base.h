@@ -4190,7 +4190,7 @@ namespace jswinrt
                     deleteCount -= assignCount;
                     insertCount -= assignCount;
 
-                    jsi::Array result(runtime, deleteCount);
+                    jsi::Array result(runtime, deleteCount + assignCount);
                     uint32_t i = 0;
                     while (assignCount-- > 0)
                     {

@@ -146,7 +146,8 @@ export function makeCollectionsTestScenarios(pThis) {
 
         // Vectors behave like arrays
         new TestScenario('IVector behaves like Array', runVectorAsArrayTest.bind(pThis)),
-        new TestScenario('IVectorView behaves like Array', runVectorViewAsArrayTest.bind(pThis)),
+        // This test verifies behaviors that should not work.  Disabled because it causes Hermes to crash.
+        // new TestScenario('IVectorView behaves like Array', runVectorViewAsArrayTest.bind(pThis)),
         new TestScenario('IMap with string keys behaves like JS object', runIMapAsJSObjectTest.bind(pThis)),
         new TestScenario('IMapView with string keys behaves like readonly JS object', runIMapViewAsReadonlyJSObject.bind(pThis)),
     ];
