@@ -146,8 +146,7 @@ export function makeCollectionsTestScenarios(pThis) {
 
         // Vectors behave like arrays
         new TestScenario('IVector behaves like Array', runVectorAsArrayTest.bind(pThis)),
-        // This test verifies behaviors that should not work.  Disabled because it causes Hermes to crash.
-        // new TestScenario('IVectorView behaves like Array', runVectorViewAsArrayTest.bind(pThis)),
+        new TestScenario('IVectorView behaves like Array', runVectorViewAsArrayTest.bind(pThis)),
         new TestScenario('IMap with string keys behaves like JS object', runIMapAsJSObjectTest.bind(pThis)),
         new TestScenario('IMapView with string keys behaves like readonly JS object', runIMapViewAsReadonlyJSObject.bind(pThis)),
     ];
@@ -1484,6 +1483,8 @@ function runVectorViewAsArrayTest(scenario) {
     this.runSync(scenario, () => {
         doCommonVectorAsArrayTest(TestComponent.Test.copyNumericsToVectorView);
 
+        // This test verifies behaviors that should not work.  Disabled because it causes Hermes to crash.
+        /*
         // TODO: Should we guarantee the presence/absence of exceptions?
         const swallowExceptions = (fn) => { try { fn(); } catch {} };
 
@@ -1534,6 +1535,7 @@ function runVectorViewAsArrayTest(scenario) {
         // Array.prototype.splice
         swallowExceptions(() => view.splice(1, 2, 42));
         verifyVectorContents(view, numericVectorContents);
+        */
     });
 }
 
