@@ -1,6 +1,6 @@
 #
 jobs:
-  - job: E2ETest
+  - job: ${{ parameters.jobName }}
     dependsOn:
       - ${{ parameters.dependsOn }}
     displayName: E2E Test
