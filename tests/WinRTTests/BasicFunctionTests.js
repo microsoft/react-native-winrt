@@ -81,6 +81,8 @@ export function makeBasicFunctionTestScenarios(pThis) {
 
         //Static methods for non activable classes
         new TestScenario('StaticOnlyTest::CopyString', runStaticMethodForNonActivableMethod.bind(pThis)),
+
+        new TestScenario('Object Identity', runObjectIdentityTest.bind(pThis)),
     ];
 }
 
@@ -671,5 +673,13 @@ function runInterwovenParams(scenario) {
 function runStaticMethodForNonActivableMethod(scenario) {
     this.runSync(scenario, () => {
         assert.equal("Hello", TestComponent.StaticOnlyTest.copyString("Hello"));
+    });
+}
+
+function runObjectIdentityTest(scenario) {
+    this.runSync(scenario, () => {
+        const testObject = new TestComponent.TestObject(2);
+        const testObjectAsSerializable = testObject.asSerializable();
+        assert.isTrue(testObject === testObjectAsSerializable);
     });
 }

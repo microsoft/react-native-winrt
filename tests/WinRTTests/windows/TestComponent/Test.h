@@ -16,6 +16,16 @@ namespace winrt::TestComponent::implementation
             return m_value;
         }
 
+        winrt::hstring Serialize()
+        {
+            return L"TestObject:::" + winrt::to_hstring(m_value);
+        }
+
+        ISerializable AsSerializable()
+        {
+            return *this;
+        }
+
     private:
         int32_t m_value;
     };

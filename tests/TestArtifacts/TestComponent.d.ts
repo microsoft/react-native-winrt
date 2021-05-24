@@ -58,6 +58,10 @@ declare namespace TestComponent {
         overloadedHierarchyBaseMethod(param1: string, param2: string): string;
     }
 
+    interface ISerializable {
+        serialize(): string;
+    }
+
     type InterwovenDelegate = (inBool: boolean, inNumeric: number, inArray: number[]) => { outBool: boolean; outNumeric: number; outArray: number[]; fillArray: number[]; returnValue: number };
     
     type NumericArrayDelegate = (values: number[]) => { subset: number[]; outValue: number[]; returnValue: number[] };
@@ -483,9 +487,11 @@ declare namespace TestComponent {
         fourth,
     }
 
-    class TestObject {
+    class TestObject implements TestComponent.ISerializable {
         readonly value: number;
         constructor(val: number);
+        asSerializable(): TestComponent.ISerializable;
+        serialize(): string;
     }
 
 }
