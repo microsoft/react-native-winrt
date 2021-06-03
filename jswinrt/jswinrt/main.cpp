@@ -32,7 +32,7 @@ namespace
     {
         std::cout << R"(React Native WinRT )" << CPPWINRT_VERSION_STRING << std::endl;
         std::cout << R"(Copyright (c) Microsoft Corporation. All rights reserved.)" << std::endl;
-        std::cout << R"(  rnwinrt.exe [options...])" << std::endl << std::endl;
+        std::cout << R"(  jswinrt.exe [options...])" << std::endl << std::endl;
         std::cout << R"(Options:)" << std::endl;
 
         for (const auto& option : c_commandOptions)

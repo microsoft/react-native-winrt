@@ -19,10 +19,10 @@
     <CppWinRTGenerateWindowsMetadata>true</CppWinRTGenerateWindowsMetadata>
     <CppWinRTVerbosity>high</CppWinRTVerbosity>
     <CppWinRTParameters>-base</CppWinRTParameters>
-    <RnWinRTParameters>-include Windows</RnWinRTParameters>
-    <RnWinRTPath>$(SolutionDir)x64\Release\</RnWinRTPath>
-    <RnWinRTExe>$(RnWinRTPath)rnwinrt.exe</RnWinRTExe>
-    <RnWinRTVerbosity>high</RnWinRTVerbosity>
+    <JsWinRTParameters>-include Windows</JsWinRTParameters>
+    <JsWinRTPath>$(SolutionDir)x64\Release\</JsWinRTPath>
+    <JsWinRTExe>$(JsWinRTPath)jswinrt.exe</JsWinRTExe>
+    <JsWinRTVerbosity>high</JsWinRTVerbosity>
   </PropertyGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.Default.props" />
   <ItemGroup Label="ProjectConfigurations">
@@ -76,7 +76,7 @@
   </PropertyGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.props" />
   <PropertyGroup>
-    <ModuleImplementationDir>..\..\..\rnwinrt\module\</ModuleImplementationDir>
+    <ModuleImplementationDir>..\..\..\jswinrt\module\</ModuleImplementationDir>
   </PropertyGroup>
   <Import Project="..\..\node_modules\react-native-windows\PropertySheets\external\Microsoft.ReactNative.Uwp.CppLib.props" Condition="Exists('..\..\node_modules\react-native-windows\PropertySheets\External\Microsoft.ReactNative.Uwp.CppLib.props')" />
   <ItemDefinitionGroup>
@@ -140,7 +140,7 @@
     <Midl Include="WinRTTurboModule.idl" />
   </ItemGroup>
   <ItemGroup>
-    <ProjectReference Include="..\..\..\rnwinrt\rnwinrt\rnwinrt.vcxproj">
+    <ProjectReference Include="..\..\..\jswinrt\jswinrt\jswinrt.vcxproj">
       <Project>{249A6C52-D3DF-4B3C-BF7C-9DD62C267CB0}</Project>
     </ProjectReference>
   </ItemGroup>

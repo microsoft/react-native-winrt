@@ -4,7 +4,7 @@
   <PropertyGroup Label="Globals">
     <VCProjectVersion>15.0</VCProjectVersion>
     <ProjectGuid>{249A6C52-D3DF-4B3C-BF7C-9DD62C267CB0}</ProjectGuid>
-    <RootNamespace>rnwinrt</RootNamespace>
+    <RootNamespace>jswinrt</RootNamespace>
     <WindowsTargetPlatformVersion>10.0</WindowsTargetPlatformVersion>
     <!-- TODO: This is to ensure that VS will re-run msbuild each time we "build". Otherwise changes to base.h/cpp might
          not get recompiled... This slows compilation down slightly, but is net goodness -->

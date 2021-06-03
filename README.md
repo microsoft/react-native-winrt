@@ -23,7 +23,7 @@ JavaScript WinRT (JS/WinRT) is a module for React Native Windows which provides 
 * Add `import './WinRTTurboModule';` to your project's index.js.
 * Add `PackageProviders().Append(winrt::WinRTTurboModule::ReactPackageProvider());` to your project's App.cpp
 * Add `#include <winrt\WinRTTurboModule.h>` to your project's pch.h
-* Create `WinRTTurboModule.js` under your project (next to index.js) and copy the contents of [rnwinrt/js/WinRTTurboModule.js](./rnwinrt/js/WinRTTurboModule.js) to it.  This should be something like the following:
+* Create `WinRTTurboModule.js` under your project (next to index.js) and copy the contents of [jswinrt/js/WinRTTurboModule.js](./jswinrt/js/WinRTTurboModule.js) to it.  This should be something like the following:
 ```
     import * as TurboModuleRegistry from 'react-native/Libraries/TurboModule/TurboModuleRegistry';
     const module = TurboModuleRegistry.get('WinRTTurboModule');
@@ -32,9 +32,9 @@ JavaScript WinRT (JS/WinRT) is a module for React Native Windows which provides 
     }
     export default module;
 ```
-* Add `-include [winrt namespaces]` inside <RnWinRTParamters> in your WinRTTurboModule.vcxproj. Ex:
+* Add `-include [winrt namespaces]` inside <JsWinRTParameters> in your WinRTTurboModule.vcxproj. Ex:
 ```
-    <RnWinRTParameters>-include Windows.Globalization</RnWinRTParameters>
+    <JsWinRTParameters>-include Windows.Globalization</JsWinRTParameters>
 ```
 # Contributing
 
