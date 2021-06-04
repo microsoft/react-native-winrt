@@ -149,7 +149,7 @@
     <Error Condition="!Exists('$(SolutionDir)\packages\Microsoft.Windows.ImplementationLibrary.1.0.210204.1\build\native\Microsoft.Windows.ImplementationLibrary.targets')" Text="$([System.String]::Format('$(ErrorText)', '$(SolutionDir)\packages\Microsoft.Windows.ImplementationLibrary.1.0.210204.1\build\native\Microsoft.Windows.ImplementationLibrary.targets'))" />
   </Target>
   <Target Name="Deploy" />
-  <Target Name="BuildStrings" AfterTargets="PrepareForBuild" Inputs="./strings/base.h;./strings/base.cpp" Outputs="$(OutputPath)/strings.h">
-    <Exec Command="&quot;$(OutputPath)strings.exe&quot; ./strings &quot;$(OutputPath.TrimEnd('\'))&quot;" />
+  <Target Name="BuildStrings" AfterTargets="PrepareForBuild" Inputs="./react/strings/base.h;./react/strings/base.cpp" Outputs="$(OutputPath)/rnwinrt_strings.h">
+    <Exec Command="&quot;$(OutputPath)strings.exe&quot; ./react/strings &quot;$(OutputPath)rnwinrt_strings.h&quot; rnwinrt" />
   </Target>
 </Project>

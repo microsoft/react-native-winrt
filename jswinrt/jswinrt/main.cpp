@@ -9,7 +9,10 @@ namespace
 {
     constexpr Option c_commandOptions[]{
         { "input", Option::NoMinArgs, Option::NoMaxArgs, "<spec>", "Windows metadata to include in projection" },
-        { "reference" }, // Has the same effect as "input" with RN/WinRT and is include here to match C++/WinRT.
+        { "reference" }, // Has the same effect as "input" with JS/WinRT and is include here to match C++/WinRT.
+        { "reactnative", Option::NoMinArgs, 0, {},
+            "Generates C++ projection files for use in a React Native Windows TurboModule" },
+        { "nodejs", Option::NoMinArgs, 0, {}, "Generates C++ projection files for use in a Node JS addon" },
         { "output", Option::NoMinArgs, 1, "<path>", "Location of generated code" },
         { "tsoutput", Option::NoMinArgs, 1, "<path>", "Location of generated typescript type files" },
         { "include", Option::NoMinArgs, Option::NoMaxArgs, "<prefix>",

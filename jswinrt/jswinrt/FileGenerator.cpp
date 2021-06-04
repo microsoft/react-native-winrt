@@ -6,7 +6,7 @@
 #include "TypescriptWriter.h"
 #include "Writer.h"
 
-#include <strings.h>
+#include <rnwinrt_strings.h>
 
 using namespace winmd::reader;
 
@@ -1229,7 +1229,7 @@ void write_namespace_cpp_files(const Settings& settings, const projection_data& 
 
 void write_base_files(const Settings& settings)
 {
-    for (auto& data : file_strings)
+    for (auto& data : rnwinrt::file_strings)
     {
         jswinrt_file_writer writer(settings.OutputFolder / data.file_name);
         for (auto& str : data.file_contents)

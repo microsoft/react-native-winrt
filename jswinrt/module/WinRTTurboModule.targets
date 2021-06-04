@@ -20,11 +20,13 @@ Copyright (C) Microsoft Corporation. All rights reserved.
         <GeneratedFilesDir Condition="'$(GeneratedFilesDir)' == ''">$(IntDir)Generated Files\</GeneratedFilesDir>
         <TsOutDir Condition="'$(TsOutDir)' == ''">$(GeneratedFilesDir)types\</TsOutDir>
 
+        <JsWinRTTarget Condition="'$(JsWinRTTarget)' == ''">ReactNative</JsWinRTTarget>
+
         <!-- Note: Before* targets run before Compute* targets. -->
-        <BeforeClCompileTargets>
+        <BeforeClCompileTargets Condition="'$(JsWinRTTarget)' == 'ReactNative'">
             $(BeforeClCompileTargets);RnWinRTMakeProjections;
         </BeforeClCompileTargets>
-        <BuildDependsOn>
+        <BuildDependsOn Condition="'$(JsWinRTTarget)' == 'ReactNative'">
             RnWinRTAddGeneratedCppFiles;
             $(BuildDependsOn)
         </BuildDependsOn>
@@ -122,6 +124,8 @@ Copyright (C) Microsoft Corporation. All rights reserved.
         </ItemGroup>
         <PropertyGroup>
             <_JswinrtParameters>$(JsWinRTCommandVerbosity) $(JsWinRTParameters)</_JswinrtParameters>
+            <_JswinrtParameters Condition="'$(JsWinRTTarget)' == 'ReactNative'">$(_JswinrtParameters) -reactnative</_JswinrtParameters>
+            <_JswinrtParameters Condition="'$(JsWinRTTarget)' == 'NodeJS'">$(_JswinrtParameters) -nodejs</_JswinrtParameters>
             <_JswinrtParameters>$(_JswinrtParameters) @(_JswinrtInputs->'-in &quot;%(WinMDPath)&quot;', '&#x0d;&#x0a;')</_JswinrtParameters>
             <_JswinrtParameters>$(_JswinrtParameters) -out &quot;$(GeneratedFilesDir).&quot; -tsoutput &quot;$(TsOutDir).&quot; </_JswinrtParameters>
         </PropertyGroup>

@@ -38,10 +38,10 @@ int write_file_contents(FILE* outFile, const std::filesystem::path& inFilePath);
 
 int main(int argc, char** argv)
 {
-    if (argc != 3)
+    if (argc < 3)
     {
         std::printf("ERROR: Improper usage\n");
-        std::printf("ERROR:     strings.exe <inputPath> <outputPath>\n");
+        std::printf("ERROR:     strings.exe <inputPath> <outputPath> [namespace]\n");
         return ERROR_INVALID_PARAMETER;
     }
 
@@ -108,7 +108,17 @@ int main(int argc, char** argv)
 
 #include <string_view>
 
-using namespace std::literals;
+)^-^"))
+    {
+        return errno;
+    }
+
+    if ((argc >= 4) && !print_file(outFile, "namespace %s {\n\n", argv[3]))
+    {
+        return errno;
+    }
+
+    if (!write_file(outFile, R"^-^(using namespace std::literals;
 
 struct file_data
 {
@@ -151,6 +161,11 @@ inline const file_data file_strings[] =
     }
 
     if (!write_file(outFile, "};\n"))
+    {
+        return errno;
+    }
+
+    if ((argc >= 4) && !write_file(outFile, "\n}\n"))
     {
         return errno;
     }
