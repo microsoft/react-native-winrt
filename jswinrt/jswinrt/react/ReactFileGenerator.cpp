@@ -58,14 +58,14 @@ static void write_rnwinrt_projections_cpp_file(const Settings& settings, const p
 
     // 'root_namespaces' definition
     writer.write(R"^-^(
-namespace jswinrt
+namespace rnwinrt
 {
     static constexpr const static_namespace_data* const root_namespace_data[] = {
 )^-^");
 
     for (auto& ns : data.root_namespaces)
     {
-        writer.write_fmt("        &jswinrt::namespaces::%::data,\n", ns->name);
+        writer.write_fmt("        &rnwinrt::namespaces::%::data,\n", ns->name);
     }
 
     writer.write(R"^-^(    };
@@ -81,7 +81,7 @@ namespace jswinrt
     for (auto iface : data.interfaces)
     {
         writer.write_fmt(
-            "\n        { winrt::guid_of<winrt::%>(), &jswinrt::interfaces::% },",
+            "\n        { winrt::guid_of<winrt::%>(), &rnwinrt::interfaces::% },",
             [&](jswinrt::writer& w) { iface->write_cpp_name(w, ""sv); },
             [&](jswinrt::writer& w) { iface->write_cpp_name(w, "::data"sv); });
 #if 1 // For IID gen validation
@@ -117,7 +117,7 @@ static void write_rnwinrt_value_converters_decls(jswinrt::writer& writer, const 
         // Now write the specializations; the function definitions will go in each namespace's cpp file
         writer.write(R"^-^(}
 
-namespace jswinrt
+namespace rnwinrt
 {)^-^");
 
         for (auto& structDef : ns.struct_children)
@@ -185,7 +185,7 @@ static void write_rnwinrt_namespace_headers(const Settings& settings, const name
 
 #include "base.h"
 
-namespace jswinrt::namespaces::%
+namespace rnwinrt::namespaces::%
 {
     extern const static_namespace_data data;
 }
@@ -196,7 +196,7 @@ namespace jswinrt::namespaces::%
     if (!ns.enum_children.empty())
     {
         writer.write_fmt(R"^-^(
-namespace jswinrt::enums::%
+namespace rnwinrt::enums::%
 {)^-^",
             jswinrt::cpp_namespace{ &ns });
 
@@ -218,7 +218,7 @@ namespace jswinrt::enums::%
     if (!ns.class_children.empty())
     {
         writer.write_fmt(R"^-^(
-namespace jswinrt::classes::%
+namespace rnwinrt::classes::%
 {)^-^",
             jswinrt::cpp_namespace{ &ns });
 
@@ -241,7 +241,7 @@ namespace jswinrt::classes::%
     if (!ns.interface_children.empty())
     {
         writer.write_fmt(R"^-^(
-namespace jswinrt::interfaces::%
+namespace rnwinrt::interfaces::%
 {)^-^",
             jswinrt::cpp_namespace{ &ns });
 
@@ -398,7 +398,7 @@ static void write_rnwinrt_native_out_params(jswinrt::writer& writer, const funct
 static void write_rnwinrt_enum_projection_data(jswinrt::writer& writer, const enum_projection_data& enumData)
 {
     writer.write_fmt(R"^-^(
-namespace jswinrt::enums::%
+namespace rnwinrt::enums::%
 {
     static constexpr const static_enum_data::value_mapping mappings[] = {)^-^",
         jswinrt::cpp_typename{ enumData.type_def });
@@ -425,7 +425,7 @@ namespace jswinrt::enums::%
 static void write_rnwinrt_class_projection_data(jswinrt::writer& writer, const class_projection_data& classData)
 {
     writer.write_fmt(R"^-^(
-namespace jswinrt::classes::%
+namespace rnwinrt::classes::%
 {)^-^",
         jswinrt::cpp_typename{ classData.type_def });
 
@@ -622,7 +622,7 @@ namespace jswinrt::classes::%
 static void write_rnwinrt_interface_projection_data(jswinrt::writer& writer, const interface_projection_data& ifaceData)
 {
     writer.write_fmt(R"^-^(
-namespace jswinrt::interfaces::%
+namespace rnwinrt::interfaces::%
 {)^-^",
         jswinrt::cpp_typename{ ifaceData.type_def });
 
@@ -792,7 +792,7 @@ static void write_rnwinrt_namespace_cpp_files(const Settings& settings, const na
     // would need to do this recursively "up the chain". For now we'll avoid this complexity. The net result is that
     // we'll have some JS objects representing "empty" namespaces, but that's not a huge deal
     writer.write_fmt(R"^-^(
-namespace jswinrt::namespaces::%
+namespace rnwinrt::namespaces::%
 {)^-^",
         jswinrt::cpp_namespace{ &ns });
 
@@ -819,7 +819,7 @@ namespace jswinrt::namespaces::%
                 kindNs = "classes";
                 break;
             }
-            writer.write_fmt("        &jswinrt::%::%::%::data,\n", kindNs, jswinrt::cpp_namespace{ &ns }, child->name);
+            writer.write_fmt("        &rnwinrt::%::%::%::data,\n", kindNs, jswinrt::cpp_namespace{ &ns }, child->name);
         }
 
         writer.write("    };\n");
@@ -852,7 +852,7 @@ namespace jswinrt::namespaces::%
     // projected_value_traits definitions
     if (!ns.struct_children.empty() || !ns.delegate_children.empty())
     {
-        writer.write("\nnamespace jswinrt\n{");
+        writer.write("\nnamespace rnwinrt\n{");
 
         for (auto& structData : ns.struct_children)
         {

@@ -5,7 +5,7 @@
 #include <rnwinrt/base.cpp>
 
 using namespace facebook;
-using namespace jswinrt;
+using namespace rnwinrt;
 
 jsi::Value WinRTTurboModuleSpecJSI_initialize(
     jsi::Runtime& runtime, react::TurboModule& turboModule, const jsi::Value*, size_t);
@@ -50,7 +50,7 @@ void WinRTTurboModule::initialize(jsi::Runtime& runtime)
     }
 }
 
-runtime_context* jswinrt::current_runtime_context()
+runtime_context* rnwinrt::current_runtime_context()
 {
     auto result = current_thread_context;
     if (!result)

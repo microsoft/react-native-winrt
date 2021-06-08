@@ -6,7 +6,7 @@
 #include <combaseapi.h>
 #include <winstring.h>
 
-using namespace jswinrt;
+using namespace rnwinrt;
 using namespace std::literals;
 
 namespace winrt
@@ -15,7 +15,7 @@ namespace winrt
     using namespace Windows::Foundation::Numerics;
 }
 
-jsi::String jswinrt::make_string(jsi::Runtime& runtime, std::wstring_view str)
+jsi::String rnwinrt::make_string(jsi::Runtime& runtime, std::wstring_view str)
 {
     if (str.empty())
     {
@@ -33,7 +33,7 @@ jsi::String jswinrt::make_string(jsi::Runtime& runtime, std::wstring_view str)
     return jsi::String::createFromUtf8(runtime, reinterpret_cast<const uint8_t*>(buffer.get()), bytes);
 }
 
-std::u16string jswinrt::string_to_utf16(jsi::Runtime& runtime, const jsi::String& string)
+std::u16string rnwinrt::string_to_utf16(jsi::Runtime& runtime, const jsi::String& string)
 {
     auto str = string.utf8(runtime);
     if (str.empty())
@@ -52,7 +52,7 @@ std::u16string jswinrt::string_to_utf16(jsi::Runtime& runtime, const jsi::String
     return result;
 }
 
-[[noreturn]] __declspec(noinline) void jswinrt::throw_no_constructor(
+[[noreturn]] __declspec(noinline) void rnwinrt::throw_no_constructor(
     jsi::Runtime& runtime, std::string_view typeNamespace, std::string_view typeName, size_t argCount)
 {
     auto msg = "TypeError: No constructor overload exists for "s;
@@ -63,7 +63,7 @@ std::u16string jswinrt::string_to_utf16(jsi::Runtime& runtime, const jsi::String
     throw jsi::JSError(runtime, std::move(msg));
 }
 
-[[noreturn]] __declspec(noinline) void jswinrt::throw_no_function_overload(jsi::Runtime& runtime,
+[[noreturn]] __declspec(noinline) void rnwinrt::throw_no_function_overload(jsi::Runtime& runtime,
     std::string_view typeNamespace, std::string_view typeName, std::string_view fnName, size_t argCount)
 {
     auto msg = "TypeError: No function overload exists for "s;
@@ -76,7 +76,7 @@ std::u16string jswinrt::string_to_utf16(jsi::Runtime& runtime, const jsi::String
     throw jsi::JSError(runtime, std::move(msg));
 }
 
-[[noreturn]] __declspec(noinline) void jswinrt::throw_invalid_delegate_arg_count(
+[[noreturn]] __declspec(noinline) void rnwinrt::throw_invalid_delegate_arg_count(
     jsi::Runtime& runtime, std::string_view typeNamespace, std::string_view typeName)
 {
     auto msg = "TypeError: Invalid number of arguments to delegate "s;
@@ -520,7 +520,7 @@ projected_object_instance::projected_object_instance(const winrt::IInspectable& 
     }
 }
 
-namespace jswinrt
+namespace rnwinrt
 {
     struct projected_function
     {
@@ -1127,7 +1127,7 @@ winrt::float4 projected_value_traits<winrt::float4>::as_native(jsi::Runtime& run
     return result;
 }
 
-jsi::Value jswinrt::convert_from_property_value(jsi::Runtime& runtime, const winrt::IPropertyValue& value)
+jsi::Value rnwinrt::convert_from_property_value(jsi::Runtime& runtime, const winrt::IPropertyValue& value)
 {
     switch (value.Type())
     {
@@ -1275,7 +1275,7 @@ jsi::Value jswinrt::convert_from_property_value(jsi::Runtime& runtime, const win
     }
 }
 
-winrt::IInspectable jswinrt::convert_to_property_value(jsi::Runtime& runtime, const jsi::Value& value)
+winrt::IInspectable rnwinrt::convert_to_property_value(jsi::Runtime& runtime, const jsi::Value& value)
 {
     if (value.isBool())
     {
