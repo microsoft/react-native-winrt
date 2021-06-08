@@ -282,7 +282,7 @@ public:
         else if (type.TypeNamespace() == "Windows.Foundation.Collections" && type.TypeName() == "IVector`1")
         {
             textWriter.Write("%", R"(
-        length: number; 
+        length: number;
         [index: number]: T;
         concat(...items: (T | ConcatArray<T>)[]): T[];
         copyWithin(target: number, start: number, end?: number): this;
@@ -310,7 +310,7 @@ public:
         else if (type.TypeNamespace() == "Windows.Foundation.Collections" && type.TypeName() == "IVectorView`1")
         {
             textWriter.Write("%", R"(
-        length: number; 
+        length: number;
         readonly [index: number]: T;
         concat(...items: (T | ConcatArray<T>)[]): T[];
         every<S extends T>(predicate: (value: T, index: number, array: T[]) => value is S, thisArg?: any): this is S[];
@@ -641,3 +641,28 @@ public:
         return name.find("`") != std::string::npos;
     }
 };
+
+inline void write_typescript_file(const Settings& settings, const namespace_projection_data& ns)
+{
+    TextWriter textWriter;
+    TypescriptWriter typescriptWriter(settings);
+    typescriptWriter.Write(ns, textWriter);
+    textWriter.FlushToFile(settings.TypescriptOutputFolder / (std::string(ns.full_name) + ".d.ts"));
+
+    for (auto& childNs : ns.namespace_children)
+    {
+        write_typescript_file(settings, *childNs);
+    }
+}
+
+inline void write_typescript_files(const Settings& settings, const projection_data& data)
+{
+    assert(!settings.TypescriptOutputFolder.empty());
+    std::filesystem::remove_all(settings.TypescriptOutputFolder);
+    std::filesystem::create_directory(settings.TypescriptOutputFolder);
+
+    for (auto& ns : data.root_namespaces)
+    {
+        write_typescript_file(settings, *ns);
+    }
+}

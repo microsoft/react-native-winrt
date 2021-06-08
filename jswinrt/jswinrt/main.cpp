@@ -1,9 +1,9 @@
 #include "pch.h"
 
 #include "CommandReader.h"
-#include "FileGenerator.h"
 #include "MetadataTypes.h"
 #include "Settings.h"
+#include "TypescriptWriter.h"
 
 namespace
 {
@@ -61,10 +61,12 @@ namespace
         std::cout << R"(Where <spec> is one or more of:)" << std::endl;
         std::cout << R"(  path                Path to winmd file or recursively scanned folder)" << std::endl;
         std::cout << R"(  local               Local %WinDir%\System32\WinMetadata folder)" << std::endl;
-        std::cout << R"("  sdk[+]              Current version of Windows SDK [with extensions])" << std::endl;
+        std::cout << R"(  sdk[+]              Current version of Windows SDK [with extensions])" << std::endl;
         std::cout << R"(  10.0.12345.0[+]     Specific version of Windows SDK [with extensions])" << std::endl;
     }
 }
+
+void write_rnwinrt_files(const Settings& settings, const projection_data& data);
 
 int main(int const argc, char** argv)
 {
@@ -81,7 +83,21 @@ int main(int const argc, char** argv)
 
         projection_data data;
         parse_metadata(settings, data);
-        write_files(settings, data);
+
+        if (args.Exists("reactnative"))
+        {
+            write_rnwinrt_files(settings, data);
+        }
+
+        if (args.Exists("nodejs"))
+        {
+            // TODO
+        }
+
+        if (!settings.TypescriptOutputFolder.empty())
+        {
+            write_typescript_files(settings, data);
+        }
     }
     catch (std::exception const& e)
     {

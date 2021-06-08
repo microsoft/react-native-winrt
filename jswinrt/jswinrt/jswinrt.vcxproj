@@ -54,19 +54,18 @@
     <ClInclude Include="TextWriter.h" />
     <ClInclude Include="TypescriptWriter.h" />
     <ClInclude Include="Writer.h" />
-    <ClInclude Include="FileGenerator.h" />
     <ClInclude Include="pch.h" />
     <ClInclude Include="Settings.h" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="CommandReader.cpp" />
-    <ClCompile Include="FileGenerator.cpp" />
     <ClCompile Include="MetadataHelpers.cpp" />
     <ClCompile Include="main.cpp" />
     <ClCompile Include="MetadataTypes.cpp" />
     <ClCompile Include="pch.cpp">
       <PrecompiledHeader>Create</PrecompiledHeader>
     </ClCompile>
+    <ClCompile Include="react\ReactFileGenerator.cpp" />
     <ClCompile Include="Settings.cpp" />
     <ClCompile Include="TypeFilter.cpp" />
     <ClCompile Include="TextWriter.cpp" />
