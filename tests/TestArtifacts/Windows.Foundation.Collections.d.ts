@@ -71,7 +71,7 @@ declare namespace Windows.Foundation.Collections {
         getAt(index: number): T;
         indexOf(value: T): { index: number; returnValue: boolean };
         getMany(startIndex: number): { items: T[]; returnValue: number };
-        length: number; 
+        length: number;
         readonly [index: number]: T;
         concat(...items: (T | ConcatArray<T>)[]): T[];
         every<S extends T>(predicate: (value: T, index: number, array: T[]) => value is S, thisArg?: any): this is S[];
@@ -101,7 +101,7 @@ declare namespace Windows.Foundation.Collections {
         clear(): void;
         getMany(startIndex: number): { items: T[]; returnValue: number };
         replaceAll(items: T[]): void;
-        length: number; 
+        length: number;
         [index: number]: T;
         concat(...items: (T | ConcatArray<T>)[]): T[];
         copyWithin(target: number, start: number, end?: number): this;
