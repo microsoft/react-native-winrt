@@ -42,11 +42,11 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Microsoft.ReactNative.Manag
 EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "WinRTTurboModule", "WinRTTurboModule\WinRTTurboModule.vcxproj", "{6950CF37-29C2-47FD-8047-934EAD9A92B8}"
 EndProject
-Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "rnwinrt", "..\..\..\rnwinrt\rnwinrt\rnwinrt.vcxproj", "{249A6C52-D3DF-4B3C-BF7C-9DD62C267CB0}"
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "jswinrt", "..\..\..\jswinrt\jswinrt\jswinrt.vcxproj", "{249A6C52-D3DF-4B3C-BF7C-9DD62C267CB0}"
 EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "TestComponent", "TestComponent\TestComponent.vcxproj", "{F0F56CE5-920B-43F2-8F9D-2761BFD28A3B}"
 EndProject
-Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "strings", "..\..\..\rnwinrt\strings\strings.vcxproj", "{2A8A236D-1799-487A-A4C0-F1AC89DB8A43}"
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "strings", "..\..\..\jswinrt\strings\strings.vcxproj", "{2A8A236D-1799-487A-A4C0-F1AC89DB8A43}"
 EndProject
 Global
 	GlobalSection(SharedMSBuildProjectFiles) = preSolution

@@ -21,7 +21,7 @@
 #include <winrt/Windows.Foundation.h>
 
 // Common helpers/types
-namespace jswinrt
+namespace rnwinrt
 {
     // TODO: Switch to std::span when available. For now, this is just a subset that we need
     template <typename T>
@@ -551,7 +551,7 @@ namespace jswinrt
 }
 
 // Generic helpers
-namespace jswinrt
+namespace rnwinrt
 {
     namespace jsi = facebook::jsi;
     using namespace std::literals;
@@ -1042,7 +1042,7 @@ namespace jswinrt
 }
 
 // JS thread context data
-namespace jswinrt
+namespace rnwinrt
 {
     struct runtime_context;
 
@@ -1404,7 +1404,7 @@ namespace jswinrt
 }
 
 // Types used to store static data
-namespace jswinrt
+namespace rnwinrt
 {
     // NOTE: All of these instances are intended to go into the .text section and hold no state that needs to be free'd,
     // hence the lack of a virtual destructor
@@ -1558,7 +1558,7 @@ namespace jswinrt
 }
 
 // Types used for object instances, etc.
-namespace jswinrt
+namespace rnwinrt
 {
     struct projected_namespace final : public jsi::HostObject
     {
@@ -2018,7 +2018,7 @@ namespace jswinrt
 }
 
 // Collections wrappers
-namespace jswinrt
+namespace rnwinrt
 {
     // Implementations for passing arrays as various iterable types
     template <typename D, typename T>
@@ -2249,7 +2249,7 @@ namespace jswinrt
 }
 
 // Value converters
-namespace jswinrt
+namespace rnwinrt
 {
     template <>
     struct projected_value_traits<bool>
@@ -2950,7 +2950,7 @@ namespace jswinrt
 }
 
 // Static data for generic types
-namespace jswinrt
+namespace rnwinrt
 {
     namespace interfaces::Windows::Foundation::Collections
     {

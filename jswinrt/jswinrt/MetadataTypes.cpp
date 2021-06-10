@@ -1,6 +1,7 @@
 #include "pch.h"
 
 #include "MetadataTypes.h"
+#include "Writer.h"
 #include "sha1.h"
 
 using namespace std::literals;
@@ -662,4 +663,28 @@ void parse_metadata(const Settings& settings, projection_data& data)
         [](const interface_instance* lhs, const interface_instance* rhs) {
             return compare_guid(lhs->iid, rhs->iid) < 0;
         });
+}
+
+void interface_projection_data::write_cpp_name(jswinrt::writer& writer, std::string_view typeNameMod)
+{
+    jswinrt::cpp_typename{ type_def }(writer);
+    writer.write(typeNameMod);
+}
+
+void generic_interface_instantiation::write_cpp_name(jswinrt::writer& writer, std::string_view typeNameMod)
+{
+    auto& sig = instantiation.signature();
+    auto typeDef = generic_type_def(sig);
+    writer.write_fmt(
+        "%%<", jswinrt::cpp_typename{ typeDef.TypeNamespace(), remove_tick(typeDef.TypeName()) }, typeNameMod);
+
+    std::string_view prefix;
+    auto genericParamStack = instantiation.parent_stack();
+    for (auto&& param : sig.GenericArgs())
+    {
+        writer.write_fmt("%%", prefix, [&](jswinrt::writer& w) { write_cppwinrt_type(w, param, genericParamStack); });
+        prefix = ", "sv;
+    }
+
+    writer.write(">");
 }

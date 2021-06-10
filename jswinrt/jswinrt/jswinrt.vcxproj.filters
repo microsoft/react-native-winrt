@@ -7,10 +7,12 @@
     <ClCompile Include="MetadataHelpers.cpp" />
     <ClCompile Include="Settings.cpp" />
     <ClCompile Include="Writer.cpp" />
-    <ClCompile Include="FileGenerator.cpp" />
     <ClCompile Include="TypeFilter.cpp" />
     <ClCompile Include="TextWriter.cpp" />
     <ClCompile Include="MetadataTypes.cpp" />
+    <ClCompile Include="react\ReactFileGenerator.cpp">
+      <Filter>rnwinrt</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="pch.h" />
@@ -18,7 +20,6 @@
     <ClInclude Include="Settings.h" />
     <ClInclude Include="MetadataHelpers.h" />
     <ClInclude Include="Writer.h" />
-    <ClInclude Include="FileGenerator.h" />
     <ClInclude Include="TypeFilter.h" />
     <ClInclude Include="TextWriter.h" />
     <ClInclude Include="TypescriptWriter.h" />
@@ -30,5 +31,10 @@
   </ItemGroup>
   <ItemGroup>
     <ResourceCompile Include="version.rc" />
+  </ItemGroup>
+  <ItemGroup>
+    <Filter Include="rnwinrt">
+      <UniqueIdentifier>{45818217-ca0f-43d3-8b75-d312105cbe95}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
 </Project>

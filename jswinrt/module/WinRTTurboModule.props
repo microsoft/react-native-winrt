@@ -1,0 +1,37 @@
+<!--
+***********************************************************************************************
+Copyright (C) Microsoft Corporation. All rights reserved.
+***********************************************************************************************
+-->
+<Project xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <PropertyGroup>
+    <JsWinRTPath Condition="'$(JsWinRTPath)'==''">$([MSBuild]::NormalizeDirectory('$(MSBuildThisFileDirectory)', '..\..\jswinrt'))</JsWinRTPath>
+    <JsWinRTExe>$(JsWinRTPath)jswinrt.exe</JsWinRTExe>
+  </PropertyGroup>
+  <ItemDefinitionGroup>
+    <Link>
+      <ModuleDefinitionFile>$(JsWinRTPath)module\WinRTTurboModule.def</ModuleDefinitionFile>
+    </Link>
+  </ItemDefinitionGroup>
+  <ItemDefinitionGroup>
+    <ClCompile>
+      <AdditionalIncludeDirectories>
+        $(JsWinRTPath)module;
+      </AdditionalIncludeDirectories>
+    </ClCompile>
+  </ItemDefinitionGroup>
+  <ItemGroup>
+    <ClInclude Include="$(JsWinRTPath)module\*.h" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="packages.config" />
+    <None Include="$(JsWinRTExe)" />
+    <None Include="$(JsWinRTPath)module\WinRTTurboModule.def" />
+    <None Include="$(JsWinRTPath)module\WinRTTurboModule.targets" />
+  </ItemGroup>
+  <ItemGroup>
+    <ClCompile Include="$(JsWinRTPath)module\dllmain.cpp" />
+    <ClCompile Include="$(JsWinRTPath)module\WinRTTurboModule.cpp" />
+    <!-- $(GeneratedFilesDir)\jswinrt\*.g.cpp are added in JsWinRTAddGeneratedCppFiles -->
+  </ItemGroup>
+</Project>
