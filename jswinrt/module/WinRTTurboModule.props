@@ -6,7 +6,7 @@ Copyright (C) Microsoft Corporation. All rights reserved.
 <Project xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
   <PropertyGroup>
     <JsWinRTPath Condition="'$(JsWinRTPath)'==''">$([MSBuild]::NormalizeDirectory('$(MSBuildThisFileDirectory)', '..\..\jswinrt'))</JsWinRTPath>
-    <JsWinRTExe>$(JsWinRTPath)jswinrt.exe</JsWinRTExe>
+    <JsWinRTExe Condition="'$(JsWinRTExe)'==''">$(JsWinRTPath)jswinrt.exe</JsWinRTExe>
   </PropertyGroup>
   <ItemDefinitionGroup>
     <Link>
@@ -17,7 +17,10 @@ Copyright (C) Microsoft Corporation. All rights reserved.
     <ClCompile>
       <AdditionalIncludeDirectories>
         $(JsWinRTPath)module;
+        %(AdditionalIncludeDirectories);
       </AdditionalIncludeDirectories>
+      <ConformanceMode>true</ConformanceMode>
+      <AdditionalOptions>/Zc:externConstexpr %(AdditionalOptions)</AdditionalOptions>
     </ClCompile>
   </ItemDefinitionGroup>
   <ItemGroup>

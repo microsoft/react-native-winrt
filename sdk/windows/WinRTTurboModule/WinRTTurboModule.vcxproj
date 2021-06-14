@@ -1,5 +1,10 @@
 <?xml version="1.0" encoding="utf-8"?>
 <Project DefaultTargets="Build" ToolsVersion="16.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <PropertyGroup>
+    <JsWinRTPath>..\..\..\jswinrt\</JsWinRTPath>
+    <JsWinRTExe>$(SolutionDir)x64\Release\jswinrt.exe</JsWinRTExe>
+  </PropertyGroup>
+  <Import Project="$(JsWinRTPath)module\WinRTTurboModule.props" Condition="Exists('$(JsWinRTPath)module\WinRTTurboModule.props')" />
   <Import Project="..\packages\Microsoft.Windows.CppWinRT.2.0.210505.3\build\native\Microsoft.Windows.CppWinRT.props" Condition="Exists('..\packages\Microsoft.Windows.CppWinRT.2.0.210505.3\build\native\Microsoft.Windows.CppWinRT.props')" />
   <PropertyGroup Label="Globals">
     <MinimalCoreWin>true</MinimalCoreWin>
@@ -20,8 +25,6 @@
     <CppWinRTVerbosity>high</CppWinRTVerbosity>
     <CppWinRTParameters>-base</CppWinRTParameters>
     <JsWinRTParameters>-include Windows</JsWinRTParameters>
-    <JsWinRTPath>$(SolutionDir)x64\Release\</JsWinRTPath>
-    <JsWinRTExe>$(JsWinRTPath)jswinrt.exe</JsWinRTExe>
     <JsWinRTVerbosity>high</JsWinRTVerbosity>
   </PropertyGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.Default.props" />
@@ -75,9 +78,6 @@
     <LinkIncremental>false</LinkIncremental>
   </PropertyGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.props" />
-  <PropertyGroup>
-    <ModuleImplementationDir>..\..\..\jswinrt\module\</ModuleImplementationDir>
-  </PropertyGroup>
   <Import Project="..\..\node_modules\react-native-windows\PropertySheets\external\Microsoft.ReactNative.Uwp.CppLib.props" Condition="Exists('..\..\node_modules\react-native-windows\PropertySheets\External\Microsoft.ReactNative.Uwp.CppLib.props')" />
   <ItemDefinitionGroup>
     <ClCompile>
@@ -85,16 +85,13 @@
       <PrecompiledHeaderFile>pch.h</PrecompiledHeaderFile>
       <PrecompiledHeaderOutputFile>$(IntDir)pch.pch</PrecompiledHeaderOutputFile>
       <WarningLevel>Level4</WarningLevel>
-      <ConformanceMode>true</ConformanceMode>
       <AdditionalOptions>%(AdditionalOptions) /bigobj /await</AdditionalOptions>
-      <AdditionalOptions>/Zc:externConstexpr %(AdditionalOptions)</AdditionalOptions>
       <PreprocessorDefinitions>_WINRT_DLL;WIN32_LEAN_AND_MEAN;WINRT_LEAN_AND_MEAN;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <AdditionalIncludeDirectories>
         $(ReactCommonDir)jsi;
         $(ReactCommonDir)callinvoker;
         $(ReactCommonDir)react\nativemodule\core;
         $(GeneratedFilesDir);
-        $(ModuleImplementationDir);
         %(AdditionalIncludeDirectories);
       </AdditionalIncludeDirectories>
       <AdditionalUsingDirectories>
@@ -105,7 +102,6 @@
     <Link>
       <SubSystem>Console</SubSystem>
       <GenerateWindowsMetadata>false</GenerateWindowsMetadata>
-      <ModuleDefinitionFile>$(ModuleImplementationDir)WinRTTurboModule.def</ModuleDefinitionFile>
     </Link>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)'=='Debug'">
@@ -126,7 +122,7 @@
   <ItemGroup>
     <ClInclude Include="pch.h" />
     <ClInclude Include="ReactPackageProvider.h" />
-    <ClInclude Include="$(ModuleImplementationDir)WinRTTurboModule.h" />
+    <ClInclude Include="$(JsWinRTPath)module\WinRTTurboModule.h" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="pch.cpp">
@@ -134,13 +130,12 @@
     </ClCompile>
     <ClCompile Include="ReactPackageProvider.cpp" />
     <ClCompile Include="$(GeneratedFilesDir)module.g.cpp" />
-    <ClCompile Include="$(ModuleImplementationDir)*.cpp" />
   </ItemGroup>
   <ItemGroup>
     <Midl Include="WinRTTurboModule.idl" />
   </ItemGroup>
   <ItemGroup>
-    <ProjectReference Include="..\..\..\jswinrt\jswinrt\jswinrt.vcxproj">
+    <ProjectReference Include="$(JsWinRTPath)jswinrt\jswinrt.vcxproj">
       <Project>{249A6C52-D3DF-4B3C-BF7C-9DD62C267CB0}</Project>
     </ProjectReference>
   </ItemGroup>
@@ -149,7 +144,7 @@
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">
-    <Import Project="$(ModuleImplementationDir)\WinRTTurboModule.targets" />
+    <Import Project="$(JsWinRTPath)module\\WinRTTurboModule.targets" />
     <Import Project="..\packages\Microsoft.Windows.CppWinRT.2.0.210505.3\build\native\Microsoft.Windows.CppWinRT.targets" Condition="Exists('..\packages\Microsoft.Windows.CppWinRT.2.0.210505.3\build\native\Microsoft.Windows.CppWinRT.targets')" />
   </ImportGroup>
   <Import Project="$(ReactNativeWindowsDir)\PropertySheets\External\Microsoft.ReactNative.Uwp.CppLib.targets" Condition="Exists('$(ReactNativeWindowsDir)\PropertySheets\External\Microsoft.ReactNative.Uwp.CppLib.targets')" />
