@@ -19,7 +19,7 @@ jobs:
         displayName: npm install
         inputs:
           script: "npm install"
-          workingDirectory: $(Build.SourcesDirectory)\tests\WinRTTests
+          workingDirectory: $(Build.SourcesDirectory)\tests\RnWinRTTests
 
       - task: PowerShell@2
         displayName: "Enable Hermes if selected"
@@ -29,52 +29,52 @@ jobs:
         condition: eq('${{ parameters.useHermes }}', 'true')
 
       - task: VSBuild@1
-        displayName: 'Build solution WinRTTests.sln'
+        displayName: 'Build solution RnWinRTTests.sln'
         continueOnError: true
         inputs:
-          solution: tests\WinRTTests\windows\WinRTTests.sln
+          solution: tests\RnWinRTTests\windows\RnWinRTTests.sln
           vsVersion: 'latest'
           platform: 'x64'
           configuration: 'Release'
 
       - task: VSBuild@1
-        displayName: 'Build solution WinRTTests.sln'
+        displayName: 'Build solution RnWinRTTests.sln'
         inputs:
-          solution: tests\WinRTTests\windows\WinRTTests.sln
+          solution: tests\RnWinRTTests\windows\RnWinRTTests.sln
           vsVersion: 'latest'
           platform: 'x64'
           configuration: 'Release'
 
       - task: PowerShell@2
-        displayName: "Install WinRTTests Cert"
+        displayName: "Install RnWinRTTests Cert"
         inputs:
           targetType: "inline"
-          script: "Import-Certificate -FilePath $(Build.SourcesDirectory)\\tests\\winrttests\\windows\\AppPackages\\WinRTTests\\WinRTTests_1.0.0.0_x64_Test\\WinRTTests_1.0.0.0_x64.cer -CertStoreLocation Cert:\\LocalMachine\\Root"
+          script: "Import-Certificate -FilePath $(Build.SourcesDirectory)\\tests\\Rnwinrttests\\windows\\AppPackages\\RnWinRTTests\\RnWinRTTests_1.0.0.0_x64_Test\\RnWinRTTests_1.0.0.0_x64.cer -CertStoreLocation Cert:\\LocalMachine\\Root"
         condition: succeeded()
 
       - task: PowerShell@2
         displayName: "Install dependency - Microsoft.UI.Xaml.2.3"
         inputs:
           targetType: "inline"
-          script: "Add-AppxPackage $(Build.SourcesDirectory)\\tests\\WinRTTests\\windows\\AppPackages\\WinRTTests\\WinRTTests_1.0.0.0_x64_Test\\Dependencies\\x64\\Microsoft.UI.Xaml.2.3.appx"
+          script: "Add-AppxPackage $(Build.SourcesDirectory)\\tests\\RnWinRTTests\\windows\\AppPackages\\RnWinRTTests\\RnWinRTTests_1.0.0.0_x64_Test\\Dependencies\\x64\\Microsoft.UI.Xaml.2.3.appx"
         condition: succeededOrFailed()
 
       - task: PowerShell@2
         displayName: "Install dependency - Microsoft.VCLibs.x64.14.00"
         inputs:
           targetType: "inline"
-          script: "Add-AppxPackage $(Build.SourcesDirectory)\\tests\\WinRTTests\\windows\\AppPackages\\WinRTTests\\WinRTTests_1.0.0.0_x64_Test\\Dependencies\\x64\\Microsoft.VCLibs.x64.14.00.appx"
+          script: "Add-AppxPackage $(Build.SourcesDirectory)\\tests\\RnWinRTTests\\windows\\AppPackages\\RnWinRTTests\\RnWinRTTests_1.0.0.0_x64_Test\\Dependencies\\x64\\Microsoft.VCLibs.x64.14.00.appx"
         condition: succeededOrFailed()
 
       - task: PowerShell@2
-        displayName: "Install WinRTTests App"
+        displayName: "Install RnWinRTTests App"
         inputs:
           targetType: "inline"
-          script: "Add-AppxPackage $(Build.SourcesDirectory)\\tests\\WinRTTests\\windows\\AppPackages\\WinRTTests\\WinRTTests_1.0.0.0_x64_Test\\WinRTTests_1.0.0.0_x64.appx"
+          script: "Add-AppxPackage $(Build.SourcesDirectory)\\tests\\RnWinRTTests\\windows\\AppPackages\\RnWinRTTests\\RnWinRTTests_1.0.0.0_x64_Test\\RnWinRTTests_1.0.0.0_x64.appx"
         condition: succeededOrFailed()
 
       - task: PowerShell@2
-        displayName: "Run WinRTTests"
+        displayName: "Run RnWinRTTests"
         inputs:
           targetType: "inline"
           script: "Start-Process -FilePath explorer.exe shell:appsFolder\\ade66fbb-2cb8-4ba7-b8e3-f0afcf0f7f3d_m393c780kgv6r!App"
@@ -98,5 +98,5 @@ jobs:
         inputs:
           targetType: filePath
           filePath: $(Build.SourcesDirectory)\\tests\\TestArtifacts\\compareGeneratedTypeScript.ps1
-          arguments: -expectedFilesDir '$(Build.SourcesDirectory)\\tests\\TestArtifacts' -generatedFilesDir '$(Build.SourcesDirectory)\\tests\\WinRTTests\\windows\\WinRTTurboModule\\Generated Files\\types'
+          arguments: -expectedFilesDir '$(Build.SourcesDirectory)\\tests\\TestArtifacts' -generatedFilesDir '$(Build.SourcesDirectory)\\tests\\RnWinRTTests\\windows\\WinRTTurboModule\\Generated Files\\types'
         condition: succeededOrFailed()

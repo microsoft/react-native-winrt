@@ -1,0 +1,25 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="15.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ItemGroup>
+    <ClCompile Include="pch.cpp" />
+    <ClCompile Include="$(GeneratedFilesDir)module.g.cpp" />
+    <ClCompile Include="Test.cpp" />
+    <ClCompile Include="HierarchyBase.cpp" />
+    <ClCompile Include="HierarchyDerived.cpp" />
+    <ClCompile Include="StaticOnlyTest.cpp" />
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="pch.h" />
+    <ClInclude Include="Test.h" />
+    <ClInclude Include="HierarchyBase.h" />
+    <ClInclude Include="HierarchyDerived.h" />
+    <ClInclude Include="StaticOnlyTest.h" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="TestComponent.def" />
+    <None Include="packages.config" />
+  </ItemGroup>
+  <ItemGroup>
+    <Midl Include="TestComponent.idl" />
+  </ItemGroup>
+</Project>
