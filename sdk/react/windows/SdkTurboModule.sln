@@ -20,9 +20,9 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "ReactNative", "ReactNative"
 EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "WinRTTurboModule", "WinRTTurboModule\WinRTTurboModule.vcxproj", "{196F1C28-1A90-4F2B-9745-2B7929C61BC1}"
 EndProject
-Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "jswinrt", "..\..\jswinrt\jswinrt\jswinrt.vcxproj", "{249A6C52-D3DF-4B3C-BF7C-9DD62C267CB0}"
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "jswinrt", "..\..\..\jswinrt\jswinrt\jswinrt.vcxproj", "{249A6C52-D3DF-4B3C-BF7C-9DD62C267CB0}"
 EndProject
-Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "strings", "..\..\jswinrt\strings\strings.vcxproj", "{2A8A236D-1799-487A-A4C0-F1AC89DB8A43}"
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "strings", "..\..\..\jswinrt\strings\strings.vcxproj", "{2A8A236D-1799-487A-A4C0-F1AC89DB8A43}"
 EndProject
 Global
 	GlobalSection(SharedMSBuildProjectFiles) = preSolution
