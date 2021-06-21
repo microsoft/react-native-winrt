@@ -2,8 +2,8 @@
 :: E.g. possible task config:
 :: {
 ::     "type": "shell",
-::     "label": "WinRTTests x64 Debug",
-::     "command": "scripts/build-sln.cmd tests/WinRTTests/windows/WinRTTests.sln"
+::     "label": "RnWinRTTests x64 Debug",
+::     "command": "scripts/build-sln.cmd tests/RnWinRTTests/windows/RnWinRTTests.sln"
 :: }
 @echo off
 setlocal
