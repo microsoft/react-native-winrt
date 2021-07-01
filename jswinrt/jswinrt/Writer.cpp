@@ -51,10 +51,14 @@ namespace jswinrt
                 !bytesRead)
                 return true;
 
+            auto newOffset = offset + bytesRead;
+            if (newOffset > m_buffer.size())
+                return true; // File size concurrently changed; avoid reading past the end of the buffer
+
             if (std::memcmp(m_buffer.data() + offset, buffer, bytesRead) != 0)
                 return true;
 
-            offset += bytesRead;
+            offset = newOffset;
         }
 
         // If we've gotten this far, it means the file contents are the same. We should not write to the file
