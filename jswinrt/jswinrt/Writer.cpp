@@ -43,9 +43,8 @@ namespace jswinrt
 
         // File sizes are the same. Check the full contents
         std::size_t offset = 0;
-        std::size_t readSize = 0;
         char buffer[256];
-        while (readSize != m_buffer.size())
+        while (offset != m_buffer.size())
         {
             DWORD bytesRead;
             if (!::ReadFile(handle.get(), buffer, static_cast<DWORD>(std::size(buffer)), &bytesRead, nullptr) ||
@@ -56,7 +55,6 @@ namespace jswinrt
                 return true;
 
             offset += bytesRead;
-            readSize += bytesRead;
         }
 
         // If we've gotten this far, it means the file contents are the same. We should not write to the file
