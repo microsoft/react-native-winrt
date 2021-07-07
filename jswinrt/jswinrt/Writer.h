@@ -67,6 +67,8 @@ namespace jswinrt
         }
 
     private:
+        bool should_write_file(const std::filesystem::path& path);
+
         void write_fmt_impl(std::string_view fmtString);
 
         template <typename T, typename... Args>

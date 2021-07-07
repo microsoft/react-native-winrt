@@ -16,9 +16,53 @@ namespace jswinrt
 
     void writer::flush_to_file(const std::filesystem::path& path)
     {
+        if (!should_write_file(path))
+            return;
+
         std::ofstream stream(path, std::ios::out | std::ios::binary);
         stream.write(m_buffer.data(), m_buffer.size());
         m_buffer.clear();
+    }
+
+    bool writer::should_write_file(const std::filesystem::path& path)
+    {
+        if (!std::filesystem::exists(path))
+            return true;
+
+        wil::unique_handle handle{ ::CreateFileW(path.c_str(), GENERIC_READ,
+            FILE_SHARE_READ | FILE_SHARE_WRITE | FILE_SHARE_DELETE, nullptr, OPEN_EXISTING, FILE_ATTRIBUTE_NORMAL,
+            nullptr) };
+        if (!handle)
+            return true;
+
+        LARGE_INTEGER size;
+        if (!::GetFileSizeEx(handle.get(), &size))
+            return true;
+        if (size.QuadPart != static_cast<LONGLONG>(m_buffer.size()))
+            return true;
+
+        // File sizes are the same. Check the full contents
+        std::size_t offset = 0;
+        char buffer[256];
+        while (offset != m_buffer.size())
+        {
+            DWORD bytesRead;
+            if (!::ReadFile(handle.get(), buffer, static_cast<DWORD>(std::size(buffer)), &bytesRead, nullptr) ||
+                !bytesRead)
+                return true;
+
+            auto newOffset = offset + bytesRead;
+            if (newOffset > m_buffer.size())
+                return true; // File size concurrently changed; avoid reading past the end of the buffer
+
+            if (std::memcmp(m_buffer.data() + offset, buffer, bytesRead) != 0)
+                return true;
+
+            offset = newOffset;
+        }
+
+        // If we've gotten this far, it means the file contents are the same. We should not write to the file
+        return false;
     }
 
     void writer::write_fmt_impl(std::string_view fmtString)
