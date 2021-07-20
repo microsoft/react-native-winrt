@@ -27,8 +27,10 @@ WinRTTurboModule::WinRTTurboModule(std::shared_ptr<react::CallInvoker> invoker) 
 
 WinRTTurboModule::~WinRTTurboModule()
 {
-    current_thread_context->release();
-    current_thread_context = nullptr;
+    if (auto ptr = std::exchange(current_thread_context, nullptr))
+    {
+        ptr->release();
+    }
 }
 
 // Functions exposed to JS
