@@ -13,6 +13,9 @@
     <ClCompile Include="react\ReactFileGenerator.cpp">
       <Filter>rnwinrt</Filter>
     </ClCompile>
+    <ClCompile Include="node\NodeFileGenerator.cpp">
+      <Filter>node</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="pch.h" />
@@ -35,6 +38,9 @@
   <ItemGroup>
     <Filter Include="rnwinrt">
       <UniqueIdentifier>{45818217-ca0f-43d3-8b75-d312105cbe95}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="node">
+      <UniqueIdentifier>{97819899-a987-4a91-9729-7acdbafecc80}</UniqueIdentifier>
     </Filter>
   </ItemGroup>
 </Project>

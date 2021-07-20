@@ -67,6 +67,7 @@ namespace
 }
 
 void write_rnwinrt_files(const Settings& settings, const projection_data& data);
+void write_nodewinrt_files(const Settings& settings, const projection_data& data);
 
 int main(int const argc, char** argv)
 {
@@ -91,7 +92,7 @@ int main(int const argc, char** argv)
 
         if (args.Exists("nodejs"))
         {
-            // TODO
+            write_nodewinrt_files(settings, data);
         }
 
         if (!settings.TypescriptOutputFolder.empty())

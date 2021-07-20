@@ -1,0 +1,14 @@
+{
+    "name": "nodewinrttest",
+    "version": "1.0.0",
+    "description": "Node.js WinRT Test",
+    "main": "index.js",
+    "scripts": {
+      "start": "node index.js",
+      "build": "node-gyp build",
+      "build:debug": "node-gyp build --debug",
+      "debug": "windbgx node index.js"
+    },
+    "author": "",
+    "license": "ISC"
+  }

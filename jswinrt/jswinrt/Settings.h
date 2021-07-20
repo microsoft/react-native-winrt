@@ -6,7 +6,8 @@ struct Settings
 {
     Settings(const CommandReader& commandReader);
 
-    const std::filesystem::path OutputFolder;
+    const std::filesystem::path RnWinRTOutputFolder;
+    const std::filesystem::path NodeWinRTOutputFolder;
     const std::filesystem::path TypescriptOutputFolder;
     winmd::reader::cache Cache;
     const TypeFilter Filter;

@@ -49,14 +49,14 @@ namespace
 }
 
 Settings::Settings(const CommandReader& commandReader) :
-    OutputFolder(std::filesystem::path(commandReader.Value("output"sv)) / "rnwinrt"sv),
+    RnWinRTOutputFolder(std::filesystem::path(commandReader.Value("output"sv)) / "rnwinrt"sv),
+    NodeWinRTOutputFolder(std::filesystem::path(commandReader.Value("output"sv)) / "nodewinrt"sv),
     TypescriptOutputFolder(std::filesystem::path(commandReader.Value("tsoutput"sv))), Cache(GetInput(commandReader)),
     Filter(GetInclude(commandReader), GetExclude(commandReader)), PchFileName(commandReader.Value("pch"sv, "pch.h"sv)),
     FilterToAllowForWeb(commandReader.Exists("allowforwebexclusively"sv)),
     IncludeDeprecated(commandReader.Exists("deprecatedincluded"sv)),
     IncludeWebHostHidden(commandReader.Exists("webhosthiddenincluded"sv)), Verbose(commandReader.Exists("verbose"sv))
 {
-    std::filesystem::create_directories(OutputFolder);
 }
 
 bool is_type_allowed(const Settings& settings, const TypeDef& typeDef, bool isClass)

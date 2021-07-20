@@ -1,27 +1,29 @@
 #pragma once
 
-#ifndef NOMINMAX
-#define NOMINMAX 1
-#endif
+// #ifndef NOMINMAX
+// #define NOMINMAX 1
+// #endif
 
-#ifndef WIN32_LEAN_AND_MEAN
-#define WIN32_LEAN_AND_MEAN 1
-#endif
+// #ifndef WIN32_LEAN_AND_MEAN
+// #define WIN32_LEAN_AND_MEAN 1
+// #endif
 
-#include <WeakReference.h>
+// #include <WeakReference.h>
 #include <atomic>
-#include <charconv>
-#include <jsi/jsi.h>
+// #include <charconv>
+#include <chrono>
+#include <node.h>
 #include <string_view>
 #include <thread>
-#include <unordered_map>
-#include <variant>
+// #include <unordered_map>
+// #include <variant>
+#include <v8.h>
 #include <vector>
 #include <winrt/Windows.Foundation.Collections.h>
 #include <winrt/Windows.Foundation.h>
 
 // Common helpers/types
-namespace rnwinrt
+namespace nodewinrt
 {
     // TODO: Switch to std::span when available. For now, this is just a subset that we need
     template <typename T>
@@ -491,6 +493,7 @@ namespace rnwinrt
         } m_data;
     };
 
+#if 0
     // Used to capture a lambda whose capture includes non-copyable types in scenarios where a copy constructor is
     // needed (e.g. std::function), but is never used in practice.
     template <typename TLambda>
@@ -534,6 +537,7 @@ namespace rnwinrt
     {
         return [fn, pThis](Args... args) { return (pThis->*fn)(std::forward<Args>(args)...); };
     }
+#endif
 
     inline std::optional<uint32_t> index_from_name(std::string_view name)
     {
@@ -550,68 +554,316 @@ namespace rnwinrt
     }
 }
 
-// Generic helpers
-namespace rnwinrt
+// Per-context data
+namespace nodewinrt
 {
-    namespace jsi = facebook::jsi;
+    struct runtime_context
+    {
+        v8::Isolate* isolate;
+
+        // Cache the templates for creating the various object types that we create
+        v8::Global<v8::ObjectTemplate> namespace_template;
+        v8::Global<v8::ObjectTemplate> enum_template;
+        v8::Global<v8::ObjectTemplate> statics_class_template;
+        v8::Global<v8::ObjectTemplate> activatable_class_template;
+
+        runtime_context(v8::Isolate* isolate);
+    };
+}
+
+// Generic v8 helpers
+namespace nodewinrt
+{
     using namespace std::literals;
 
-    using call_function_t = jsi::Value (*)(jsi::Runtime&, const jsi::Value&, const jsi::Value*, size_t);
+    using call_function_t = void (*)(runtime_context*, const v8::FunctionCallbackInfo<v8::Value>&);
 
-    using static_get_property_t = jsi::Value (*)(jsi::Runtime&);
-    using static_set_property_t = void (*)(jsi::Runtime&, const jsi::Value&);
-    using static_add_event_t = winrt::event_token (*)(jsi::Runtime&, const jsi::Value&);
+    using static_get_property_t = v8::Local<v8::Value> (*)(runtime_context*);
+    using static_set_property_t = void (*)(runtime_context*, v8::Local<v8::Value>);
+    using static_add_event_t = winrt::event_token (*)(runtime_context*, v8::Local<v8::Value>);
     using static_remove_event_t = void (*)(winrt::event_token);
 
-    using instance_get_property_t = jsi::Value (*)(jsi::Runtime&, const winrt::Windows::Foundation::IInspectable&);
+    using instance_get_property_t = v8::Local<v8::Value> (*)(runtime_context*, const winrt::Windows::Foundation::IInspectable&);
     using instance_set_property_t = void (*)(
-        jsi::Runtime&, const winrt::Windows::Foundation::IInspectable&, const jsi::Value&);
+        runtime_context*, const winrt::Windows::Foundation::IInspectable&, v8::Local<v8::Value>);
     using instance_add_event_t = winrt::event_token (*)(
-        jsi::Runtime&, const winrt::Windows::Foundation::IInspectable&, const jsi::Value&);
+        runtime_context*, const winrt::Windows::Foundation::IInspectable&, v8::Local<v8::Value>);
     using instance_remove_event_t = void (*)(const winrt::Windows::Foundation::IInspectable&, winrt::event_token);
-    using instance_call_function_t = jsi::Value (*)(
-        jsi::Runtime&, const winrt::Windows::Foundation::IInspectable&, const jsi::Value*);
-    using instance_runtime_get_property_t = std::pair<std::optional<jsi::Value>, std::optional<jsi::Value>> (*)(
-        jsi::Runtime&, const winrt::Windows::Foundation::IInspectable&, std::string_view);
-    using instance_runtime_set_property_t = bool (*)(
-        jsi::Runtime&, const winrt::Windows::Foundation::IInspectable&, std::string_view, const jsi::Value&);
+    using instance_call_function_t = void (*)(
+        runtime_context*, const winrt::Windows::Foundation::IInspectable&, const v8::FunctionCallbackInfo<v8::Value>&);
+    // TODO using instance_runtime_get_property_t = std::pair<std::optional<jsi::Value>, std::optional<jsi::Value>> (*)(
+    //     jsi::Runtime&, const winrt::Windows::Foundation::IInspectable&, std::string_view);
+    // TODO using instance_runtime_set_property_t = bool (*)(
+    //     jsi::Runtime&, const winrt::Windows::Foundation::IInspectable&, std::string_view, const jsi::Value&);
 
     inline constexpr std::string_view add_event_name = "addEventListener"sv;
     inline constexpr std::string_view remove_event_name = "removeEventListener"sv;
 
-    inline jsi::String make_string(jsi::Runtime& runtime, std::string_view str)
+    struct runtime_context;
+
+    void register_exports(v8::Local<v8::Context> context, v8::Local<v8::Object> exports);
+
+    inline v8::Local<v8::String> make_string_checked(v8::Isolate* isolate, std::string_view str)
     {
-        return jsi::String::createFromUtf8(runtime, reinterpret_cast<const uint8_t*>(str.data()), str.size());
+        return v8::String::NewFromUtf8(isolate, str.data(), v8::NewStringType::kNormal, static_cast<int>(str.size()))
+            .ToLocalChecked();
     }
 
-    jsi::String make_string(jsi::Runtime& runtime, std::wstring_view str);
+    v8::Local<v8::String> make_string_checked(v8::Isolate* isolate, std::wstring_view str);
+
+    inline std::string string_to_utf8(v8::Isolate* isolate, v8::Local<v8::String> str)
+    {
+        // TODO: 'resize' will fill with zero even though we are about to write over the same memory... It would perhaps
+        // be better if we just allocated our own buffer and returned a "string"-like thing
+        std::string result;
+        result.resize(str->Utf8Length(isolate));
+        str->WriteUtf8(isolate, result.data());
+        return result;
+    }
+
+#if 0
     std::u16string string_to_utf16(jsi::Runtime& runtime, const jsi::String& string);
+#endif
 
-    inline jsi::PropNameID make_propid(jsi::Runtime& runtime, std::string_view str)
+    // v8 doesn't deal directly with exceptions, but C++/WinRT does. So, since we have to deal with them anyway, we
+    // declare this exception type mostly to keep the control flow the same. This type mostly serves as a tag type. That
+    // is, catching this type is an indication that we've already called Isolate::ThrowException.
+    struct v8_exception
     {
-        return jsi::PropNameID::forUtf8(runtime, reinterpret_cast<const uint8_t*>(str.data()), str.size());
+        static v8_exception from_internal()
+        {
+            return v8_exception();
+        }
+
+        static v8_exception error(v8::Isolate* isolate, v8::Local<v8::String> msg)
+        {
+            return v8_exception(isolate, v8::Exception::Error(msg));
+        }
+
+        static v8_exception error(v8::Isolate* isolate, std::string_view msg)
+        {
+            return error(isolate, make_string_checked(isolate, msg));
+        }
+
+        static v8_exception type_error(v8::Isolate* isolate, v8::Local<v8::String> msg)
+        {
+            return v8_exception(isolate, v8::Exception::TypeError(msg));
+        }
+
+        static v8_exception type_error(v8::Isolate* isolate, std::string_view msg)
+        {
+            return type_error(isolate, make_string_checked(isolate, msg));
+        }
+
+        static v8_exception range_error(v8::Isolate* isolate, v8::Local<v8::String> msg)
+        {
+            return v8_exception(isolate, v8::Exception::RangeError(msg));
+        }
+
+        static v8_exception range_error(v8::Isolate* isolate, std::string_view msg)
+        {
+            return range_error(isolate, make_string_checked(isolate, msg));
+        }
+
+        // TODO
+
+    private:
+
+        v8_exception() = default;
+
+        v8_exception(v8::Isolate* isolate, v8::Local<v8::Value> exception)
+        {
+            isolate->ThrowException(exception);
+        }
+    };
+
+    inline void handle_error(v8::Isolate* isolate)
+    {
+        try
+        {
+            throw;
+        }
+        catch (v8_exception&)
+        {
+            // Already taken care of (TODO: Can we validate)
+        }
+        catch (std::exception& e)
+        {
+            isolate->ThrowException(v8::Exception::Error(v8::String::NewFromUtf8(isolate, e.what()).ToLocalChecked()));
+        }
+        catch (...)
+        {
+            // Generic error
+            isolate->ThrowException(v8::Exception::Error(
+                v8::String::NewFromUtf8(isolate, "An unknown exception has occurred").ToLocalChecked()));
+        }
     }
 
-    inline jsi::Value make_error(jsi::Runtime& runtime, std::string_view message)
+#define V8_CATCH(isolate) catch (...) { handle_error(isolate); }
+
+    // Exception methods, to help reduce binary size
+    [[noreturn]] __declspec(noinline) void throw_no_constructor(
+        v8::Isolate* isolate, std::string_view typeNamespace, std::string_view typeName, int argCount);
+
+    [[noreturn]] __declspec(noinline) void throw_no_function_overload(v8::Isolate* isolate,
+        std::string_view typeNamespace, std::string_view typeName, std::string_view fnName, int argCount);
+
+    [[noreturn]] __declspec(noinline) void throw_invalid_delegate_arg_count(
+        v8::Isolate* isolate, std::string_view typeNamespace, std::string_view typeName);
+
+    template <typename T>
+    inline v8::Local<v8::Object> cast_object(v8::Isolate* isolate, v8::Local<T> value)
     {
-        jsi::Object result(runtime);
-        result.setProperty(runtime, "message", make_string(runtime, message));
-        return jsi::Value(runtime, result);
+        // NOTE: 'null' is ignored here and will still throw. Callers who care need to check for themselves
+        if (!value->IsObject())
+        {
+            throw v8_exception::type_error(isolate, "Expected an object");
+        }
+
+        return value.As<v8::Object>();
     }
 
-    inline jsi::Value make_error(jsi::Runtime& runtime, const std::exception& exception)
+    template <typename T>
+    inline v8::Local<v8::Array> cast_array(v8::Isolate* isolate, v8::Local<T> value)
     {
-        return make_error(runtime, exception.what());
+        if (!value->IsArray())
+        {
+            throw v8_exception::type_error(isolate, "Expected an array");
+        }
+
+        return value.As<v8::Array>();
     }
 
-    inline jsi::Value make_error(jsi::Runtime& runtime, const winrt::hresult_error& error)
+    template <typename T>
+    inline v8::Local<v8::String> cast_string(v8::Isolate* isolate, v8::Local<T> value)
     {
-        jsi::Object result(runtime);
-        result.setProperty(runtime, "message", make_string(runtime, error.message()));
-        result.setProperty(runtime, "number", static_cast<int32_t>(error.code()));
-        return jsi::Value(runtime, result);
+        if (!value->IsString())
+        {
+            throw v8_exception::type_error(isolate, "Expected a string");
+        }
+
+        return value.As<v8::String>();
     }
 
+    template <typename T>
+    inline T check_maybe(v8::Maybe<T> maybe)
+    {
+        if (!maybe.IsJust())
+        {
+            // TODO: Is there a way to actually validate that an exception is pending?
+            throw v8_exception::from_internal();
+        }
+
+        return maybe.FromJust();
+    }
+
+    template <typename T>
+    inline v8::Local<T> check_maybe(v8::MaybeLocal<T> maybe)
+    {
+        if (maybe.IsEmpty())
+        {
+            // TODO: Is there a way to actually validate that an exception is pending?
+            throw v8_exception::from_internal();
+        }
+
+        return maybe.ToLocalChecked();
+    }
+
+    inline bool has_property(
+        v8::Isolate* isolate, v8::Local<v8::Context> context, v8::Local<v8::Object> obj, std::string_view name)
+    {
+        return check_maybe(obj->Has(context, make_string_checked(isolate, name)));
+    }
+
+    template <typename T>
+    inline void set_property(
+        runtime_context* context, v8::Local<v8::Context> ctxt, v8::Local<v8::Object> target, uint32_t index, T&& value)
+    {
+        auto result = target->Set(ctxt, index, convert_native_to_value(context, std::forward<T>(value)));
+
+        // NOTE: From documentation, result will always be true or not set (error)
+        check_maybe(result);
+        assert(result.FromJust());
+    }
+
+    template <typename T>
+    inline void set_property(runtime_context* context, v8::Local<v8::Context> ctxt, v8::Local<v8::Object> target,
+        std::string_view key, T&& value)
+    {
+        auto result = target->Set(
+            ctxt, make_string_checked(context->isolate, key), convert_native_to_value(context, std::forward<T>(value)));
+
+        // NOTE: From documentation, result will always be true or not set (error)
+        check_maybe(result);
+        assert(result.FromJust());
+    }
+
+    inline v8::Local<v8::Value> get_property(v8::Local<v8::Context> ctxt, v8::Local<v8::Object> target, uint32_t index)
+    {
+        return check_maybe(target->Get(ctxt, index));
+    }
+
+    inline v8::Local<v8::Value> get_property(
+        v8::Isolate* isolate, v8::Local<v8::Context> ctxt, v8::Local<v8::Object> target, std::string_view key)
+    {
+        return check_maybe(target->Get(ctxt, make_string_checked(isolate, key)));
+    }
+
+    template <typename T>
+    inline T get_property_as(
+        runtime_context* context, v8::Local<v8::Context> ctxt, v8::Local<v8::Object> target, uint32_t index)
+    {
+        auto result = check_maybe(target->Get(ctxt, index));
+        return convert_value_to_native<T>(context, result);
+    }
+
+    template <typename T>
+    inline T get_property_as(
+        runtime_context* context, v8::Local<v8::Context> ctxt, v8::Local<v8::Object> target, std::string_view key)
+    {
+        auto result = check_maybe(target->Get(ctxt, make_string_checked(context->isolate, key)));
+        return convert_value_to_native<T>(context, result);
+    }
+
+    // Retrieve native "this" pointer from JS value
+    template <typename T>
+    inline T* this_from_holder(v8::Local<v8::Object> obj)
+    {
+        auto field = obj->GetInternalField(0);
+        // TODO: Should we just assume success on all these since we control the entire path?
+        if (field.IsEmpty())
+            throw v8_exception::from_internal(); // TODO: Is this a valid condition
+
+        auto external = field.As<v8::External>();
+        if (external.IsEmpty())
+            throw v8_exception::from_internal(); // TODO: Is this a valid condition
+
+        auto ptr = external->Value();
+        assert(ptr); // TODO?
+        return static_cast<T*>(ptr);
+    }
+
+    template <typename T, typename U>
+    inline T* this_from_holder(const v8::PropertyCallbackInfo<U>& info)
+    {
+        auto holder = info.Holder();
+        if (holder.IsEmpty())
+            throw v8_exception::from_internal(); // TODO: This is almost certainly incorrect
+
+        return this_from_holder<T>(holder);
+    }
+
+    template <typename T, typename U>
+    inline T* this_from_holder(const v8::FunctionCallbackInfo<U>& info)
+    {
+        auto holder = info.Holder();
+        if (holder.IsEmpty())
+            throw v8_exception::from_internal(); // TODO: This is almost certainly incorrect
+
+        return this_from_holder<T>(holder);
+    }
+
+#if 0
     template <typename T>
     jsi::Function bind_host_function(jsi::Runtime& runtime, const jsi::PropNameID& name, unsigned int paramCount,
         jsi::Value (T::*fn)(jsi::Runtime&, const jsi::Value*, size_t))
@@ -634,55 +886,58 @@ namespace rnwinrt
             });
     }
 
+#endif
+
+    // Value conversions
     template <typename T>
-    jsi::Value convert_object_instance_to_value(jsi::Runtime& runtime, const T& value);
+    v8::Local<v8::Value> convert_object_instance_to_value(runtime_context* context, const T& value);
 
     template <typename T>
-    T convert_value_to_object_instance(jsi::Runtime& runtime, const jsi::Value& value);
+    T convert_value_to_object_instance(runtime_context* context, v8::Local<v8::Value> value);
 
     template <typename T, typename Enable = void>
     struct projected_value_traits
     {
-        static jsi::Value as_value(jsi::Runtime& runtime, const T& value)
+        static v8::Local<v8::Value> as_value(runtime_context* context, const T& value)
         {
             if constexpr (std::is_base_of_v<winrt::Windows::Foundation::IInspectable, T>)
             {
-                return convert_object_instance_to_value(runtime, value);
+                return convert_object_instance_to_value(context, value);
             }
             else
             {
-                throw jsi::JSError(
-                    runtime, "TypeError: Conversion from native to JS not implemented for type '"s + typeid(T).name() +
-                                 "'. This is likely caused by the type being in a non-projected namespace");
+                throw v8_exception::type_error(
+                    context->isolate, "Conversion from native to JS not implemented for type '"s + typeid(T).name() +
+                                          "'. This is likely caused by the type being in a non-projected namespace");
             }
         }
 
-        static T as_native(jsi::Runtime& runtime, const jsi::Value& value)
+        static T as_native(runtime_context* context, v8::Local<v8::Value> value)
         {
             if constexpr (std::is_base_of_v<winrt::Windows::Foundation::IInspectable, T>)
             {
-                return convert_value_to_object_instance<T>(runtime, value);
+                return convert_value_to_object_instance<T>(context, value);
             }
             else
             {
-                throw jsi::JSError(
-                    runtime, "TypeError: Conversion from JS to native not implemented for type '"s + typeid(T).name() +
-                                 "'. This is likely caused by the type being in a non-projected namespace");
+                throw v8_exception::type_error(
+                    context->isolate, "Conversion from JS to native not implemented for type '"s + typeid(T).name() +
+                                          "'. This is likely caused by the type being in a non-projected namespace");
             }
         }
     };
 
     template <typename T>
-    auto convert_native_to_value(jsi::Runtime& runtime, T&& value)
+    auto convert_native_to_value(runtime_context* context, T&& value)
     {
         return projected_value_traits<std::remove_const_t<std::remove_reference_t<T>>>::as_value(
-            runtime, std::forward<T>(value));
+            context, std::forward<T>(value));
     }
 
     template <typename T>
-    auto convert_value_to_native(jsi::Runtime& runtime, const jsi::Value& value)
+    auto convert_value_to_native(runtime_context* context, v8::Local<v8::Value> value)
     {
-        return projected_value_traits<T>::as_native(runtime, value);
+        return projected_value_traits<T>::as_native(context, value);
     }
 
     template <typename T>
@@ -694,8 +949,8 @@ namespace rnwinrt
         using reference = T;
         using iterator_category = std::random_access_iterator_tag;
 
-        array_to_native_iterator(jsi::Runtime& runtime, jsi::Array& array, size_t index = 0) :
-            m_runtime(runtime), m_array(array), m_index(index)
+        array_to_native_iterator(runtime_context* context, v8::Local<v8::Array> array, uint32_t index = 0) :
+            m_context(context), m_array(array), m_index(index)
         {
         }
 
@@ -706,12 +961,12 @@ namespace rnwinrt
 
         array_to_native_iterator end() noexcept
         {
-            return array_to_native_iterator(m_runtime, m_array, m_array.length(m_runtime));
+            return array_to_native_iterator(m_context, m_array, m_array->Length());
         }
 
         bool operator==(const array_to_native_iterator& other) const noexcept
         {
-            assert(&m_array == &other.m_array);
+            assert(*m_array == *other.m_array);
             return m_index == other.m_index;
         }
 
@@ -722,13 +977,13 @@ namespace rnwinrt
 
         bool operator<(const array_to_native_iterator& other) const noexcept
         {
-            assert(&m_array == &other.m_array);
+            assert(*m_array == *other.m_array);
             return m_index < other.m_index;
         }
 
         bool operator>(const array_to_native_iterator& other) const noexcept
         {
-            assert(&m_array == &other.m_array);
+            assert(*m_array == *other.m_array);
             return m_index > other.m_index;
         }
 
@@ -744,12 +999,12 @@ namespace rnwinrt
 
         T operator*()
         {
-            return convert_value_to_native<T>(m_runtime, m_array.getValueAtIndex(m_runtime, m_index));
+            return get_property_as<T>(m_context, m_context->isolate->GetCurrentContext(), m_array, m_index);
         }
 
         T operator[](difference_type index) const
         {
-            return convert_value_to_native<T>(m_runtime, m_array.getValueAtIndex(m_runtime, m_index + index));
+            return get_property_as<T>(m_context, m_context->isolate->GetCurrentContext(), m_array, m_index + index);
         }
 
         array_to_native_iterator& operator++() noexcept
@@ -816,38 +1071,38 @@ namespace rnwinrt
         }
 
     private:
-        jsi::Runtime& m_runtime;
-        jsi::Array& m_array;
-        std::size_t m_index;
+        runtime_context* m_context;
+        v8::Local<v8::Array> m_array;
+        uint32_t m_index;
     };
 
     namespace details
     {
-        inline void fill_return_struct(jsi::Runtime&, jsi::Object&)
+        inline void fill_return_struct(runtime_context*, v8::Local<v8::Context>, v8::Local<v8::Object>)
         {
         }
 
         template <typename T, typename... Args>
-        void fill_return_struct(
-            jsi::Runtime& runtime, jsi::Object& target, std::string_view name, const T& value, const Args&... args)
+        void fill_return_struct(runtime_context* context, v8::Local<v8::Context> ctxt, v8::Local<v8::Object> target,
+            std::string_view name, const T& value, const Args&... args)
         {
-            target.setProperty(runtime, make_propid(runtime, name), convert_native_to_value(runtime, value));
-            fill_return_struct(runtime, target, args...);
+            target->Set(ctxt, make_string_checked(context->isolate, name), convert_native_to_value(context, value));
+            fill_return_struct(context, ctxt, target, args...);
         }
     }
 
     template <typename... Args>
-    jsi::Value make_void_return_struct(jsi::Runtime& runtime, const Args&... args)
+    v8::Local<v8::Value> make_void_return_struct(runtime_context* context, const Args&... args)
     {
-        jsi::Object result(runtime);
-        details::fill_return_struct(runtime, result, args...);
-        return jsi::Value(runtime, result);
+        auto result = v8::Object::New(context->isolate);
+        details::fill_return_struct(context, context->isolate->GetCurrentContext(), result, args...);
+        return result;
     }
 
     template <typename... Args>
-    jsi::Value make_return_struct(jsi::Runtime& runtime, const Args&... args)
+    v8::Local<v8::Value> make_return_struct(runtime_context* context, const Args&... args)
     {
-        return make_void_return_struct(runtime, "returnValue", args...);
+        return make_void_return_struct(context, "returnValue", args...);
     }
 
     struct pinterface_traits_base
@@ -920,6 +1175,7 @@ namespace rnwinrt
         static constexpr bool is_vector = true;
     };
 
+#if 0
     struct promise_wrapper
     {
         static promise_wrapper create(jsi::Runtime& runtime)
@@ -1029,20 +1285,12 @@ namespace rnwinrt
         auto integer = std::floor(std::abs(result));
         return (result < 0) ? -integer : integer;
     }
-
-    // Exception methods, to help reduce binary size
-    [[noreturn]] __declspec(noinline) void throw_no_constructor(
-        jsi::Runtime& runtime, std::string_view typeNamespace, std::string_view typeName, size_t argCount);
-
-    [[noreturn]] __declspec(noinline) void throw_no_function_overload(jsi::Runtime& runtime,
-        std::string_view typeNamespace, std::string_view typeName, std::string_view fnName, size_t argCount);
-
-    [[noreturn]] __declspec(noinline) void throw_invalid_delegate_arg_count(
-        jsi::Runtime& runtime, std::string_view typeNamespace, std::string_view typeName);
+#endif
 }
 
+#if 0
 // JS thread context data
-namespace rnwinrt
+namespace nodewinrt
 {
     struct runtime_context;
 
@@ -1402,9 +1650,10 @@ namespace rnwinrt
 
     runtime_context* current_runtime_context();
 }
+#endif
 
 // Types used to store static data
-namespace rnwinrt
+namespace nodewinrt
 {
     // NOTE: All of these instances are intended to go into the .text section and hold no state that needs to be free'd,
     // hence the lack of a virtual destructor
@@ -1414,7 +1663,7 @@ namespace rnwinrt
         {
         }
 
-        virtual jsi::Value create(jsi::Runtime& runtime) const = 0;
+        virtual v8::Local<v8::Value> create(runtime_context* context) const = 0;
 
         std::string_view name; // E.g. 'Baz' for the type/namespace/etc. 'Foo.Bar.Baz'
     };
@@ -1426,7 +1675,7 @@ namespace rnwinrt
         {
         }
 
-        virtual jsi::Value create(jsi::Runtime& runtime) const override;
+        virtual v8::Local<v8::Value> create(runtime_context* context) const override;
 
         span<const static_projection_data* const> children;
     };
@@ -1448,9 +1697,9 @@ namespace rnwinrt
         {
         }
 
-        virtual jsi::Value create(jsi::Runtime& runtime) const override;
+        virtual v8::Local<v8::Value> create(runtime_context* context) const override;
 
-        jsi::Value get_value(std::string_view valueName) const;
+        v8::Local<v8::Value> get_value(std::string_view valueName) const;
 
         span<const value_mapping> values;
     };
@@ -1484,7 +1733,7 @@ namespace rnwinrt
         {
         }
 
-        virtual jsi::Value create(jsi::Runtime& runtime) const override;
+        virtual v8::Local<v8::Value> create(runtime_context* context) const override;
 
         span<const property_mapping> properties;
         span<const event_mapping> events;
@@ -1501,7 +1750,7 @@ namespace rnwinrt
         {
         }
 
-        virtual jsi::Value create(jsi::Runtime& runtime) const override;
+        virtual v8::Local<v8::Value> create(runtime_context* context) const override;
 
         std::string_view full_namespace;
         call_function_t constructor;
@@ -1535,12 +1784,13 @@ namespace rnwinrt
         };
 
         constexpr static_interface_data(const winrt::guid& guid, span<const property_mapping> properties,
-            span<const event_mapping> events, span<const function_mapping> functions,
-            instance_runtime_get_property_t runtimeGetProperty = nullptr,
-            instance_runtime_set_property_t runtimeSetProperty = nullptr) :
+            span<const event_mapping> events, span<const function_mapping> functions//,
+            // TODO instance_runtime_get_property_t runtimeGetProperty = nullptr,
+            // TODO instance_runtime_set_property_t runtimeSetProperty = nullptr
+            ) :
             guid(guid),
-            properties(properties), events(events), functions(functions), runtime_get_property(runtimeGetProperty),
-            runtime_set_property(runtimeSetProperty)
+            properties(properties), events(events), functions(functions)// TODO, runtime_get_property(runtimeGetProperty),
+            // TODOruntime_set_property(runtimeSetProperty)
         {
         }
 
@@ -1551,68 +1801,88 @@ namespace rnwinrt
 
         // Some projected types want the ability to expose functions beyond what's marked on the WinRT interface (e.g.
         // collections types)
-        instance_runtime_get_property_t runtime_get_property;
-        instance_runtime_set_property_t runtime_set_property;
+        // TODO instance_runtime_get_property_t runtime_get_property;
+        // TODO instance_runtime_set_property_t runtime_set_property;
     };
 
     extern const span<const std::pair<winrt::guid, const static_interface_data*>> global_interface_map;
 }
 
 // Types used for object instances, etc.
-namespace rnwinrt
+namespace nodewinrt
 {
-    struct projected_namespace final : public jsi::HostObject
+    struct projected_namespace
     {
-        projected_namespace(const static_namespace_data* data) : m_data(data)
+        projected_namespace(runtime_context* context, const static_namespace_data* data) :
+            m_context(context), m_data(data)
         {
             m_children.resize(data->children.size());
         }
 
-        // HostObject functions
-        virtual jsi::Value get(jsi::Runtime& runtime, const jsi::PropNameID& name) override;
-        virtual void set(jsi::Runtime& runtime, const jsi::PropNameID& name, const jsi::Value& value) override;
-        virtual std::vector<jsi::PropNameID> getPropertyNames(jsi::Runtime& runtime) override;
+        // Accessors
+        static void property_getter(v8::Local<v8::Name> property, const v8::PropertyCallbackInfo<v8::Value>& info);
+        static void property_query(v8::Local<v8::Name> property, const v8::PropertyCallbackInfo<v8::Integer>& info);
+        static void property_enum(const v8::PropertyCallbackInfo<v8::Array>& info);
+        // TODO?
+        // static void property_desc(v8::Local<v8::Name> property, const v8::PropertyCallbackInfo<v8::Value>& info);
 
     private:
+        runtime_context* m_context;
         const static_namespace_data* m_data;
-        std::vector<jsi::Value> m_children;
+        std::vector<v8::Global<v8::Value>> m_children;
     };
 
-    struct projected_enum final : public jsi::HostObject
+    struct projected_enum
     {
         projected_enum(const static_enum_data* data) : m_data(data)
         {
         }
 
-        // HostObject functions
-        virtual jsi::Value get(jsi::Runtime& runtime, const jsi::PropNameID& name) override;
-        virtual void set(jsi::Runtime& runtime, const jsi::PropNameID& name, const jsi::Value& value) override;
-        virtual std::vector<jsi::PropNameID> getPropertyNames(jsi::Runtime& runtime) override;
+        // Accessors
+        static void property_getter(v8::Local<v8::Name> property, const v8::PropertyCallbackInfo<v8::Value>& info);
+        static void property_query(v8::Local<v8::Name> property, const v8::PropertyCallbackInfo<v8::Integer>& info);
+        static void property_enum(const v8::PropertyCallbackInfo<v8::Array>& info);
+        // TODO?
+        // static void property_desc(v8::Local<v8::Name> property, const v8::PropertyCallbackInfo<v8::Value>& info);
 
     private:
         const static_enum_data* m_data;
     };
 
-    struct projected_statics_class final : public jsi::HostObject
+    struct projected_class
     {
-        projected_statics_class(const static_class_data* data) : m_data(data)
+        projected_class(runtime_context* context, const static_class_data* data) :
+            m_context(context), m_data(data)
         {
         }
 
-        // HostObject functions
-        virtual jsi::Value get(jsi::Runtime& runtime, const jsi::PropNameID& name) override;
-        virtual void set(jsi::Runtime& runtime, const jsi::PropNameID& name, const jsi::Value& value) override;
-        virtual std::vector<jsi::PropNameID> getPropertyNames(jsi::Runtime& runtime) override;
+        // Constructor, if applicable
+        static void construct(const v8::FunctionCallbackInfo<v8::Value>& info);
+
+        // Accessors
+        static void property_getter(v8::Local<v8::Name> property, const v8::PropertyCallbackInfo<v8::Value>& info);
+        static void property_setter(
+            v8::Local<v8::Name> property, v8::Local<v8::Value> value, const v8::PropertyCallbackInfo<v8::Value>& info);
+        static void property_query(v8::Local<v8::Name> property, const v8::PropertyCallbackInfo<v8::Integer>& info);
+        static void property_enum(const v8::PropertyCallbackInfo<v8::Array>& info);
+        // TODO?
+        // static void property_desc(v8::Local<v8::Name> property, const v8::PropertyCallbackInfo<v8::Value>& info);
 
     private:
+#if 0
         jsi::Value add_event_listener(jsi::Runtime& runtime, const jsi::Value* args, size_t count);
         jsi::Value remove_event_listener(jsi::Runtime& runtime, const jsi::Value* args, size_t count);
+#endif
 
+        runtime_context* m_context;
         const static_class_data* m_data;
+#if 0
         std::unordered_map<std::string_view, jsi::Value> m_functions;
         event_registration_array m_events;
+#endif
     };
 
+#if 0
     struct projected_function;
     struct projected_overloaded_function;
 
@@ -2016,11 +2286,13 @@ namespace rnwinrt
         state m_state = state::pending;
         jsi::Value m_result;
     };
+#endif
 }
 
 // Collections wrappers
-namespace rnwinrt
+namespace nodewinrt
 {
+#if 0
     // Implementations for passing arrays as various iterable types
     template <typename D, typename T>
     struct array_iterator :
@@ -2247,212 +2519,232 @@ namespace rnwinrt
             return winrt::make<array_vector_view<T>>(this->runtime, this->array.getArray(this->runtime));
         }
     };
+#endif
 }
 
 // Value converters
-namespace rnwinrt
+namespace nodewinrt
 {
     template <>
     struct projected_value_traits<bool>
     {
-        static jsi::Value as_value(jsi::Runtime&, bool value) noexcept
+        static v8::Local<v8::Value> as_value(runtime_context* context, bool value) noexcept
         {
-            return jsi::Value(value);
+            return v8::Boolean::New(context->isolate, value);
         }
 
-        static bool as_native(jsi::Runtime&, const jsi::Value& value) noexcept;
+        static bool as_native(runtime_context* context, v8::Local<v8::Value> value) noexcept
+        {
+            return value->BooleanValue(context->isolate);
+        }
     };
 
     template <typename T>
     struct projected_value_traits<T, std::enable_if_t<std::is_arithmetic_v<T>>>
     {
-        static jsi::Value as_value(jsi::Runtime&, T value) noexcept
+        static v8::Local<v8::Value> as_value(runtime_context* context, T value) noexcept
         {
-            return jsi::Value(static_cast<double>(value));
+            return v8::Number::New(context->isolate, static_cast<double>(value));
         }
 
-        static T as_native(jsi::Runtime&, const jsi::Value& value)
+        static T as_native(runtime_context* context, v8::Local<v8::Value> value)
         {
-            return static_cast<T>(value.asNumber());
+            return check_maybe(value->NumberValue(context->isolate->GetCurrentContext()));
         }
     };
 
     template <typename T>
     struct projected_value_traits<T, std::enable_if_t<std::is_enum_v<T>>>
     {
-        static jsi::Value as_value(jsi::Runtime&, T value) noexcept
+        using int_type = std::underlying_type_t<T>;
+
+        static v8::Local<v8::Value> as_value(runtime_context* context, T value) noexcept
         {
-            return jsi::Value(static_cast<double>(static_cast<std::underlying_type_t<T>>(value)));
+            return convert_native_to_value(context, static_cast<int_type>(value));
         }
 
-        static T as_native(jsi::Runtime&, const jsi::Value& value)
+        static T as_native(runtime_context* context, v8::Local<v8::Value> value)
         {
-            return static_cast<T>(static_cast<std::underlying_type_t<T>>(value.asNumber()));
+            return static_cast<T>(convert_value_to_native<int_type>(context, value));
         }
     };
 
     template <>
     struct projected_value_traits<char16_t>
     {
-        static jsi::Value as_value(jsi::Runtime& runtime, char16_t value);
-        static char16_t as_native(jsi::Runtime& runtime, const jsi::Value& value);
+        static v8::Local<v8::Value> as_value(runtime_context* context, char16_t value);
+        static char16_t as_native(runtime_context* context, v8::Local<v8::Value> value);
     };
 
     template <>
     struct projected_value_traits<winrt::hstring>
     {
-        static jsi::Value as_value(jsi::Runtime& runtime, const winrt::hstring& value)
+        static v8::Local<v8::Value> as_value(runtime_context* context, const winrt::hstring& value)
         {
-            return make_string(runtime, static_cast<std::wstring_view>(value));
+            return make_string_checked(context->isolate, static_cast<std::wstring_view>(value));
         }
 
-        static winrt::hstring as_native(jsi::Runtime& runtime, const jsi::Value& value);
+        static winrt::hstring as_native(runtime_context* context, v8::Local<v8::Value> value);
     };
 
     template <>
     struct projected_value_traits<winrt::guid>
     {
-        static jsi::Value as_value(jsi::Runtime& runtime, const winrt::guid& value);
-        static winrt::guid as_native(jsi::Runtime& runtime, const jsi::Value& value);
+        static v8::Local<v8::Value> as_value(runtime_context* context, const winrt::guid& value);
+        static winrt::guid as_native(runtime_context* context, v8::Local<v8::Value> value);
     };
 
     template <>
     struct projected_value_traits<winrt::hresult>
     {
-        static jsi::Value as_value(jsi::Runtime& runtime, winrt::hresult value)
+        static v8::Local<v8::Value> as_value(runtime_context* context, winrt::hresult value)
         {
-            return projected_value_traits<int32_t>::as_value(runtime, static_cast<int32_t>(value));
+            return convert_native_to_value(context, static_cast<int32_t>(value));
         }
 
-        static winrt::hresult as_native(jsi::Runtime& runtime, const jsi::Value& value)
+        static winrt::hresult as_native(runtime_context* context, v8::Local<v8::Value> value)
         {
-            return winrt::hresult(projected_value_traits<int32_t>::as_native(runtime, value));
+            return winrt::hresult(convert_value_to_native<int32_t>(context, value));
         }
     };
 
     template <>
     struct projected_value_traits<winrt::event_token>
     {
-        static jsi::Value as_value(jsi::Runtime& runtime, winrt::event_token value)
+        static v8::Local<v8::Value> as_value(runtime_context* context, winrt::event_token value)
         {
-            jsi::Object result(runtime);
-            result.setProperty(runtime, "value", convert_native_to_value(runtime, value.value));
+            auto result = v8::Object::New(context->isolate);
+            set_property(context, context->isolate->GetCurrentContext(), result, "value"sv, value.value);
             return result;
         }
 
-        static winrt::event_token as_native(jsi::Runtime& runtime, const jsi::Value& value)
+        static winrt::event_token as_native(runtime_context* context, v8::Local<v8::Value> value)
         {
-            winrt::event_token result{};
-            auto obj = value.asObject(runtime);
-            if (auto field = obj.getProperty(runtime, "value"); !field.isUndefined())
-                result.value = convert_value_to_native<int64_t>(runtime, field);
-            return result;
+            auto isolate = context->isolate;
+            auto obj = cast_object(isolate, value);
+            return winrt::event_token{ get_property_as<int64_t>(
+                context, isolate->GetCurrentContext(), obj, "value"sv) };
         }
     };
 
     template <>
     struct projected_value_traits<winrt::Windows::Foundation::DateTime>
     {
-        static jsi::Value as_value(jsi::Runtime& runtime, winrt::Windows::Foundation::DateTime value);
-        static winrt::Windows::Foundation::DateTime as_native(jsi::Runtime& runtime, const jsi::Value& value);
+        static v8::Local<v8::Value> as_value(runtime_context* context, winrt::Windows::Foundation::DateTime value);
+        static winrt::Windows::Foundation::DateTime as_native(runtime_context* context, v8::Local<v8::Value> value);
     };
 
     template <>
     struct projected_value_traits<winrt::Windows::Foundation::TimeSpan>
     {
-        static jsi::Value as_value(jsi::Runtime& runtime, winrt::Windows::Foundation::TimeSpan value);
-        static winrt::Windows::Foundation::TimeSpan as_native(jsi::Runtime& runtime, const jsi::Value& value);
+        static v8::Local<v8::Value> as_value(runtime_context* context, winrt::Windows::Foundation::TimeSpan value);
+        static winrt::Windows::Foundation::TimeSpan as_native(runtime_context* context, v8::Local<v8::Value> value);
     };
 
     template <>
     struct projected_value_traits<winrt::Windows::Foundation::Numerics::float3x2>
     {
-        static jsi::Value as_value(jsi::Runtime& runtime, winrt::Windows::Foundation::Numerics::float3x2 value);
-        static winrt::Windows::Foundation::Numerics::float3x2 as_native(jsi::Runtime& runtime, const jsi::Value& value);
+        static v8::Local<v8::Value> as_value(
+            runtime_context* context, winrt::Windows::Foundation::Numerics::float3x2 value);
+        static winrt::Windows::Foundation::Numerics::float3x2 as_native(
+            runtime_context* context, v8::Local<v8::Value> value);
     };
 
     template <>
     struct projected_value_traits<winrt::Windows::Foundation::Numerics::float4x4>
     {
-        static jsi::Value as_value(jsi::Runtime& runtime, winrt::Windows::Foundation::Numerics::float4x4 value);
-        static winrt::Windows::Foundation::Numerics::float4x4 as_native(jsi::Runtime& runtime, const jsi::Value& value);
+        static v8::Local<v8::Value> as_value(
+            runtime_context* context, winrt::Windows::Foundation::Numerics::float4x4 value);
+        static winrt::Windows::Foundation::Numerics::float4x4 as_native(
+            runtime_context* context, v8::Local<v8::Value> value);
     };
 
     template <>
     struct projected_value_traits<winrt::Windows::Foundation::Numerics::plane>
     {
-        static jsi::Value as_value(jsi::Runtime& runtime, winrt::Windows::Foundation::Numerics::plane value);
-        static winrt::Windows::Foundation::Numerics::plane as_native(jsi::Runtime& runtime, const jsi::Value& value);
+        static v8::Local<v8::Value> as_value(
+            runtime_context* context, winrt::Windows::Foundation::Numerics::plane value);
+        static winrt::Windows::Foundation::Numerics::plane as_native(
+            runtime_context* context, v8::Local<v8::Value> value);
     };
 
     template <>
     struct projected_value_traits<winrt::Windows::Foundation::Numerics::quaternion>
     {
-        static jsi::Value as_value(jsi::Runtime& runtime, winrt::Windows::Foundation::Numerics::quaternion value);
+        static v8::Local<v8::Value> as_value(
+            runtime_context* context, winrt::Windows::Foundation::Numerics::quaternion value);
         static winrt::Windows::Foundation::Numerics::quaternion as_native(
-            jsi::Runtime& runtime, const jsi::Value& value);
+            runtime_context* context, v8::Local<v8::Value> value);
     };
 
     template <>
     struct projected_value_traits<winrt::Windows::Foundation::Numerics::float2>
     {
-        static jsi::Value as_value(jsi::Runtime& runtime, winrt::Windows::Foundation::Numerics::float2 value);
-        static winrt::Windows::Foundation::Numerics::float2 as_native(jsi::Runtime& runtime, const jsi::Value& value);
+        static v8::Local<v8::Value> as_value(
+            runtime_context* context, winrt::Windows::Foundation::Numerics::float2 value);
+        static winrt::Windows::Foundation::Numerics::float2 as_native(
+            runtime_context* context, v8::Local<v8::Value> value);
     };
 
     template <>
     struct projected_value_traits<winrt::Windows::Foundation::Numerics::float3>
     {
-        static jsi::Value as_value(jsi::Runtime& runtime, winrt::Windows::Foundation::Numerics::float3 value);
-        static winrt::Windows::Foundation::Numerics::float3 as_native(jsi::Runtime& runtime, const jsi::Value& value);
+        static v8::Local<v8::Value> as_value(
+            runtime_context* context, winrt::Windows::Foundation::Numerics::float3 value);
+        static winrt::Windows::Foundation::Numerics::float3 as_native(
+            runtime_context* context, v8::Local<v8::Value> value);
     };
 
     template <>
     struct projected_value_traits<winrt::Windows::Foundation::Numerics::float4>
     {
-        static jsi::Value as_value(jsi::Runtime& runtime, winrt::Windows::Foundation::Numerics::float4 value);
-        static winrt::Windows::Foundation::Numerics::float4 as_native(jsi::Runtime& runtime, const jsi::Value& value);
+        static v8::Local<v8::Value> as_value(
+            runtime_context* context, winrt::Windows::Foundation::Numerics::float4 value);
+        static winrt::Windows::Foundation::Numerics::float4 as_native(
+            runtime_context* context, v8::Local<v8::Value> value);
     };
 
     template <typename T>
     struct value_fill_array_wrapper
     {
-        value_fill_array_wrapper(jsi::Runtime& runtime, const winrt::array_view<T>& array) :
-            m_runtime(runtime), m_nativeArray(array), m_jsArray(runtime, array.size())
+        value_fill_array_wrapper(runtime_context* context, const winrt::array_view<T>& array) :
+            m_context(context), m_nativeArray(array),
+            m_jsArray(v8::Array::New(context->isolate, static_cast<int>(array.size())))
         {
         }
 
         ~value_fill_array_wrapper() noexcept(false)
         {
+            // TODO: In theory the JS code could have expanded the size of the array. Should we throw then?
+            auto ctxt = m_context->isolate->GetCurrentContext();
             for (uint32_t i = 0; i < m_nativeArray.size(); ++i)
             {
-                auto value = m_jsArray.getValueAtIndex(m_runtime, i);
-                if (!value.isUndefined())
+                if (auto value = get_property(ctxt, m_jsArray, i); !value->IsUndefined())
                 {
-                    m_nativeArray[i] = convert_value_to_native<T>(m_runtime, value);
+                    m_nativeArray[i] = convert_value_to_native<T>(m_context, value);
                 }
             }
         }
 
-        // NOTE: Cannot rely on an 'operator jsi::Value()' because of how JSI makes function calls
-        jsi::Value value()
+        // TODO: Can we just use some 'operator v8::Local<v8::Value>' here?
+        v8::Local<v8::Value> value()
         {
-            return jsi::Value(m_runtime, m_jsArray);
+            return m_jsArray;
         }
 
     private:
-        jsi::Runtime& m_runtime;
+        runtime_context* m_context;
         winrt::array_view<T> m_nativeArray;
-        jsi::Array m_jsArray;
+        v8::Local<v8::Array> m_jsArray; // NOTE: Stack object; okay to keep as Local
     };
 
     template <typename T>
     struct native_fill_array_wrapper
     {
-        native_fill_array_wrapper(jsi::Runtime& runtime, const jsi::Value& value) :
-            m_runtime(runtime), m_jsArray(value.asObject(runtime).asArray(runtime))
+        native_fill_array_wrapper(runtime_context* context, v8::Local<v8::Value> value) :
+            m_context(context), m_jsArray(cast_array(context->isolate, value))
         {
-            auto size = m_jsArray.size(runtime);
+            auto size = m_jsArray->Length();
             if constexpr (std::is_base_of_v<winrt::Windows::Foundation::IUnknown, T>)
             {
                 m_nativeArray.resize(size, nullptr);
@@ -2465,9 +2757,10 @@ namespace rnwinrt
 
         ~native_fill_array_wrapper() noexcept(false)
         {
+            auto ctxt = m_context->isolate->GetCurrentContext();
             for (std::size_t i = 0; i < m_nativeArray.size(); ++i)
             {
-                m_jsArray.setValueAtIndex(m_runtime, i, convert_native_to_value(m_runtime, m_nativeArray[i]));
+                set_property(m_context, ctxt, m_jsArray, static_cast<uint32_t>(i), m_nativeArray[i]);
             }
         }
 
@@ -2477,8 +2770,8 @@ namespace rnwinrt
         }
 
     private:
-        jsi::Runtime& m_runtime;
-        jsi::Array m_jsArray;
+        runtime_context* m_context;
+        v8::Local<v8::Array> m_jsArray; // NOTE: Stack object; okay to keep as Local
         sso_vector<T, 4> m_nativeArray; // NOTE: Because std::vector<bool> makes everyone sad...
     };
 
@@ -2486,28 +2779,29 @@ namespace rnwinrt
     struct projected_value_traits<winrt::array_view<T>>
     {
         // NOTE: Non-const 'T' - this is specific to 'fill array' scenarios
-        static value_fill_array_wrapper<T> as_value(jsi::Runtime& runtime, const winrt::array_view<T>& value)
+        static value_fill_array_wrapper<T> as_value(runtime_context* context, const winrt::array_view<T>& value)
         {
-            return value_fill_array_wrapper<T>(runtime, value);
+            return value_fill_array_wrapper<T>(context, value);
         }
 
-        static native_fill_array_wrapper<T> as_native(jsi::Runtime& runtime, const jsi::Value& value)
+        static native_fill_array_wrapper<T> as_native(runtime_context* context, v8::Local<v8::Value> value)
         {
-            return native_fill_array_wrapper<T>(runtime, value);
+            return native_fill_array_wrapper<T>(context, value);
         }
     };
 
     template <typename T>
     struct pass_array_wrapper
     {
-        pass_array_wrapper(jsi::Runtime& runtime, const jsi::Value& value)
+        pass_array_wrapper(runtime_context* context, v8::Local<v8::Value> value)
         {
-            auto array = value.asObject(runtime).asArray(runtime);
-            auto size = array.size(runtime);
+            auto ctxt = context->isolate->GetCurrentContext();
+            auto array = cast_array(context->isolate, value);
+            auto size = array->Length();
             m_data.reserve(size);
-            for (std::size_t i = 0; i < size; ++i)
+            for (uint32_t i = 0; i < size; ++i)
             {
-                m_data.push_back(convert_value_to_native<T>(runtime, array.getValueAtIndex(runtime, i)));
+                m_data.push_back(get_property_as<T>(context, ctxt, array, i));
             }
         }
 
@@ -2524,61 +2818,64 @@ namespace rnwinrt
     struct projected_value_traits<winrt::array_view<const T>>
     {
         // NOTE: Const 'T' - this is specific to 'pass array' scenarios
-        static jsi::Value as_value(jsi::Runtime& runtime, const winrt::array_view<const T>& value)
+        static v8::Local<v8::Value> as_value(runtime_context* context, const winrt::array_view<const T>& value)
         {
             // Array is immutable; we can convert to a JS array and call it a day
-            jsi::Array result(runtime, value.size());
+            auto result = v8::Array::New(context->isolate, static_cast<int>(value.size()));
+            auto ctxt = context->isolate->GetCurrentContext();
             for (uint32_t i = 0; i < value.size(); ++i)
             {
-                result.setValueAtIndex(runtime, i, convert_native_to_value(runtime, value[i]));
+                set_property(context, ctxt, result, i, value[i]);
             }
 
             return result;
         }
 
-        static pass_array_wrapper<T> as_native(jsi::Runtime& runtime, const jsi::Value& value)
+        static pass_array_wrapper<T> as_native(runtime_context* context, v8::Local<v8::Value> value)
         {
-            return pass_array_wrapper<T>(runtime, value);
+            return pass_array_wrapper<T>(context, value);
         }
     };
 
     template <typename T>
     struct projected_value_traits<winrt::com_array<T>>
     {
-        static jsi::Value as_value(jsi::Runtime& runtime, const winrt::com_array<T>& value)
+        static v8::Local<v8::Value> as_value(runtime_context* context, const winrt::com_array<T>& value)
         {
-            auto result = jsi::Array(runtime, value.size());
-            for (std::uint32_t i = 0; i < value.size(); ++i)
+            auto result = v8::Array::New(context->isolate, static_cast<int>(value.size()));
+            auto ctxt = context->isolate->GetCurrentContext();
+            for (uint32_t i = 0; i < value.size(); ++i)
             {
-                result.setValueAtIndex(runtime, i, convert_native_to_value(runtime, value[i]));
+                set_property(context, ctxt, result, i, value[i]);
             }
 
             return result;
         }
 
-        static winrt::com_array<T> as_native(jsi::Runtime& runtime, const jsi::Value& value)
+        static winrt::com_array<T> as_native(runtime_context* context, v8::Local<v8::Value> value)
         {
-            auto array = value.asObject(runtime).asArray(runtime);
-            array_to_native_iterator<T> range(runtime, array);
+            auto array = cast_array(context->isolate, value);
+            array_to_native_iterator<T> range(context, array);
             return winrt::com_array<T>(range.begin(), range.end());
         }
     };
 
-    jsi::Value convert_from_property_value(
-        jsi::Runtime& runtime, const winrt::Windows::Foundation::IPropertyValue& value);
-    winrt::Windows::Foundation::IInspectable convert_to_property_value(jsi::Runtime& runtime, const jsi::Value& value);
+    v8::Local<v8::Value> convert_from_property_value(
+        runtime_context* context, const winrt::Windows::Foundation::IPropertyValue& value);
+    winrt::Windows::Foundation::IInspectable convert_to_property_value(
+        runtime_context* context, v8::Local<v8::Value> value);
 
     template <typename T>
-    jsi::Value convert_object_instance_to_value(jsi::Runtime& runtime, const T& value)
+    v8::Local<v8::Value> convert_object_instance_to_value(runtime_context* context, const T& value)
     {
         if (!value)
         {
-            return jsi::Value::null();
+            return v8::Null(context->isolate);
         }
 
         if constexpr (std::is_same_v<T, winrt::Windows::Foundation::IPropertyValue>)
         {
-            if (auto result = convert_from_property_value(runtime, value); !result.isUndefined())
+            if (auto result = convert_from_property_value(context, value); !result.IsEmpty())
             {
                 return result;
             }
@@ -2587,42 +2884,47 @@ namespace rnwinrt
         {
             if (auto propVal = value.try_as<winrt::Windows::Foundation::IPropertyValue>())
             {
-                if (auto result = convert_from_property_value(runtime, propVal); !result.isUndefined())
+                if (auto result = convert_from_property_value(context, propVal); !result.IsEmpty())
                 {
                     return result;
                 }
             }
         }
 
-        return current_runtime_context()->instance_cache.get_instance(runtime, value);
+        // TODO
+        throw v8_exception::type_error(context->isolate, "Object conversion not yet implemented");
+        // return current_runtime_context()->instance_cache.get_instance(runtime, value);
     }
 
     template <typename T>
-    __declspec(noinline) std::optional<T> convert_value_to_object_instance_impl(jsi::Runtime& runtime,
-        const jsi::Value& value, T (*asTargetType)(const winrt::Windows::Foundation::IInspectable&))
+    __declspec(noinline) std::optional<T> convert_value_to_object_instance_impl(runtime_context* context,
+        v8::Local<v8::Value> value, T (*asTargetType)(const winrt::Windows::Foundation::IInspectable&))
     {
-        if (value.isNull() || value.isUndefined())
+        if (value->IsNull() || value->IsUndefined())
         {
             return nullptr;
         }
 
-        if (value.isObject())
+        if (value->IsObject())
         {
-            auto obj = value.getObject(runtime);
+            auto obj = value.As<v8::Object>();
+            // TODO
+#if 0
             if (obj.isHostObject<projected_object_instance>(runtime))
             {
                 return asTargetType(obj.getHostObject<projected_object_instance>(runtime)->instance());
             }
+#endif
         }
 
         return std::nullopt;
     }
 
     template <typename T>
-    T convert_value_to_object_instance(jsi::Runtime& runtime, const jsi::Value& value)
+    T convert_value_to_object_instance(runtime_context* context, v8::Local<v8::Value> value)
     {
         if (auto result = convert_value_to_object_instance_impl<T>(
-                runtime, value, [](const winrt::Windows::Foundation::IInspectable& insp) {
+                context, value, [](const winrt::Windows::Foundation::IInspectable& insp) {
                     if constexpr (std::is_same_v<T, winrt::Windows::Foundation::IInspectable>)
                     {
                         return insp;
@@ -2639,7 +2941,7 @@ namespace rnwinrt
         if constexpr (std::is_same_v<T, winrt::Windows::Foundation::IInspectable> ||
                       std::is_same_v<T, winrt::Windows::Foundation::IPropertyValue>)
         {
-            if (auto result = convert_to_property_value(runtime, value))
+            if (auto result = convert_to_property_value(context, value))
             {
                 if constexpr (std::is_same_v<T, winrt::Windows::Foundation::IInspectable>)
                 {
@@ -2654,55 +2956,56 @@ namespace rnwinrt
 
         if constexpr (pinterface_traits<T>::is_array_convertible)
         {
-            if (value.isObject())
+            if (value->IsArray())
             {
-                auto obj = value.getObject(runtime);
-                if (obj.isArray(runtime))
+                auto array = value.As<v8::Array>();
+                // TODO
+#if 0
+                using elem_type = typename pinterface_traits<T>::value_type;
+                if constexpr (pinterface_traits<T>::is_iterable)
                 {
-                    using elem_type = typename pinterface_traits<T>::value_type;
-                    if constexpr (pinterface_traits<T>::is_iterable)
-                    {
-                        return winrt::make<array_iterable<elem_type>>(runtime, obj.getArray(runtime));
-                    }
-                    else if constexpr (pinterface_traits<T>::is_vector_view)
-                    {
-                        return winrt::make<array_vector_view<elem_type>>(runtime, obj.getArray(runtime));
-                    }
-                    else // is_vector
-                    {
-                        static_assert(pinterface_traits<T>::is_vector);
-                        return winrt::make<array_vector<elem_type>>(runtime, obj.getArray(runtime));
-                    }
+                    return winrt::make<array_iterable<elem_type>>(runtime, obj.getArray(runtime));
                 }
+                else if constexpr (pinterface_traits<T>::is_vector_view)
+                {
+                    return winrt::make<array_vector_view<elem_type>>(runtime, obj.getArray(runtime));
+                }
+                else // is_vector
+                {
+                    static_assert(pinterface_traits<T>::is_vector);
+                    return winrt::make<array_vector<elem_type>>(runtime, obj.getArray(runtime));
+                }
+#endif
             }
         }
 
         // TODO: Also IMap/IMapView?
 
-        throw jsi::JSError(runtime, "TypeError: Cannot derive a WinRT interface for the JS value");
+        throw v8_exception::type_error(context->isolate, "Cannot derive a WinRT interface for the JS value");
     }
 
     template <typename T>
     struct projected_value_traits<winrt::Windows::Foundation::IReference<T>>
     {
-        static jsi::Value as_value(jsi::Runtime& runtime, const winrt::Windows::Foundation::IReference<T>& value)
+        static v8::Local<v8::Value> as_value(
+            runtime_context* context, const winrt::Windows::Foundation::IReference<T>& value)
         {
             if (!value)
             {
-                return jsi::Value::null();
+                return v8::Null(context->isolate);
             }
 
-            return convert_native_to_value(runtime, value.Value());
+            return convert_native_to_value(context, value.Value());
         }
 
-        static winrt::Windows::Foundation::IReference<T> as_native(jsi::Runtime& runtime, const jsi::Value& value)
+        static winrt::Windows::Foundation::IReference<T> as_native(runtime_context* context, v8::Local<v8::Value> value)
         {
-            if (value.isNull() || value.isUndefined())
+            if (value->IsNull() || value->IsUndefined())
             {
                 return nullptr;
             }
 
-            return winrt::box_value(convert_value_to_native<T>(runtime, value))
+            return winrt::box_value(convert_value_to_native<T>(context, value))
                 .as<winrt::Windows::Foundation::IReference<T>>();
         }
     };
@@ -2710,19 +3013,21 @@ namespace rnwinrt
     template <typename T>
     struct projected_value_traits<winrt::Windows::Foundation::IReferenceArray<T>>
     {
-        static jsi::Value as_value(jsi::Runtime& runtime, const winrt::Windows::Foundation::IReferenceArray<T>& value)
+        static v8::Local<v8::Value> as_value(
+            runtime_context* context, const winrt::Windows::Foundation::IReferenceArray<T>& value)
         {
             if (!value)
             {
-                return jsi::Value(nullptr);
+                return v8::Null(context->isolate);
             }
 
-            return convert_native_to_value(runtime, value.Value());
+            return convert_native_to_value(context, value.Value());
         }
 
-        static winrt::Windows::Foundation::IReferenceArray<T> from_value(jsi::Runtime& runtime, const jsi::Value& value)
+        static winrt::Windows::Foundation::IReferenceArray<T> from_value(
+            runtime_context* context, v8::Local<v8::Value> value)
         {
-            if (value.isNull() || value.isUndefined())
+            if (value->IsNull() || value->IsUndefined())
             {
                 return nullptr;
             }
@@ -2731,11 +3036,13 @@ namespace rnwinrt
             // IReference<T> nor does it even map the basic array types supported by Windows::Foundation::PropertyValue.
             // It can be done but since the public SDK doesn't actually make use of it, perhaps it it is not necessary
             // to implement.
-            throw jsi::JSError(runtime,
-                "TypeError: Conversion to native reference array to JS not implemented for "s + typeid(T).name());
+            throw v8_exception::type_error(context->isolate,
+                "Conversion to native reference array to JS not implemented for "s + typeid(T).name());
         }
     };
 
+    // TODO
+#if 0
     template <>
     struct projected_value_traits<winrt::Windows::Foundation::IAsyncAction>
     {
@@ -2803,7 +3110,10 @@ namespace rnwinrt
             return convert_value_to_object_instance<interface_type>(runtime, value);
         }
     };
+#endif
 
+    // TODO
+#if 0
     template <typename T>
     struct projected_value_traits<winrt::Windows::Foundation::EventHandler<T>>
     {
@@ -2948,10 +3258,11 @@ namespace rnwinrt
                 };
         }
     };
+#endif
 }
 
 // Static data for generic types
-namespace rnwinrt
+namespace nodewinrt
 {
     namespace interfaces::Windows::Foundation::Collections
     {
@@ -2966,8 +3277,10 @@ namespace rnwinrt
 
                 static constexpr const static_interface_data::function_mapping functions[] = {
                     { "first",
-                        [](jsi::Runtime& runtime, const IInspectable& thisValue, const jsi::Value*) {
-                            return convert_native_to_value(runtime, thisValue.as<native_type>().First());
+                        [](runtime_context* context, const IInspectable& thisValue,
+                            const v8::FunctionCallbackInfo<v8::Value>& info) {
+                            info.GetReturnValue().Set(
+                                convert_native_to_value(context, thisValue.as<native_type>().First()));
                         },
                         0, false },
                 };
@@ -2994,27 +3307,31 @@ namespace rnwinrt
 
                 static constexpr const static_interface_data::property_mapping properties[] = {
                     { "current",
-                        [](jsi::Runtime& runtime, const IInspectable& thisValue) {
-                            return convert_native_to_value(runtime, thisValue.as<native_type>().Current());
+                        [](runtime_context* context, const IInspectable& thisValue) {
+                            return convert_native_to_value(context, thisValue.as<native_type>().Current());
                         },
                         nullptr },
                     { "hasCurrent",
-                        [](jsi::Runtime& runtime, const IInspectable& thisValue) {
-                            return convert_native_to_value(runtime, thisValue.as<native_type>().HasCurrent());
+                        [](runtime_context* context, const IInspectable& thisValue) {
+                            return convert_native_to_value(context, thisValue.as<native_type>().HasCurrent());
                         },
                         nullptr },
                 };
 
                 static constexpr const static_interface_data::function_mapping functions[] = {
                     { "getMany",
-                        [](jsi::Runtime& runtime, const IInspectable& thisValue, const jsi::Value* args) {
-                            auto items = convert_value_to_native<winrt::array_view<T>>(runtime, args[0]);
-                            return convert_native_to_value(runtime, thisValue.as<native_type>().GetMany(items));
+                        [](runtime_context* context, const IInspectable& thisValue,
+                            const v8::FunctionCallbackInfo<v8::Value>& info) {
+                            auto items = convert_value_to_native<winrt::array_view<T>>(context, info[0]);
+                            info.GetReturnValue().Set(
+                                convert_native_to_value(context, thisValue.as<native_type>().GetMany(items)));
                         },
                         1, false },
                     { "moveNext",
-                        [](jsi::Runtime& runtime, const IInspectable& thisValue, const jsi::Value*) {
-                            return convert_native_to_value(runtime, thisValue.as<native_type>().MoveNext());
+                        [](runtime_context* context, const IInspectable& thisValue,
+                            const v8::FunctionCallbackInfo<v8::Value>& info) {
+                            info.GetReturnValue().Set(
+                                convert_native_to_value(context, thisValue.as<native_type>().MoveNext()));
                         },
                         0, false },
                 };
@@ -3041,13 +3358,13 @@ namespace rnwinrt
 
                 static constexpr const static_interface_data::property_mapping properties[] = {
                     { "key",
-                        [](jsi::Runtime& runtime, const IInspectable& thisValue) {
-                            return convert_native_to_value(runtime, thisValue.as<native_type>().Key());
+                        [](runtime_context* context, const IInspectable& thisValue) {
+                            return convert_native_to_value(context, thisValue.as<native_type>().Key());
                         },
                         nullptr },
                     { "value",
-                        [](jsi::Runtime& runtime, const IInspectable& thisValue) {
-                            return convert_native_to_value(runtime, thisValue.as<native_type>().Value());
+                        [](runtime_context* context, const IInspectable& thisValue) {
+                            return convert_native_to_value(context, thisValue.as<native_type>().Value());
                         },
                         nullptr },
                 };
@@ -3074,52 +3391,59 @@ namespace rnwinrt
 
                 static constexpr const static_interface_data::property_mapping properties[] = {
                     { "size",
-                        [](jsi::Runtime& runtime, const IInspectable& thisValue) {
-                            return convert_native_to_value(runtime, thisValue.as<native_type>().Size());
+                        [](runtime_context* context, const IInspectable& thisValue) {
+                            return convert_native_to_value(context, thisValue.as<native_type>().Size());
                         },
                         nullptr },
                 };
 
                 static constexpr const static_interface_data::function_mapping functions[] = {
                     { "clear",
-                        [](jsi::Runtime&, const IInspectable& thisValue, const jsi::Value*) {
-                            thisValue.as<native_type>().Clear();
-                            return jsi::Value::undefined();
-                        },
+                        [](runtime_context* context, const IInspectable& thisValue,
+                            const v8::FunctionCallbackInfo<v8::Value>&) { thisValue.as<native_type>().Clear(); },
                         0, false },
                     { "getView",
-                        [](jsi::Runtime& runtime, const IInspectable& thisValue, const jsi::Value*) {
-                            return convert_native_to_value(runtime, thisValue.as<native_type>().GetView());
+                        [](runtime_context* context, const IInspectable& thisValue,
+                            const v8::FunctionCallbackInfo<v8::Value>& info) {
+                            info.GetReturnValue().Set(
+                                convert_native_to_value(context, thisValue.as<native_type>().GetView()));
                         },
                         0, false },
                     { "hasKey",
-                        [](jsi::Runtime& runtime, const IInspectable& thisValue, const jsi::Value* args) {
-                            auto key = convert_value_to_native<K>(runtime, args[0]);
-                            return convert_native_to_value(runtime, thisValue.as<native_type>().HasKey(key));
+                        [](runtime_context* context, const IInspectable& thisValue,
+                            const v8::FunctionCallbackInfo<v8::Value>& info) {
+                            auto key = convert_value_to_native<K>(context, info[0]);
+                            info.GetReturnValue().Set(
+                                convert_native_to_value(context, thisValue.as<native_type>().HasKey(key)));
                         },
                         1, false },
                     { "insert",
-                        [](jsi::Runtime& runtime, const IInspectable& thisValue, const jsi::Value* args) {
-                            auto key = convert_value_to_native<K>(runtime, args[0]);
-                            auto value = convert_value_to_native<V>(runtime, args[1]);
-                            return convert_native_to_value(runtime, thisValue.as<native_type>().Insert(key, value));
+                        [](runtime_context* context, const IInspectable& thisValue,
+                            const v8::FunctionCallbackInfo<v8::Value>& info) {
+                            auto key = convert_value_to_native<K>(context, info[0]);
+                            auto value = convert_value_to_native<V>(context, info[1]);
+                            info.GetReturnValue().Set(
+                                convert_native_to_value(context, thisValue.as<native_type>().Insert(key, value)));
                         },
                         2, false },
                     { "lookup",
-                        [](jsi::Runtime& runtime, const IInspectable& thisValue, const jsi::Value* args) {
-                            auto key = convert_value_to_native<K>(runtime, args[0]);
-                            return convert_native_to_value(runtime, thisValue.as<native_type>().Lookup(key));
+                        [](runtime_context* context, const IInspectable& thisValue,
+                            const v8::FunctionCallbackInfo<v8::Value>& info) {
+                            auto key = convert_value_to_native<K>(context, info[0]);
+                            info.GetReturnValue().Set(
+                                convert_native_to_value(context, thisValue.as<native_type>().Lookup(key)));
                         },
                         1, false },
                     { "remove",
-                        [](jsi::Runtime& runtime, const IInspectable& thisValue, const jsi::Value* args) {
-                            auto key = convert_value_to_native<K>(runtime, args[0]);
+                        [](runtime_context* context, const IInspectable& thisValue,
+                            const v8::FunctionCallbackInfo<v8::Value>& info) {
+                            auto key = convert_value_to_native<K>(context, info[0]);
                             thisValue.as<native_type>().Remove(key);
-                            return jsi::Value::undefined();
                         },
                         1, false },
                 };
 
+#if 0 // TODO
                 static std::pair<std::optional<jsi::Value>, std::optional<jsi::Value>> runtime_get_property(
                     jsi::Runtime& runtime, const IInspectable& thisValue, std::string_view name)
                 {
@@ -3151,6 +3475,7 @@ namespace rnwinrt
                     else
                         return false;
                 }
+#endif
             };
 
             template <typename K, typename V>
@@ -3158,8 +3483,12 @@ namespace rnwinrt
             {
                 using iface = interface_data<K, V>;
                 static constexpr const static_interface_data value{ winrt::guid_of<typename iface::native_type>(),
-                    iface::properties, {}, iface::functions, &iface::runtime_get_property,
-                    &iface::runtime_set_property };
+                    iface::properties, {}, iface::functions,
+#if 0 // TODO
+                    &iface::runtime_get_property,
+                    &iface::runtime_set_property
+#endif
+                    };
             };
 
             template <typename K, typename V>
@@ -3175,13 +3504,13 @@ namespace rnwinrt
 
                 static constexpr const static_interface_data::property_mapping properties[] = {
                     { "collectionChange",
-                        [](jsi::Runtime& runtime, const IInspectable& thisValue) {
-                            return convert_native_to_value(runtime, thisValue.as<native_type>().CollectionChange());
+                        [](runtime_context* context, const IInspectable& thisValue) {
+                            return convert_native_to_value(context, thisValue.as<native_type>().CollectionChange());
                         },
                         nullptr },
                     { "key",
-                        [](jsi::Runtime& runtime, const IInspectable& thisValue) {
-                            return convert_native_to_value(runtime, thisValue.as<native_type>().Key());
+                        [](runtime_context* context, const IInspectable& thisValue) {
+                            return convert_native_to_value(context, thisValue.as<native_type>().Key());
                         },
                         nullptr },
                 };
@@ -3208,35 +3537,42 @@ namespace rnwinrt
 
                 static constexpr const static_interface_data::property_mapping properties[] = {
                     { "size",
-                        [](jsi::Runtime& runtime, const IInspectable& thisValue) {
-                            return convert_native_to_value(runtime, thisValue.as<native_type>().Size());
+                        [](runtime_context* context, const IInspectable& thisValue) {
+                            return convert_native_to_value(context, thisValue.as<native_type>().Size());
                         },
                         nullptr },
                 };
 
                 static constexpr const static_interface_data::function_mapping functions[] = {
                     { "hasKey",
-                        [](jsi::Runtime& runtime, const IInspectable& thisValue, const jsi::Value* args) {
-                            auto key = convert_value_to_native<K>(runtime, args[0]);
-                            return convert_native_to_value(runtime, thisValue.as<native_type>().HasKey(key));
+                        [](runtime_context* context, const IInspectable& thisValue,
+                            const v8::FunctionCallbackInfo<v8::Value>& info) {
+                            auto key = convert_value_to_native<K>(context, info[0]);
+                            info.GetReturnValue().Set(
+                                convert_native_to_value(context, thisValue.as<native_type>().HasKey(key)));
                         },
                         1, false },
                     { "lookup",
-                        [](jsi::Runtime& runtime, const IInspectable& thisValue, const jsi::Value* args) {
-                            auto key = convert_value_to_native<K>(runtime, args[0]);
-                            return convert_native_to_value(runtime, thisValue.as<native_type>().Lookup(key));
+                        [](runtime_context* context, const IInspectable& thisValue,
+                            const v8::FunctionCallbackInfo<v8::Value>& info) {
+                            auto key = convert_value_to_native<K>(context, info[0]);
+                            info.GetReturnValue().Set(
+                                convert_native_to_value(context, thisValue.as<native_type>().Lookup(key)));
                         },
                         1, false },
                     { "split",
-                        [](jsi::Runtime& runtime, const IInspectable& thisValue, const jsi::Value*) {
+                        [](runtime_context* context, const IInspectable& thisValue,
+                            const v8::FunctionCallbackInfo<v8::Value>& info) {
                             winrt::Windows::Foundation::Collections::IMapView<K, V> first;
                             winrt::Windows::Foundation::Collections::IMapView<K, V> second;
                             thisValue.as<native_type>().Split(first, second);
-                            return make_void_return_struct(runtime, "first", first, "second", second);
+                            info.GetReturnValue().Set(
+                                make_void_return_struct(context, "first", first, "second", second));
                         },
                         0, false },
                 };
 
+#if 0 // TODO
                 static std::pair<std::optional<jsi::Value>, std::optional<jsi::Value>> runtime_get_property(
                     jsi::Runtime& runtime, const IInspectable& thisValue, std::string_view name)
                 {
@@ -3254,6 +3590,7 @@ namespace rnwinrt
 
                     return { std::nullopt, std::nullopt };
                 };
+#endif
             };
 
             template <typename K, typename V>
@@ -3261,7 +3598,11 @@ namespace rnwinrt
             {
                 using iface = interface_data<K, V>;
                 static constexpr const static_interface_data value{ winrt::guid_of<typename iface::native_type>(),
-                    iface::properties, {}, iface::functions, &iface::runtime_get_property };
+                    iface::properties, {}, iface::functions,
+#if 0
+                    &iface::runtime_get_property
+#endif
+                    };
             };
 
             template <typename K, typename V>
@@ -3277,10 +3618,10 @@ namespace rnwinrt
 
                 static constexpr const static_interface_data::event_mapping events[] = {
                     { "mapchanged",
-                        [](jsi::Runtime& runtime, const IInspectable& thisValue, const jsi::Value& callback) {
+                        [](runtime_context* context, const IInspectable& thisValue, v8::Local<v8::Value> callback) {
                             auto handler = convert_value_to_native<
                                 winrt::Windows::Foundation::Collections::MapChangedEventHandler<K, V>>(
-                                runtime, callback);
+                                context, callback);
                             return thisValue.as<native_type>().MapChanged(handler);
                         },
                         [](const IInspectable& thisValue, winrt::event_token token) {
@@ -3310,10 +3651,10 @@ namespace rnwinrt
 
                 static constexpr const static_interface_data::event_mapping events[] = {
                     { "vectorchanged",
-                        [](jsi::Runtime& runtime, const IInspectable& thisValue, const jsi::Value& callback) {
+                        [](runtime_context* context, const IInspectable& thisValue, v8::Local<v8::Value> callback) {
                             auto handler = convert_value_to_native<
                                 winrt::Windows::Foundation::Collections::VectorChangedEventHandler<T>>(
-                                runtime, callback);
+                                context, callback);
                             return thisValue.as<native_type>().VectorChanged(handler);
                         },
                         [](const IInspectable& thisValue, winrt::event_token token) {
@@ -3334,6 +3675,7 @@ namespace rnwinrt
             constexpr const static_interface_data& data = data_t<T>::value;
         }
 
+#if 0 // TODO
         inline std::optional<jsi::Value> fwd_array_prototype(jsi::Runtime& runtime, std::string_view name)
         {
             auto arrayClass = runtime.global().getPropertyAsObject(runtime, "Array");
@@ -3354,7 +3696,7 @@ namespace rnwinrt
             if (index >= count)
                 return defaultValue;
 
-            auto value = to_integer_or_infinity(runtime, args[index]);
+            auto value = to_integer_or_infinity(context, info[index]);
             if (value == -std::numeric_limits<double>::infinity())
                 return 0;
 
@@ -3618,7 +3960,7 @@ namespace rnwinrt
             int64_t fromIndex = size - 1;
             if (count >= 2)
             {
-                auto val = to_integer_or_infinity(runtime, args[1]);
+                auto val = to_integer_or_infinity(context, info[1]);
                 if (val == -std::numeric_limits<double>::infinity())
                     return -1;
 
@@ -3634,7 +3976,7 @@ namespace rnwinrt
 
             for (; fromIndex >= 0; --fromIndex)
             {
-                if (jsi::Value::strictEquals(runtime, args[0],
+                if (jsi::Value::strictEquals(context, info[0],
                         convert_native_to_value(runtime, vector.GetAt(static_cast<uint32_t>(fromIndex)))))
                     return static_cast<double>(fromIndex);
             }
@@ -3709,7 +4051,7 @@ namespace rnwinrt
             uint32_t i = 0;
             if (count >= 2)
             {
-                accum = jsi::Value(runtime, args[1]);
+                accum = jsi::Value(context, info[1]);
             }
             else
             {
@@ -3752,7 +4094,7 @@ namespace rnwinrt
             uint32_t i = size;
             if (count >= 2)
             {
-                accum = jsi::Value(runtime, args[1]);
+                accum = jsi::Value(context, info[1]);
             }
             else
             {
@@ -3846,6 +4188,7 @@ namespace rnwinrt
             return vector_some_impl(
                 runtime, thisValue, convert_value_to_native<TVector>(runtime, thisValue), args, count);
         }
+#endif
 
         namespace IVector
         {
@@ -3856,9 +4199,11 @@ namespace rnwinrt
 
                 static constexpr const static_interface_data::property_mapping properties[] = {
                     { "length", // NOTE: From Array.prototype
-                        [](jsi::Runtime& runtime, const IInspectable& thisValue) {
-                            return convert_native_to_value(runtime, thisValue.as<native_type>().Size());
+                        [](runtime_context* context, const IInspectable& thisValue) {
+                            return convert_native_to_value(context, thisValue.as<native_type>().Size());
                         },
+                        nullptr // TODO
+#if 0
                         [](jsi::Runtime& runtime, const IInspectable& thisValue, const jsi::Value& value) {
                             // Following Chakra's behavior, setting the length can only be used to remove elements
                             auto vector = thisValue.as<native_type>();
@@ -3880,93 +4225,98 @@ namespace rnwinrt
                                     vector.RemoveAtEnd();
                                 }
                             }
-                        } },
+                        }
+#endif
+                        },
                     { "size",
-                        [](jsi::Runtime& runtime, const IInspectable& thisValue) {
-                            return convert_native_to_value(runtime, thisValue.as<native_type>().Size());
+                        [](runtime_context* context, const IInspectable& thisValue) {
+                            return convert_native_to_value(context, thisValue.as<native_type>().Size());
                         },
                         nullptr },
                 };
 
                 static constexpr const static_interface_data::function_mapping functions[] = {
                     { "append",
-                        [](jsi::Runtime& runtime, const IInspectable& thisValue, const jsi::Value* args) {
-                            auto value = convert_value_to_native<T>(runtime, args[0]);
+                        [](runtime_context* context, const IInspectable& thisValue,
+                            const v8::FunctionCallbackInfo<v8::Value>& info) {
+                            auto value = convert_value_to_native<T>(context, info[0]);
                             thisValue.as<native_type>().Append(value);
-                            return jsi::Value::undefined();
                         },
                         1, false },
                     { "clear",
-                        [](jsi::Runtime&, const IInspectable& thisValue, const jsi::Value*) {
-                            thisValue.as<native_type>().Clear();
-                            return jsi::Value::undefined();
-                        },
+                        [](runtime_context* context, const IInspectable& thisValue,
+                            const v8::FunctionCallbackInfo<v8::Value>&) { thisValue.as<native_type>().Clear(); },
                         0, false },
                     { "getAt",
-                        [](jsi::Runtime& runtime, const IInspectable& thisValue, const jsi::Value* args) {
-                            auto index = convert_value_to_native<uint32_t>(runtime, args[0]);
-                            return convert_native_to_value(runtime, thisValue.as<native_type>().GetAt(index));
+                        [](runtime_context* context, const IInspectable& thisValue,
+                            const v8::FunctionCallbackInfo<v8::Value>& info) {
+                            auto index = convert_value_to_native<uint32_t>(context, info[0]);
+                            info.GetReturnValue().Set(
+                                convert_native_to_value(context, thisValue.as<native_type>().GetAt(index)));
                         },
                         1, false },
                     { "getMany",
-                        [](jsi::Runtime& runtime, const IInspectable& thisValue, const jsi::Value* args) {
-                            auto startIndex = convert_value_to_native<uint32_t>(runtime, args[0]);
-                            auto items = convert_value_to_native<winrt::array_view<T>>(runtime, args[1]);
-                            return convert_native_to_value(
-                                runtime, thisValue.as<native_type>().GetMany(startIndex, items));
+                        [](runtime_context* context, const IInspectable& thisValue,
+                            const v8::FunctionCallbackInfo<v8::Value>& info) {
+                            auto startIndex = convert_value_to_native<uint32_t>(context, info[0]);
+                            auto items = convert_value_to_native<winrt::array_view<T>>(context, info[1]);
+                            info.GetReturnValue().Set(convert_native_to_value(
+                                context, thisValue.as<native_type>().GetMany(startIndex, items)));
                         },
                         2, false },
                     { "getView",
-                        [](jsi::Runtime& runtime, const IInspectable& thisValue, const jsi::Value*) {
-                            return convert_native_to_value(runtime, thisValue.as<native_type>().GetView());
+                        [](runtime_context* context, const IInspectable& thisValue,
+                            const v8::FunctionCallbackInfo<v8::Value>& info) {
+                            info.GetReturnValue().Set(
+                                convert_native_to_value(context, thisValue.as<native_type>().GetView()));
                         },
                         0, false },
                     { "indexOf",
-                        [](jsi::Runtime& runtime, const IInspectable& thisValue, const jsi::Value* args) {
-                            auto value = convert_value_to_native<T>(runtime, args[0]);
+                        [](runtime_context* context, const IInspectable& thisValue,
+                            const v8::FunctionCallbackInfo<v8::Value>& info) {
+                            auto value = convert_value_to_native<T>(context, info[0]);
                             uint32_t index;
                             auto returnValue = thisValue.as<native_type>().IndexOf(value, index);
-                            return make_return_struct(runtime, returnValue, "index", index);
+                            info.GetReturnValue().Set(make_return_struct(context, returnValue, "index", index));
                         },
                         1, false },
                     { "insertAt",
-                        [](jsi::Runtime& runtime, const IInspectable& thisValue, const jsi::Value* args) {
-                            auto index = convert_value_to_native<uint32_t>(runtime, args[0]);
-                            auto value = convert_value_to_native<T>(runtime, args[1]);
+                        [](runtime_context* context, const IInspectable& thisValue,
+                            const v8::FunctionCallbackInfo<v8::Value>& info) {
+                            auto index = convert_value_to_native<uint32_t>(context, info[0]);
+                            auto value = convert_value_to_native<T>(context, info[1]);
                             thisValue.as<native_type>().InsertAt(index, value);
-                            return jsi::Value::undefined();
                         },
                         2, false },
                     { "removeAt",
-                        [](jsi::Runtime& runtime, const IInspectable& thisValue, const jsi::Value* args) {
-                            auto index = convert_value_to_native<uint32_t>(runtime, args[0]);
+                        [](runtime_context* context, const IInspectable& thisValue,
+                            const v8::FunctionCallbackInfo<v8::Value>& info) {
+                            auto index = convert_value_to_native<uint32_t>(context, info[0]);
                             thisValue.as<native_type>().RemoveAt(index);
-                            return jsi::Value::undefined();
                         },
                         1, false },
                     { "removeAtEnd",
-                        [](jsi::Runtime&, const IInspectable& thisValue, const jsi::Value*) {
-                            thisValue.as<native_type>().RemoveAtEnd();
-                            return jsi::Value::undefined();
-                        },
+                        [](runtime_context* context, const IInspectable& thisValue,
+                            const v8::FunctionCallbackInfo<v8::Value>&) { thisValue.as<native_type>().RemoveAtEnd(); },
                         0, false },
                     { "replaceAll",
-                        [](jsi::Runtime& runtime, const IInspectable& thisValue, const jsi::Value* args) {
-                            auto items = convert_value_to_native<winrt::array_view<const T>>(runtime, args[0]);
+                        [](runtime_context* context, const IInspectable& thisValue,
+                            const v8::FunctionCallbackInfo<v8::Value>& info) {
+                            auto items = convert_value_to_native<winrt::array_view<const T>>(context, info[0]);
                             thisValue.as<native_type>().ReplaceAll(items);
-                            return jsi::Value::undefined();
                         },
                         1, false },
                     { "setAt",
-                        [](jsi::Runtime& runtime, const IInspectable& thisValue, const jsi::Value* args) {
-                            auto index = convert_value_to_native<uint32_t>(runtime, args[0]);
-                            auto value = convert_value_to_native<T>(runtime, args[1]);
+                        [](runtime_context* context, const IInspectable& thisValue,
+                            const v8::FunctionCallbackInfo<v8::Value>& info) {
+                            auto index = convert_value_to_native<uint32_t>(context, info[0]);
+                            auto value = convert_value_to_native<T>(context, info[1]);
                             thisValue.as<native_type>().SetAt(index, value);
-                            return jsi::Value::undefined();
                         },
                         2, false },
                 };
 
+#if 0 // TODO
                 using convert_item_t = T (*)(jsi::Runtime&, const jsi::Value&);
 
                 static convert_item_t item_converter()
@@ -4051,7 +4401,7 @@ namespace rnwinrt
                     // requements for Array.prototype.push to work
                     for (size_t i = 0; i < count; ++i)
                     {
-                        vector.Append(converter(runtime, args[i]));
+                        vector.Append(converter(context, info[i]));
                     }
 
                     return static_cast<double>(vector.Size());
@@ -4182,7 +4532,7 @@ namespace rnwinrt
                     auto start = vector_index_from_arg(runtime, args, count, 0, size);
 
                     uint32_t deleteCount =
-                        (count >= 2) ? static_cast<uint32_t>(std::clamp(to_integer_or_infinity(runtime, args[1]), 0.0,
+                        (count >= 2) ? static_cast<uint32_t>(std::clamp(to_integer_or_infinity(context, info[1]), 0.0,
                                            static_cast<double>(size - start))) :
                         (count >= 1) ? (size - start) :
                                        0;
@@ -4197,7 +4547,7 @@ namespace rnwinrt
                     while (assignCount-- > 0)
                     {
                         result.setValueAtIndex(runtime, i, convert_native_to_value(runtime, vector.GetAt(start)));
-                        vector.SetAt(start, converter(runtime, args[2 + i]));
+                        vector.SetAt(start, converter(context, info[2 + i]));
                         ++i;
                         ++start;
                     }
@@ -4213,7 +4563,7 @@ namespace rnwinrt
 
                     while (insertCount-- > 0)
                     {
-                        vector.InsertAt(start, converter(runtime, args[2 + i]));
+                        vector.InsertAt(start, converter(context, info[2 + i]));
                         ++i;
                         ++start;
                     }
@@ -4236,7 +4586,7 @@ namespace rnwinrt
                 {
                     for (size_t i = count; i-- > 0;)
                     {
-                        vector.InsertAt(0, converter(runtime, args[i]));
+                        vector.InsertAt(0, converter(context, info[i]));
                     }
 
                     return static_cast<double>(vector.Size());
@@ -4366,6 +4716,7 @@ namespace rnwinrt
 
                     return false;
                 }
+#endif
             };
 
             template <typename T>
@@ -4373,8 +4724,12 @@ namespace rnwinrt
             {
                 using iface = interface_data<T>;
                 static constexpr const static_interface_data value{ winrt::guid_of<typename iface::native_type>(),
-                    iface::properties, {}, iface::functions, &iface::runtime_get_property,
-                    &iface::runtime_set_property };
+                    iface::properties, {}, iface::functions,
+#if 0 // TODO
+                    &iface::runtime_get_property,
+                    &iface::runtime_set_property
+#endif
+                    };
             };
 
             template <typename T>
@@ -4390,42 +4745,47 @@ namespace rnwinrt
 
                 static constexpr const static_interface_data::property_mapping properties[] = {
                     { "length", // NOTE: From Array.prototype
-                        [](jsi::Runtime& runtime, const IInspectable& thisValue) {
-                            return convert_native_to_value(runtime, thisValue.as<native_type>().Size());
+                        [](runtime_context* context, const IInspectable& thisValue) {
+                            return convert_native_to_value(context, thisValue.as<native_type>().Size());
                         },
                         nullptr },
                     { "size",
-                        [](jsi::Runtime& runtime, const IInspectable& thisValue) {
-                            return convert_native_to_value(runtime, thisValue.as<native_type>().Size());
+                        [](runtime_context* context, const IInspectable& thisValue) {
+                            return convert_native_to_value(context, thisValue.as<native_type>().Size());
                         },
                         nullptr },
                 };
 
                 static constexpr const static_interface_data::function_mapping functions[] = {
                     { "getAt",
-                        [](jsi::Runtime& runtime, const IInspectable& thisValue, const jsi::Value* args) {
-                            auto index = convert_value_to_native<uint32_t>(runtime, args[0]);
-                            return convert_native_to_value(runtime, thisValue.as<native_type>().GetAt(index));
+                        [](runtime_context* context, const IInspectable& thisValue,
+                            const v8::FunctionCallbackInfo<v8::Value>& info) {
+                            auto index = convert_value_to_native<uint32_t>(context, info[0]);
+                            info.GetReturnValue().Set(
+                                convert_native_to_value(context, thisValue.as<native_type>().GetAt(index)));
                         },
                         1, false },
                     { "getMany",
-                        [](jsi::Runtime& runtime, const IInspectable& thisValue, const jsi::Value* args) {
-                            auto startIndex = convert_value_to_native<uint32_t>(runtime, args[0]);
-                            auto items = convert_value_to_native<winrt::array_view<T>>(runtime, args[1]);
-                            return convert_native_to_value(
-                                runtime, thisValue.as<native_type>().GetMany(startIndex, items));
+                        [](runtime_context* context, const IInspectable& thisValue,
+                            const v8::FunctionCallbackInfo<v8::Value>& info) {
+                            auto startIndex = convert_value_to_native<uint32_t>(context, info[0]);
+                            auto items = convert_value_to_native<winrt::array_view<T>>(context, info[1]);
+                            info.GetReturnValue().Set(convert_native_to_value(
+                                context, thisValue.as<native_type>().GetMany(startIndex, items)));
                         },
                         2, false },
                     { "indexOf",
-                        [](jsi::Runtime& runtime, const IInspectable& thisValue, const jsi::Value* args) {
-                            auto value = convert_value_to_native<T>(runtime, args[0]);
+                        [](runtime_context* context, const IInspectable& thisValue,
+                            const v8::FunctionCallbackInfo<v8::Value>& info) {
+                            auto value = convert_value_to_native<T>(context, info[0]);
                             uint32_t index;
                             auto returnValue = thisValue.as<native_type>().IndexOf(value, index);
-                            return make_return_struct(runtime, returnValue, "index", index);
+                            info.GetReturnValue().Set(make_return_struct(context, returnValue, "index", index));
                         },
                         1, false },
                 };
 
+#if 0 // TODO
                 static constexpr const struct array_proto_functions_t
                 {
                     std::string_view name;
@@ -4510,6 +4870,7 @@ namespace rnwinrt
                     return runtime_get_property_impl(runtime, thisValue, name, array_proto_functions,
                         [](const IInspectable& thisVal) { return thisVal.as<native_type>(); });
                 }
+#endif
             };
 
             template <typename T>
@@ -4517,7 +4878,11 @@ namespace rnwinrt
             {
                 using iface = interface_data<T>;
                 static constexpr const static_interface_data value{ winrt::guid_of<typename iface::native_type>(),
-                    iface::properties, {}, iface::functions, &iface::runtime_get_property };
+                    iface::properties, {}, iface::functions,
+#if 0 // TODO
+                    &iface::runtime_get_property
+#endif
+                    };
             };
 
             template <typename T>
