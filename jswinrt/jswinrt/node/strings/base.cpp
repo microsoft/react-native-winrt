@@ -462,7 +462,18 @@ try
 
     // Check to see if it is a function
     auto& functions = pThis->m_data->functions;
-    // TODO
+    if (auto itr = find_by_name(functions, propName); itr != functions.end())
+    {
+        auto& item = pThis->m_functions[itr - functions.begin()];
+        if (item.IsEmpty())
+        {
+            auto fn = check_maybe(v8::Function::New(isolate->GetCurrentContext(), itr->function,
+                v8::External::New(isolate, pThis->m_context), 0, v8::ConstructorBehavior::kThrow));
+            item.Reset(isolate, fn);
+        }
+
+        return info.GetReturnValue().Set(item.Get(isolate));
+    }
 
     // Check to see if this is an event add/remove
     // TODO

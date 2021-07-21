@@ -576,7 +576,8 @@ namespace nodewinrt
 {
     using namespace std::literals;
 
-    using call_function_t = void (*)(runtime_context*, const v8::FunctionCallbackInfo<v8::Value>&);
+    using constructor_t = void (*)(runtime_context*, const v8::FunctionCallbackInfo<v8::Value>&);
+    using call_function_t = void (*)(const v8::FunctionCallbackInfo<v8::Value>&);
 
     using static_get_property_t = v8::Local<v8::Value> (*)(runtime_context*);
     using static_set_property_t = void (*)(runtime_context*, v8::Local<v8::Value>);
@@ -834,7 +835,7 @@ namespace nodewinrt
         if (field.IsEmpty())
             throw v8_exception::from_internal(); // TODO: Is this a valid condition
 
-        auto external = field.As<v8::External>();
+        auto external = field.As<v8::External>(); // TODO: Should probably check 'IsExternal' instead
         if (external.IsEmpty())
             throw v8_exception::from_internal(); // TODO: Is this a valid condition
 
@@ -861,6 +862,21 @@ namespace nodewinrt
             throw v8_exception::from_internal(); // TODO: This is almost certainly incorrect
 
         return this_from_holder<T>(holder);
+    }
+
+    template <typename T>
+    inline runtime_context* context_from_data(const v8::FunctionCallbackInfo<T>& info)
+    {
+        // TODO: Should we just assume success on all these since we control the entire path?
+        auto data = info.Data();
+        if (data.IsEmpty())
+            throw v8_exception::from_internal(); // TODO: This is almost certainly incorrect
+
+        auto external = data.As<v8::External>(); // TODO: Should probably check 'IsExternal' instead
+        if (external.IsEmpty())
+            throw v8_exception::from_internal(); // TODO: Is this a valid condition
+
+        return static_cast<runtime_context*>(external->Value());
     }
 
 #if 0
@@ -1742,7 +1758,7 @@ namespace nodewinrt
 
     struct static_activatable_class_data final : static_class_data
     {
-        constexpr static_activatable_class_data(std::string_view ns, std::string_view name, call_function_t constructor,
+        constexpr static_activatable_class_data(std::string_view ns, std::string_view name, constructor_t constructor,
             span<const property_mapping> properties, span<const event_mapping> events,
             span<const function_mapping> functions) :
             static_class_data(name, properties, events, functions),
@@ -1753,7 +1769,7 @@ namespace nodewinrt
         virtual v8::Local<v8::Value> create(runtime_context* context) const override;
 
         std::string_view full_namespace;
-        call_function_t constructor;
+        constructor_t constructor;
     };
 
     // NOTE: We don't need to "create" objects from interfaces - we create objects and populate the interfaces that the
@@ -1854,6 +1870,13 @@ namespace nodewinrt
         projected_class(runtime_context* context, const static_class_data* data) :
             m_context(context), m_data(data)
         {
+            auto size = m_data->functions.size();
+            if (!m_data->events.empty())
+            {
+                size += 2;
+            }
+
+            m_functions.resize(size);
         }
 
         // Constructor, if applicable
@@ -1876,8 +1899,8 @@ namespace nodewinrt
 
         runtime_context* m_context;
         const static_class_data* m_data;
+        std::vector<v8::Global<v8::Value>> m_functions;
 #if 0
-        std::unordered_map<std::string_view, jsi::Value> m_functions;
         event_registration_array m_events;
 #endif
     };
