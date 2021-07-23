@@ -557,18 +557,372 @@ namespace nodewinrt
 // Per-context data
 namespace nodewinrt
 {
+    struct runtime_context;
+
+    struct object_instance_cache
+    {
+        // Maps an IInspectable pointer to its wrapping JS value, stored as a weak reference. Note that it is possible
+        // for a WinRT object to get destroyed and have its memory location re-used for another object. This is OKAY
+        // since the object we create holds a strong reference to the WinRT object and therefore the WinRT object
+        // getting destroyed would imply that the JS object also got destroyed
+        std::unordered_map<void*, v8::Global<v8::Value>> instances;
+
+        // TODO: Probably want destructor to clean up instances? Need to better figure out how v8's memory management
+        // works first.
+
+        v8::Local<v8::Value> get_instance(
+            runtime_context* context, const winrt::Windows::Foundation::IInspectable& value);
+
+#if 0
+        // TODO: Ideally this would be a periodic thing (on a timer), but for now we'll manually trigger cleanup
+        // occasionally when we're querying for object instances
+        std::chrono::steady_clock::time_point last_cleanup = std::chrono::steady_clock::now();
+
+        void cleanup(jsi::Runtime& runtime)
+        {
+            last_cleanup = std::chrono::steady_clock::now();
+            for (auto itr = instances.begin(); itr != instances.end();)
+            {
+                if (supports_weak_object)
+                {
+                    if (auto value = std::get<0>(itr->second).lock(runtime); !value.isUndefined()) // Object still alive
+                    {
+                        ++itr;
+                    }
+                    else // Object was destroyed
+                    {
+                        itr = instances.erase(itr);
+                    }
+                }
+                else
+                {
+                    if (std::get<1>(itr->second).lock()) // Object still alive
+                    {
+                        ++itr;
+                    }
+                    else // Object was destroyed
+                    {
+                        itr = instances.erase(itr);
+                    }
+                }
+            }
+        }
+#endif
+    };
+
     struct runtime_context
     {
         v8::Isolate* isolate;
+        std::thread::id thread_id = std::this_thread::get_id();
+        object_instance_cache instance_cache;
 
         // Cache the templates for creating the various object types that we create
         v8::Global<v8::ObjectTemplate> namespace_template;
         v8::Global<v8::ObjectTemplate> enum_template;
         v8::Global<v8::ObjectTemplate> statics_class_template;
         v8::Global<v8::ObjectTemplate> activatable_class_template;
+        v8::Global<v8::ObjectTemplate> object_instance_template;
 
         runtime_context(v8::Isolate* isolate);
+
+#if 0
+        std::function<void(std::function<void()>)> call_invoker;
+
+        // TODO: Currently each of these objects handles its own periodic cleanup. It would be great if we could do this
+        // on a more well-defined basis for both (e.g. on a timer)
+        object_event_cache event_cache;
+
+        void call(std::function<void()> fn) const
+        {
+            if (thread_id == std::this_thread::get_id())
+            {
+                fn();
+            }
+            else
+            {
+                call_invoker(std::move(fn));
+            }
+        }
+
+        void call_async(std::function<void()> fn) const
+        {
+            call_invoker(std::move(fn));
+        }
+
+        void call_sync(std::function<void()> fn) const
+        {
+            if (thread_id == std::this_thread::get_id())
+            {
+                fn();
+            }
+            else
+            {
+                winrt::handle event(::CreateEventW(nullptr, true, false, nullptr));
+                if (!event.get())
+                {
+                    winrt::throw_last_error();
+                }
+
+                std::exception_ptr exception;
+                call_invoker([&]() {
+                    try
+                    {
+                        fn();
+                    }
+                    catch (...)
+                    {
+                        exception = std::current_exception();
+                    }
+                    ::SetEvent(event.get());
+                });
+
+                if (::WaitForSingleObject(event.get(), INFINITE) != WAIT_OBJECT_0)
+                {
+                    winrt::terminate();
+                }
+
+                if (exception)
+                {
+                    std::rethrow_exception(exception);
+                }
+            }
+        }
+
+        // For the most part, these pointers should only be accessed from the JS thread and therefore the reference
+        // count does not need to be bumped, but for things like asynchronous operations, we may need to take strong
+        // references to ensure the object does not get destroyed during use
+        std::atomic_uint32_t ref_count{ 1 };
+
+        [[nodiscard]] shared_runtime_context add_reference()
+        {
+            assert(thread_id == std::this_thread::get_id());
+            assert(ref_count.load() >= 1);
+            return shared_runtime_context{ this }; // NOTE: Bumps ref count
+        }
+
+        void release()
+        {
+            if (--ref_count == 0)
+            {
+                delete this;
+            }
+        }
+#endif
     };
+
+#if 0
+    // A shared, strong reference to the context, for (safe) use off the JS thread
+    struct shared_runtime_context
+    {
+        runtime_context* pointer = nullptr;
+
+        shared_runtime_context() = default;
+        shared_runtime_context(runtime_context* ptr);
+
+        shared_runtime_context(const shared_runtime_context& other) : shared_runtime_context(other.pointer)
+        {
+        }
+
+        shared_runtime_context(shared_runtime_context&& other) : pointer(other.pointer)
+        {
+            other.pointer = nullptr;
+        }
+
+        ~shared_runtime_context();
+
+        shared_runtime_context& operator=(const shared_runtime_context& other);
+
+        shared_runtime_context& operator=(shared_runtime_context&& other)
+        {
+            std::swap(pointer, other.pointer);
+            return *this;
+        }
+
+        runtime_context* operator->() noexcept
+        {
+            return pointer;
+        }
+
+        const runtime_context* operator->() const noexcept
+        {
+            return pointer;
+        }
+
+        runtime_context& operator*() noexcept
+        {
+            return *pointer;
+        }
+
+        const runtime_context& operator*() const noexcept
+        {
+            return *pointer;
+        }
+    };
+
+    // TODO: Figure out a good interval for performing cleanup
+    static constexpr auto cleanup_interval = 5min;
+
+    // A reusable mapping of (delegate, event name) -> event_token for a single
+    struct event_registration_array
+    {
+        // NOTE: It's possible to re-use the same callback for multiple events on the same object (especially since
+        // we're talking about JS here), so we include the event name in the mapping here. Since event names are all
+        // stored as static data, we primarily use it as an integer id and perform pointer comparison.
+        struct registration_data
+        {
+            jsi::Object object;
+            const char* event_name;
+            winrt::event_token token;
+        };
+
+        sso_vector<registration_data, 4> registrations;
+
+        bool empty() const noexcept
+        {
+            return registrations.empty();
+        }
+
+        void add(jsi::Object object, const char* eventName, winrt::event_token token)
+        {
+            registrations.push_back({ std::move(object), eventName, token });
+        }
+
+        winrt::event_token remove(jsi::Runtime& runtime, const jsi::Object& object, const char* eventName)
+        {
+            for (auto& data : registrations)
+            {
+                if ((data.event_name == eventName) && jsi::Object::strictEquals(runtime, data.object, object))
+                {
+                    auto result = data.token;
+                    data = std::move(registrations.back());
+                    registrations.pop_back();
+                    return result;
+                }
+            }
+
+            return {};
+        }
+    };
+
+    struct object_event_cache
+    {
+        // NOTE: Since we currently hold strong references to the function objects being used as delegates, and just
+        // cleanup in general, we hold a weak reference to the WinRT object and periodically try and clean the map up.
+        // Note that some objects don't support weak references, in which case we just forgo this cleanup and instead
+        // rely on the consumer to clean up registrations.
+        struct instance_data
+        {
+            winrt::weak_ref<winrt::Windows::Foundation::IInspectable> weak_ref;
+            event_registration_array registrations;
+        };
+
+        std::unordered_map<void*, instance_data> events;
+
+        // TODO: Ideally this would be a periodic thing (on a timer), but for now we'll manually trigger cleanup
+        // occasionally when adding tokens
+        std::chrono::steady_clock::time_point last_cleanup = std::chrono::steady_clock::now();
+
+        void add(const winrt::Windows::Foundation::IInspectable& instance, jsi::Object object, const char* eventName,
+            winrt::event_token token)
+        {
+            if ((std::chrono::steady_clock::now() - last_cleanup) >= cleanup_interval)
+            {
+                cleanup();
+            }
+
+            auto ptr = winrt::get_abi(instance);
+            auto& data = events[ptr];
+            if (data.weak_ref && !data.weak_ref.get())
+            {
+                data = {}; // Object address was re-used; clean up the registrations
+            }
+
+            if (data.registrations.empty())
+            {
+                // NOTE: C++/WinRT has no 'try_make_weak_ref' or equivalent, so doing it manually here...
+                assert(!data.weak_ref);
+                if (auto src = instance.try_as<::IWeakReferenceSource>())
+                {
+                    winrt::check_hresult(
+                        src->GetWeakReference(reinterpret_cast<::IWeakReference**>(data.weak_ref.put())));
+                }
+            }
+
+            data.registrations.add(std::move(object), eventName, token);
+        }
+
+        winrt::event_token remove(jsi::Runtime& runtime, const winrt::Windows::Foundation::IInspectable& instance,
+            const jsi::Object& object, const char* eventName)
+        {
+            auto ptr = winrt::get_abi(instance);
+            if (auto itr = events.find(ptr); itr != events.end())
+            {
+                auto result = itr->second.registrations.remove(runtime, object, eventName);
+                if (itr->second.registrations.empty())
+                {
+                    events.erase(itr);
+                }
+
+                return result;
+            }
+
+            return {};
+        }
+
+        void cleanup()
+        {
+            last_cleanup = std::chrono::steady_clock::now();
+            for (auto itr = events.begin(); itr != events.end();)
+            {
+                if (itr->second.weak_ref.get()) // Object still alive
+                {
+                    ++itr;
+                }
+                else // Object was destroyed
+                {
+                    itr = events.erase(itr);
+                }
+            }
+        }
+    };
+
+    inline shared_runtime_context::shared_runtime_context(runtime_context* ptr) : pointer(ptr)
+    {
+        if (pointer)
+        {
+            ++pointer->ref_count;
+        }
+    }
+
+    inline shared_runtime_context& shared_runtime_context::operator=(const shared_runtime_context& other)
+    {
+        if (this != &other)
+        {
+            if (pointer)
+            {
+                pointer->release();
+            }
+
+            pointer = other.pointer;
+            if (pointer)
+            {
+                ++pointer->ref_count;
+            }
+        }
+
+        return *this;
+    }
+
+    inline shared_runtime_context::~shared_runtime_context()
+    {
+        if (pointer)
+        {
+            pointer->release();
+        }
+    }
+
+    runtime_context* current_runtime_context();
+#endif
 }
 
 // Generic v8 helpers
@@ -576,8 +930,7 @@ namespace nodewinrt
 {
     using namespace std::literals;
 
-    using constructor_t = void (*)(runtime_context*, const v8::FunctionCallbackInfo<v8::Value>&);
-    using call_function_t = void (*)(const v8::FunctionCallbackInfo<v8::Value>&);
+    using call_function_t = void (*)(runtime_context*, const v8::FunctionCallbackInfo<v8::Value>&);
 
     using static_get_property_t = v8::Local<v8::Value> (*)(runtime_context*);
     using static_set_property_t = void (*)(runtime_context*, v8::Local<v8::Value>);
@@ -1304,370 +1657,6 @@ namespace nodewinrt
 #endif
 }
 
-#if 0
-// JS thread context data
-namespace nodewinrt
-{
-    struct runtime_context;
-
-    // A shared, strong reference to the context, for (safe) use off the JS thread
-    struct shared_runtime_context
-    {
-        runtime_context* pointer = nullptr;
-
-        shared_runtime_context() = default;
-        shared_runtime_context(runtime_context* ptr);
-
-        shared_runtime_context(const shared_runtime_context& other) : shared_runtime_context(other.pointer)
-        {
-        }
-
-        shared_runtime_context(shared_runtime_context&& other) : pointer(other.pointer)
-        {
-            other.pointer = nullptr;
-        }
-
-        ~shared_runtime_context();
-
-        shared_runtime_context& operator=(const shared_runtime_context& other);
-
-        shared_runtime_context& operator=(shared_runtime_context&& other)
-        {
-            std::swap(pointer, other.pointer);
-            return *this;
-        }
-
-        runtime_context* operator->() noexcept
-        {
-            return pointer;
-        }
-
-        const runtime_context* operator->() const noexcept
-        {
-            return pointer;
-        }
-
-        runtime_context& operator*() noexcept
-        {
-            return *pointer;
-        }
-
-        const runtime_context& operator*() const noexcept
-        {
-            return *pointer;
-        }
-    };
-
-    // TODO: Figure out a good interval for performing cleanup
-    static constexpr auto cleanup_interval = 5min;
-
-    struct object_instance_cache
-    {
-        // Maps an IInspectable pointer to the HostObject that represents that object. Note that it is possible for a
-        // WinRT object to get destroyed and have its memory location re-used for a later object. This is okay since the
-        // HostObject holds a strong reference to the WinRT object and therefore the WinRT object getting destroyed
-        // would therefore imply that the JS object also got destroyed, meaning we won't accidentally re-use the same
-        // HostObject after its underlying object got destroyed
-        std::unordered_map<void*, std::variant<jsi::WeakObject, std::weak_ptr<jsi::HostObject>>> instances;
-
-        // TODO: This is kind of a hack/workaround for V8, which does not appear to have WeakObject support per
-        // V8Runtime::createWeakObject/V8Runtime::lockWeakObject
-        // (https://github.com/microsoft/v8-jsi/blob/master/src/V8JsiRuntime.cpp)
-        bool supports_weak_object = true;
-
-        // TODO: Ideally this would be a periodic thing (on a timer), but for now we'll manually trigger cleanup
-        // occasionally when we're querying for object instances
-        std::chrono::steady_clock::time_point last_cleanup = std::chrono::steady_clock::now();
-
-        jsi::Value get_instance(jsi::Runtime& runtime, const winrt::Windows::Foundation::IInspectable& value);
-
-        void cleanup(jsi::Runtime& runtime)
-        {
-            last_cleanup = std::chrono::steady_clock::now();
-            for (auto itr = instances.begin(); itr != instances.end();)
-            {
-                if (supports_weak_object)
-                {
-                    if (auto value = std::get<0>(itr->second).lock(runtime); !value.isUndefined()) // Object still alive
-                    {
-                        ++itr;
-                    }
-                    else // Object was destroyed
-                    {
-                        itr = instances.erase(itr);
-                    }
-                }
-                else
-                {
-                    if (std::get<1>(itr->second).lock()) // Object still alive
-                    {
-                        ++itr;
-                    }
-                    else // Object was destroyed
-                    {
-                        itr = instances.erase(itr);
-                    }
-                }
-            }
-        }
-    };
-
-    // A reusable mapping of (delegate, event name) -> event_token for a single
-    struct event_registration_array
-    {
-        // NOTE: It's possible to re-use the same callback for multiple events on the same object (especially since
-        // we're talking about JS here), so we include the event name in the mapping here. Since event names are all
-        // stored as static data, we primarily use it as an integer id and perform pointer comparison.
-        struct registration_data
-        {
-            jsi::Object object;
-            const char* event_name;
-            winrt::event_token token;
-        };
-
-        sso_vector<registration_data, 4> registrations;
-
-        bool empty() const noexcept
-        {
-            return registrations.empty();
-        }
-
-        void add(jsi::Object object, const char* eventName, winrt::event_token token)
-        {
-            registrations.push_back({ std::move(object), eventName, token });
-        }
-
-        winrt::event_token remove(jsi::Runtime& runtime, const jsi::Object& object, const char* eventName)
-        {
-            for (auto& data : registrations)
-            {
-                if ((data.event_name == eventName) && jsi::Object::strictEquals(runtime, data.object, object))
-                {
-                    auto result = data.token;
-                    data = std::move(registrations.back());
-                    registrations.pop_back();
-                    return result;
-                }
-            }
-
-            return {};
-        }
-    };
-
-    struct object_event_cache
-    {
-        // NOTE: Since we currently hold strong references to the function objects being used as delegates, and just
-        // cleanup in general, we hold a weak reference to the WinRT object and periodically try and clean the map up.
-        // Note that some objects don't support weak references, in which case we just forgo this cleanup and instead
-        // rely on the consumer to clean up registrations.
-        struct instance_data
-        {
-            winrt::weak_ref<winrt::Windows::Foundation::IInspectable> weak_ref;
-            event_registration_array registrations;
-        };
-
-        std::unordered_map<void*, instance_data> events;
-
-        // TODO: Ideally this would be a periodic thing (on a timer), but for now we'll manually trigger cleanup
-        // occasionally when adding tokens
-        std::chrono::steady_clock::time_point last_cleanup = std::chrono::steady_clock::now();
-
-        void add(const winrt::Windows::Foundation::IInspectable& instance, jsi::Object object, const char* eventName,
-            winrt::event_token token)
-        {
-            if ((std::chrono::steady_clock::now() - last_cleanup) >= cleanup_interval)
-            {
-                cleanup();
-            }
-
-            auto ptr = winrt::get_abi(instance);
-            auto& data = events[ptr];
-            if (data.weak_ref && !data.weak_ref.get())
-            {
-                data = {}; // Object address was re-used; clean up the registrations
-            }
-
-            if (data.registrations.empty())
-            {
-                // NOTE: C++/WinRT has no 'try_make_weak_ref' or equivalent, so doing it manually here...
-                assert(!data.weak_ref);
-                if (auto src = instance.try_as<::IWeakReferenceSource>())
-                {
-                    winrt::check_hresult(
-                        src->GetWeakReference(reinterpret_cast<::IWeakReference**>(data.weak_ref.put())));
-                }
-            }
-
-            data.registrations.add(std::move(object), eventName, token);
-        }
-
-        winrt::event_token remove(jsi::Runtime& runtime, const winrt::Windows::Foundation::IInspectable& instance,
-            const jsi::Object& object, const char* eventName)
-        {
-            auto ptr = winrt::get_abi(instance);
-            if (auto itr = events.find(ptr); itr != events.end())
-            {
-                auto result = itr->second.registrations.remove(runtime, object, eventName);
-                if (itr->second.registrations.empty())
-                {
-                    events.erase(itr);
-                }
-
-                return result;
-            }
-
-            return {};
-        }
-
-        void cleanup()
-        {
-            last_cleanup = std::chrono::steady_clock::now();
-            for (auto itr = events.begin(); itr != events.end();)
-            {
-                if (itr->second.weak_ref.get()) // Object still alive
-                {
-                    ++itr;
-                }
-                else // Object was destroyed
-                {
-                    itr = events.erase(itr);
-                }
-            }
-        }
-    };
-
-    struct runtime_context
-    {
-        jsi::Runtime& runtime;
-        std::thread::id thread_id = std::this_thread::get_id();
-        std::function<void(std::function<void()>)> call_invoker;
-
-        // TODO: Currently each of these objects handles its own periodic cleanup. It would be great if we could do this
-        // on a more well-defined basis for both (e.g. on a timer)
-        object_instance_cache instance_cache;
-        object_event_cache event_cache;
-
-        runtime_context(jsi::Runtime& runtime, std::function<void(std::function<void()>)> callInvoker) :
-            runtime(runtime), call_invoker(callInvoker)
-        {
-        }
-
-        void call(std::function<void()> fn) const
-        {
-            if (thread_id == std::this_thread::get_id())
-            {
-                fn();
-            }
-            else
-            {
-                call_invoker(std::move(fn));
-            }
-        }
-
-        void call_async(std::function<void()> fn) const
-        {
-            call_invoker(std::move(fn));
-        }
-
-        void call_sync(std::function<void()> fn) const
-        {
-            if (thread_id == std::this_thread::get_id())
-            {
-                fn();
-            }
-            else
-            {
-                winrt::handle event(::CreateEventW(nullptr, true, false, nullptr));
-                if (!event.get())
-                {
-                    winrt::throw_last_error();
-                }
-
-                std::exception_ptr exception;
-                call_invoker([&]() {
-                    try
-                    {
-                        fn();
-                    }
-                    catch (...)
-                    {
-                        exception = std::current_exception();
-                    }
-                    ::SetEvent(event.get());
-                });
-
-                if (::WaitForSingleObject(event.get(), INFINITE) != WAIT_OBJECT_0)
-                {
-                    winrt::terminate();
-                }
-
-                if (exception)
-                {
-                    std::rethrow_exception(exception);
-                }
-            }
-        }
-
-        // For the most part, these pointers should only be accessed from the JS thread and therefore the reference
-        // count does not need to be bumped, but for things like asynchronous operations, we may need to take strong
-        // references to ensure the object does not get destroyed during use
-        std::atomic_uint32_t ref_count{ 1 };
-
-        [[nodiscard]] shared_runtime_context add_reference()
-        {
-            assert(thread_id == std::this_thread::get_id());
-            assert(ref_count.load() >= 1);
-            return shared_runtime_context{ this }; // NOTE: Bumps ref count
-        }
-
-        void release()
-        {
-            if (--ref_count == 0)
-            {
-                delete this;
-            }
-        }
-    };
-
-    inline shared_runtime_context::shared_runtime_context(runtime_context* ptr) : pointer(ptr)
-    {
-        if (pointer)
-        {
-            ++pointer->ref_count;
-        }
-    }
-
-    inline shared_runtime_context& shared_runtime_context::operator=(const shared_runtime_context& other)
-    {
-        if (this != &other)
-        {
-            if (pointer)
-            {
-                pointer->release();
-            }
-
-            pointer = other.pointer;
-            if (pointer)
-            {
-                ++pointer->ref_count;
-            }
-        }
-
-        return *this;
-    }
-
-    inline shared_runtime_context::~shared_runtime_context()
-    {
-        if (pointer)
-        {
-            pointer->release();
-        }
-    }
-
-    runtime_context* current_runtime_context();
-}
-#endif
-
 // Types used to store static data
 namespace nodewinrt
 {
@@ -1758,7 +1747,7 @@ namespace nodewinrt
 
     struct static_activatable_class_data final : static_class_data
     {
-        constexpr static_activatable_class_data(std::string_view ns, std::string_view name, constructor_t constructor,
+        constexpr static_activatable_class_data(std::string_view ns, std::string_view name, call_function_t constructor,
             span<const property_mapping> properties, span<const event_mapping> events,
             span<const function_mapping> functions) :
             static_class_data(name, properties, events, functions),
@@ -1769,7 +1758,7 @@ namespace nodewinrt
         virtual v8::Local<v8::Value> create(runtime_context* context) const override;
 
         std::string_view full_namespace;
-        constructor_t constructor;
+        call_function_t constructor;
     };
 
     // NOTE: We don't need to "create" objects from interfaces - we create objects and populate the interfaces that the
@@ -1892,6 +1881,7 @@ namespace nodewinrt
         // static void property_desc(v8::Local<v8::Name> property, const v8::PropertyCallbackInfo<v8::Value>& info);
 
     private:
+        static void call_function(const v8::FunctionCallbackInfo<v8::Value>& info);
 #if 0
         jsi::Value add_event_listener(jsi::Runtime& runtime, const jsi::Value* args, size_t count);
         jsi::Value remove_event_listener(jsi::Runtime& runtime, const jsi::Value* args, size_t count);
@@ -1905,21 +1895,18 @@ namespace nodewinrt
 #endif
     };
 
-#if 0
-    struct projected_function;
-    struct projected_overloaded_function;
-
-    struct projected_object_instance : public jsi::HostObject
+    struct projected_object_instance
     {
-        friend struct projected_function;
-        friend struct projected_overloaded_function;
+        projected_object_instance(runtime_context* context, const winrt::Windows::Foundation::IInspectable& instance);
 
-        projected_object_instance(const winrt::Windows::Foundation::IInspectable& instance);
-
-        // HostObject functions
-        virtual jsi::Value get(jsi::Runtime& runtime, const jsi::PropNameID& name) override;
-        virtual void set(jsi::Runtime& runtime, const jsi::PropNameID& name, const jsi::Value& value) override;
-        virtual std::vector<jsi::PropNameID> getPropertyNames(jsi::Runtime& runtime) override;
+        // Accessors
+        static void property_getter(v8::Local<v8::Name> property, const v8::PropertyCallbackInfo<v8::Value>& info);
+        static void property_setter(
+            v8::Local<v8::Name> property, v8::Local<v8::Value> value, const v8::PropertyCallbackInfo<v8::Value>& info);
+        static void property_query(v8::Local<v8::Name> property, const v8::PropertyCallbackInfo<v8::Integer>& info);
+        static void property_enum(const v8::PropertyCallbackInfo<v8::Array>& info);
+        // TODO?
+        // static void property_desc(v8::Local<v8::Name> property, const v8::PropertyCallbackInfo<v8::Value>& info);
 
         const winrt::Windows::Foundation::IInspectable& instance() const noexcept
         {
@@ -1927,14 +1914,19 @@ namespace nodewinrt
         }
 
     private:
+        static void call_function(const v8::FunctionCallbackInfo<v8::Value>& info);
+#if 0
         jsi::Value add_event_listener(jsi::Runtime& runtime, const jsi::Value* args, size_t count);
         jsi::Value remove_event_listener(jsi::Runtime& runtime, const jsi::Value* args, size_t count);
+#endif
 
+        runtime_context* m_context;
         winrt::Windows::Foundation::IInspectable m_instance;
         sso_vector<const static_interface_data*> m_interfaces;
-        std::unordered_map<std::string_view, jsi::Value> m_functions;
+        std::unordered_map<std::string_view, v8::Global<v8::Value>> m_functions;
     };
 
+#if 0
     template <typename IFace>
     struct projected_async_instance :
         public jsi::HostObject,
@@ -2914,9 +2906,7 @@ namespace nodewinrt
             }
         }
 
-        // TODO
-        throw v8_exception::type_error(context->isolate, "Object conversion not yet implemented");
-        // return current_runtime_context()->instance_cache.get_instance(runtime, value);
+        return context->instance_cache.get_instance(context, value);
     }
 
     template <typename T>

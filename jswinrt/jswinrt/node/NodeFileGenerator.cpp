@@ -504,8 +504,7 @@ namespace nodewinrt::classes::%
         {
             writer.write_fmt(R"^-^(
         { "%",
-            [](const v8::FunctionCallbackInfo<v8::Value>& info) {
-                auto context = context_from_data(info);
+            [](runtime_context* context, const v8::FunctionCallbackInfo<v8::Value>& info) {
                 auto count = info.Length();)^-^",
                 jswinrt::camel_case{ data.name });
 

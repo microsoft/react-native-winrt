@@ -1,6 +1,7 @@
 
 #include "base.h"
 
+#include <unordered_set>
 #include <Windows.h>
 
 // #include <combaseapi.h>
@@ -73,7 +74,13 @@ runtime_context::runtime_context(v8::Isolate* isolate) : isolate(isolate)
             &projected_class::property_query, nullptr, &projected_class::property_enum });
     activatable_class_template.Reset(isolate, templ);
 
-    // TODO: Interface template
+    // Interface template
+    templ = v8::ObjectTemplate::New(isolate);
+    templ->SetInternalFieldCount(1);
+    templ->SetHandler(v8::NamedPropertyHandlerConfiguration{ &projected_object_instance::property_getter,
+        &projected_object_instance::property_setter, &projected_object_instance::property_query, nullptr,
+        &projected_object_instance::property_enum });
+    object_instance_template.Reset(isolate, templ);
 }
 
 v8::Local<v8::String> nodewinrt::make_string_checked(v8::Isolate* isolate, std::wstring_view str)
@@ -165,13 +172,10 @@ static auto find_by_name(span<const ThingWithName> list, std::string_view name) 
     return std::find_if(list.begin(), list.end(), [&](const ThingWithName& thing) { return thing.name == name; });
 }
 
-#if 0
-jsi::Value object_instance_cache::get_instance(jsi::Runtime& runtime, const winrt::IInspectable& value)
+v8::Local<v8::Value> object_instance_cache::get_instance(runtime_context* context, const winrt::IInspectable& value)
 {
-    if ((std::chrono::steady_clock::now() - last_cleanup) >= cleanup_interval)
-    {
-        cleanup(runtime);
-    }
+    assert(context->thread_id == std::this_thread::get_id());
+    auto isolate = context->isolate;
 
     // NOTE: Each interface has its own associated v-table, so two IInspectable pointers to the same object may actually
     // be different if they were originally pointers to two different interfaces. Hence the QI here
@@ -179,50 +183,32 @@ jsi::Value object_instance_cache::get_instance(jsi::Runtime& runtime, const winr
     auto key = winrt::get_abi(instance);
     if (auto itr = instances.find(key); itr != instances.end())
     {
-        // NOTE: It is possible for an interface to get deallocated and have its memory address reused for a new object,
-        // however because we hold strong references to WinRT objects and weak references to the JS objects we create,
-        // this would imply that the JS object also got GC'd and would fail to resolve below
-        if (supports_weak_object)
+        // TODO: We try and make sure that we remove the instance whenever the object is GC'd, which means that the
+        // object *should* always resolve, however the documentation very clearly states that the timing of the
+        // callbacks - or even *if* the callback gets invoked - is not guaranteed. This is concerning in its own right,
+        // however it's not clear how big/if this is going to be a problem, so I'll leave in some asserts for now
+        auto obj = itr->second.Get(isolate);
+        if (!obj.IsEmpty())
         {
-            if (auto strongValue = std::get<0>(itr->second).lock(runtime); !strongValue.isUndefined())
-            {
-                return strongValue;
-            }
-        }
-        else
-        {
-            if (auto hostObj = std::get<1>(itr->second).lock())
-            {
-                return jsi::Value(runtime, jsi::Object::createFromHostObject(runtime, std::move(hostObj)));
-            }
+            assert(obj->IsObject());
+            return obj;
         }
 
-        // Otherwise, the object has been GC'd. Remove it so that we can re-create the object below
+        assert(false);
         instances.erase(itr);
     }
 
-    auto hostObj = std::make_shared<projected_object_instance>(instance);
-    auto obj = jsi::Object::createFromHostObject(runtime, hostObj);
-    if (supports_weak_object)
-    {
-        try
-        {
-            instances.emplace(key, jsi::WeakObject(runtime, obj));
-        }
-        catch (std::logic_error&)
-        {
-            supports_weak_object = false;
-        }
-    }
+    auto templ = context->object_instance_template.Get(isolate);
+    auto result = check_maybe(templ->NewInstance(isolate->GetCurrentContext()));
 
-    if (!supports_weak_object)
-    {
-        instances.emplace(key, std::move(hostObj));
-    }
+    auto ptr = new projected_object_instance(context, value);
+    result->SetInternalField(0, v8::External::New(isolate, ptr));
 
-    return jsi::Value(runtime, std::move(obj));
+    // TODO: This actually needs to be made a weak reference
+    instances.emplace(std::piecewise_construct, std::forward_as_tuple(key), std::forward_as_tuple(isolate, result));
+
+    return result;
 }
-#endif
 
 v8::Local<v8::Value> static_namespace_data::create(runtime_context* context) const
 {
@@ -467,8 +453,8 @@ try
         auto& item = pThis->m_functions[itr - functions.begin()];
         if (item.IsEmpty())
         {
-            auto fn = check_maybe(v8::Function::New(isolate->GetCurrentContext(), itr->function,
-                v8::External::New(isolate, pThis->m_context), 0, v8::ConstructorBehavior::kThrow));
+            auto fn = check_maybe(v8::Function::New(isolate->GetCurrentContext(), &projected_class::call_function,
+                v8::External::New(isolate, itr->function), 0, v8::ConstructorBehavior::kThrow));
             item.Reset(isolate, fn);
         }
 
@@ -574,6 +560,20 @@ try
 }
 V8_CATCH(info.GetIsolate())
 
+void projected_class::call_function(const v8::FunctionCallbackInfo<v8::Value>& info)
+try
+{
+    // TODO: Error checking or can we assume this will all succeed?
+    auto data = info.Data();
+    auto target = static_cast<call_function_t>(data.As<v8::External>()->Value());
+
+    auto thisValue = info.This();
+    auto pThis = this_from_holder<projected_class>(thisValue.As<v8::Object>());
+
+    target(pThis->m_context, info);
+}
+V8_CATCH(info.GetIsolate())
+
 #if 0
 jsi::Value projected_statics_class::add_event_listener(jsi::Runtime& runtime, const jsi::Value* args, size_t count)
 {
@@ -641,18 +641,6 @@ static const static_interface_data* find_interface(const winrt::guid& guid)
 }
 
 #if 0
-projected_object_instance::projected_object_instance(const winrt::IInspectable& instance) : m_instance(instance)
-{
-    auto iids = winrt::get_interfaces(m_instance);
-    for (auto&& iid : iids)
-    {
-        if (auto iface = find_interface(iid))
-        {
-            m_interfaces.push_back(iface);
-        }
-    }
-}
-
 namespace nodewinrt
 {
     struct projected_function
@@ -697,32 +685,56 @@ namespace nodewinrt
         sso_vector<const static_interface_data::function_mapping*, 4> data;
     };
 }
+#endif
 
-jsi::Value projected_object_instance::get(jsi::Runtime& runtime, const jsi::PropNameID& id)
+projected_object_instance::projected_object_instance(runtime_context* context, const winrt::IInspectable& instance) :
+    m_context(context), m_instance(instance)
 {
-    auto name = id.utf8(runtime);
-    if (auto itr = m_functions.find(name); itr != m_functions.end())
+    auto iids = winrt::get_interfaces(m_instance);
+    for (auto&& iid : iids)
     {
-        return jsi::Value(runtime, itr->second);
+        if (auto iface = find_interface(iid))
+        {
+            m_interfaces.push_back(iface);
+        }
+    }
+}
+
+void projected_object_instance::property_getter(
+    v8::Local<v8::Name> property, const v8::PropertyCallbackInfo<v8::Value>& info)
+try
+{
+    // TODO: Probably need to respond to some symbols for some types, e.g. IVector, etc.
+    if (!property->IsString())
+        return;
+
+    auto pThis = this_from_holder<projected_object_instance>(info);
+    auto isolate = pThis->m_context->isolate;
+    assert(isolate == info.GetIsolate());
+    auto propName = string_to_utf8(isolate, property.As<v8::String>());
+
+    if (auto itr = pThis->m_functions.find(propName); itr != pThis->m_functions.end())
+    {
+        return info.GetReturnValue().Set(itr->second.Get(isolate));
     }
 
     sso_vector<const static_interface_data::function_mapping*> functions;
     bool hasEvents = false;
-    for (auto iface : m_interfaces)
+    for (auto iface : pThis->m_interfaces)
     {
-        if (auto itr = find_by_name(iface->properties, name); (itr != iface->properties.end()) && itr->getter)
+        if (auto itr = find_by_name(iface->properties, propName); (itr != iface->properties.end()) && itr->getter)
         {
-            return itr->getter(runtime, m_instance);
+            info.GetReturnValue().Set(itr->getter(pThis->m_context, pThis->m_instance));
         }
 
-        if (auto dataItr = find_by_name(iface->functions, name); dataItr != iface->functions.end())
+        if (auto itr = find_by_name(iface->functions, propName); itr != iface->functions.end())
         {
-            functions.push_back(&*dataItr);
+            functions.push_back(&*itr);
 
             // NOTE: Functions are sorted, so this should be the first of N consecutive functions with the same name
-            for (++dataItr; (dataItr != iface->functions.end()) && (dataItr->name == name); ++dataItr)
+            for (++itr; (itr != iface->functions.end()) && (itr->name == propName); ++itr)
             {
-                functions.push_back(&*dataItr);
+                functions.push_back(&*itr);
             }
         }
 
@@ -739,7 +751,7 @@ jsi::Value projected_object_instance::get(jsi::Runtime& runtime, const jsi::Prop
         {
             // NOTE: Even if the target is the default overload, we still want to remove other ones with the same arity
             auto tgt = functions[i];
-            for (size_t j = i + 1; j < functions.size();)
+            for (size_t j = i + 1; j < functions.size(); )
             {
                 auto test = functions[j];
                 if (tgt->arity == test->arity)
@@ -763,6 +775,23 @@ jsi::Value projected_object_instance::get(jsi::Runtime& runtime, const jsi::Prop
 
     if (functions.size() == 1)
     {
+        // Non-overloaded function. This is the easy case since all we need is the single function pointer
+        auto target = functions[0];
+        auto fn = check_maybe(v8::Function::New(isolate->GetCurrentContext(), &projected_object_instance::call_function,
+            v8::External::New(isolate, const_cast<void*>(static_cast<const void*>(target))),
+            static_cast<int>(target->arity), v8::ConstructorBehavior::kThrow));
+        pThis->m_functions.emplace(
+            std::piecewise_construct, std::forward_as_tuple(target->name), std::forward_as_tuple(isolate, fn));
+        return info.GetReturnValue().Set(fn);
+    }
+    else if (!functions.empty())
+    {
+        // TODO
+    }
+
+#if 0
+    if (functions.size() == 1)
+    {
         // Non-overloaded function, or at least not overloaded with different arities
         auto fn =
             jsi::Function::createFromHostFunction(runtime, id, functions[0]->arity, projected_function{ functions[0] });
@@ -776,7 +805,9 @@ jsi::Value projected_object_instance::get(jsi::Runtime& runtime, const jsi::Prop
             runtime, id, 0, projected_overloaded_function{ std::move(functions) });
         return jsi::Value(runtime, m_functions.emplace(functionName, std::move(fn)).first->second);
     }
+#endif
 
+#if 0
     if (hasEvents)
     {
         if (name == add_event_name)
@@ -790,7 +821,9 @@ jsi::Value projected_object_instance::get(jsi::Runtime& runtime, const jsi::Prop
             return jsi::Value(runtime, m_functions.emplace(remove_event_name, std::move(fn)).first->second);
         }
     }
+#endif
 
+#if 0
     // If we've made it this far, check to see if any interface wants to handle the call (e.g. operator[] etc.)
     jsi::Value fallbackValue;
     for (auto iface : m_interfaces)
@@ -806,10 +839,16 @@ jsi::Value projected_object_instance::get(jsi::Runtime& runtime, const jsi::Prop
     }
 
     return std::move(fallbackValue);
+#endif
 }
+V8_CATCH(info.GetIsolate())
 
-void projected_object_instance::set(jsi::Runtime& runtime, const jsi::PropNameID& id, const jsi::Value& value)
+void projected_object_instance::property_setter(
+    v8::Local<v8::Name> property, v8::Local<v8::Value> value, const v8::PropertyCallbackInfo<v8::Value>& info)
+try
 {
+    // TODO
+#if 0
     auto name = id.utf8(runtime);
     for (auto iface : m_interfaces)
     {
@@ -832,38 +871,136 @@ void projected_object_instance::set(jsi::Runtime& runtime, const jsi::PropNameID
 
     // If no property exists with the given name, then ignore the call rather than throwing. This is more-or-less
     // consistent with EdgeHTML WebView.
+#endif
 }
+V8_CATCH(info.GetIsolate())
 
-std::vector<jsi::PropNameID> projected_object_instance::getPropertyNames(jsi::Runtime& runtime)
+void projected_object_instance::property_query(
+    v8::Local<v8::Name> property, const v8::PropertyCallbackInfo<v8::Integer>& info)
+try
 {
-    // TODO: Since functions can be overloaded - and we don't collate them on interfaces like we do with classes - we
-    // may end up with duplicates. Is that okay?
-    std::vector<jsi::PropNameID> result;
+    // TODO: Probably also need to respond to symbols or other property keys for "special" types (e.g. IVector, etc.)
+    if (!property->IsString())
+        return;
+
+    auto pThis = this_from_holder<projected_object_instance>(info);
+    auto isolate = pThis->m_context->isolate;
+    assert(isolate == info.GetIsolate());
+    auto propName = string_to_utf8(isolate, property.As<v8::String>());
+
+    bool isProperty = false;
     bool hasEvents = false;
-    for (auto iface : m_interfaces)
+    for (auto iface : pThis->m_interfaces)
     {
-        for (auto&& prop : iface->properties)
+        if (auto itr = find_by_name(iface->properties, propName); itr != iface->properties.end())
         {
-            result.push_back(make_propid(runtime, prop.name));
+            isProperty = true;
+            if (itr->setter)
+            {
+                // NOTE: We can always assume that there's a getter
+                return info.GetReturnValue().Set(v8::PropertyAttribute::DontDelete);
+            }
+            // Otherwise, we still need to check other interfaces to see if there's a setter
+            continue;
         }
 
-        for (auto&& func : iface->functions)
+        if (isProperty)
+            continue;
+
+        if (auto itr = find_by_name(iface->functions, propName); itr != iface->functions.end())
         {
-            result.push_back(make_propid(runtime, func.name));
+            return info.GetReturnValue().Set(v8::PropertyAttribute::ReadOnly | v8::PropertyAttribute::DontDelete);
         }
 
         hasEvents = hasEvents || !iface->events.empty();
     }
 
-    if (hasEvents)
+    if (isProperty)
     {
-        result.push_back(make_propid(runtime, add_event_name));
-        result.push_back(make_propid(runtime, remove_event_name));
+        return info.GetReturnValue().Set(v8::PropertyAttribute::ReadOnly | v8::PropertyAttribute::DontDelete);
     }
 
-    return result;
+    if (hasEvents)
+    {
+        if (propName == add_event_name)
+            return info.GetReturnValue().Set(v8::PropertyAttribute::ReadOnly | v8::PropertyAttribute::DontDelete);
+        if (propName == remove_event_name)
+            return info.GetReturnValue().Set(v8::PropertyAttribute::ReadOnly | v8::PropertyAttribute::DontDelete);
+    }
 }
+V8_CATCH(info.GetIsolate())
 
+void projected_object_instance::property_enum(const v8::PropertyCallbackInfo<v8::Array>& info)
+try
+{
+    auto pThis = this_from_holder<projected_object_instance>(info);
+    auto isolate = pThis->m_context->isolate;
+    assert(isolate == info.GetIsolate());
+    auto context = isolate->GetCurrentContext();
+
+    // Try and avoid duplicates, so store names in a set
+    std::unordered_set<std::string_view> names;
+    bool hasEvents = false;
+    for (auto iface : pThis->m_interfaces)
+    {
+        for (auto&& prop : iface->properties)
+        {
+            names.insert(prop.name);
+        }
+
+        for (auto&& fn : iface->functions)
+        {
+            names.insert(fn.name);
+        }
+
+        hasEvents = hasEvents || !iface->events.empty();
+    }
+
+    int propListSize = static_cast<int>(names.size() + (hasEvents ? 2 : 0));
+    auto result = v8::Array::New(isolate, propListSize);
+    uint32_t index = 0;
+    for (auto&& name : names)
+    {
+        check_maybe(result->Set(context, index++, make_string_checked(isolate, name)));
+    }
+
+    if (hasEvents)
+    {
+        check_maybe(result->Set(context, index++, make_string_checked(isolate, add_event_name)));
+        check_maybe(result->Set(context, index++, make_string_checked(isolate, remove_event_name)));
+    }
+
+    return info.GetReturnValue().Set(result);
+}
+V8_CATCH(info.GetIsolate())
+
+void projected_object_instance::call_function(const v8::FunctionCallbackInfo<v8::Value>& info)
+try
+{
+    // TODO: Error checking or can we assume this will all succeed?
+    auto data = info.Data();
+    auto target = static_cast<const static_interface_data::function_mapping*>(data.As<v8::External>()->Value());
+
+    auto thisValue = info.This();
+    auto pThis = this_from_holder<projected_object_instance>(thisValue.As<v8::Object>());
+
+    if (info.Length() != target->arity)
+    {
+        std::string msg = "Non-overloaded function ";
+        msg.append(target->name);
+        msg += " expects ";
+        msg += std::to_string(target->arity);
+        msg += " arguments, but ";
+        msg += std::to_string(info.Length());
+        msg += " provided";
+        throw v8_exception::type_error(pThis->m_context->isolate, msg);
+    }
+
+    target->function(pThis->m_context, pThis->m_instance, info);
+}
+V8_CATCH(info.GetIsolate())
+
+#if 0
 jsi::Value projected_object_instance::add_event_listener(jsi::Runtime& runtime, const jsi::Value* args, size_t count)
 {
     if (count < 2)
