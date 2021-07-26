@@ -1179,57 +1179,28 @@ namespace nodewinrt
         return convert_value_to_native<T>(context, result);
     }
 
-    // Retrieve native "this" pointer from JS value
-    template <typename T>
-    inline T* this_from_holder(v8::Local<v8::Object> obj)
+    inline void* internal_field_value(v8::Local<v8::Object> obj, int index)
     {
-        auto field = obj->GetInternalField(0);
-        // TODO: Should we just assume success on all these since we control the entire path?
-        if (field.IsEmpty())
-            throw v8_exception::from_internal(); // TODO: Is this a valid condition
+        // NOTE: This function assumes that the caller knows that the field is valid and is an External
+        assert(!obj.IsEmpty());
+        assert(obj->InternalFieldCount() > index);
 
-        auto external = field.As<v8::External>(); // TODO: Should probably check 'IsExternal' instead
-        if (external.IsEmpty())
-            throw v8_exception::from_internal(); // TODO: Is this a valid condition
+        auto field = obj->GetInternalField(index);
+        assert(!field.IsEmpty());
+        assert(field->IsExternal());
 
-        auto ptr = external->Value();
-        assert(ptr); // TODO?
-        return static_cast<T*>(ptr);
-    }
+        auto external = field.As<v8::External>();
+        assert(!external.IsEmpty());
 
-    template <typename T, typename U>
-    inline T* this_from_holder(const v8::PropertyCallbackInfo<U>& info)
-    {
-        auto holder = info.Holder();
-        if (holder.IsEmpty())
-            throw v8_exception::from_internal(); // TODO: This is almost certainly incorrect
-
-        return this_from_holder<T>(holder);
-    }
-
-    template <typename T, typename U>
-    inline T* this_from_holder(const v8::FunctionCallbackInfo<U>& info)
-    {
-        auto holder = info.Holder();
-        if (holder.IsEmpty())
-            throw v8_exception::from_internal(); // TODO: This is almost certainly incorrect
-
-        return this_from_holder<T>(holder);
+        auto result = external->Value();
+        assert(result != nullptr);
+        return result;
     }
 
     template <typename T>
-    inline runtime_context* context_from_data(const v8::FunctionCallbackInfo<T>& info)
+    inline T* internal_field_value(v8::Local<v8::Object> obj, int index)
     {
-        // TODO: Should we just assume success on all these since we control the entire path?
-        auto data = info.Data();
-        if (data.IsEmpty())
-            throw v8_exception::from_internal(); // TODO: This is almost certainly incorrect
-
-        auto external = data.As<v8::External>(); // TODO: Should probably check 'IsExternal' instead
-        if (external.IsEmpty())
-            throw v8_exception::from_internal(); // TODO: Is this a valid condition
-
-        return static_cast<runtime_context*>(external->Value());
+        return static_cast<T*>(internal_field_value(obj, index));
     }
 
 #if 0
@@ -1895,6 +1866,15 @@ namespace nodewinrt
 #endif
     };
 
+    struct overloaded_function
+    {
+        void operator()(runtime_context* context, const winrt::Windows::Foundation::IInspectable& instance,
+            const v8::FunctionCallbackInfo<v8::Value>& info);
+
+        // TODO: Figure out a good SSO size (4 might be larger than we need most of the time. Perhaps 2?)
+        sso_vector<const static_interface_data::function_mapping*, 4> overloads;
+    };
+
     struct projected_object_instance
     {
         projected_object_instance(runtime_context* context, const winrt::Windows::Foundation::IInspectable& instance);
@@ -1915,6 +1895,7 @@ namespace nodewinrt
 
     private:
         static void call_function(const v8::FunctionCallbackInfo<v8::Value>& info);
+        static void call_overloaded_function(const v8::FunctionCallbackInfo<v8::Value>& info);
 #if 0
         jsi::Value add_event_listener(jsi::Runtime& runtime, const jsi::Value* args, size_t count);
         jsi::Value remove_event_listener(jsi::Runtime& runtime, const jsi::Value* args, size_t count);
@@ -1924,7 +1905,15 @@ namespace nodewinrt
         winrt::Windows::Foundation::IInspectable m_instance;
         sso_vector<const static_interface_data*> m_interfaces;
         std::unordered_map<std::string_view, v8::Global<v8::Value>> m_functions;
+
+        // Since we can only associate a JS function object with a single void* pointer, it's easiest to just save the
+        // data on the 'this' object and use an index into that data for the void* pointer.
+        // TODO: Would this be better off being an sso_vector? Since there's relatively few uses of function overloads,
+        // a normal std::vector is probably actually the better option here since it's smaller in size.
+        std::vector<overloaded_function> m_overloads;
     };
+
+    bool is_projected_object(runtime_context* context, v8::Local<v8::Object> obj);
 
 #if 0
     template <typename IFace>
@@ -2921,13 +2910,11 @@ namespace nodewinrt
         if (value->IsObject())
         {
             auto obj = value.As<v8::Object>();
-            // TODO
-#if 0
-            if (obj.isHostObject<projected_object_instance>(runtime))
+            if (is_projected_object(context, obj))
             {
-                return asTargetType(obj.getHostObject<projected_object_instance>(runtime)->instance());
+                auto ptr = internal_field_value<projected_object_instance>(obj, 1);
+                return asTargetType(ptr->instance());
             }
-#endif
         }
 
         return std::nullopt;

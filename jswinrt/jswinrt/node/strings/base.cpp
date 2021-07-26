@@ -76,7 +76,7 @@ runtime_context::runtime_context(v8::Isolate* isolate) : isolate(isolate)
 
     // Interface template
     templ = v8::ObjectTemplate::New(isolate);
-    templ->SetInternalFieldCount(1);
+    templ->SetInternalFieldCount(2);
     templ->SetHandler(v8::NamedPropertyHandlerConfiguration{ &projected_object_instance::property_getter,
         &projected_object_instance::property_setter, &projected_object_instance::property_query, nullptr,
         &projected_object_instance::property_enum });
@@ -201,10 +201,16 @@ v8::Local<v8::Value> object_instance_cache::get_instance(runtime_context* contex
     auto templ = context->object_instance_template.Get(isolate);
     auto result = check_maybe(templ->NewInstance(isolate->GetCurrentContext()));
 
-    auto ptr = new projected_object_instance(context, value);
-    result->SetInternalField(0, v8::External::New(isolate, ptr));
+    // TODO: We use the context pointer as the first internal field to validate that an object represents a WinRT
+    // object instance. This is not fool-proof (e.g. it could just so be the case that another object has its first
+    // internal field set as the same value). This is unlikely to happen, so perhaps we can rely on this behavior for
+    // the long term, but there really doesn't seem to be a better option in V8...
+    result->SetInternalField(0, v8::External::New(isolate, context));
 
-    // TODO: This actually needs to be made a weak reference
+    auto ptr = new projected_object_instance(context, value);
+    result->SetInternalField(1, v8::External::New(isolate, ptr));
+
+    // TODO: This actually needs to be made a weak reference w/ callback to clean up
     instances.emplace(std::piecewise_construct, std::forward_as_tuple(key), std::forward_as_tuple(isolate, result));
 
     return result;
@@ -229,7 +235,7 @@ try
     if (!property->IsString())
         return;
 
-    auto pThis = this_from_holder<projected_namespace>(info);
+    auto pThis = internal_field_value<projected_namespace>(info.This(), 0);
     auto isolate = pThis->m_context->isolate;
     assert(isolate == info.GetIsolate());
     auto propName = string_to_utf8(isolate, property.As<v8::String>());
@@ -255,7 +261,7 @@ try
     if (!property->IsString())
         return;
 
-    auto pThis = this_from_holder<projected_namespace>(info);
+    auto pThis = internal_field_value<projected_namespace>(info.This(), 0);
     auto isolate = pThis->m_context->isolate;
     assert(isolate == info.GetIsolate());
     auto propName = string_to_utf8(isolate, property.As<v8::String>());
@@ -271,7 +277,7 @@ V8_CATCH(info.GetIsolate())
 void projected_namespace::property_enum(const v8::PropertyCallbackInfo<v8::Array>& info)
 try
 {
-    auto pThis = this_from_holder<projected_namespace>(info);
+    auto pThis = internal_field_value<projected_namespace>(info.This(), 0);
     auto isolate = pThis->m_context->isolate;
     assert(isolate == info.GetIsolate());
     auto context = isolate->GetCurrentContext();
@@ -307,7 +313,7 @@ try
     if (!property->IsString())
         return;
 
-    auto pThis = this_from_holder<projected_enum>(info);
+    auto pThis = internal_field_value<projected_enum>(info.This(), 0);
     auto isolate = info.GetIsolate();
     auto propName = string_to_utf8(isolate, property.As<v8::String>());
 
@@ -325,7 +331,7 @@ try
     if (!property->IsString())
         return;
 
-    auto pThis = this_from_holder<projected_enum>(info);
+    auto pThis = internal_field_value<projected_enum>(info.This(), 0);
     auto isolate = info.GetIsolate();
     auto propName = string_to_utf8(isolate, property.As<v8::String>());
 
@@ -340,7 +346,7 @@ V8_CATCH(info.GetIsolate())
 void projected_enum::property_enum(const v8::PropertyCallbackInfo<v8::Array>& info)
 try
 {
-    auto pThis = this_from_holder<projected_enum>(info);
+    auto pThis = internal_field_value<projected_enum>(info.This(), 0);
     auto isolate = info.GetIsolate();
     auto context = isolate->GetCurrentContext();
 
@@ -421,7 +427,7 @@ static jsi::Value static_remove_event_listener(jsi::Runtime& runtime, const jsi:
 void projected_class::construct(const v8::FunctionCallbackInfo<v8::Value>& info)
 try
 {
-    auto pThis = this_from_holder<projected_class>(info);
+    auto pThis = internal_field_value<projected_class>(info.This(), 0);
     auto data = static_cast<const static_activatable_class_data*>(pThis->m_data);
     return data->constructor(pThis->m_context, info);
 }
@@ -434,7 +440,7 @@ try
     if (!property->IsString())
         return;
 
-    auto pThis = this_from_holder<projected_class>(info);
+    auto pThis = internal_field_value<projected_class>(info.This(), 0);
     auto isolate = pThis->m_context->isolate;
     assert(isolate == info.GetIsolate());
     auto propName = string_to_utf8(isolate, property.As<v8::String>());
@@ -473,7 +479,7 @@ try
     if (!property->IsString())
         return;
 
-    auto pThis = this_from_holder<projected_class>(info);
+    auto pThis = internal_field_value<projected_class>(info.This(), 0);
     auto isolate = pThis->m_context->isolate;
     assert(isolate == info.GetIsolate());
     auto propName = string_to_utf8(isolate, property.As<v8::String>());
@@ -494,7 +500,7 @@ try
     if (!property->IsString())
         return;
 
-    auto pThis = this_from_holder<projected_class>(info);
+    auto pThis = internal_field_value<projected_class>(info.This(), 0);
     auto isolate = pThis->m_context->isolate;
     assert(isolate == info.GetIsolate());
     auto propName = string_to_utf8(isolate, property.As<v8::String>());
@@ -527,7 +533,7 @@ V8_CATCH(info.GetIsolate())
 void projected_class::property_enum(const v8::PropertyCallbackInfo<v8::Array>& info)
 try
 {
-    auto pThis = this_from_holder<projected_class>(info);
+    auto pThis = internal_field_value<projected_class>(info.This(), 0);
     auto isolate = pThis->m_context->isolate;
     assert(isolate == info.GetIsolate());
     auto context = isolate->GetCurrentContext();
@@ -568,7 +574,7 @@ try
     auto target = static_cast<call_function_t>(data.As<v8::External>()->Value());
 
     auto thisValue = info.This();
-    auto pThis = this_from_holder<projected_class>(thisValue.As<v8::Object>());
+    auto pThis = internal_field_value<projected_class>(thisValue.As<v8::Object>(), 0);
 
     target(pThis->m_context, info);
 }
@@ -640,53 +646,6 @@ static const static_interface_data* find_interface(const winrt::guid& guid)
     return nullptr;
 }
 
-#if 0
-namespace nodewinrt
-{
-    struct projected_function
-    {
-        jsi::Value operator()(
-            jsi::Runtime& runtime, const jsi::Value& thisVal, const jsi::Value* args, size_t count) const
-        {
-            if (count != data->arity)
-            {
-                throw jsi::JSError(runtime, "TypeError: Non-overloaded function " + std::string(data->name) +
-                                                " expects " + std::to_string(data->arity) + " arguments, but " +
-                                                std::to_string(count) + " provided");
-            }
-
-            auto obj = thisVal.asObject(runtime).asHostObject<projected_object_instance>(runtime);
-            return data->function(runtime, obj->m_instance, args);
-        }
-
-        const static_interface_data::function_mapping* data;
-    };
-
-    struct projected_overloaded_function
-    {
-        jsi::Value operator()(
-            jsi::Runtime& runtime, const jsi::Value& thisVal, const jsi::Value* args, size_t count) const
-        {
-            for (auto func : data)
-            {
-                if (func->arity == count)
-                {
-                    auto obj = thisVal.asObject(runtime).asHostObject<projected_object_instance>(runtime);
-                    return func->function(runtime, obj->m_instance, args);
-                }
-            }
-
-            throw jsi::JSError(runtime, "TypeError: Overloaded function " + std::string(data[0]->name) +
-                                            " does not have an overload that expects " + std::to_string(count) +
-                                            " arguments");
-        }
-
-        // TODO: Figure out a good SSO size (4 might be larger than we need most of the time. Perhaps 2?)
-        sso_vector<const static_interface_data::function_mapping*, 4> data;
-    };
-}
-#endif
-
 projected_object_instance::projected_object_instance(runtime_context* context, const winrt::IInspectable& instance) :
     m_context(context), m_instance(instance)
 {
@@ -708,7 +667,7 @@ try
     if (!property->IsString())
         return;
 
-    auto pThis = this_from_holder<projected_object_instance>(info);
+    auto pThis = internal_field_value<projected_object_instance>(info.This(), 1);
     auto isolate = pThis->m_context->isolate;
     assert(isolate == info.GetIsolate());
     auto propName = string_to_utf8(isolate, property.As<v8::String>());
@@ -773,39 +732,30 @@ try
         }
     }
 
-    if (functions.size() == 1)
+    if (!functions.empty())
     {
-        // Non-overloaded function. This is the easy case since all we need is the single function pointer
+        v8::FunctionCallback callback;
+        v8::Local<v8::External> data;
         auto target = functions[0];
-        auto fn = check_maybe(v8::Function::New(isolate->GetCurrentContext(), &projected_object_instance::call_function,
-            v8::External::New(isolate, const_cast<void*>(static_cast<const void*>(target))),
+        if (functions.size() == 1)
+        {
+            callback = &projected_object_instance::call_function;
+            data = v8::External::New(isolate, const_cast<void*>(static_cast<const void*>(target)));
+        }
+        else
+        {
+            callback = &projected_object_instance::call_overloaded_function;
+            data = v8::External::New(
+                isolate, reinterpret_cast<void*>(static_cast<std::uintptr_t>(pThis->m_overloads.size())));
+            pThis->m_overloads.push_back(overloaded_function{ std::move(functions) });
+        }
+
+        auto fn = check_maybe(v8::Function::New(isolate->GetCurrentContext(), callback, data,
             static_cast<int>(target->arity), v8::ConstructorBehavior::kThrow));
         pThis->m_functions.emplace(
             std::piecewise_construct, std::forward_as_tuple(target->name), std::forward_as_tuple(isolate, fn));
         return info.GetReturnValue().Set(fn);
     }
-    else if (!functions.empty())
-    {
-        // TODO
-    }
-
-#if 0
-    if (functions.size() == 1)
-    {
-        // Non-overloaded function, or at least not overloaded with different arities
-        auto fn =
-            jsi::Function::createFromHostFunction(runtime, id, functions[0]->arity, projected_function{ functions[0] });
-        return jsi::Value(runtime, m_functions.emplace(functions[0]->name, std::move(fn)).first->second);
-    }
-    else if (!functions.empty())
-    {
-        // TODO: Calculate max arity? Does it matter?
-        auto functionName = functions[0]->name;
-        auto fn = jsi::Function::createFromHostFunction(
-            runtime, id, 0, projected_overloaded_function{ std::move(functions) });
-        return jsi::Value(runtime, m_functions.emplace(functionName, std::move(fn)).first->second);
-    }
-#endif
 
 #if 0
     if (hasEvents)
@@ -847,18 +797,25 @@ void projected_object_instance::property_setter(
     v8::Local<v8::Name> property, v8::Local<v8::Value> value, const v8::PropertyCallbackInfo<v8::Value>& info)
 try
 {
-    // TODO
-#if 0
-    auto name = id.utf8(runtime);
-    for (auto iface : m_interfaces)
+    if (!property->IsString())
+        return;
+
+    auto pThis = internal_field_value<projected_object_instance>(info.This(), 1);
+    auto isolate = pThis->m_context->isolate;
+    assert(isolate == info.GetIsolate());
+    auto propName = string_to_utf8(isolate, property.As<v8::String>());
+
+    for (auto iface : pThis->m_interfaces)
     {
-        if (auto itr = find_by_name(iface->properties, name); (itr != iface->properties.end()) && itr->setter)
+        // Can only set a property
+        if (auto itr = find_by_name(iface->properties, propName); (itr != iface->properties.end()) && itr->setter)
         {
-            itr->setter(runtime, m_instance, value);
-            return;
+            itr->setter(pThis->m_context, pThis->m_instance, value);
+            return info.GetReturnValue().Set(value);
         }
     }
 
+#if 0
     // If we've made it this far, check to see if any interface wants to handle the call (e.g. operator[] etc.)
     for (auto iface : m_interfaces)
     {
@@ -883,7 +840,7 @@ try
     if (!property->IsString())
         return;
 
-    auto pThis = this_from_holder<projected_object_instance>(info);
+    auto pThis = internal_field_value<projected_object_instance>(info.This(), 1);
     auto isolate = pThis->m_context->isolate;
     assert(isolate == info.GetIsolate());
     auto propName = string_to_utf8(isolate, property.As<v8::String>());
@@ -933,7 +890,7 @@ V8_CATCH(info.GetIsolate())
 void projected_object_instance::property_enum(const v8::PropertyCallbackInfo<v8::Array>& info)
 try
 {
-    auto pThis = this_from_holder<projected_object_instance>(info);
+    auto pThis = internal_field_value<projected_object_instance>(info.This(), 1);
     auto isolate = pThis->m_context->isolate;
     assert(isolate == info.GetIsolate());
     auto context = isolate->GetCurrentContext();
@@ -982,7 +939,7 @@ try
     auto target = static_cast<const static_interface_data::function_mapping*>(data.As<v8::External>()->Value());
 
     auto thisValue = info.This();
-    auto pThis = this_from_holder<projected_object_instance>(thisValue.As<v8::Object>());
+    auto pThis = internal_field_value<projected_object_instance>(thisValue.As<v8::Object>(), 1);
 
     if (info.Length() != target->arity)
     {
@@ -999,6 +956,40 @@ try
     target->function(pThis->m_context, pThis->m_instance, info);
 }
 V8_CATCH(info.GetIsolate())
+
+void projected_object_instance::call_overloaded_function(const v8::FunctionCallbackInfo<v8::Value>& info)
+try
+{
+    // TODO: Error checking or can we assume this will all succeed?
+    auto data = info.Data();
+    auto idx = reinterpret_cast<std::uintptr_t>(data.As<v8::External>()->Value());
+
+    auto thisValue = info.This();
+    auto pThis = internal_field_value<projected_object_instance>(thisValue.As<v8::Object>(), 1);
+
+    pThis->m_overloads[idx](pThis->m_context, pThis->m_instance, info);
+}
+V8_CATCH(info.GetIsolate())
+
+void overloaded_function::operator()(
+    runtime_context* context, const winrt::IInspectable& instance, const v8::FunctionCallbackInfo<v8::Value>& info)
+{
+    auto count = info.Length();
+    for (auto func : overloads)
+    {
+        if (func->arity == count)
+        {
+            return func->function(context, instance, info);
+        }
+    }
+
+    std::string msg = "Overloaded function ";
+    msg.append(overloads[0]->name);
+    msg += " does not have an overload that expects ";
+    msg += std::to_string(count);
+    msg += " arguments";
+    throw v8_exception::type_error(context->isolate, msg);
+}
 
 #if 0
 jsi::Value projected_object_instance::add_event_listener(jsi::Runtime& runtime, const jsi::Value* args, size_t count)
@@ -1045,6 +1036,23 @@ jsi::Value projected_object_instance::remove_event_listener(jsi::Runtime& runtim
     return jsi::Value::undefined();
 }
 #endif
+
+bool nodewinrt::is_projected_object(runtime_context* context, v8::Local<v8::Object> obj)
+{
+    assert(!obj.IsEmpty());
+
+    auto fieldCount = obj->InternalFieldCount();
+    if (fieldCount != 2)
+        return false;
+
+    auto ctxtField = obj->GetInternalField(0);
+    if (ctxtField.IsEmpty() || !ctxtField->IsExternal())
+        return false;
+
+    auto external = ctxtField.As<v8::External>();
+    assert(!external.IsEmpty());
+    return context == external->Value();
+}
 
 v8::Local<v8::Value> projected_value_traits<char16_t>::as_value(runtime_context* context, char16_t value)
 {
@@ -1600,13 +1608,11 @@ winrt::IInspectable nodewinrt::convert_to_property_value(runtime_context* contex
             else if (elem->IsObject())
             {
                 auto elemObj = elem.As<v8::Object>();
-#if 0           // TODO
-                if (elemObj.isHostObject(runtime))
+                if (is_projected_object(context, elemObj))
                 {
                     return winrt::PropertyValue::CreateInspectableArray(
-                        convert_value_to_native<winrt::array_view<const winrt::IInspectable>>(runtime, value));
+                        convert_value_to_native<winrt::array_view<const winrt::IInspectable>>(context, value));
                 }
-#endif
 
                 auto isPointLike = has_property(context->isolate, ctxt, elemObj, "x"sv) &&
                                    has_property(context->isolate, ctxt, elemObj, "y");
