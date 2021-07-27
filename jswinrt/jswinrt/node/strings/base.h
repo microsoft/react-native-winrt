@@ -1041,6 +1041,12 @@ namespace nodewinrt
         {
             // Already taken care of (TODO: Can we validate)
         }
+        catch (winrt::hresult_error& e)
+        {
+            // TODO: With this, the error messages become something like "Error: ...". Would it be possible/easy to
+            // throw a custom WinRT error type?
+            isolate->ThrowException(v8::Exception::Error(make_string_checked(isolate, e.message())));
+        }
         catch (std::exception& e)
         {
             isolate->ThrowException(v8::Exception::Error(v8::String::NewFromUtf8(isolate, e.what()).ToLocalChecked()));
