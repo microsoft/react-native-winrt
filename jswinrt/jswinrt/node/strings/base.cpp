@@ -41,6 +41,43 @@ void nodewinrt::register_exports(v8::Local<v8::Context> context, v8::Local<v8::O
     }
 }
 
+static void async_callback(uv_async_t* async)
+{
+    auto pThis = static_cast<runtime_context*>(async->data);
+
+    // NOTE: It's possible for something in our list to try and queue a new callback. If we just hold the lock the whole
+    // time, it's likely that we would deadlock in that scenario. Instead, just claim ownership of whatever's in the
+    // list so that we don't need to worry about it.
+    sso_vector<std::function<void()>> list;
+    {
+        std::lock_guard guard{ pThis->async_mutex };
+        list = std::move(pThis->async_queue);
+        pThis->async_queue.clear(); // Probably not necessary, but consistent with "valid but unspecified state"
+
+        // Since the queue is now empty, we can let the event loop terminate once it wants to, assuming we don't enqueue
+        // anything else.
+        // TODO: Should we instead let the number of outstanding event registrations and promises dictate this? Or maybe
+        // just include the number of outstanding promises in this calculation?
+        uv_unref(reinterpret_cast<uv_handle_t*>(async));
+    }
+
+    // TODO: Create a handle scope for each call?
+    v8::HandleScope scope(pThis->isolate);
+
+    for (auto&& fn : list)
+    {
+        try
+        {
+            fn();
+        }
+        catch (...)
+        {
+            // TODO: Is it okay to just eat errors? Should we instead make them fatal and expect consumers to use good
+            // hygine since we own the entire code path?
+        }
+    }
+}
+
 runtime_context::runtime_context(v8::Isolate* isolate) : isolate(isolate)
 {
     // Namespace template
@@ -81,6 +118,82 @@ runtime_context::runtime_context(v8::Isolate* isolate) : isolate(isolate)
         &projected_object_instance::property_setter, &projected_object_instance::property_query, nullptr,
         &projected_object_instance::property_enum });
     object_instance_template.Reset(isolate, templ);
+
+    async.data = this;
+    auto loop = node::GetCurrentEventLoop(isolate);
+    assert(loop != nullptr);
+    auto initResult = uv_async_init(loop, &async, async_callback);
+    assert(initResult == 0); // TODO: More fatal?
+
+    // Since there's nothing in the async queue yet, allow the event loop to terminate if there's nothing left to do
+    uv_unref(reinterpret_cast<uv_handle_t*>(&async));
+}
+
+void runtime_context::call(std::function<void()> fn)
+{
+    if (thread_id == std::this_thread::get_id())
+    {
+        // TODO: Should probably handle exceptions in the same way as the async callback
+        fn();
+    }
+    else
+    {
+        call_async(std::move(fn));
+    }
+}
+
+void runtime_context::call_async(std::function<void()> fn)
+{
+    std::lock_guard guard{ async_mutex };
+    async_queue.push_back(std::move(fn));
+
+    if (async_queue.size() == 1)
+    {
+        // TODO: Currently we only stop the event loop from terminating if we have pending callbacks. This will probably
+        // have to change in the future (e.g. if we also want promises to keep it alive)
+        uv_ref(reinterpret_cast<uv_handle_t*>(&async));
+    }
+
+    uv_async_send(&async);
+}
+
+void runtime_context::call_sync(std::function<void()> fn)
+{
+    if (thread_id == std::this_thread::get_id())
+    {
+        fn();
+    }
+    else
+    {
+        winrt::handle event(::CreateEventW(nullptr, true, false, nullptr));
+        if (!event.get())
+        {
+            winrt::throw_last_error();
+        }
+
+        std::exception_ptr exception;
+        call_async([&]() {
+            try
+            {
+                fn();
+            }
+            catch (...)
+            {
+                exception = std::current_exception();
+            }
+            ::SetEvent(event.get());
+        });
+
+        if (::WaitForSingleObject(event.get(), INFINITE) != WAIT_OBJECT_0)
+        {
+            winrt::terminate();
+        }
+
+        if (exception)
+        {
+            std::rethrow_exception(exception);
+        }
+    }
 }
 
 v8::Local<v8::String> nodewinrt::make_string_checked(v8::Isolate* isolate, std::wstring_view str)
@@ -572,9 +685,7 @@ try
     // TODO: Error checking or can we assume this will all succeed?
     auto data = info.Data();
     auto target = static_cast<call_function_t>(data.As<v8::External>()->Value());
-
-    auto thisValue = info.This();
-    auto pThis = internal_field_value<projected_class>(thisValue.As<v8::Object>(), 0);
+    auto pThis = internal_field_value<projected_class>(info.This(), 0);
 
     target(pThis->m_context, info);
 }
@@ -683,7 +794,7 @@ try
     {
         if (auto itr = find_by_name(iface->properties, propName); (itr != iface->properties.end()) && itr->getter)
         {
-            info.GetReturnValue().Set(itr->getter(pThis->m_context, pThis->m_instance));
+            return info.GetReturnValue().Set(itr->getter(pThis->m_context, pThis->m_instance));
         }
 
         if (auto itr = find_by_name(iface->functions, propName); itr != iface->functions.end())
@@ -757,21 +868,30 @@ try
         return info.GetReturnValue().Set(fn);
     }
 
-#if 0
     if (hasEvents)
     {
-        if (name == add_event_name)
+        v8::FunctionCallback callback = nullptr;
+        std::string_view fnName;
+        if (propName == add_event_name)
         {
-            auto fn = bind_host_function(runtime, id, 2, &projected_object_instance::add_event_listener);
-            return jsi::Value(runtime, m_functions.emplace(add_event_name, std::move(fn)).first->second);
+            callback = &projected_object_instance::add_event_listener;
+            fnName = add_event_name;
         }
-        else if (name == remove_event_name)
+        else if (propName == remove_event_name)
         {
-            auto fn = bind_host_function(runtime, id, 2, &projected_object_instance::remove_event_listener);
-            return jsi::Value(runtime, m_functions.emplace(remove_event_name, std::move(fn)).first->second);
+            callback = &projected_object_instance::remove_event_listener;
+            fnName = remove_event_name;
+        }
+
+        if (callback)
+        {
+            auto fn = check_maybe(
+                v8::Function::New(isolate->GetCurrentContext(), callback, {}, 2, v8::ConstructorBehavior::kThrow));
+            pThis->m_functions.emplace(
+                std::piecewise_construct, std::forward_as_tuple(fnName), std::forward_as_tuple(isolate, fn));
+            return info.GetReturnValue().Set(fn);
         }
     }
-#endif
 
 #if 0
     // If we've made it this far, check to see if any interface wants to handle the call (e.g. operator[] etc.)
@@ -937,9 +1057,7 @@ try
     // TODO: Error checking or can we assume this will all succeed?
     auto data = info.Data();
     auto target = static_cast<const static_interface_data::function_mapping*>(data.As<v8::External>()->Value());
-
-    auto thisValue = info.This();
-    auto pThis = internal_field_value<projected_object_instance>(thisValue.As<v8::Object>(), 1);
+    auto pThis = internal_field_value<projected_object_instance>(info.This(), 1);
 
     if (info.Length() != target->arity)
     {
@@ -963,9 +1081,7 @@ try
     // TODO: Error checking or can we assume this will all succeed?
     auto data = info.Data();
     auto idx = reinterpret_cast<std::uintptr_t>(data.As<v8::External>()->Value());
-
-    auto thisValue = info.This();
-    auto pThis = internal_field_value<projected_object_instance>(thisValue.As<v8::Object>(), 1);
+    auto pThis = internal_field_value<projected_object_instance>(info.This(), 1);
 
     pThis->m_overloads[idx](pThis->m_context, pThis->m_instance, info);
 }
@@ -991,51 +1107,65 @@ void overloaded_function::operator()(
     throw v8_exception::type_error(context->isolate, msg);
 }
 
-#if 0
-jsi::Value projected_object_instance::add_event_listener(jsi::Runtime& runtime, const jsi::Value* args, size_t count)
+void projected_object_instance::add_event_listener(const v8::FunctionCallbackInfo<v8::Value>& info)
+try
 {
-    if (count < 2)
+    auto pThis = internal_field_value<projected_object_instance>(info.This(), 1);
+
+    if (info.Length() < 2)
     {
-        throw jsi::JSError(runtime, "TypeError: addEventListener expects (at least) 2 arguments");
+        throw v8_exception::type_error(pThis->m_context->isolate, "addEventListener expects (at least) 2 arguments"sv);
     }
 
-    auto name = args[0].asString(runtime).utf8(runtime);
-    for (auto iface : m_interfaces)
+    auto nameValue = info[0];
+    if (!nameValue->IsString())
+    {
+        throw v8_exception::type_error(pThis->m_context->isolate, "Event name must be a string"sv);
+    }
+
+    auto name = string_to_utf8(pThis->m_context->isolate, nameValue.As<v8::String>());
+    for (auto iface : pThis->m_interfaces)
     {
         if (auto itr = find_by_name(iface->events, name); itr != iface->events.end())
         {
-            auto token = itr->add(runtime, m_instance, args[1]);
-            current_runtime_context()->event_cache.add(m_instance, args[1].asObject(runtime), itr->name.data(), token);
+            auto token = itr->add(pThis->m_context, pThis->m_instance, info[1]);
+            // TODO current_runtime_context()->event_cache.add(m_instance, args[1].asObject(runtime), itr->name.data(), token);
             break;
         }
     }
-
-    return jsi::Value::undefined();
 }
+V8_CATCH(info.GetIsolate())
 
-jsi::Value projected_object_instance::remove_event_listener(jsi::Runtime& runtime, const jsi::Value* args, size_t count)
+void projected_object_instance::remove_event_listener(const v8::FunctionCallbackInfo<v8::Value>& info)
 {
-    if (count < 2)
+    auto pThis = internal_field_value<projected_object_instance>(info.This(), 1);
+
+    if (info.Length() < 2)
     {
-        throw jsi::JSError(runtime, "TypeError: removeEventListener expects (at least) 2 arguments");
+        throw v8_exception::type_error(pThis->m_context->isolate, "removeEventListener expects (at least) 2 arguments");
     }
 
-    auto name = args[0].asString(runtime).utf8(runtime);
-    for (auto iface : m_interfaces)
+    auto nameValue = info[0];
+    if (!nameValue->IsString())
+    {
+        throw v8_exception::type_error(pThis->m_context->isolate, "Event name must be a string"sv);
+    }
+
+    auto name = string_to_utf8(pThis->m_context->isolate, nameValue.As<v8::String>());
+    for (auto iface : pThis->m_interfaces)
     {
         if (auto itr = find_by_name(iface->events, name); itr != iface->events.end())
         {
             // TODO: Should we just no-op if the token can't be found?
+#if 0 // TODO
             auto token = current_runtime_context()->event_cache.remove(
                 runtime, m_instance, args[1].asObject(runtime), itr->name.data());
             itr->remove(m_instance, token);
+#endif
             break;
         }
     }
-
-    return jsi::Value::undefined();
 }
-#endif
 
 bool nodewinrt::is_projected_object(runtime_context* context, v8::Local<v8::Object> obj)
 {

@@ -9,8 +9,9 @@ set NUGET_DIR=%CURRENT_DIR%\packages
 set JSWINRT_BASE_DIR=%CURRENT_DIR%\..\..\jswinrt\x64
 set JSWINRT_ARGS=-nodejs -webhosthiddenincluded -input sdk -output "%OUTPUT_DIR%"
 set JSWINRT_ARGS=%JSWINRT_ARGS% -include Windows.Foundation
-set JSWINRT_ARGS=%JSWINRT_ARGS% -include Windows.ApplicationModel
-set JSWINRT_ARGS=%JSWINRT_ARGS% -include Windows.Management
+set JSWINRT_ARGS=%JSWINRT_ARGS% -include Windows.System.Threading
+:: set JSWINRT_ARGS=%JSWINRT_ARGS% -include Windows.ApplicationModel
+:: set JSWINRT_ARGS=%JSWINRT_ARGS% -include Windows.Management
 
 set CPPWINRT_VERSION=2.0.201113.7
 set CPPWINRT_NUGET_DIR=%NUGET_DIR%\Microsoft.Windows.CppWinRT.%CPPWINRT_VERSION%

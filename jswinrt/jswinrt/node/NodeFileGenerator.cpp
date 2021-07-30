@@ -140,12 +140,13 @@ namespace nodewinrt
     template <>
     struct projected_value_traits<winrt::%>
     {
-        static v8::Local<v8::Value> as_value(runtime_context* context, const winrt::%& value);
-        static winrt::% as_native(runtime_context* context, v8::Local<v8::Value> value);
+        using delegate_type = winrt::%;
+
+        static v8::Local<v8::Value> as_value(runtime_context* context, const delegate_type& value);
+        static delegate_type as_native(runtime_context* context, v8::Local<v8::Value> value);
     };
 )^-^",
-                jswinrt::cpp_typename{ delegateDef->type_def }, jswinrt::cpp_typename{ delegateDef->type_def },
-                jswinrt::cpp_typename{ delegateDef->type_def });
+                jswinrt::cpp_typename{ delegateDef->type_def }, jswinrt::cpp_typename{ delegateDef->type_def });
         }
 
         writer.write("}\n\n");
@@ -360,18 +361,29 @@ static void write_nodewinrt_native_function_params(jswinrt::writer& writer, cons
     }
 }
 
-static void write_nodewinrt_params_native_to_value(jswinrt::writer& writer, const function_signature& fn, int indentLevel)
+static void write_nodewinrt_params_native_to_value(
+    jswinrt::writer& writer, const function_signature& fn, int indentLevel)
 {
+    if (fn.param_count == 0)
+    {
+        writer.write_fmt("%v8::Local<v8::Value>* argv = nullptr;", jswinrt::indent{ indentLevel });
+        return;
+    }
+
+    writer.write_fmt("%v8::Local<v8::Value> argv[] = {", jswinrt::indent{ indentLevel });
+
     int argNum = 0;
     for (auto&& param : fn.params())
     {
         if (param.is_input() || !param.by_ref())
         {
-            writer.write_fmt("\n%auto arg% = convert_native_to_value(context, param%);", jswinrt::indent{ indentLevel },
-                argNum, argNum);
+            writer.write_fmt(
+                "\n%convert_native_to_value(context, param%),", jswinrt::indent{ indentLevel + 1 }, argNum);
         }
         ++argNum;
     }
+
+    writer.write_fmt("\n%};", jswinrt::indent{ indentLevel });
 }
 
 static void write_nodewinrt_native_out_params(jswinrt::writer& writer, const function_signature& fn, int indentLevel)
@@ -900,23 +912,20 @@ namespace nodewinrt::namespaces::%
             function_signature fn(delegate_invoke_function(delegateData->type_def));
 
             writer.write_fmt(R"^-^(
-    v8::Local<v8::Value> projected_value_traits<winrt::%>::as_value(runtime_context* context, const winrt::%& value)
+    v8::Local<v8::Value> projected_value_traits<winrt::%>::as_value(runtime_context* context, const delegate_type& value)
     {
-        return v8::Undefined(context->isolate);
-#if 0 // TODO
-        return jsi::Function::createFromHostFunction(runtime, make_propid(runtime, "%"), %,
-            [value](jsi::Runtime& runtime, const jsi::Value&, [[maybe_unused]] const jsi::Value* args, size_t count) {
-                if (count != %)
+        auto ptr = std::make_unique<projected_delegate<delegate_type>>(context, value,
+            [](runtime_context* context, const delegate_type& target, const v8::FunctionCallbackInfo<v8::Value>& info) {
+                if (info.Length() != %)
                 {
-                    throw_invalid_delegate_arg_count(runtime, "%"sv, "%"sv);
+                    throw_invalid_delegate_arg_count(context->isolate, "%"sv, "%"sv);
                 }
 )^-^",
-                jswinrt::cpp_typename{ delegateData->type_def }, jswinrt::cpp_typename{ delegateData->type_def },
-                delegateData->type_def.TypeName(), fn.param_count, fn.param_count,
-                delegateData->type_def.TypeNamespace(), delegateData->type_def.TypeName());
+                jswinrt::cpp_typename{ delegateData->type_def }, fn.param_count, delegateData->type_def.TypeNamespace(),
+                delegateData->type_def.TypeName());
 
             write_nodewinrt_params_value_to_native(writer, fn, 4);
-            writer.write_fmt("\n                %value(", fn.has_return_value ? "auto result = " : "");
+            writer.write_fmt("\n                %target(", fn.has_return_value ? "auto result = " : "");
 
             auto argCount = fn.native_param_count();
             std::string_view prefix;
@@ -929,31 +938,33 @@ namespace nodewinrt::namespaces::%
 
             if (fn.has_out_params)
             {
-                writer.write_fmt(R"^-^(
-                return %;)^-^",
+                writer.write_fmt("\n                info.GetReturnValue().Set(%);",
                     [&](jswinrt::writer& w) { write_nodewinrt_make_return_struct(w, fn); });
             }
             else if (fn.has_return_value)
             {
-                writer.write("\n                return convert_native_to_value(runtime, result);");
-            }
-            else
-            {
-                writer.write("\n                return jsi::Value::undefined();");
+                writer.write("\n                info.GetReturnValue().Set(convert_native_to_value(context, result));");
             }
 
             writer.write_fmt(R"^-^(
             });
-#endif
+        auto fn = check_maybe(v8::Function::New(context->isolate->GetCurrentContext(), &projected_delegate<delegate_type>::call,
+            v8::External::New(context->isolate, ptr.get()), %, v8::ConstructorBehavior::kThrow));
+        ptr.release()->track_lifetime(fn);
+        return fn;
     }
 
     winrt::% projected_value_traits<winrt::%>::as_native(runtime_context* context, v8::Local<v8::Value> value)
     {
-        return {};
-#if 0 // TODO
-        return [ctxt = current_runtime_context()->add_reference(),
-                   fn = value.asObject(runtime).asFunction(runtime)](%) {)^-^",
-                jswinrt::cpp_typename{ delegateData->type_def }, jswinrt::cpp_typename{ delegateData->type_def },
+        if (!value->IsFunction())
+        {
+            throw v8_exception::type_error(context->isolate, "Delegate must be a function"sv);
+        }
+
+        // TODO: Need to take a strong reference to the context
+        return [context, fn = v8::Global<v8::Function>(context->isolate, value.As<v8::Function>())](%) {)^-^",
+                fn.param_count, jswinrt::cpp_typename{ delegateData->type_def },
+                jswinrt::cpp_typename{ delegateData->type_def },
                 [&](jswinrt::writer& w) { write_nodewinrt_native_function_params(w, fn); });
 
             auto writeReturnType = [&](jswinrt::writer& w) {
@@ -978,7 +989,6 @@ namespace nodewinrt::namespaces::%
 
             if (fn.has_return_value)
             {
-                //
                 writer.write_fmt(R"^-^(
             % returnValue%;)^-^",
                     writeReturnType,
@@ -986,31 +996,15 @@ namespace nodewinrt::namespaces::%
             }
 
             writer.write(R"^-^(
-            ctxt->call_sync([&]() {
-                auto& runtime = ctxt->runtime;)^-^");
+            context->call_sync([&]() {
+                auto ctxt = context->isolate->GetCurrentContext();
+)^-^");
 
             write_nodewinrt_params_native_to_value(writer, fn, 4);
 
             writer.write_fmt(R"^-^(
-                %fn.call(runtime)^-^",
-                (fn.has_return_value || fn.has_out_params) ? "auto result = " : "");
-
-            int argNum = 0;
-            for (auto&& param : fn.params())
-            {
-                if (param.is_input())
-                {
-                    writer.write_fmt(", arg%", argNum);
-                }
-                else if (!param.by_ref())
-                {
-                    // Out & not by ref is "fill array". Due to the way JSI handles function invocation, it doesn't
-                    // realize that the argument we pass it is convertible to jsi::Value
-                    writer.write_fmt(", arg%.value()", argNum);
-                }
-                ++argNum;
-            }
-            writer.write_fmt(");");
+                %check_maybe(fn.Get(context->isolate)->Call(ctxt, ctxt->Global(), %, argv));)^-^",
+                (fn.has_return_value || fn.has_out_params) ? "auto result = " : "", fn.param_count);
 
             if (fn.has_out_params)
             {
@@ -1020,14 +1014,14 @@ namespace nodewinrt::namespaces::%
                 {
                     // This is a bit different than below since we need to "extract" the value
                     writer.write_fmt(R"^-^(
-                returnValue = convert_value_to_native<%>(runtime, obj.getProperty(runtime, "returnValue"));)^-^",
+                returnValue = convert_value_to_native<%>(context, get_property(context->isolate, ctxt, obj, "returnValue"sv));)^-^",
                         writeReturnType);
                 }
             }
             else if (fn.has_return_value)
             {
                 writer.write_fmt(
-                    "\n                returnValue = convert_value_to_native<%>(runtime, result);", writeReturnType);
+                    "\n                returnValue = convert_value_to_native<%>(context, result);", writeReturnType);
             }
 
             writer.write(R"^-^(
@@ -1040,7 +1034,6 @@ namespace nodewinrt::namespaces::%
 
             writer.write(R"^-^(
         };
-#endif
     }
 )^-^");
         }
