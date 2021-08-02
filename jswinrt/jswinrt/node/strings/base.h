@@ -3165,37 +3165,53 @@ namespace nodewinrt
     };
 #endif
 
-    // TODO
-#if 0
     template <typename T>
     struct projected_value_traits<winrt::Windows::Foundation::EventHandler<T>>
     {
-        static jsi::Value as_value(jsi::Runtime& runtime, const winrt::Windows::Foundation::EventHandler<T>& value)
+        using delegate_type = winrt::Windows::Foundation::EventHandler<T>;
+
+        static v8::Local<v8::Value> as_value(runtime_context* context, const delegate_type& value)
         {
-            return jsi::Function::createFromHostFunction(runtime, make_propid(runtime, "EventHandler"), 2,
-                [value](jsi::Runtime& runtime, const jsi::Value&, const jsi::Value* args, size_t count) {
-                    if (count != 2)
+            auto ptr = std::make_unique<projected_delegate<delegate_type>>(context, value,
+                [](runtime_context* context, const delegate_type& target,
+                    const v8::FunctionCallbackInfo<v8::Value>& info) {
+                    if (info.Length() != 2)
                     {
-                        throw_invalid_delegate_arg_count(runtime, "Windows.Foundation"sv, "EventHandler");
+                        throw_invalid_delegate_arg_count(context->isolate, "Windows.Foundation"sv, "EventHandler");
                     }
 
-                    auto arg0 = convert_value_to_native<winrt::Windows::Foundation::IInspectable>(runtime, args[0]);
-                    auto arg1 = convert_value_to_native<T>(runtime, args[1]);
-                    value(arg0, arg1);
-                    return jsi::Value::undefined();
+                    auto arg0 = convert_value_to_native<winrt::Windows::Foundation::IInspectable>(context, args[0]);
+                    auto arg1 = convert_value_to_native<T>(context, args[1]);
+                    target(arg0, arg1);
                 });
+            auto fn = check_maybe(
+                v8::Function::New(context->isolate->GetCurrentContext(), &projected_delegate<delegate_type>::call,
+                    v8::External::New(context->isolate, ptr.get()), 2, v8::ConstructorBehavior::kThrow));
+            ptr.release();
+            ptr->track_lifetime(fn);
+            return fn;
         }
 
-        static winrt::Windows::Foundation::EventHandler<T> as_native(jsi::Runtime& runtime, const jsi::Value& value)
+        static delegate_type as_native(runtime_context* context, v8::Local<v8::Value> value)
         {
+            if (!value->IsFunction())
+            {
+                throw v8_exception::type_error(context->isolate, "Delegate must be a function");
+            }
+
+            // TODO: Need to take a strong reference to the context
             return
-                [ctxt = current_runtime_context()->add_reference(), fn = value.asObject(runtime).asFunction(runtime)](
+                [context, fn = v8::Global<v8::Function>(context->isolate, value.As<v8::Function>())](
                     const winrt::Windows::Foundation::IInspectable& sender, const T& args) {
                     // TODO: Do we need to call synchronously? One reason might be to propagate errors, but typically
                     // event sources don't care about those.
-                    ctxt->call_sync([&]() {
-                        fn.call(ctxt->runtime, convert_native_to_value(ctxt->runtime, sender),
-                            convert_native_to_value(ctxt->runtime, args));
+                    context->call_sync([&]() {
+                        auto ctxt = context->isolate->GetCurrentContext();
+                        v8::Local<v8::Value> argv[] = {
+                            convert_native_to_value(context, sender),
+                            convert_native_to_value(context, args),
+                        };
+                        check_maybe(fn.Get(context->isolate)->Call(ctxt, ctxt->Global(), 2, argv));
                     });
                 };
         }
@@ -3204,36 +3220,52 @@ namespace nodewinrt
     template <typename TSender, typename TResult>
     struct projected_value_traits<winrt::Windows::Foundation::TypedEventHandler<TSender, TResult>>
     {
-        static jsi::Value as_value(
-            jsi::Runtime& runtime, const winrt::Windows::Foundation::TypedEventHandler<TSender, TResult>& value)
+        using delegate_type = winrt::Windows::Foundation::TypedEventHandler<TSender, TResult>;
+
+        static v8::Local<v8::Value> as_value(runtime_context* context, const delegate_type& value)
         {
-            return jsi::Function::createFromHostFunction(runtime, make_propid(runtime, "TypedEventHandler"), 2,
-                [value](jsi::Runtime& runtime, const jsi::Value&, const jsi::Value* args, size_t count) {
-                    if (count != 2)
+            auto ptr = std::make_unique<projected_delegate<delegate_type>>(context, value,
+                [](runtime_context* context, const delegate_type& target,
+                    const v8::FunctionCallbackInfo<v8::Value>& info) {
+                    if (info.Length() != 2)
                     {
-                        throw_invalid_delegate_arg_count(runtime, "Windows.Foundation"sv, "TypedEventHandler");
+                        throw_invalid_delegate_arg_count(context->isolate, "Windows.Foundation"sv, "TypedEventHandler");
                     }
 
-                    auto arg0 = convert_value_to_native<TSender>(runtime, args[0]);
-                    auto arg1 = convert_value_to_native<TResult>(runtime, args[1]);
-                    value(arg0, arg1);
-                    return jsi::Value::undefined();
+                    auto arg0 = convert_value_to_native<TSender>(context, args[0]);
+                    auto arg1 = convert_value_to_native<TResult>(context, args[1]);
+                    target(arg0, arg1);
                 });
+            auto fn = check_maybe(
+                v8::Function::New(context->isolate->GetCurrentContext(), &projected_delegate<delegate_type>::call,
+                    v8::External::New(context->isolate, ptr.get()), 2, v8::ConstructorBehavior::kThrow));
+            ptr.release();
+            ptr->track_lifetime(fn);
+            return fn;
         }
 
-        static winrt::Windows::Foundation::TypedEventHandler<TSender, TResult> as_native(
-            jsi::Runtime& runtime, const jsi::Value& value)
+        static delegate_type as_native(runtime_context* context, v8::Local<v8::Value> value)
         {
-            return [ctxt = current_runtime_context()->add_reference(),
-                       fn = value.asObject(runtime).asFunction(runtime)](const TSender& sender, const TResult& args) {
-                ctxt->call_sync([&]() {
-                    fn.call(ctxt->runtime, convert_native_to_value(ctxt->runtime, sender),
-                        convert_native_to_value(ctxt->runtime, args));
-                });
-            };
+            if (!value->IsFunction())
+            {
+                throw v8_exception::type_error(context->isolate, "Delegate must be a function");
+            }
+
+            // TODO: Need to take a strong reference to the context
+            return
+                [context, fn = v8::Global<v8::Function>(context->isolate, value.As<v8::Function>())](
+                    const TSender& sender, const TResult& args) {
+                    context->call_sync([&]() {
+                        auto ctxt = context->isolate->GetCurrentContext();
+                        v8::Local<v8::Value> argv[] = {
+                            convert_native_to_value(context, sender),
+                            convert_native_to_value(context, args),
+                        };
+                        check_maybe(fn.Get(context->isolate)->Call(ctxt, ctxt->Global(), 2, argv));
+                    });
+                };
         }
     };
-#endif
 
     template <typename K, typename V>
     struct projected_value_traits<winrt::Windows::Foundation::Collections::MapChangedEventHandler<K, V>>
@@ -3248,7 +3280,7 @@ namespace nodewinrt
                     if (info.Length() != 2)
                     {
                         throw_invalid_delegate_arg_count(
-                            runtime, "Windows.Foundation.Collections"sv, "MapChangedEventHandler");
+                            context->isolate, "Windows.Foundation.Collections"sv, "MapChangedEventHandler");
                     }
 
                     auto arg0 = convert_value_to_native<winrt::Windows::Foundation::Collections::IObservableMap<K, V>>(
@@ -3290,46 +3322,60 @@ namespace nodewinrt
         }
     };
 
-#if 0
     template <typename T>
     struct projected_value_traits<winrt::Windows::Foundation::Collections::VectorChangedEventHandler<T>>
     {
-        static jsi::Value as_value(
-            jsi::Runtime& runtime, const winrt::Windows::Foundation::Collections::VectorChangedEventHandler<T>& value)
+        using delegate_type = winrt::Windows::Foundation::Collections::VectorChangedEventHandler<T>;
+
+        static v8::Local<v8::Value> as_value(runtime_context* context, const delegate_type& value)
         {
-            return jsi::Function::createFromHostFunction(runtime, make_propid(runtime, "VectorChangedEventHandler"), 2,
-                [value](jsi::Runtime& runtime, const jsi::Value&, const jsi::Value* args, size_t count) {
-                    if (count != 2)
+            auto ptr = std::make_unique<projected_delegate<delegate_type>>(context, value,
+                [](runtime_context* context, const delegate_type& target,
+                    const v8::FunctionCallbackInfo<v8::Value>& info) {
+                    if (info.Length() != 2)
                     {
                         throw_invalid_delegate_arg_count(
-                            runtime, "Windows.Foundation.Collections"sv, "VectorChangedEventHandler");
+                            context->isolate, "Windows.Foundation.Collections"sv, "VectorChangedEventHandler");
                     }
 
                     auto arg0 = convert_value_to_native<winrt::Windows::Foundation::Collections::IObservableVector<T>>(
-                        runtime, args[0]);
+                        context, args[0]);
                     auto arg1 =
                         convert_value_to_native<winrt::Windows::Foundation::Collections::IVectorChangedEventArgs<T>>(
-                            runtime, args[1]);
-                    value(arg0, arg1);
-                    return jsi::Value::undefined();
+                            context, args[1]);
+                    target(arg0, arg1);
                 });
+            auto fn = check_maybe(
+                v8::Function::New(context->isolate->GetCurrentContext(), &projected_delegate<delegate_type>::call,
+                    v8::External::New(context->isolate, ptr.get()), 2, v8::ConstructorBehavior::kThrow));
+            ptr.release();
+            ptr->track_lifetime(fn);
+            return fn;
         }
 
-        static winrt::Windows::Foundation::Collections::VectorChangedEventHandler<T> as_native(
-            jsi::Runtime& runtime, const jsi::Value& value)
+        static delegate_type as_native(runtime_context* context, v8::Local<v8::Value> value)
         {
+            if (!value->IsFunction())
+            {
+                throw v8_exception::type_error(context->isolate, "Delegate must be a function");
+            }
+
+            // TODO: Need to take a strong reference to the context
             return
-                [ctxt = current_runtime_context()->add_reference(), fn = value.asObject(runtime).asFunction(runtime)](
+                [context, fn = v8::Global<v8::Function>(context->isolate, value.As<v8::Function>())](
                     const winrt::Windows::Foundation::Collections::IObservableVector<T>& sender,
                     const winrt::Windows::Foundation::Collections::IVectorChangedEventArgs& args) {
-                    ctxt->call_sync([&]() {
-                        fn.call(ctxt->runtime, convert_native_to_value(ctxt->runtime, sender),
-                            convert_native_to_value(ctxt->runtime, args));
+                    context->call_sync([&]() {
+                        auto ctxt = context->isolate->GetCurrentContext();
+                        v8::Local<v8::Value> argv[] = {
+                            convert_native_to_value(context, sender),
+                            convert_native_to_value(context, args),
+                        };
+                        check_maybe(fn.Get(context->isolate)->Call(ctxt, ctxt->Global(), 2, argv));
                     });
                 };
         }
     };
-#endif
 }
 
 // Static data for generic types
