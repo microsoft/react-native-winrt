@@ -7,8 +7,8 @@ declare namespace Windows.Foundation.Diagnostics {
         static traceOperationRelation(traceLevel: Windows.Foundation.Diagnostics.CausalityTraceLevel, source: Windows.Foundation.Diagnostics.CausalitySource, platformId: string, operationId: number, relation: Windows.Foundation.Diagnostics.CausalityRelation): void;
         static traceSynchronousWorkStart(traceLevel: Windows.Foundation.Diagnostics.CausalityTraceLevel, source: Windows.Foundation.Diagnostics.CausalitySource, platformId: string, operationId: number, work: Windows.Foundation.Diagnostics.CausalitySynchronousWork): void;
         static traceSynchronousWorkCompletion(traceLevel: Windows.Foundation.Diagnostics.CausalityTraceLevel, source: Windows.Foundation.Diagnostics.CausalitySource, work: Windows.Foundation.Diagnostics.CausalitySynchronousWork): void;
-        static addEventListener(type: "tracingstatuschanged", listener: Windows.Foundation.EventHandler<Windows.Foundation.Diagnostics.TracingStatusChangedEventArgs>): void
-        static removeEventListener(type: "tracingstatuschanged", listener: Windows.Foundation.EventHandler<Windows.Foundation.Diagnostics.TracingStatusChangedEventArgs>): void
+        static addEventListener(type: "tracingstatuschanged", listener: Windows.Foundation.EventHandler<Windows.Foundation.Diagnostics.TracingStatusChangedEventArgs>): void;
+        static removeEventListener(type: "tracingstatuschanged", listener: Windows.Foundation.EventHandler<Windows.Foundation.Diagnostics.TracingStatusChangedEventArgs>): void;
     }
 
     enum CausalityRelation {
@@ -60,8 +60,8 @@ declare namespace Windows.Foundation.Diagnostics {
         removeLoggingChannel(loggingChannel: Windows.Foundation.Diagnostics.ILoggingChannel): void;
         closeAndSaveToFileAsync(): Windows.Foundation.WinRTPromise<any, void>;
         close(): void;
-        addEventListener(type: "logfilegenerated", listener: Windows.Foundation.TypedEventHandler<Windows.Foundation.Diagnostics.IFileLoggingSession, Windows.Foundation.Diagnostics.LogFileGeneratedEventArgs>): void
-        removeEventListener(type: "logfilegenerated", listener: Windows.Foundation.TypedEventHandler<Windows.Foundation.Diagnostics.IFileLoggingSession, Windows.Foundation.Diagnostics.LogFileGeneratedEventArgs>): void
+        addEventListener(type: "logfilegenerated", listener: Windows.Foundation.TypedEventHandler<Windows.Foundation.Diagnostics.IFileLoggingSession, Windows.Foundation.Diagnostics.LogFileGeneratedEventArgs>): void;
+        removeEventListener(type: "logfilegenerated", listener: Windows.Foundation.TypedEventHandler<Windows.Foundation.Diagnostics.IFileLoggingSession, Windows.Foundation.Diagnostics.LogFileGeneratedEventArgs>): void;
     }
 
     interface IErrorReportingSettings {
@@ -75,8 +75,8 @@ declare namespace Windows.Foundation.Diagnostics {
         addLoggingChannel(loggingChannel: Windows.Foundation.Diagnostics.ILoggingChannel, maxLevel: Windows.Foundation.Diagnostics.LoggingLevel): void;
         removeLoggingChannel(loggingChannel: Windows.Foundation.Diagnostics.ILoggingChannel): void;
         closeAndSaveToFileAsync(): Windows.Foundation.WinRTPromise<any, void>;
-        addEventListener(type: "logfilegenerated", listener: Windows.Foundation.TypedEventHandler<Windows.Foundation.Diagnostics.IFileLoggingSession, Windows.Foundation.Diagnostics.LogFileGeneratedEventArgs>): void
-        removeEventListener(type: "logfilegenerated", listener: Windows.Foundation.TypedEventHandler<Windows.Foundation.Diagnostics.IFileLoggingSession, Windows.Foundation.Diagnostics.LogFileGeneratedEventArgs>): void
+        addEventListener(type: "logfilegenerated", listener: Windows.Foundation.TypedEventHandler<Windows.Foundation.Diagnostics.IFileLoggingSession, Windows.Foundation.Diagnostics.LogFileGeneratedEventArgs>): void;
+        removeEventListener(type: "logfilegenerated", listener: Windows.Foundation.TypedEventHandler<Windows.Foundation.Diagnostics.IFileLoggingSession, Windows.Foundation.Diagnostics.LogFileGeneratedEventArgs>): void;
     }
 
     interface ILoggingChannel extends Windows.Foundation.IClosable {
@@ -87,8 +87,8 @@ declare namespace Windows.Foundation.Diagnostics {
         logMessage(eventString: string, level: Windows.Foundation.Diagnostics.LoggingLevel): void;
         logValuePair(value1: string, value2: number): void;
         logValuePair(value1: string, value2: number, level: Windows.Foundation.Diagnostics.LoggingLevel): void;
-        addEventListener(type: "loggingenabled", listener: Windows.Foundation.TypedEventHandler<Windows.Foundation.Diagnostics.ILoggingChannel, any>): void
-        removeEventListener(type: "loggingenabled", listener: Windows.Foundation.TypedEventHandler<Windows.Foundation.Diagnostics.ILoggingChannel, any>): void
+        addEventListener(type: "loggingenabled", listener: Windows.Foundation.TypedEventHandler<Windows.Foundation.Diagnostics.ILoggingChannel, any>): void;
+        removeEventListener(type: "loggingenabled", listener: Windows.Foundation.TypedEventHandler<Windows.Foundation.Diagnostics.ILoggingChannel, any>): void;
     }
 
     interface ILoggingSession extends Windows.Foundation.IClosable {
@@ -163,8 +163,8 @@ declare namespace Windows.Foundation.Diagnostics {
         startActivity(startEventName: string, fields: Windows.Foundation.Diagnostics.LoggingFields): Windows.Foundation.Diagnostics.LoggingActivity;
         startActivity(startEventName: string, fields: Windows.Foundation.Diagnostics.LoggingFields, level: Windows.Foundation.Diagnostics.LoggingLevel): Windows.Foundation.Diagnostics.LoggingActivity;
         startActivity(startEventName: string, fields: Windows.Foundation.Diagnostics.LoggingFields, level: Windows.Foundation.Diagnostics.LoggingLevel, options: Windows.Foundation.Diagnostics.LoggingOptions): Windows.Foundation.Diagnostics.LoggingActivity;
-        addEventListener(type: "loggingenabled", listener: Windows.Foundation.TypedEventHandler<Windows.Foundation.Diagnostics.ILoggingChannel, any>): void
-        removeEventListener(type: "loggingenabled", listener: Windows.Foundation.TypedEventHandler<Windows.Foundation.Diagnostics.ILoggingChannel, any>): void
+        addEventListener(type: "loggingenabled", listener: Windows.Foundation.TypedEventHandler<Windows.Foundation.Diagnostics.ILoggingChannel, any>): void;
+        removeEventListener(type: "loggingenabled", listener: Windows.Foundation.TypedEventHandler<Windows.Foundation.Diagnostics.ILoggingChannel, any>): void;
     }
 
     class LoggingChannelOptions {

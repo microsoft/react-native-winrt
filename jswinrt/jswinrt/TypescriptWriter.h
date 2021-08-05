@@ -348,7 +348,7 @@ public:
         const char* accessType = addEventListener.Flags().Static() ? "static " : "";
 
         textWriter.WriteIndentedLine();
-        textWriter.Write(R"^-^(%addEventListener(type: "%", listener: %): void)^-^", accessType, name, [&]() {
+        textWriter.Write(R"^-^(%addEventListener(type: "%", listener: %): void;)^-^", accessType, name, [&]() {
             jswinrt::typeparser::method_signature methodSignature(addEventListener);
             for (auto&& [param, paramSignature] : methodSignature.params())
             {
@@ -358,7 +358,7 @@ public:
         });
 
         textWriter.WriteIndentedLine();
-        textWriter.Write(R"^-^(%removeEventListener(type: "%", listener: %): void)^-^", accessType, name, [&]() {
+        textWriter.Write(R"^-^(%removeEventListener(type: "%", listener: %): void;)^-^", accessType, name, [&]() {
             jswinrt::typeparser::method_signature methodSignature(addEventListener);
             for (auto&& [param, paramSignature] : methodSignature.params())
             {

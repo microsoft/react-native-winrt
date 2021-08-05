@@ -49,13 +49,13 @@ declare namespace Windows.Foundation.Collections {
     }
 
     interface IObservableMap<K, V> extends Windows.Foundation.Collections.IMap<K, V> {
-        addEventListener(type: "mapchanged", listener: Windows.Foundation.Collections.MapChangedEventHandler<K, V>): void
-        removeEventListener(type: "mapchanged", listener: Windows.Foundation.Collections.MapChangedEventHandler<K, V>): void
+        addEventListener(type: "mapchanged", listener: Windows.Foundation.Collections.MapChangedEventHandler<K, V>): void;
+        removeEventListener(type: "mapchanged", listener: Windows.Foundation.Collections.MapChangedEventHandler<K, V>): void;
     }
 
     interface IObservableVector<T> extends Windows.Foundation.Collections.IVector<T> {
-        addEventListener(type: "vectorchanged", listener: Windows.Foundation.Collections.VectorChangedEventHandler<T>): void
-        removeEventListener(type: "vectorchanged", listener: Windows.Foundation.Collections.VectorChangedEventHandler<T>): void
+        addEventListener(type: "vectorchanged", listener: Windows.Foundation.Collections.VectorChangedEventHandler<T>): void;
+        removeEventListener(type: "vectorchanged", listener: Windows.Foundation.Collections.VectorChangedEventHandler<T>): void;
     }
 
     interface IPropertySet extends Windows.Foundation.Collections.IObservableMap<string, any>, Windows.Foundation.Collections.IMap<string, any>, Windows.Foundation.Collections.IIterable<Windows.Foundation.Collections.IKeyValuePair<string, any>> {
@@ -139,8 +139,8 @@ declare namespace Windows.Foundation.Collections {
         remove(key: string): void;
         clear(): void;
         first(): Windows.Foundation.Collections.IIterator<Windows.Foundation.Collections.IKeyValuePair<string, any>>;
-        addEventListener(type: "mapchanged", listener: Windows.Foundation.Collections.MapChangedEventHandler<string, any>): void
-        removeEventListener(type: "mapchanged", listener: Windows.Foundation.Collections.MapChangedEventHandler<string, any>): void
+        addEventListener(type: "mapchanged", listener: Windows.Foundation.Collections.MapChangedEventHandler<string, any>): void;
+        removeEventListener(type: "mapchanged", listener: Windows.Foundation.Collections.MapChangedEventHandler<string, any>): void;
     }
 
     class StringMap implements Windows.Foundation.Collections.IMap<string, string>, Windows.Foundation.Collections.IIterable<Windows.Foundation.Collections.IKeyValuePair<string, string>>, Windows.Foundation.Collections.IObservableMap<string, string> {
@@ -153,8 +153,8 @@ declare namespace Windows.Foundation.Collections {
         remove(key: string): void;
         clear(): void;
         first(): Windows.Foundation.Collections.IIterator<Windows.Foundation.Collections.IKeyValuePair<string, string>>;
-        addEventListener(type: "mapchanged", listener: Windows.Foundation.Collections.MapChangedEventHandler<string, string>): void
-        removeEventListener(type: "mapchanged", listener: Windows.Foundation.Collections.MapChangedEventHandler<string, string>): void
+        addEventListener(type: "mapchanged", listener: Windows.Foundation.Collections.MapChangedEventHandler<string, string>): void;
+        removeEventListener(type: "mapchanged", listener: Windows.Foundation.Collections.MapChangedEventHandler<string, string>): void;
     }
 
     class ValueSet implements Windows.Foundation.Collections.IPropertySet, Windows.Foundation.Collections.IObservableMap<string, any>, Windows.Foundation.Collections.IMap<string, any>, Windows.Foundation.Collections.IIterable<Windows.Foundation.Collections.IKeyValuePair<string, any>> {
@@ -167,8 +167,8 @@ declare namespace Windows.Foundation.Collections {
         remove(key: string): void;
         clear(): void;
         first(): Windows.Foundation.Collections.IIterator<Windows.Foundation.Collections.IKeyValuePair<string, any>>;
-        addEventListener(type: "mapchanged", listener: Windows.Foundation.Collections.MapChangedEventHandler<string, any>): void
-        removeEventListener(type: "mapchanged", listener: Windows.Foundation.Collections.MapChangedEventHandler<string, any>): void
+        addEventListener(type: "mapchanged", listener: Windows.Foundation.Collections.MapChangedEventHandler<string, any>): void;
+        removeEventListener(type: "mapchanged", listener: Windows.Foundation.Collections.MapChangedEventHandler<string, any>): void;
     }
 
     type VectorChangedEventHandler<T> = (sender: Windows.Foundation.Collections.IObservableVector<T>, event: Windows.Foundation.Collections.IVectorChangedEventArgs) => void;

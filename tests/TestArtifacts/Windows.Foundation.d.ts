@@ -103,8 +103,8 @@ declare namespace Windows.Foundation {
 
     interface IMemoryBufferReference extends Windows.Foundation.IClosable {
         readonly capacity: number;
-        addEventListener(type: "closed", listener: Windows.Foundation.TypedEventHandler<Windows.Foundation.IMemoryBufferReference, any>): void
-        removeEventListener(type: "closed", listener: Windows.Foundation.TypedEventHandler<Windows.Foundation.IMemoryBufferReference, any>): void
+        addEventListener(type: "closed", listener: Windows.Foundation.TypedEventHandler<Windows.Foundation.IMemoryBufferReference, any>): void;
+        removeEventListener(type: "closed", listener: Windows.Foundation.TypedEventHandler<Windows.Foundation.IMemoryBufferReference, any>): void;
     }
 
     interface IPropertyValue {
