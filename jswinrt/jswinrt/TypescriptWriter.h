@@ -225,41 +225,28 @@ public:
                 }
 
                 // Methods:
-                std::map<std::string_view, winmd::reader::MethodDef> eventListeners;
+                std::vector<winmd::reader::MethodDef> eventListeners;
                 for (auto&& method : type.MethodList())
                 {
                     if (!is_method_allowed(settings, method))
                         continue;
-                    if (method.SpecialName() &&
-                        (starts_with(method.Name(), "get_") || starts_with(method.Name(), "put_")))
-                        continue;
-                    if (method.SpecialName() &&
-                        (starts_with(method.Name(), "add_") || starts_with(method.Name(), "remove_")))
-                    {
-                        eventListeners[method.Name()] = method;
-                    }
-                    else
+                    else if (!method.SpecialName() || (method.Name() == ".ctor"sv))
                     {
                         textWriter.WriteIndentedLine();
                         WriteMethod(method, type, textWriter);
                     }
+                    else if (starts_with(method.Name(), "add_"))
+                    {
+                        eventListeners.push_back(method);
+                    }
+                    // NOTE: If there's an add there must be a remove and vice-versa
+                    // NOTE: Properties handled later
                 }
 
                 // Event Listeners:
-                for (auto const& [name, method] : eventListeners)
+                for (auto&& method : eventListeners)
                 {
-                    if (!is_method_allowed(settings, method))
-                        continue;
-                    textWriter.WriteIndentedLine();
-                    if (name._Starts_with("add_"))
-                    {
-                        WriteEventListener(method, type, textWriter, true);
-                    }
-                    else
-                    {
-                        auto addListenerName = "add_" + std::string(method.Name().substr(7));
-                        WriteEventListener(eventListeners[addListenerName], type, textWriter, false);
-                    }
+                    WriteEventListener(method, type, textWriter);
                 }
 
                 WriteSpecialPropertiesAndMethods(textWriter, type);
@@ -352,17 +339,33 @@ public:
     }
 
     void WriteEventListener(winmd::reader::MethodDef const& addEventListener,
-        winmd::reader::TypeDef const& containerType, TextWriter& textWriter, bool shouldCreateAddListener)
+        winmd::reader::TypeDef const& containerType, TextWriter& textWriter)
     {
-        textWriter.Write("%EventListener(type: \"%\", listener: %): void", shouldCreateAddListener ? "add" : "remove",
-            TextWriter::ToCamelCase(TextWriter::ToLowerAllCase(std::string(addEventListener.Name().substr(4)))), [&]() {
-                jswinrt::typeparser::method_signature methodSignature(addEventListener);
-                for (auto&& [param, paramSignature] : methodSignature.params())
-                {
-                    WriteTypeSemantics(jswinrt::typeparser::get_type_semantics(paramSignature->Type()), containerType,
-                        textWriter, paramSignature->Type().is_szarray(), false);
-                }
-            });
+        std::string name{ addEventListener.Name().substr(4) }; // Remove 'add_'
+        std::transform(
+            name.begin(), name.end(), name.begin(), [](char ch) { return static_cast<char>(::tolower(ch)); });
+
+        const char* accessType = addEventListener.Flags().Static() ? "static " : "";
+
+        textWriter.WriteIndentedLine();
+        textWriter.Write(R"^-^(%addEventListener(type: "%", listener: %): void)^-^", accessType, name, [&]() {
+            jswinrt::typeparser::method_signature methodSignature(addEventListener);
+            for (auto&& [param, paramSignature] : methodSignature.params())
+            {
+                WriteTypeSemantics(jswinrt::typeparser::get_type_semantics(paramSignature->Type()), containerType,
+                    textWriter, paramSignature->Type().is_szarray(), false);
+            }
+        });
+
+        textWriter.WriteIndentedLine();
+        textWriter.Write(R"^-^(%removeEventListener(type: "%", listener: %): void)^-^", accessType, name, [&]() {
+            jswinrt::typeparser::method_signature methodSignature(addEventListener);
+            for (auto&& [param, paramSignature] : methodSignature.params())
+            {
+                WriteTypeSemantics(jswinrt::typeparser::get_type_semantics(paramSignature->Type()), containerType,
+                    textWriter, paramSignature->Type().is_szarray(), false);
+            }
+        });
     }
 
     void WriteMethod(winmd::reader::MethodDef const& method, winmd::reader::TypeDef const& containerType,

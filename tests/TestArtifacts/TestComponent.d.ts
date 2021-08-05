@@ -118,8 +118,8 @@ declare namespace TestComponent {
         static boolProperty: boolean;
         static copyString(value: string): string;
         static raiseObjectEvent(value: TestComponent.TestObject): void;
-        addEventListener(type: "objecteventhandler", listener: Windows.Foundation.EventHandler<TestComponent.TestObject>): void
-        removeEventListener(type: "objecteventhandler", listener: Windows.Foundation.EventHandler<TestComponent.TestObject>): void
+        static addEventListener(type: "objecteventhandler", listener: Windows.Foundation.EventHandler<TestComponent.TestObject>): void
+        static removeEventListener(type: "objecteventhandler", listener: Windows.Foundation.EventHandler<TestComponent.TestObject>): void
     }
 
     type StringArrayDelegate = (values: string[]) => { subset: string[]; outValue: string[]; returnValue: string[] };
@@ -436,41 +436,41 @@ declare namespace TestComponent {
         static throwAsyncException(): Windows.Foundation.WinRTPromise<void, void>;
         static immediateReturnAsync(value: number): Windows.Foundation.WinRTPromise<number, void>;
         addEventListener(type: "booleventhandler", listener: Windows.Foundation.TypedEventHandler<TestComponent.Test, boolean>): void
-        addEventListener(type: "chareventhandler", listener: Windows.Foundation.TypedEventHandler<TestComponent.Test, string>): void
-        addEventListener(type: "compositestructeventhandler", listener: Windows.Foundation.TypedEventHandler<TestComponent.Test, TestComponent.CompositeType>): void
-        addEventListener(type: "enumeventhandler", listener: Windows.Foundation.TypedEventHandler<TestComponent.Test, TestComponent.TestEnum>): void
-        addEventListener(type: "guideventhandler", listener: Windows.Foundation.TypedEventHandler<TestComponent.Test, string>): void
-        addEventListener(type: "numericeventhandler", listener: Windows.Foundation.TypedEventHandler<TestComponent.Test, number>): void
-        addEventListener(type: "objecteventhandler", listener: Windows.Foundation.TypedEventHandler<TestComponent.Test, TestComponent.TestObject>): void
-        addEventListener(type: "refeventhandler", listener: Windows.Foundation.TypedEventHandler<TestComponent.Test, number | null>): void
-        addEventListener(type: "staticbooleventhandler", listener: Windows.Foundation.EventHandler<boolean>): void
-        addEventListener(type: "staticchareventhandler", listener: Windows.Foundation.EventHandler<string>): void
-        addEventListener(type: "staticcompositestructeventhandler", listener: Windows.Foundation.EventHandler<TestComponent.CompositeType>): void
-        addEventListener(type: "staticenumeventhandler", listener: Windows.Foundation.EventHandler<TestComponent.TestEnum>): void
-        addEventListener(type: "staticguideventhandler", listener: Windows.Foundation.EventHandler<string>): void
-        addEventListener(type: "staticnumericeventhandler", listener: Windows.Foundation.EventHandler<number>): void
-        addEventListener(type: "staticobjecteventhandler", listener: Windows.Foundation.EventHandler<TestComponent.TestObject>): void
-        addEventListener(type: "staticrefeventhandler", listener: Windows.Foundation.EventHandler<number | null>): void
-        addEventListener(type: "staticstringeventhandler", listener: Windows.Foundation.EventHandler<string>): void
-        addEventListener(type: "stringeventhandler", listener: Windows.Foundation.TypedEventHandler<TestComponent.Test, string>): void
         removeEventListener(type: "booleventhandler", listener: Windows.Foundation.TypedEventHandler<TestComponent.Test, boolean>): void
+        addEventListener(type: "chareventhandler", listener: Windows.Foundation.TypedEventHandler<TestComponent.Test, string>): void
         removeEventListener(type: "chareventhandler", listener: Windows.Foundation.TypedEventHandler<TestComponent.Test, string>): void
-        removeEventListener(type: "compositestructeventhandler", listener: Windows.Foundation.TypedEventHandler<TestComponent.Test, TestComponent.CompositeType>): void
-        removeEventListener(type: "enumeventhandler", listener: Windows.Foundation.TypedEventHandler<TestComponent.Test, TestComponent.TestEnum>): void
-        removeEventListener(type: "guideventhandler", listener: Windows.Foundation.TypedEventHandler<TestComponent.Test, string>): void
+        addEventListener(type: "numericeventhandler", listener: Windows.Foundation.TypedEventHandler<TestComponent.Test, number>): void
         removeEventListener(type: "numericeventhandler", listener: Windows.Foundation.TypedEventHandler<TestComponent.Test, number>): void
-        removeEventListener(type: "objecteventhandler", listener: Windows.Foundation.TypedEventHandler<TestComponent.Test, TestComponent.TestObject>): void
-        removeEventListener(type: "refeventhandler", listener: Windows.Foundation.TypedEventHandler<TestComponent.Test, number | null>): void
-        removeEventListener(type: "staticbooleventhandler", listener: Windows.Foundation.EventHandler<boolean>): void
-        removeEventListener(type: "staticchareventhandler", listener: Windows.Foundation.EventHandler<string>): void
-        removeEventListener(type: "staticcompositestructeventhandler", listener: Windows.Foundation.EventHandler<TestComponent.CompositeType>): void
-        removeEventListener(type: "staticenumeventhandler", listener: Windows.Foundation.EventHandler<TestComponent.TestEnum>): void
-        removeEventListener(type: "staticguideventhandler", listener: Windows.Foundation.EventHandler<string>): void
-        removeEventListener(type: "staticnumericeventhandler", listener: Windows.Foundation.EventHandler<number>): void
-        removeEventListener(type: "staticobjecteventhandler", listener: Windows.Foundation.EventHandler<TestComponent.TestObject>): void
-        removeEventListener(type: "staticrefeventhandler", listener: Windows.Foundation.EventHandler<number | null>): void
-        removeEventListener(type: "staticstringeventhandler", listener: Windows.Foundation.EventHandler<string>): void
+        addEventListener(type: "stringeventhandler", listener: Windows.Foundation.TypedEventHandler<TestComponent.Test, string>): void
         removeEventListener(type: "stringeventhandler", listener: Windows.Foundation.TypedEventHandler<TestComponent.Test, string>): void
+        addEventListener(type: "guideventhandler", listener: Windows.Foundation.TypedEventHandler<TestComponent.Test, string>): void
+        removeEventListener(type: "guideventhandler", listener: Windows.Foundation.TypedEventHandler<TestComponent.Test, string>): void
+        addEventListener(type: "enumeventhandler", listener: Windows.Foundation.TypedEventHandler<TestComponent.Test, TestComponent.TestEnum>): void
+        removeEventListener(type: "enumeventhandler", listener: Windows.Foundation.TypedEventHandler<TestComponent.Test, TestComponent.TestEnum>): void
+        addEventListener(type: "compositestructeventhandler", listener: Windows.Foundation.TypedEventHandler<TestComponent.Test, TestComponent.CompositeType>): void
+        removeEventListener(type: "compositestructeventhandler", listener: Windows.Foundation.TypedEventHandler<TestComponent.Test, TestComponent.CompositeType>): void
+        addEventListener(type: "refeventhandler", listener: Windows.Foundation.TypedEventHandler<TestComponent.Test, number | null>): void
+        removeEventListener(type: "refeventhandler", listener: Windows.Foundation.TypedEventHandler<TestComponent.Test, number | null>): void
+        addEventListener(type: "objecteventhandler", listener: Windows.Foundation.TypedEventHandler<TestComponent.Test, TestComponent.TestObject>): void
+        removeEventListener(type: "objecteventhandler", listener: Windows.Foundation.TypedEventHandler<TestComponent.Test, TestComponent.TestObject>): void
+        static addEventListener(type: "staticbooleventhandler", listener: Windows.Foundation.EventHandler<boolean>): void
+        static removeEventListener(type: "staticbooleventhandler", listener: Windows.Foundation.EventHandler<boolean>): void
+        static addEventListener(type: "staticchareventhandler", listener: Windows.Foundation.EventHandler<string>): void
+        static removeEventListener(type: "staticchareventhandler", listener: Windows.Foundation.EventHandler<string>): void
+        static addEventListener(type: "staticnumericeventhandler", listener: Windows.Foundation.EventHandler<number>): void
+        static removeEventListener(type: "staticnumericeventhandler", listener: Windows.Foundation.EventHandler<number>): void
+        static addEventListener(type: "staticstringeventhandler", listener: Windows.Foundation.EventHandler<string>): void
+        static removeEventListener(type: "staticstringeventhandler", listener: Windows.Foundation.EventHandler<string>): void
+        static addEventListener(type: "staticguideventhandler", listener: Windows.Foundation.EventHandler<string>): void
+        static removeEventListener(type: "staticguideventhandler", listener: Windows.Foundation.EventHandler<string>): void
+        static addEventListener(type: "staticenumeventhandler", listener: Windows.Foundation.EventHandler<TestComponent.TestEnum>): void
+        static removeEventListener(type: "staticenumeventhandler", listener: Windows.Foundation.EventHandler<TestComponent.TestEnum>): void
+        static addEventListener(type: "staticcompositestructeventhandler", listener: Windows.Foundation.EventHandler<TestComponent.CompositeType>): void
+        static removeEventListener(type: "staticcompositestructeventhandler", listener: Windows.Foundation.EventHandler<TestComponent.CompositeType>): void
+        static addEventListener(type: "staticrefeventhandler", listener: Windows.Foundation.EventHandler<number | null>): void
+        static removeEventListener(type: "staticrefeventhandler", listener: Windows.Foundation.EventHandler<number | null>): void
+        static addEventListener(type: "staticobjecteventhandler", listener: Windows.Foundation.EventHandler<TestComponent.TestObject>): void
+        static removeEventListener(type: "staticobjecteventhandler", listener: Windows.Foundation.EventHandler<TestComponent.TestObject>): void
     }
 
     interface TestContract {

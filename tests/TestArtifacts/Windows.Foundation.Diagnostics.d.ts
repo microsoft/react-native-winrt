@@ -7,8 +7,8 @@ declare namespace Windows.Foundation.Diagnostics {
         static traceOperationRelation(traceLevel: Windows.Foundation.Diagnostics.CausalityTraceLevel, source: Windows.Foundation.Diagnostics.CausalitySource, platformId: string, operationId: number, relation: Windows.Foundation.Diagnostics.CausalityRelation): void;
         static traceSynchronousWorkStart(traceLevel: Windows.Foundation.Diagnostics.CausalityTraceLevel, source: Windows.Foundation.Diagnostics.CausalitySource, platformId: string, operationId: number, work: Windows.Foundation.Diagnostics.CausalitySynchronousWork): void;
         static traceSynchronousWorkCompletion(traceLevel: Windows.Foundation.Diagnostics.CausalityTraceLevel, source: Windows.Foundation.Diagnostics.CausalitySource, work: Windows.Foundation.Diagnostics.CausalitySynchronousWork): void;
-        addEventListener(type: "tracingstatuschanged", listener: Windows.Foundation.EventHandler<Windows.Foundation.Diagnostics.TracingStatusChangedEventArgs>): void
-        removeEventListener(type: "tracingstatuschanged", listener: Windows.Foundation.EventHandler<Windows.Foundation.Diagnostics.TracingStatusChangedEventArgs>): void
+        static addEventListener(type: "tracingstatuschanged", listener: Windows.Foundation.EventHandler<Windows.Foundation.Diagnostics.TracingStatusChangedEventArgs>): void
+        static removeEventListener(type: "tracingstatuschanged", listener: Windows.Foundation.EventHandler<Windows.Foundation.Diagnostics.TracingStatusChangedEventArgs>): void
     }
 
     enum CausalityRelation {
