@@ -97,10 +97,6 @@ declare namespace Windows.Foundation {
         close(): void;
     }
 
-    interface IGetActivationFactory {
-        getActivationFactory(activatableClassId: string): any;
-    }
-
     interface IMemoryBuffer extends Windows.Foundation.IClosable {
         createReference(): Windows.Foundation.IMemoryBufferReference;
     }

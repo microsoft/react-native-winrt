@@ -33,6 +33,9 @@ public:
 
     void WriteTypeDefiniton(winmd::reader::TypeDef const& type, TextWriter& textWriter)
     {
+        if (!is_type_allowed(settings, type))
+            return;
+
         switch (get_category(type))
         {
         case winmd::reader::category::struct_type:
@@ -457,7 +460,7 @@ public:
         if (std::holds_alternative<jswinrt::typeparser::type_definition>(typeSemantics))
         {
             winmd::reader::TypeDef typeDef = std::get<jswinrt::typeparser::type_definition>(typeSemantics);
-            if (!IsTypeDefAllowed(typeDef))
+            if (!is_type_allowed(settings, typeDef))
             {
                 textWriter.Write("any");
                 return;
@@ -512,7 +515,7 @@ public:
         else if (std::holds_alternative<jswinrt::typeparser::generic_type_instance>(typeSemantics))
         {
             auto generic_type_instance = std::get<jswinrt::typeparser::generic_type_instance>(typeSemantics);
-            if (!IsTypeDefAllowed(generic_type_instance.generic_type))
+            if (!is_type_allowed(settings, generic_type_instance.generic_type))
             {
                 textWriter.Write("any");
                 return;
@@ -629,11 +632,6 @@ public:
             textWriter.Write("private ");
             break;
         }
-    }
-
-    bool IsTypeDefAllowed(winmd::reader::TypeDef const& type)
-    {
-        return is_type_allowed(settings, type, get_category(type) == winmd::reader::category::class_type);
     }
 
     static bool IsGeneric(std::string_view name)

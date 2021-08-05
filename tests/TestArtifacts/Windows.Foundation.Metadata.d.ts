@@ -72,11 +72,6 @@ declare namespace Windows.Foundation.Metadata {
         constructor(contract: string, version: number);
     }
 
-    class CreateFromStringAttribute {
-         methodName: string;
-        constructor();
-    }
-
     class DefaultAttribute {
         constructor();
     }
