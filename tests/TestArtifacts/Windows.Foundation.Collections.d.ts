@@ -130,45 +130,45 @@ declare namespace Windows.Foundation.Collections {
     type MapChangedEventHandler<K, V> = (sender: Windows.Foundation.Collections.IObservableMap<K, V>, event: Windows.Foundation.Collections.IMapChangedEventArgs<K>) => void;
     
     class PropertySet implements Windows.Foundation.Collections.IPropertySet, Windows.Foundation.Collections.IObservableMap<string, any>, Windows.Foundation.Collections.IMap<string, any>, Windows.Foundation.Collections.IIterable<Windows.Foundation.Collections.IKeyValuePair<string, any>> {
-        readonly size: number;
-        constructor();
-        lookup(key: string): any;
-        hasKey(key: string): boolean;
-        getView(): Windows.Foundation.Collections.IMapView<string, any>;
-        insert(key: string, value: any): boolean;
-        remove(key: string): void;
-        clear(): void;
-        first(): Windows.Foundation.Collections.IIterator<Windows.Foundation.Collections.IKeyValuePair<string, any>>;
-        addEventListener(type: "mapchanged", listener: Windows.Foundation.Collections.MapChangedEventHandler<string, any>): void;
-        removeEventListener(type: "mapchanged", listener: Windows.Foundation.Collections.MapChangedEventHandler<string, any>): void;
+        public readonly size: number;
+        public constructor();
+        public lookup(key: string): any;
+        public hasKey(key: string): boolean;
+        public getView(): Windows.Foundation.Collections.IMapView<string, any>;
+        public insert(key: string, value: any): boolean;
+        public remove(key: string): void;
+        public clear(): void;
+        public first(): Windows.Foundation.Collections.IIterator<Windows.Foundation.Collections.IKeyValuePair<string, any>>;
+        public addEventListener(type: "mapchanged", listener: Windows.Foundation.Collections.MapChangedEventHandler<string, any>): void;
+        public removeEventListener(type: "mapchanged", listener: Windows.Foundation.Collections.MapChangedEventHandler<string, any>): void;
     }
 
     class StringMap implements Windows.Foundation.Collections.IMap<string, string>, Windows.Foundation.Collections.IIterable<Windows.Foundation.Collections.IKeyValuePair<string, string>>, Windows.Foundation.Collections.IObservableMap<string, string> {
-        readonly size: number;
-        constructor();
-        lookup(key: string): string;
-        hasKey(key: string): boolean;
-        getView(): Windows.Foundation.Collections.IMapView<string, string>;
-        insert(key: string, value: string): boolean;
-        remove(key: string): void;
-        clear(): void;
-        first(): Windows.Foundation.Collections.IIterator<Windows.Foundation.Collections.IKeyValuePair<string, string>>;
-        addEventListener(type: "mapchanged", listener: Windows.Foundation.Collections.MapChangedEventHandler<string, string>): void;
-        removeEventListener(type: "mapchanged", listener: Windows.Foundation.Collections.MapChangedEventHandler<string, string>): void;
+        public readonly size: number;
+        public constructor();
+        public lookup(key: string): string;
+        public hasKey(key: string): boolean;
+        public getView(): Windows.Foundation.Collections.IMapView<string, string>;
+        public insert(key: string, value: string): boolean;
+        public remove(key: string): void;
+        public clear(): void;
+        public first(): Windows.Foundation.Collections.IIterator<Windows.Foundation.Collections.IKeyValuePair<string, string>>;
+        public addEventListener(type: "mapchanged", listener: Windows.Foundation.Collections.MapChangedEventHandler<string, string>): void;
+        public removeEventListener(type: "mapchanged", listener: Windows.Foundation.Collections.MapChangedEventHandler<string, string>): void;
     }
 
     class ValueSet implements Windows.Foundation.Collections.IPropertySet, Windows.Foundation.Collections.IObservableMap<string, any>, Windows.Foundation.Collections.IMap<string, any>, Windows.Foundation.Collections.IIterable<Windows.Foundation.Collections.IKeyValuePair<string, any>> {
-        readonly size: number;
-        constructor();
-        lookup(key: string): any;
-        hasKey(key: string): boolean;
-        getView(): Windows.Foundation.Collections.IMapView<string, any>;
-        insert(key: string, value: any): boolean;
-        remove(key: string): void;
-        clear(): void;
-        first(): Windows.Foundation.Collections.IIterator<Windows.Foundation.Collections.IKeyValuePair<string, any>>;
-        addEventListener(type: "mapchanged", listener: Windows.Foundation.Collections.MapChangedEventHandler<string, any>): void;
-        removeEventListener(type: "mapchanged", listener: Windows.Foundation.Collections.MapChangedEventHandler<string, any>): void;
+        public readonly size: number;
+        public constructor();
+        public lookup(key: string): any;
+        public hasKey(key: string): boolean;
+        public getView(): Windows.Foundation.Collections.IMapView<string, any>;
+        public insert(key: string, value: any): boolean;
+        public remove(key: string): void;
+        public clear(): void;
+        public first(): Windows.Foundation.Collections.IIterator<Windows.Foundation.Collections.IKeyValuePair<string, any>>;
+        public addEventListener(type: "mapchanged", listener: Windows.Foundation.Collections.MapChangedEventHandler<string, any>): void;
+        public removeEventListener(type: "mapchanged", listener: Windows.Foundation.Collections.MapChangedEventHandler<string, any>): void;
     }
 
     type VectorChangedEventHandler<T> = (sender: Windows.Foundation.Collections.IObservableVector<T>, event: Windows.Foundation.Collections.IVectorChangedEventArgs) => void;

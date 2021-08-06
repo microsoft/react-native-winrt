@@ -2,37 +2,37 @@
 
 declare namespace Windows.Foundation.Metadata {
     class ActivatableAttribute {
-        constructor(version: number);
-        constructor(version: number, type: string);
-        constructor(version: number, platform: Windows.Foundation.Metadata.Platform);
-        constructor(type: any, version: number);
-        constructor(type: any, version: number, contractName: string);
-        constructor(type: any, version: number, platform: Windows.Foundation.Metadata.Platform);
+        public constructor(version: number);
+        public constructor(version: number, type: string);
+        public constructor(version: number, platform: Windows.Foundation.Metadata.Platform);
+        public constructor(type: any, version: number);
+        public constructor(type: any, version: number, contractName: string);
+        public constructor(type: any, version: number, platform: Windows.Foundation.Metadata.Platform);
     }
 
     class AllowForWebAttribute {
-        constructor();
+        public constructor();
     }
 
     class AllowMultipleAttribute {
-        constructor();
+        public constructor();
     }
 
     class ApiContractAttribute {
-        constructor();
+        public constructor();
     }
 
     abstract class ApiInformation {
-        static isTypePresent(typeName: string): boolean;
-        static isMethodPresent(typeName: string, methodName: string): boolean;
-        static isMethodPresent(typeName: string, methodName: string, inputParameterCount: number): boolean;
-        static isEventPresent(typeName: string, eventName: string): boolean;
-        static isPropertyPresent(typeName: string, propertyName: string): boolean;
-        static isReadOnlyPropertyPresent(typeName: string, propertyName: string): boolean;
-        static isWriteablePropertyPresent(typeName: string, propertyName: string): boolean;
-        static isEnumNamedValuePresent(enumTypeName: string, valueName: string): boolean;
-        static isApiContractPresent(contractName: string, majorVersion: number): boolean;
-        static isApiContractPresent(contractName: string, majorVersion: number, minorVersion: number): boolean;
+        public static isTypePresent(typeName: string): boolean;
+        public static isMethodPresent(typeName: string, methodName: string): boolean;
+        public static isMethodPresent(typeName: string, methodName: string, inputParameterCount: number): boolean;
+        public static isEventPresent(typeName: string, eventName: string): boolean;
+        public static isPropertyPresent(typeName: string, propertyName: string): boolean;
+        public static isReadOnlyPropertyPresent(typeName: string, propertyName: string): boolean;
+        public static isWriteablePropertyPresent(typeName: string, propertyName: string): boolean;
+        public static isEnumNamedValuePresent(enumTypeName: string, valueName: string): boolean;
+        public static isApiContractPresent(contractName: string, majorVersion: number): boolean;
+        public static isApiContractPresent(contractName: string, majorVersion: number, minorVersion: number): boolean;
     }
 
     enum AttributeTargets {
@@ -52,13 +52,13 @@ declare namespace Windows.Foundation.Metadata {
     }
 
     class AttributeUsageAttribute {
-        constructor(A_0: Windows.Foundation.Metadata.AttributeTargets);
+        public constructor(A_0: Windows.Foundation.Metadata.AttributeTargets);
     }
 
     class ComposableAttribute {
-        constructor(type: any, compositionType: Windows.Foundation.Metadata.CompositionType, version: number);
-        constructor(type: any, compositionType: Windows.Foundation.Metadata.CompositionType, version: number, platform: Windows.Foundation.Metadata.Platform);
-        constructor(type: any, compositionType: Windows.Foundation.Metadata.CompositionType, version: number, contract: string);
+        public constructor(type: any, compositionType: Windows.Foundation.Metadata.CompositionType, version: number);
+        public constructor(type: any, compositionType: Windows.Foundation.Metadata.CompositionType, version: number, platform: Windows.Foundation.Metadata.Platform);
+        public constructor(type: any, compositionType: Windows.Foundation.Metadata.CompositionType, version: number, contract: string);
     }
 
     enum CompositionType {
@@ -67,23 +67,23 @@ declare namespace Windows.Foundation.Metadata {
     }
 
     class ContractVersionAttribute {
-        constructor(version: number);
-        constructor(contract: any, version: number);
-        constructor(contract: string, version: number);
+        public constructor(version: number);
+        public constructor(contract: any, version: number);
+        public constructor(contract: string, version: number);
     }
 
     class DefaultAttribute {
-        constructor();
+        public constructor();
     }
 
     class DefaultOverloadAttribute {
-        constructor();
+        public constructor();
     }
 
     class DeprecatedAttribute {
-        constructor(message: string, type: Windows.Foundation.Metadata.DeprecationType, version: number);
-        constructor(message: string, type: Windows.Foundation.Metadata.DeprecationType, version: number, platform: Windows.Foundation.Metadata.Platform);
-        constructor(message: string, type: Windows.Foundation.Metadata.DeprecationType, version: number, contract: string);
+        public constructor(message: string, type: Windows.Foundation.Metadata.DeprecationType, version: number);
+        public constructor(message: string, type: Windows.Foundation.Metadata.DeprecationType, version: number, platform: Windows.Foundation.Metadata.Platform);
+        public constructor(message: string, type: Windows.Foundation.Metadata.DeprecationType, version: number, contract: string);
     }
 
     enum DeprecationType {
@@ -92,20 +92,20 @@ declare namespace Windows.Foundation.Metadata {
     }
 
     class DualApiPartitionAttribute {
-         version: number;
-        constructor();
+        public version: number;
+        public constructor();
     }
 
     class ExclusiveToAttribute {
-        constructor(typeName: any);
+        public constructor(typeName: any);
     }
 
     class ExperimentalAttribute {
-        constructor();
+        public constructor();
     }
 
     class FeatureAttribute {
-        constructor(featureStage: Windows.Foundation.Metadata.FeatureStage, validInAllBranches: boolean);
+        public constructor(featureStage: Windows.Foundation.Metadata.FeatureStage, validInAllBranches: boolean);
     }
 
     enum FeatureStage {
@@ -122,28 +122,28 @@ declare namespace Windows.Foundation.Metadata {
     }
 
     class GCPressureAttribute {
-         amount: Windows.Foundation.Metadata.GCPressureAmount;
-        constructor();
+        public amount: Windows.Foundation.Metadata.GCPressureAmount;
+        public constructor();
     }
 
     class GuidAttribute {
-        constructor(a: number, b: number, c: number, d: number, e: number, f: number, g: number, h: number, i: number, j: number, k: number);
+        public constructor(a: number, b: number, c: number, d: number, e: number, f: number, g: number, h: number, i: number, j: number, k: number);
     }
 
     class HasVariantAttribute {
-        constructor();
+        public constructor();
     }
 
     class InternalAttribute {
-        constructor();
+        public constructor();
     }
 
     class LengthIsAttribute {
-        constructor(indexLengthParameter: number);
+        public constructor(indexLengthParameter: number);
     }
 
     class MarshalingBehaviorAttribute {
-        constructor(behavior: Windows.Foundation.Metadata.MarshalingType);
+        public constructor(behavior: Windows.Foundation.Metadata.MarshalingType);
     }
 
     enum MarshalingType {
@@ -154,20 +154,20 @@ declare namespace Windows.Foundation.Metadata {
     }
 
     class MetadataMarshalAttribute {
-        constructor();
+        public constructor();
     }
 
     class MuseAttribute {
-         version: number;
-        constructor();
+        public version: number;
+        public constructor();
     }
 
     class OverloadAttribute {
-        constructor(method: string);
+        public constructor(method: string);
     }
 
     class OverridableAttribute {
-        constructor();
+        public constructor();
     }
 
     enum Platform {
@@ -176,34 +176,34 @@ declare namespace Windows.Foundation.Metadata {
     }
 
     class PlatformAttribute {
-        constructor(platform: Windows.Foundation.Metadata.Platform);
+        public constructor(platform: Windows.Foundation.Metadata.Platform);
     }
 
     class PreviousContractVersionAttribute {
-        constructor(contract: string, versionLow: number, versionHigh: number, newContract: string);
-        constructor(contract: string, versionLow: number, versionHigh: number);
+        public constructor(contract: string, versionLow: number, versionHigh: number, newContract: string);
+        public constructor(contract: string, versionLow: number, versionHigh: number);
     }
 
     class ProtectedAttribute {
-        constructor();
+        public constructor();
     }
 
     class RangeAttribute {
-        constructor(minValue: number, maxValue: number);
+        public constructor(minValue: number, maxValue: number);
     }
 
     class RemoteAsyncAttribute {
-        constructor();
+        public constructor();
     }
 
     class StaticAttribute {
-        constructor(type: any, version: number);
-        constructor(type: any, version: number, platform: Windows.Foundation.Metadata.Platform);
-        constructor(type: any, version: number, contractName: string);
+        public constructor(type: any, version: number);
+        public constructor(type: any, version: number, platform: Windows.Foundation.Metadata.Platform);
+        public constructor(type: any, version: number, contractName: string);
     }
 
     class ThreadingAttribute {
-        constructor(model: Windows.Foundation.Metadata.ThreadingModel);
+        public constructor(model: Windows.Foundation.Metadata.ThreadingModel);
     }
 
     enum ThreadingModel {
@@ -214,16 +214,16 @@ declare namespace Windows.Foundation.Metadata {
     }
 
     class VariantAttribute {
-        constructor();
+        public constructor();
     }
 
     class VersionAttribute {
-        constructor(version: number);
-        constructor(version: number, platform: Windows.Foundation.Metadata.Platform);
+        public constructor(version: number);
+        public constructor(version: number, platform: Windows.Foundation.Metadata.Platform);
     }
 
     class WebHostHiddenAttribute {
-        constructor();
+        public constructor();
     }
 
 }

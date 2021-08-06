@@ -96,7 +96,8 @@ public:
 
     void WriteClassOrInterface(winmd::reader::TypeDef const& type, TextWriter& textWriter)
     {
-        if (get_category(type) == winmd::reader::category::interface_type && exclusiveto_class(type))
+        auto category = winmd::reader::get_category(type);
+        if ((category == winmd::reader::category::interface_type) && exclusiveto_class(type))
         {
             return;
         }
@@ -122,13 +123,13 @@ public:
 )");
                     textWriter.WriteIndentedLine();
                 }
-                if (type.Flags().Abstract() && get_category(type) != winmd::reader::category::interface_type)
+                if (type.Flags().Abstract() && (category != winmd::reader::category::interface_type))
                 {
                     textWriter.Write("abstract ");
                 }
             },
             [&]() {
-                switch (get_category(type))
+                switch (category)
                 {
                 case winmd::reader::category::interface_type:
                     textWriter.Write("interface");
@@ -192,8 +193,7 @@ public:
                 {
                     return;
                 }
-                textWriter.Write(
-                    get_category(type) == winmd::reader::category::interface_type ? " extends " : " implements ");
+                textWriter.Write((category == winmd::reader::category::interface_type) ? " extends " : " implements ");
                 for (auto&& implementsTypeSem : filteredInterfaces)
                 {
                     WriteTypeSemantics(implementsTypeSem, type, textWriter, false, false);
@@ -207,7 +207,11 @@ public:
                 for (auto&& field : type.FieldList())
                 {
                     textWriter.WriteIndentedLine(
-                        "% %: ", [&]() { WriteAccess(field.Flags().Access(), textWriter); },
+                        "%%: ",
+                        [&]() {
+                            WriteAccess(field.Flags().Access(), textWriter,
+                                category != winmd::reader::category::class_type);
+                        },
                         TextWriter::ToCamelCase(std::string(field.Name())));
                     WriteTypeSemantics(jswinrt::typeparser::get_type_semantics(field.Signature().Type()), type,
                         textWriter, field.Signature().Type().is_szarray(), false);
@@ -217,6 +221,8 @@ public:
                 for (auto&& prop : type.PropertyList())
                 {
                     textWriter.WriteIndentedLine();
+                    WriteAccess(prop.MethodSemantic().first.Method().Flags().Access(), textWriter,
+                        category != winmd::reader::category::class_type);
                     if (prop.MethodSemantic().first.Method().Flags().Static())
                     {
                         textWriter.Write("static ");
@@ -353,9 +359,14 @@ public:
         std::transform(
             name.begin(), name.end(), name.begin(), [](char ch) { return static_cast<char>(::tolower(ch)); });
 
+        auto isClass = winmd::reader::get_category(containerType) == winmd::reader::category::class_type;
         const char* accessType = addEventListener.Flags().Static() ? "static " : "";
 
         textWriter.WriteIndentedLine();
+        if (isClass)
+        {
+            WriteAccess(addEventListener.Flags().Access(), textWriter, false);
+        }
         textWriter.Write(R"^-^(%addEventListener(type: "%", listener: %): void;)^-^", accessType, name, [&]() {
             jswinrt::typeparser::method_signature methodSignature(addEventListener);
             for (auto&& [param, paramSignature] : methodSignature.params())
@@ -366,6 +377,10 @@ public:
         });
 
         textWriter.WriteIndentedLine();
+        if (isClass)
+        {
+            WriteAccess(addEventListener.Flags().Access(), textWriter, false);
+        }
         textWriter.Write(R"^-^(%removeEventListener(type: "%", listener: %): void;)^-^", accessType, name, [&]() {
             jswinrt::typeparser::method_signature methodSignature(addEventListener);
             for (auto&& [param, paramSignature] : methodSignature.params())
@@ -381,11 +396,11 @@ public:
     {
         jswinrt::typeparser::method_signature methodSignature(method);
         std::vector<std::pair<std::string_view, winmd::reader::TypeSig>> returnNameTypePairs;
+        auto isClass = winmd::reader::get_category(containerType) == winmd::reader::category::class_type;
         textWriter.Write(
-            "%%%%(%)%;"sv, [&]() { WriteAccess(method.Flags().Access(), textWriter); },
+            "%%%%(%)%;"sv, [&]() { WriteAccess(method.Flags().Access(), textWriter, !isClass); },
             [&]() {
-                if (method.Flags().Abstract() && !isAnonymousFunction &&
-                    get_category(containerType) == winmd::reader::category::class_type)
+                if (method.Flags().Abstract() && !isAnonymousFunction && isClass)
                 {
                     textWriter.Write("abstract ");
                 }
