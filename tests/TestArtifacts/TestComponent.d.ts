@@ -144,7 +144,7 @@ declare namespace TestComponent {
         f32Property: number;
         enumProperty: TestComponent.TestEnum;
         enumArrayProperty: TestComponent.TestEnum[];
-        dateTimeProperty: Windows.Foundation.DateTime;
+        dateTimeProperty: Date;
         objectArrayProperty: TestComponent.TestObject[];
         compositeStructProperty: TestComponent.CompositeType;
         compositeStructArrayProperty: TestComponent.CompositeType[];
@@ -158,7 +158,7 @@ declare namespace TestComponent {
         u64Property: number;
         u32Property: number;
         u16Property: number;
-        timeSpanProperty: Windows.Foundation.TimeSpan;
+        timeSpanProperty: number;
         stringsStructProperty: TestComponent.StringTypes;
         stringProperty: string;
         stringArrayProperty: string[];

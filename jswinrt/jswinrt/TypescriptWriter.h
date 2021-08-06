@@ -36,6 +36,14 @@ public:
         if (!is_type_allowed(settings, type))
             return;
 
+        // A couple other types are projected to other JS types
+        if (type.TypeNamespace() == "Windows.Foundation"sv)
+        {
+            auto name = type.TypeName();
+            if ((name == "DateTime"sv) || (name == "TimeSpan"sv) || (name == "HResult"sv))
+                return;
+        }
+
         switch (get_category(type))
         {
         case winmd::reader::category::struct_type:
@@ -463,24 +471,38 @@ public:
         if (std::holds_alternative<jswinrt::typeparser::type_definition>(typeSemantics))
         {
             winmd::reader::TypeDef typeDef = std::get<jswinrt::typeparser::type_definition>(typeSemantics);
+            bool handled = false;
             if (!is_type_allowed(settings, typeDef))
             {
                 textWriter.Write("any");
-                return;
+                handled = true;
             }
-            if (typeDef.TypeNamespace() == "Windows.Foundation" && typeDef.TypeName() == "HResult")
+            else if (typeDef.TypeNamespace() == "Windows.Foundation"sv)
             {
-                textWriter.Write("number");
-                return;
+                auto name = typeDef.TypeName();
+                if ((name == "HResult") || (name == "TimeSpan"sv))
+                {
+                    textWriter.Write("number");
+                    handled = true;
+                }
+                else if (name == "IAsyncAction"sv)
+                {
+                    textWriter.Write("Windows.Foundation.WinRTPromise<void, void>");
+                    handled = true;
+                }
+                else if (name == "DateTime"sv)
+                {
+                    textWriter.Write("Date");
+                    handled = true;
+                }
             }
-            if (typeDef.TypeNamespace() == "Windows.Foundation" && typeDef.TypeName() == "IAsyncAction")
+            if (!handled)
             {
-                textWriter.Write("Windows.Foundation.WinRTPromise<void, void>");
-                return;
+                textWriter.Write("%.%", typeDef.TypeNamespace(), typeDef.TypeName());
             }
+
             bool isStruct = get_category(typeDef) == winmd::reader::category::struct_type;
-            textWriter.Write("%.%%%", typeDef.TypeNamespace(), typeDef.TypeName(), isArray ? "[]" : "",
-                isNullable && !isArray && !isStruct ? " | null" : "");
+            textWriter.Write("%%", isArray ? "[]" : "", isNullable && !isArray && !isStruct ? " | null" : "");
         }
         else if (std::holds_alternative<jswinrt::typeparser::fundamental_type>(typeSemantics))
         {

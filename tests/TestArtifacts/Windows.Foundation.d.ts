@@ -20,10 +20,6 @@ declare namespace Windows.Foundation {
         started,
     }
 
-    interface DateTime {
-         universalTime: number;
-    }
-
     class Deferral implements Windows.Foundation.IClosable {
         constructor(handler: Windows.Foundation.DeferralCompletedHandler);
         complete(): void;
@@ -45,10 +41,6 @@ declare namespace Windows.Foundation {
         static readonly empty: string;
         static createNewGuid(): string;
         static equals(target: string, value: string): boolean;
-    }
-
-    interface HResult {
-         value: number;
     }
 
     interface IAsyncAction extends Windows.Foundation.IAsyncInfo {
@@ -123,8 +115,8 @@ declare namespace Windows.Foundation {
         getBoolean(): boolean;
         getString(): string;
         getGuid(): string;
-        getDateTime(): Windows.Foundation.DateTime;
-        getTimeSpan(): Windows.Foundation.TimeSpan;
+        getDateTime(): Date;
+        getTimeSpan(): number;
         getPoint(): Windows.Foundation.Point;
         getSize(): Windows.Foundation.Size;
         getRect(): Windows.Foundation.Rect;
@@ -142,8 +134,8 @@ declare namespace Windows.Foundation {
         getStringArray(): string[];
         getInspectableArray(): any;
         getGuidArray(): string[];
-        getDateTimeArray(): Windows.Foundation.DateTime[];
-        getTimeSpanArray(): Windows.Foundation.TimeSpan[];
+        getDateTimeArray(): Date[];
+        getTimeSpanArray(): number[];
         getPointArray(): Windows.Foundation.Point[];
         getSizeArray(): Windows.Foundation.Size[];
         getRectArray(): Windows.Foundation.Rect[];
@@ -237,8 +229,8 @@ declare namespace Windows.Foundation {
         static createString(value: string): any;
         static createInspectable(value: any): any;
         static createGuid(value: string): any;
-        static createDateTime(value: Windows.Foundation.DateTime): any;
-        static createTimeSpan(value: Windows.Foundation.TimeSpan): any;
+        static createDateTime(value: Date): any;
+        static createTimeSpan(value: number): any;
         static createPoint(value: Windows.Foundation.Point): any;
         static createSize(value: Windows.Foundation.Size): any;
         static createRect(value: Windows.Foundation.Rect): any;
@@ -256,8 +248,8 @@ declare namespace Windows.Foundation {
         static createStringArray(value: string[]): any;
         static createInspectableArray(value: any): any;
         static createGuidArray(value: string[]): any;
-        static createDateTimeArray(value: Windows.Foundation.DateTime[]): any;
-        static createTimeSpanArray(value: Windows.Foundation.TimeSpan[]): any;
+        static createDateTimeArray(value: Date[]): any;
+        static createTimeSpanArray(value: number[]): any;
         static createPointArray(value: Windows.Foundation.Point[]): any;
         static createSizeArray(value: Windows.Foundation.Size[]): any;
         static createRectArray(value: Windows.Foundation.Rect[]): any;
@@ -273,10 +265,6 @@ declare namespace Windows.Foundation {
     interface Size {
          width: number;
          height: number;
-    }
-
-    interface TimeSpan {
-         duration: number;
     }
 
     type TypedEventHandler<TSender, TResult> = (sender: TSender, args: TResult) => void;
