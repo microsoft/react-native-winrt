@@ -209,8 +209,8 @@ public:
                     textWriter.WriteIndentedLine(
                         "%%: ",
                         [&]() {
-                            WriteAccess(field.Flags().Access(), textWriter,
-                                category != winmd::reader::category::class_type);
+                            WriteAccess(
+                                field.Flags().Access(), textWriter, category != winmd::reader::category::class_type);
                         },
                         TextWriter::ToCamelCase(std::string(field.Name())));
                     WriteTypeSemantics(jswinrt::typeparser::get_type_semantics(field.Signature().Type()), type,
