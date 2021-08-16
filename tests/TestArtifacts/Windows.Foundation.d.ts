@@ -20,14 +20,10 @@ declare namespace Windows.Foundation {
         started,
     }
 
-    interface DateTime {
-         universalTime: number;
-    }
-
     class Deferral implements Windows.Foundation.IClosable {
-        constructor(handler: Windows.Foundation.DeferralCompletedHandler);
-        complete(): void;
-        close(): void;
+        public constructor(handler: Windows.Foundation.DeferralCompletedHandler);
+        public complete(): void;
+        public close(): void;
     }
 
     type DeferralCompletedHandler = () => void;
@@ -35,20 +31,16 @@ declare namespace Windows.Foundation {
     type EventHandler<T> = (sender: any, args: T) => void;
     
     interface EventRegistrationToken {
-         value: number;
+        value: number;
     }
 
     interface FoundationContract {
     }
 
     abstract class GuidHelper {
-        static readonly empty: string;
-        static createNewGuid(): string;
-        static equals(target: string, value: string): boolean;
-    }
-
-    interface HResult {
-         value: number;
+        public static readonly empty: string;
+        public static createNewGuid(): string;
+        public static equals(target: string, value: string): boolean;
     }
 
     interface IAsyncAction extends Windows.Foundation.IAsyncInfo {
@@ -97,18 +89,14 @@ declare namespace Windows.Foundation {
         close(): void;
     }
 
-    interface IGetActivationFactory {
-        getActivationFactory(activatableClassId: string): any;
-    }
-
     interface IMemoryBuffer extends Windows.Foundation.IClosable {
         createReference(): Windows.Foundation.IMemoryBufferReference;
     }
 
     interface IMemoryBufferReference extends Windows.Foundation.IClosable {
         readonly capacity: number;
-        addEventListener(type: "closed", listener: Windows.Foundation.TypedEventHandler<Windows.Foundation.IMemoryBufferReference, any>): void
-        removeEventListener(type: "closed", listener: Windows.Foundation.TypedEventHandler<Windows.Foundation.IMemoryBufferReference, any>): void
+        addEventListener(type: "closed", listener: Windows.Foundation.TypedEventHandler<Windows.Foundation.IMemoryBufferReference, any>): void;
+        removeEventListener(type: "closed", listener: Windows.Foundation.TypedEventHandler<Windows.Foundation.IMemoryBufferReference, any>): void;
     }
 
     interface IPropertyValue {
@@ -127,8 +115,8 @@ declare namespace Windows.Foundation {
         getBoolean(): boolean;
         getString(): string;
         getGuid(): string;
-        getDateTime(): Windows.Foundation.DateTime;
-        getTimeSpan(): Windows.Foundation.TimeSpan;
+        getDateTime(): Date;
+        getTimeSpan(): number;
         getPoint(): Windows.Foundation.Point;
         getSize(): Windows.Foundation.Size;
         getRect(): Windows.Foundation.Rect;
@@ -146,8 +134,8 @@ declare namespace Windows.Foundation {
         getStringArray(): string[];
         getInspectableArray(): any;
         getGuidArray(): string[];
-        getDateTimeArray(): Windows.Foundation.DateTime[];
-        getTimeSpanArray(): Windows.Foundation.TimeSpan[];
+        getDateTimeArray(): Date[];
+        getTimeSpanArray(): number[];
         getPointArray(): Windows.Foundation.Point[];
         getSizeArray(): Windows.Foundation.Size[];
         getRectArray(): Windows.Foundation.Rect[];
@@ -171,14 +159,14 @@ declare namespace Windows.Foundation {
     }
 
     class MemoryBuffer implements Windows.Foundation.IMemoryBuffer, Windows.Foundation.IClosable {
-        constructor(capacity: number);
-        createReference(): Windows.Foundation.IMemoryBufferReference;
-        close(): void;
+        public constructor(capacity: number);
+        public createReference(): Windows.Foundation.IMemoryBufferReference;
+        public close(): void;
     }
 
     interface Point {
-         x: number;
-         y: number;
+        x: number;
+        y: number;
     }
 
     enum PropertyType {
@@ -226,61 +214,57 @@ declare namespace Windows.Foundation {
     }
 
     abstract class PropertyValue {
-        static createEmpty(): any;
-        static createUInt8(value: number): any;
-        static createInt16(value: number): any;
-        static createUInt16(value: number): any;
-        static createInt32(value: number): any;
-        static createUInt32(value: number): any;
-        static createInt64(value: number): any;
-        static createUInt64(value: number): any;
-        static createSingle(value: number): any;
-        static createDouble(value: number): any;
-        static createChar16(value: string): any;
-        static createBoolean(value: boolean): any;
-        static createString(value: string): any;
-        static createInspectable(value: any): any;
-        static createGuid(value: string): any;
-        static createDateTime(value: Windows.Foundation.DateTime): any;
-        static createTimeSpan(value: Windows.Foundation.TimeSpan): any;
-        static createPoint(value: Windows.Foundation.Point): any;
-        static createSize(value: Windows.Foundation.Size): any;
-        static createRect(value: Windows.Foundation.Rect): any;
-        static createUInt8Array(value: number[]): any;
-        static createInt16Array(value: number[]): any;
-        static createUInt16Array(value: number[]): any;
-        static createInt32Array(value: number[]): any;
-        static createUInt32Array(value: number[]): any;
-        static createInt64Array(value: number[]): any;
-        static createUInt64Array(value: number[]): any;
-        static createSingleArray(value: number[]): any;
-        static createDoubleArray(value: number[]): any;
-        static createChar16Array(value: string[]): any;
-        static createBooleanArray(value: boolean[]): any;
-        static createStringArray(value: string[]): any;
-        static createInspectableArray(value: any): any;
-        static createGuidArray(value: string[]): any;
-        static createDateTimeArray(value: Windows.Foundation.DateTime[]): any;
-        static createTimeSpanArray(value: Windows.Foundation.TimeSpan[]): any;
-        static createPointArray(value: Windows.Foundation.Point[]): any;
-        static createSizeArray(value: Windows.Foundation.Size[]): any;
-        static createRectArray(value: Windows.Foundation.Rect[]): any;
+        public static createEmpty(): any;
+        public static createUInt8(value: number): any;
+        public static createInt16(value: number): any;
+        public static createUInt16(value: number): any;
+        public static createInt32(value: number): any;
+        public static createUInt32(value: number): any;
+        public static createInt64(value: number): any;
+        public static createUInt64(value: number): any;
+        public static createSingle(value: number): any;
+        public static createDouble(value: number): any;
+        public static createChar16(value: string): any;
+        public static createBoolean(value: boolean): any;
+        public static createString(value: string): any;
+        public static createInspectable(value: any): any;
+        public static createGuid(value: string): any;
+        public static createDateTime(value: Date): any;
+        public static createTimeSpan(value: number): any;
+        public static createPoint(value: Windows.Foundation.Point): any;
+        public static createSize(value: Windows.Foundation.Size): any;
+        public static createRect(value: Windows.Foundation.Rect): any;
+        public static createUInt8Array(value: number[]): any;
+        public static createInt16Array(value: number[]): any;
+        public static createUInt16Array(value: number[]): any;
+        public static createInt32Array(value: number[]): any;
+        public static createUInt32Array(value: number[]): any;
+        public static createInt64Array(value: number[]): any;
+        public static createUInt64Array(value: number[]): any;
+        public static createSingleArray(value: number[]): any;
+        public static createDoubleArray(value: number[]): any;
+        public static createChar16Array(value: string[]): any;
+        public static createBooleanArray(value: boolean[]): any;
+        public static createStringArray(value: string[]): any;
+        public static createInspectableArray(value: any): any;
+        public static createGuidArray(value: string[]): any;
+        public static createDateTimeArray(value: Date[]): any;
+        public static createTimeSpanArray(value: number[]): any;
+        public static createPointArray(value: Windows.Foundation.Point[]): any;
+        public static createSizeArray(value: Windows.Foundation.Size[]): any;
+        public static createRectArray(value: Windows.Foundation.Rect[]): any;
     }
 
     interface Rect {
-         x: number;
-         y: number;
-         width: number;
-         height: number;
+        x: number;
+        y: number;
+        width: number;
+        height: number;
     }
 
     interface Size {
-         width: number;
-         height: number;
-    }
-
-    interface TimeSpan {
-         duration: number;
+        width: number;
+        height: number;
     }
 
     type TypedEventHandler<TSender, TResult> = (sender: TSender, args: TResult) => void;
@@ -289,45 +273,45 @@ declare namespace Windows.Foundation {
     }
 
     class Uri implements Windows.Foundation.IStringable {
-        readonly absoluteUri: string;
-        readonly displayUri: string;
-        readonly domain: string;
-        readonly extension: string;
-        readonly fragment: string;
-        readonly host: string;
-        readonly password: string;
-        readonly path: string;
-        readonly port: number;
-        readonly query: string;
-        readonly queryParsed: Windows.Foundation.WwwFormUrlDecoder;
-        readonly rawUri: string;
-        readonly schemeName: string;
-        readonly suspicious: boolean;
-        readonly userName: string;
-        readonly absoluteCanonicalUri: string;
-        readonly displayIri: string;
-        constructor(uri: string);
-        constructor(baseUri: string, relativeUri: string);
-        equals(pUri: Windows.Foundation.Uri): boolean;
-        combineUri(relativeUri: string): Windows.Foundation.Uri;
-        toString(): string;
-        static unescapeComponent(toUnescape: string): string;
-        static escapeComponent(toEscape: string): string;
+        public readonly absoluteUri: string;
+        public readonly displayUri: string;
+        public readonly domain: string;
+        public readonly extension: string;
+        public readonly fragment: string;
+        public readonly host: string;
+        public readonly password: string;
+        public readonly path: string;
+        public readonly port: number;
+        public readonly query: string;
+        public readonly queryParsed: Windows.Foundation.WwwFormUrlDecoder;
+        public readonly rawUri: string;
+        public readonly schemeName: string;
+        public readonly suspicious: boolean;
+        public readonly userName: string;
+        public readonly absoluteCanonicalUri: string;
+        public readonly displayIri: string;
+        public constructor(uri: string);
+        public constructor(baseUri: string, relativeUri: string);
+        public equals(pUri: Windows.Foundation.Uri): boolean;
+        public combineUri(relativeUri: string): Windows.Foundation.Uri;
+        public toString(): string;
+        public static unescapeComponent(toUnescape: string): string;
+        public static escapeComponent(toEscape: string): string;
     }
 
     class WwwFormUrlDecoder implements Windows.Foundation.Collections.IVectorView<Windows.Foundation.IWwwFormUrlDecoderEntry>, Windows.Foundation.Collections.IIterable<Windows.Foundation.IWwwFormUrlDecoderEntry> {
-        readonly size: number;
-        constructor(query: string);
-        getFirstValueByName(name: string): string;
-        first(): Windows.Foundation.Collections.IIterator<Windows.Foundation.IWwwFormUrlDecoderEntry>;
-        getAt(index: number): Windows.Foundation.IWwwFormUrlDecoderEntry;
-        indexOf(value: Windows.Foundation.IWwwFormUrlDecoderEntry): { index: number; returnValue: boolean };
-        getMany(startIndex: number): { items: Windows.Foundation.IWwwFormUrlDecoderEntry[]; returnValue: number };
+        public readonly size: number;
+        public constructor(query: string);
+        public getFirstValueByName(name: string): string;
+        public first(): Windows.Foundation.Collections.IIterator<Windows.Foundation.IWwwFormUrlDecoderEntry>;
+        public getAt(index: number): Windows.Foundation.IWwwFormUrlDecoderEntry;
+        public indexOf(value: Windows.Foundation.IWwwFormUrlDecoderEntry): { index: number; returnValue: boolean };
+        public getMany(startIndex: number): { items: Windows.Foundation.IWwwFormUrlDecoderEntry[]; returnValue: number };
     }
 
     class WwwFormUrlDecoderEntry implements Windows.Foundation.IWwwFormUrlDecoderEntry {
-        readonly name: string;
-        readonly value: string;
+        public readonly name: string;
+        public readonly value: string;
     }
 
 }

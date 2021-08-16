@@ -59,8 +59,9 @@ Settings::Settings(const CommandReader& commandReader) :
     std::filesystem::create_directories(OutputFolder);
 }
 
-bool is_type_allowed(const Settings& settings, const TypeDef& typeDef, bool isClass)
+bool is_type_allowed(const Settings& settings, const TypeDef& typeDef)
 {
+    auto isClass = winmd::reader::get_category(typeDef) == winmd::reader::category::class_type;
     if (!settings.Filter.Includes(typeDef))
     {
         return false;
@@ -105,7 +106,7 @@ bool is_namespace_allowed(const Settings& settings, const cache::namespace_membe
 
     for (const auto& typeDef : members.classes)
     {
-        if (is_type_allowed(settings, typeDef, true /*isClass*/))
+        if (is_type_allowed(settings, typeDef))
         {
             return true;
         }
