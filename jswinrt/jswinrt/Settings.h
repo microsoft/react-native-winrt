@@ -18,6 +18,6 @@ struct Settings
     const bool Verbose;
 };
 
-bool is_type_allowed(const Settings& settings, const winmd::reader::TypeDef& typeDef, bool isClass = false);
+bool is_type_allowed(const Settings& settings, const winmd::reader::TypeDef& typeDef);
 bool is_namespace_allowed(const Settings& settings, const winmd::reader::cache::namespace_members& members);
 bool is_method_allowed(const Settings& settings, const winmd::reader::MethodDef& methodDef);
