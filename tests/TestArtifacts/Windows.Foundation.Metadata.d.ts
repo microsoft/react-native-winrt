@@ -36,19 +36,19 @@ declare namespace Windows.Foundation.Metadata {
     }
 
     enum AttributeTargets {
-        all,
-        delegate,
-        enum,
-        event,
-        field,
-        interface,
-        method,
-        parameter,
-        property,
-        runtimeClass,
-        struct,
-        interfaceImpl,
-        apiContract,
+        all = 4294967295,
+        delegate = 1,
+        enum = 2,
+        event = 4,
+        field = 8,
+        interface = 16,
+        method = 64,
+        parameter = 128,
+        property = 256,
+        runtimeClass = 512,
+        struct = 1024,
+        interfaceImpl = 2048,
+        apiContract = 8192,
     }
 
     class AttributeUsageAttribute {
@@ -62,8 +62,8 @@ declare namespace Windows.Foundation.Metadata {
     }
 
     enum CompositionType {
-        protected,
-        public,
+        protected = 1,
+        public = 2,
     }
 
     class ContractVersionAttribute {
@@ -87,8 +87,8 @@ declare namespace Windows.Foundation.Metadata {
     }
 
     enum DeprecationType {
-        deprecate,
-        remove,
+        deprecate = 0,
+        remove = 1,
     }
 
     class DualApiPartitionAttribute {
@@ -109,16 +109,16 @@ declare namespace Windows.Foundation.Metadata {
     }
 
     enum FeatureStage {
-        alwaysDisabled,
-        disabledByDefault,
-        enabledByDefault,
-        alwaysEnabled,
+        alwaysDisabled = 0,
+        disabledByDefault = 1,
+        enabledByDefault = 2,
+        alwaysEnabled = 3,
     }
 
     enum GCPressureAmount {
-        low,
-        medium,
-        high,
+        low = 0,
+        medium = 1,
+        high = 2,
     }
 
     class GCPressureAttribute {
@@ -147,10 +147,10 @@ declare namespace Windows.Foundation.Metadata {
     }
 
     enum MarshalingType {
-        none,
-        agile,
-        standard,
-        invalidMarshaling,
+        none = 1,
+        agile = 2,
+        standard = 3,
+        invalidMarshaling = 0,
     }
 
     class MetadataMarshalAttribute {
@@ -171,8 +171,8 @@ declare namespace Windows.Foundation.Metadata {
     }
 
     enum Platform {
-        windows,
-        windowsPhone,
+        windows = 0,
+        windowsPhone = 1,
     }
 
     class PlatformAttribute {
@@ -207,10 +207,10 @@ declare namespace Windows.Foundation.Metadata {
     }
 
     enum ThreadingModel {
-        sTA,
-        mTA,
-        both,
-        invalidThreading,
+        sTA = 1,
+        mTA = 2,
+        both = 3,
+        invalidThreading = 0,
     }
 
     class VariantAttribute {

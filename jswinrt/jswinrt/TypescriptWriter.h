@@ -86,7 +86,22 @@ public:
                 {
                     continue;
                 };
-                textWriter.WriteIndentedLine("%,"sv, TextWriter::ToCamelCase(std::string(field.Name())));
+
+                textWriter.WriteIndentedLine("% = %,"sv, TextWriter::ToCamelCase(std::string(field.Name())), [&]() {
+                    auto value = field.Constant();
+                    switch (value.Type())
+                    {
+                    case winmd::reader::ConstantType::Int32:
+                        textWriter.Write("%", value.ValueInt32());
+                        break;
+                    case winmd::reader::ConstantType::UInt32:
+                        textWriter.Write("%", value.ValueUInt32());
+                        break;
+                    default:
+                        // Enum values are signed or unsigned 32-bit integers
+                        FAIL_FAST();
+                    }
+                });
             }
             textWriter.ReduceIndent();
             textWriter.WriteIndentedLine();

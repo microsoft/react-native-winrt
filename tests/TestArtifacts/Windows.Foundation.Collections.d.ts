@@ -2,10 +2,10 @@
 
 declare namespace Windows.Foundation.Collections {
     enum CollectionChange {
-        reset,
-        itemInserted,
-        itemRemoved,
-        itemChanged,
+        reset = 0,
+        itemInserted = 1,
+        itemRemoved = 2,
+        itemChanged = 3,
     }
 
     interface IIterable<T> {

@@ -477,10 +477,10 @@ declare namespace TestComponent {
     }
 
     enum TestEnum {
-        first,
-        second,
-        third,
-        fourth,
+        first = 1,
+        second = 2,
+        third = 3,
+        fourth = 4,
     }
 
     class TestObject {
