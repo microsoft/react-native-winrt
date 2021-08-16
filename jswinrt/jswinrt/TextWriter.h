@@ -47,6 +47,10 @@ private:
                 {
                     Write(first);
                 }
+                else if constexpr (std::is_arithmetic_v<First>)
+                {
+                    Write(first);
+                }
                 else
                 {
                     FAIL_FAST();
@@ -98,6 +102,13 @@ public:
     void Write(const std::string_view& value)
     {
         m_buffer.insert(m_buffer.end(), value.begin(), value.end());
+    }
+
+    template <typename T, std::enable_if_t<std::is_arithmetic_v<T>, int> = 0>
+    void Write(T value)
+    {
+        // TODO: Could be more efficient w/ std::to_chars or something similar
+        Write(std::to_string(value));
     }
 
     void Write(const char value)

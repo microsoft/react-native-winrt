@@ -12,29 +12,29 @@ declare namespace Windows.Foundation.Diagnostics {
     }
 
     enum CausalityRelation {
-        assignDelegate,
-        join,
-        choice,
-        cancel,
-        error,
+        assignDelegate = 0,
+        join = 1,
+        choice = 2,
+        cancel = 3,
+        error = 4,
     }
 
     enum CausalitySource {
-        application,
-        library,
-        system,
+        application = 0,
+        library = 1,
+        system = 2,
     }
 
     enum CausalitySynchronousWork {
-        completionNotification,
-        progressNotification,
-        execution,
+        completionNotification = 0,
+        progressNotification = 1,
+        execution = 2,
     }
 
     enum CausalityTraceLevel {
-        required,
-        important,
-        verbose,
+        required = 0,
+        important = 1,
+        verbose = 2,
     }
 
     class ErrorDetails {
@@ -45,11 +45,11 @@ declare namespace Windows.Foundation.Diagnostics {
     }
 
     enum ErrorOptions {
-        none,
-        suppressExceptions,
-        forceExceptions,
-        useSetErrorInfo,
-        suppressSetErrorInfo,
+        none = 0,
+        suppressExceptions = 1,
+        forceExceptions = 2,
+        useSetErrorInfo = 4,
+        suppressSetErrorInfo = 8,
     }
 
     class FileLoggingSession implements Windows.Foundation.Diagnostics.IFileLoggingSession, Windows.Foundation.IClosable {
@@ -174,25 +174,25 @@ declare namespace Windows.Foundation.Diagnostics {
     }
 
     enum LoggingFieldFormat {
-        default,
-        hidden,
-        string,
-        boolean,
-        hexadecimal,
-        processId,
-        threadId,
-        port,
-        ipv4Address,
-        ipv6Address,
-        socketAddress,
-        xml,
-        json,
-        win32Error,
-        nTStatus,
-        hResult,
-        fileTime,
-        signed,
-        unsigned,
+        default = 0,
+        hidden = 1,
+        string = 2,
+        boolean = 3,
+        hexadecimal = 4,
+        processId = 5,
+        threadId = 6,
+        port = 7,
+        ipv4Address = 8,
+        ipv6Address = 9,
+        socketAddress = 10,
+        xml = 11,
+        json = 12,
+        win32Error = 13,
+        nTStatus = 14,
+        hResult = 15,
+        fileTime = 16,
+        signed = 17,
+        unsigned = 18,
     }
 
     class LoggingFields {
@@ -315,21 +315,21 @@ declare namespace Windows.Foundation.Diagnostics {
     }
 
     enum LoggingLevel {
-        verbose,
-        information,
-        warning,
-        error,
-        critical,
+        verbose = 0,
+        information = 1,
+        warning = 2,
+        error = 3,
+        critical = 4,
     }
 
     enum LoggingOpcode {
-        info,
-        start,
-        stop,
-        reply,
-        resume,
-        suspend,
-        send,
+        info = 0,
+        start = 1,
+        stop = 2,
+        reply = 6,
+        resume = 7,
+        suspend = 8,
+        send = 9,
     }
 
     class LoggingOptions {
