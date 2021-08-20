@@ -6,5 +6,8 @@
     "react": "17.0.1",
     "react-native": "0.64.0-rc.3",
     "react-native-windows": "0.64.0-preview.14"
+  },
+  "devDependencies": {
+    "typescript": "^4.0.3"
   }
 }

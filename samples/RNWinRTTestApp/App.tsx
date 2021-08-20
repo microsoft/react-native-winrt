@@ -18,7 +18,7 @@ async function updateJumpListAsync(): Promise<void> {
     try {
         const StartScreenApi = Windows.UI.StartScreen;
         const jumplist = await StartScreenApi.JumpList.loadCurrentAsync();
-        
+
         jumplist.systemGroupKind = StartScreenApi.JumpListSystemGroupKind.recent;
 
         const items = jumplist.items;
@@ -94,8 +94,8 @@ async function getPictureThumbnailAsync(): Promise<string> {
 
         const library = StorageApi.KnownFolders.picturesLibrary;
         let files = await library.getFilesAsync();
-        
-        let file: StorageApi.StorageFile | null = null;
+
+        let file: Windows.Storage.StorageFile | null = null;
         if (files.size > 0) {
             file = files.getAt(0);
         } else {
