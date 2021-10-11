@@ -5,7 +5,7 @@
 
 namespace winrt::TestComponent::implementation
 {
-    struct TestObject : TestObjectT<TestObject>
+    struct TestObject : TestObjectT<TestObject, ITestInterface>
     {
         TestObject(int32_t val) : m_value(val)
         {
@@ -14,6 +14,11 @@ namespace winrt::TestComponent::implementation
         int32_t Value()
         {
             return m_value;
+        }
+
+        int32_t MagicValue()
+        {
+            return 42;
         }
 
     private:
@@ -376,6 +381,9 @@ namespace winrt::TestComponent::implementation
         static Windows::Foundation::IAsyncOperationWithProgress<int32_t, int32_t> CountDoubleAsync(int32_t value);
         static Windows::Foundation::IAsyncAction ThrowAsyncException();
         static Windows::Foundation::IAsyncOperation<int32_t> ImmediateReturnAsync(int32_t value);
+        static Windows::Foundation::IAsyncOperation<
+            Windows::Foundation::Collections::IVectorView<TestComponent::ITestInterface>>
+        GetObjectsAsync();
 
         bool BoolProperty();
         void BoolProperty(bool value);

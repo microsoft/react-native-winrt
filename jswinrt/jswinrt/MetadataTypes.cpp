@@ -528,7 +528,23 @@ static void handle_generic_instantiation(projection_data& data, generic_instanti
         if ((typeDef.TypeName() == "IReference`1"sv) || (typeDef.TypeName() == "IReferenceArray`1"sv) ||
             (typeDef.TypeName() == "IAsyncActionWithProgress`1"sv) || (typeDef.TypeName() == "IAsyncOperation`1"sv) ||
             (typeDef.TypeName() == "IAsyncOperationWithProgress`2"sv))
+        {
+            // All of these types are manually projected as they are handled specially in JS. Therefore we won't get the
+            // chance to enumerate function arguments/return types below. All of the generic params for these types are
+            // visible to JS, so just go ahead and enumerate them.
+            auto stack = inst.stack();
+            for (auto&& arg : inst.signature().GenericArgs())
+            {
+                resolve_type(arg, stack,
+                    overloaded{
+                        [&](const GenericTypeInstSig& sig, const generic_param_stack& newStack, bool) {
+                            handle_generic_instantiation(data, generic_instantiation(sig, newStack));
+                        },
+                        [&](auto&&, bool) {},
+                    });
+            }
             return;
+        }
     }
 
     // First check to see if we've handled this type before

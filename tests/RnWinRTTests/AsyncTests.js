@@ -15,6 +15,7 @@ export function makeAsyncTestScenarios(pThis) {
         new TestScenario('Test::CountDoubleAsync', runAsyncOperationWithProgressTest.bind(pThis)),
         new TestScenario('Test::ThrowAsyncException', runAsyncActionWithException.bind(pThis)),
         new TestScenario('Async await', runAsyncAwaitTest.bind(pThis)),
+        new TestScenario('Test::GetObjectsAsync', runGetObjectsTest.bind(pThis)),
     ];
 }
 
@@ -248,6 +249,20 @@ function runAsyncAwaitTest(scenario) {
                 assert.equal(-2147024809, err.number);
                 assert.equal("test", err.message);
             }
+
+            resolve();
+        } catch (err) {
+            reject(err);
+        }
+    });
+}
+
+function runGetObjectsTest(scenario) {
+    this.runAsync(scenario, async (resolve, reject) => {
+        try
+        {
+            var result = await TestComponent.Test.getObjectsAsync();
+            assert.equal(42, result[0].magicValue);
 
             resolve();
         } catch (err) {
