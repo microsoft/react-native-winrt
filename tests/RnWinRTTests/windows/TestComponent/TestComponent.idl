@@ -69,6 +69,12 @@ namespace TestComponent
         Int32 Value{ get; };
     }
 
+    [contract(TestContract, 1)]
+    interface ITestInterface
+    {
+        Int32 MagicValue { get; }; // 42
+    }
+
     // Delegates
     delegate Boolean BoolDelegate(Boolean value);
     delegate Char CharDelegate(Char value);
@@ -581,6 +587,9 @@ namespace TestComponent
         void RaiseCompositeStructEvent(CompositeType value);
         void RaiseRefEvent(Windows.Foundation.IReference<Int32> value);
         void RaiseObjectEvent(TestObject value);
+
+        // Used to validate the fix to https://github.com/microsoft/jswinrt/issues/119
+        static Windows.Foundation.IAsyncOperation<Windows.Foundation.Collections.IVectorView<ITestInterface> > GetObjectsAsync();
     }
 
     [contract(TestContract, 1)]

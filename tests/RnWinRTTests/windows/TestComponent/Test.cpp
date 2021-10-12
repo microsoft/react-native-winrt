@@ -1571,9 +1571,16 @@ namespace winrt::TestComponent::implementation
         throw std::invalid_argument("test");
     }
 
-    Windows::Foundation::IAsyncOperation<int32_t> Test::ImmediateReturnAsync(int32_t value)
+    IAsyncOperation<int32_t> Test::ImmediateReturnAsync(int32_t value)
     {
         co_return value;
+    }
+
+    IAsyncOperation<IVectorView<ITestInterface>> Test::GetObjectsAsync()
+    {
+        std::vector<ITestInterface> result;
+        result.push_back(winrt::make_self<TestObject>(1).as<ITestInterface>());
+        co_return winrt::single_threaded_vector(std::move(result)).as<IVectorView<ITestInterface>>();
     }
 
     bool Test::BoolProperty()

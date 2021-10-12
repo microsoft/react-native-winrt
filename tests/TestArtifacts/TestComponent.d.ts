@@ -58,6 +58,10 @@ declare namespace TestComponent {
         public overloadedHierarchyBaseMethod(param1: string, param2: string): string;
     }
 
+    interface ITestInterface {
+        readonly magicValue: number;
+    }
+
     type InterwovenDelegate = (inBool: boolean, inNumeric: number, inArray: number[]) => { outBool: boolean; outNumeric: number; outArray: number[]; fillArray: number[]; returnValue: number };
     
     type NumericArrayDelegate = (values: number[]) => { subset: number[]; outValue: number[]; returnValue: number[] };
@@ -435,6 +439,7 @@ declare namespace TestComponent {
         public static countDoubleAsync(value: number): Windows.Foundation.WinRTPromise<number, number>;
         public static throwAsyncException(): Windows.Foundation.WinRTPromise<void, void>;
         public static immediateReturnAsync(value: number): Windows.Foundation.WinRTPromise<number, void>;
+        public static getObjectsAsync(): Windows.Foundation.WinRTPromise<Windows.Foundation.Collections.IVectorView<TestComponent.ITestInterface>, void>;
         public addEventListener(type: "booleventhandler", listener: Windows.Foundation.TypedEventHandler<TestComponent.Test, boolean>): void;
         public removeEventListener(type: "booleventhandler", listener: Windows.Foundation.TypedEventHandler<TestComponent.Test, boolean>): void;
         public addEventListener(type: "chareventhandler", listener: Windows.Foundation.TypedEventHandler<TestComponent.Test, string>): void;
