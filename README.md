@@ -2,16 +2,16 @@
 
 JavaScript WinRT (JS/WinRT) is a module for React Native Windows which provides access to WinRT APIs from JS. It uses components from [xlang](https://github.com/Microsoft/xlang) to [parse metadata](https://github.com/microsoft/winmd) for public or private WinRT COM APIs and generate JSI (JavaScript Interface) wrappers for [C++/WinRT](https://github.com/microsoft/cppwinrt) types at compile-time and the code generator was itself derived from cppwinrt.exe. 
 
-# Building JS/WinRT Sample
+## Usage
 
-* Open a dev command prompt pointing at the root of the repo.
-* Run `npm install` under ["\samples\RNWinRTTestApp\"](./samples/RNWinRTTestApp)
-* Open the [`RNWinRTTestApp.sln`](./samples/RNWinRTTestApp/windows/RNWinRTTestApp.sln) solution.
-* Build the x64 Release or Debug configuration.
-* If running Debug: Run 'yarn start' under ["\samples\RNWinRTTestApp\"](./samples/RNWinRTTestApp)
-* F5 deploy the sample app.
+JS/WinRT is currently consumable from [React Native for Windows](https://microsoft.github.io/react-native-windows/) apps. JS/WinRT supports RNW developers who want to call native (non-XAML) WinRT APIs.
 
-# Adding the projection to your own solution
+Refer to the [RNWinRTTestApp sample](./samples/RNWinRTestApp) for an example of how to consume JS/WinRT from React Native Windows.
+
+## Adding the projection to your own solution
+
+These steps are for developers who want to add JS/WinRT support to their existing React Native project.
+
 > **DISCLAIMER**: These steps are temporary and subject to change as the projection evolves.
 
 * Copy the [`WinRTTurboModule`](./samples/RNWinRTTestApp/windows/WinRTTurboModule) (from the sample) source directory to your project.
@@ -34,7 +34,8 @@ JavaScript WinRT (JS/WinRT) is a module for React Native Windows which provides 
 ```
     <JsWinRTParameters>-include Windows.Globalization</JsWinRTParameters>
 ```
-# Contributing
+
+## Contributing
 
 This project welcomes contributions and suggestions.  Most contributions require you to agree to a
 Contributor License Agreement (CLA) declaring that you have the right to, and actually do, grant us
