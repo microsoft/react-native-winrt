@@ -6,7 +6,7 @@ JavaScript WinRT (JS/WinRT) is a module for React Native Windows which provides 
 
 JS/WinRT is currently consumable from [React Native for Windows](https://microsoft.github.io/react-native-windows/) apps. JS/WinRT supports RNW developers who want to call native (non-XAML) WinRT APIs.
 
-Refer to the [RNWinRTTestApp sample](./samples/RNWinRTestApp) for an example of how to consume JS/WinRT from React Native Windows.
+Refer to the [RNWinRTTestApp sample](./samples/RNWinRTTestApp) for an example of how to consume JS/WinRT from React Native Windows.
 
 ## Adding the projection to your own solution
 
