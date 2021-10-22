@@ -1,5 +1,7 @@
 # JS/WinRT in React Native Windows Sample
 
+This sample demonstrates how to consume various WinRT APIs in Javascript with React Native for Windows.
+
 ## Prerequisites
 
 - Visual Studio 2019 or later
@@ -14,5 +16,5 @@
 3. Run `npm install` from this directory.
 4. Open the solution file [`\windows\RNWinRTTestApp.sln`](./windows/RNWinRTTestApp.sln) in Visual Studio.
 5. Build the solution.
-6. If running Debug: Run `yarn start` in the command prompt from this directory.
+6. Run `yarn start` in the command prompt from this directory.
 7. F5 deploy the sample app (*RNWinRTTestApp*).
