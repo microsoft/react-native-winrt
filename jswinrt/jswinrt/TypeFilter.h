@@ -1,3 +1,6 @@
+// Copyright (c) Microsoft Corporation. 
+// Licensed under the MIT License.
+
 #pragma once
 
 // winmd::reader::filter has a rather unfortunate design that if no include filters are specified and only includes,

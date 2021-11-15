@@ -1,3 +1,5 @@
+// Copyright (c) Microsoft Corporation. 
+// Licensed under the MIT License.
 
 // NOTE: The majority of this is derived from https://github.com/microsoft/TestWinRT. The implementation has diverged,
 // however because (1) these tests were added in the early phases of development, and (2) the TestWinRT project does not

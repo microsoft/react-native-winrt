@@ -1,3 +1,6 @@
+// Copyright (c) Microsoft Corporation. 
+// Licensed under the MIT License.
+
 #pragma once
 #pragma warning(disable : 4100) // unreferenced local variable
 #pragma warning(disable : 4505) // unreferenced local function has been removed
