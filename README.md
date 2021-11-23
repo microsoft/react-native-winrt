@@ -44,7 +44,7 @@ The following steps demonstrate how to use the Microsoft.Windows.JsWinRT NuGet p
     1. Add the following line to to your project's `pch.h` file.
 
         ```cpp
-        `#include <winrt/WinRTTurboModule.h>`
+        #include <winrt/WinRTTurboModule.h>
         ```
 
     1. Add the following line to your project's `App.cpp` file, underneath the line `PackageProviders().Append(make<ReactPackageProvider>());`:
@@ -56,7 +56,7 @@ The following steps demonstrate how to use the Microsoft.Windows.JsWinRT NuGet p
     1. Add the following line to your project's `index.js` file:
 
         ```js
-        import './WinRTTurboModule';`
+        import './WinRTTurboModule';
         ```
 
     1. Create a file named `WinRTTurboModule.js` under your root project directory (next to `index.js`), and copy the contents of [jswinrt/js/WinRTTurboModule.js](./jswinrt/js/WinRTTurboModule.js) to it.  This should be something like the following:
