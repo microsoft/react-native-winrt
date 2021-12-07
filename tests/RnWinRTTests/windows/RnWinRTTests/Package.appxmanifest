@@ -8,14 +8,14 @@
 
   <Identity
     Name="ade66fbb-2cb8-4ba7-b8e3-f0afcf0f7f3d"
-    Publisher="CN=dunhor"
+    Publisher="CN=Microsoft Windows, O=Microsoft Corporation, L=Redmond, S=Washington, C=US"
     Version="1.0.0.0" />
 
   <mp:PhoneIdentity PhoneProductId="ade66fbb-2cb8-4ba7-b8e3-f0afcf0f7f3d" PhonePublisherId="00000000-0000-0000-0000-000000000000"/>
 
   <Properties>
     <DisplayName>RnWinRTTests</DisplayName>
-    <PublisherDisplayName>dunhor</PublisherDisplayName>
+    <PublisherDisplayName>Microsoft Corporation</PublisherDisplayName>
     <Logo>Assets\StoreLogo.png</Logo>
   </Properties>
 
