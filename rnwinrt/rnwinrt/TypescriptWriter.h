@@ -1,4 +1,4 @@
-// Copyright (c) Microsoft Corporation. 
+// Copyright (c) Microsoft Corporation.
 // Licensed under the MIT License.
 
 #pragma once
@@ -168,8 +168,8 @@ public:
                 }
                 try
                 {
-                    auto const& extendsTypeSem = jswinrt::typeparser::get_type_semantics(type.Extends());
-                    if (std::holds_alternative<jswinrt::typeparser::object_type>(extendsTypeSem))
+                    auto const& extendsTypeSem = rnwinrt::typeparser::get_type_semantics(type.Extends());
+                    if (std::holds_alternative<rnwinrt::typeparser::object_type>(extendsTypeSem))
                     {
                         return;
                     }
@@ -186,21 +186,21 @@ public:
                     return;
                 }
                 // filter out exclusiveto interfaces
-                std::vector<jswinrt::typeparser::type_semantics> filteredInterfaces;
+                std::vector<rnwinrt::typeparser::type_semantics> filteredInterfaces;
                 for (auto&& interfaceimpl : type.InterfaceImpl())
                 {
-                    auto const& implementsTypeSem = jswinrt::typeparser::get_type_semantics(interfaceimpl.Interface());
-                    if (std::holds_alternative<jswinrt::typeparser::type_definition>(implementsTypeSem))
+                    auto const& implementsTypeSem = rnwinrt::typeparser::get_type_semantics(interfaceimpl.Interface());
+                    if (std::holds_alternative<rnwinrt::typeparser::type_definition>(implementsTypeSem))
                     {
-                        if (exclusiveto_class(std::get<jswinrt::typeparser::type_definition>(implementsTypeSem)))
+                        if (exclusiveto_class(std::get<rnwinrt::typeparser::type_definition>(implementsTypeSem)))
                         {
                             continue;
                         }
                     }
-                    if (std::holds_alternative<jswinrt::typeparser::generic_type_instance>(implementsTypeSem))
+                    if (std::holds_alternative<rnwinrt::typeparser::generic_type_instance>(implementsTypeSem))
                     {
                         if (exclusiveto_class(
-                                std::get<jswinrt::typeparser::generic_type_instance>(implementsTypeSem).generic_type))
+                                std::get<rnwinrt::typeparser::generic_type_instance>(implementsTypeSem).generic_type))
                         {
                             continue;
                         }
@@ -231,7 +231,7 @@ public:
                                 field.Flags().Access(), textWriter, category != winmd::reader::category::class_type);
                         },
                         TextWriter::ToCamelCase(std::string(field.Name())));
-                    WriteTypeSemantics(jswinrt::typeparser::get_type_semantics(field.Signature().Type()), type,
+                    WriteTypeSemantics(rnwinrt::typeparser::get_type_semantics(field.Signature().Type()), type,
                         textWriter, field.Signature().Type().is_szarray(), false);
                     textWriter.Write(";");
                 }
@@ -250,7 +250,7 @@ public:
                         textWriter.Write("readonly ");
                     }
                     textWriter.Write("%: ", TextWriter::ToCamelCase(std::string(prop.Name())));
-                    WriteTypeSemantics(jswinrt::typeparser::get_type_semantics(prop.Type().Type()), type, textWriter,
+                    WriteTypeSemantics(rnwinrt::typeparser::get_type_semantics(prop.Type().Type()), type, textWriter,
                         prop.Type().Type().is_szarray(), false);
 
                     textWriter.Write(";");
@@ -386,10 +386,10 @@ public:
             WriteAccess(addEventListener.Flags().Access(), textWriter, false);
         }
         textWriter.Write(R"^-^(%addEventListener(type: "%", listener: %): void;)^-^", accessType, name, [&]() {
-            jswinrt::typeparser::method_signature methodSignature(addEventListener);
+            rnwinrt::typeparser::method_signature methodSignature(addEventListener);
             for (auto&& [param, paramSignature] : methodSignature.params())
             {
-                WriteTypeSemantics(jswinrt::typeparser::get_type_semantics(paramSignature->Type()), containerType,
+                WriteTypeSemantics(rnwinrt::typeparser::get_type_semantics(paramSignature->Type()), containerType,
                     textWriter, paramSignature->Type().is_szarray(), false);
             }
         });
@@ -400,10 +400,10 @@ public:
             WriteAccess(addEventListener.Flags().Access(), textWriter, false);
         }
         textWriter.Write(R"^-^(%removeEventListener(type: "%", listener: %): void;)^-^", accessType, name, [&]() {
-            jswinrt::typeparser::method_signature methodSignature(addEventListener);
+            rnwinrt::typeparser::method_signature methodSignature(addEventListener);
             for (auto&& [param, paramSignature] : methodSignature.params())
             {
-                WriteTypeSemantics(jswinrt::typeparser::get_type_semantics(paramSignature->Type()), containerType,
+                WriteTypeSemantics(rnwinrt::typeparser::get_type_semantics(paramSignature->Type()), containerType,
                     textWriter, paramSignature->Type().is_szarray(), false);
             }
         });
@@ -412,7 +412,7 @@ public:
     void WriteMethod(winmd::reader::MethodDef const& method, winmd::reader::TypeDef const& containerType,
         TextWriter& textWriter, bool isAnonymousFunction = false)
     {
-        jswinrt::typeparser::method_signature methodSignature(method);
+        rnwinrt::typeparser::method_signature methodSignature(method);
         std::vector<std::pair<std::string_view, winmd::reader::TypeSig>> returnNameTypePairs;
         auto isClass = winmd::reader::get_category(containerType) == winmd::reader::category::class_type;
         textWriter.Write(
@@ -424,7 +424,7 @@ public:
                 }
             },
             [&]() {
-                if (!isAnonymousFunction && jswinrt::typeparser::is_static(method))
+                if (!isAnonymousFunction && rnwinrt::typeparser::is_static(method))
                 {
                     textWriter.Write("static ");
                 }
@@ -432,7 +432,7 @@ public:
             [&]() -> void {
                 if (isAnonymousFunction)
                     return;
-                if (jswinrt::typeparser::is_constructor(method))
+                if (rnwinrt::typeparser::is_constructor(method))
                 {
                     textWriter.Write("%", "constructor");
                 }
@@ -451,7 +451,7 @@ public:
                         continue;
                     }
                     textWriter.Write("%: ", param.Name());
-                    WriteTypeSemantics(jswinrt::typeparser::get_type_semantics(paramSignature->Type()), containerType,
+                    WriteTypeSemantics(rnwinrt::typeparser::get_type_semantics(paramSignature->Type()), containerType,
                         textWriter, paramSignature->Type().is_szarray(), false);
                     textWriter.Write("%", ", ");
                     hasAtleastOneInParam = true;
@@ -460,7 +460,7 @@ public:
                     textWriter.DeleteLast(2);
             },
             [&]() {
-                if (jswinrt::typeparser::is_constructor(method))
+                if (rnwinrt::typeparser::is_constructor(method))
                 {
                     return;
                 }
@@ -479,7 +479,7 @@ public:
                 }
                 else if (returnNameTypePairs.size() == 1)
                 {
-                    WriteTypeSemantics(jswinrt::typeparser::get_type_semantics(returnNameTypePairs.at(0).second),
+                    WriteTypeSemantics(rnwinrt::typeparser::get_type_semantics(returnNameTypePairs.at(0).second),
                         containerType, textWriter, returnNameTypePairs.at(0).second.is_szarray(), false);
                 }
                 else
@@ -488,7 +488,7 @@ public:
                     for (auto&& [returnName, returnType] : returnNameTypePairs)
                     {
                         textWriter.Write("%: ", returnName);
-                        WriteTypeSemantics(jswinrt::typeparser::get_type_semantics(returnType), containerType,
+                        WriteTypeSemantics(rnwinrt::typeparser::get_type_semantics(returnType), containerType,
                             textWriter, returnType.is_szarray(), false);
                         textWriter.Write("; ");
                     }
@@ -498,12 +498,12 @@ public:
             });
     }
 
-    void WriteTypeSemantics(jswinrt::typeparser::type_semantics const& typeSemantics,
+    void WriteTypeSemantics(rnwinrt::typeparser::type_semantics const& typeSemantics,
         winmd::reader::TypeDef const& containerType, TextWriter& textWriter, bool isArray, bool isNullable)
     {
-        if (std::holds_alternative<jswinrt::typeparser::type_definition>(typeSemantics))
+        if (std::holds_alternative<rnwinrt::typeparser::type_definition>(typeSemantics))
         {
-            winmd::reader::TypeDef typeDef = std::get<jswinrt::typeparser::type_definition>(typeSemantics);
+            winmd::reader::TypeDef typeDef = std::get<rnwinrt::typeparser::type_definition>(typeSemantics);
             bool handled = false;
             if (!is_type_allowed(settings, typeDef))
             {
@@ -537,28 +537,28 @@ public:
             bool isStruct = get_category(typeDef) == winmd::reader::category::struct_type;
             textWriter.Write("%%", isArray ? "[]" : "", isNullable && !isArray && !isStruct ? " | null" : "");
         }
-        else if (std::holds_alternative<jswinrt::typeparser::fundamental_type>(typeSemantics))
+        else if (std::holds_alternative<rnwinrt::typeparser::fundamental_type>(typeSemantics))
         {
-            auto typeDef = std::get<jswinrt::typeparser::fundamental_type>(typeSemantics);
+            auto typeDef = std::get<rnwinrt::typeparser::fundamental_type>(typeSemantics);
             switch (typeDef)
             {
-            case jswinrt::typeparser::fundamental_type::Int8:
-            case jswinrt::typeparser::fundamental_type::Int16:
-            case jswinrt::typeparser::fundamental_type::Int32:
-            case jswinrt::typeparser::fundamental_type::Int64:
-            case jswinrt::typeparser::fundamental_type::Double:
-            case jswinrt::typeparser::fundamental_type::Float:
-            case jswinrt::typeparser::fundamental_type::UInt16:
-            case jswinrt::typeparser::fundamental_type::UInt8:
-            case jswinrt::typeparser::fundamental_type::UInt32:
-            case jswinrt::typeparser::fundamental_type::UInt64:
+            case rnwinrt::typeparser::fundamental_type::Int8:
+            case rnwinrt::typeparser::fundamental_type::Int16:
+            case rnwinrt::typeparser::fundamental_type::Int32:
+            case rnwinrt::typeparser::fundamental_type::Int64:
+            case rnwinrt::typeparser::fundamental_type::Double:
+            case rnwinrt::typeparser::fundamental_type::Float:
+            case rnwinrt::typeparser::fundamental_type::UInt16:
+            case rnwinrt::typeparser::fundamental_type::UInt8:
+            case rnwinrt::typeparser::fundamental_type::UInt32:
+            case rnwinrt::typeparser::fundamental_type::UInt64:
                 textWriter.Write("number");
                 break;
-            case jswinrt::typeparser::fundamental_type::Char:
-            case jswinrt::typeparser::fundamental_type::String:
+            case rnwinrt::typeparser::fundamental_type::Char:
+            case rnwinrt::typeparser::fundamental_type::String:
                 textWriter.Write("string");
                 break;
-            case jswinrt::typeparser::fundamental_type::Boolean:
+            case rnwinrt::typeparser::fundamental_type::Boolean:
                 textWriter.Write("boolean");
                 break;
             default:
@@ -570,9 +570,9 @@ public:
                 textWriter.Write("[]");
             }
         }
-        else if (std::holds_alternative<jswinrt::typeparser::generic_type_instance>(typeSemantics))
+        else if (std::holds_alternative<rnwinrt::typeparser::generic_type_instance>(typeSemantics))
         {
-            auto generic_type_instance = std::get<jswinrt::typeparser::generic_type_instance>(typeSemantics);
+            auto generic_type_instance = std::get<rnwinrt::typeparser::generic_type_instance>(typeSemantics);
             if (!is_type_allowed(settings, generic_type_instance.generic_type))
             {
                 textWriter.Write("any");
@@ -625,26 +625,26 @@ public:
             }
             textWriter.Write(">%%", isArray ? "[]" : "", isNullable ? " | null" : "");
         }
-        else if (std::holds_alternative<jswinrt::typeparser::generic_type_param>(typeSemantics))
+        else if (std::holds_alternative<rnwinrt::typeparser::generic_type_param>(typeSemantics))
         {
-            auto generic_type_param = std::get<jswinrt::typeparser::generic_type_param>(typeSemantics);
+            auto generic_type_param = std::get<rnwinrt::typeparser::generic_type_param>(typeSemantics);
             textWriter.Write("%%", generic_type_param.Name(), isArray ? "[]" : "");
         }
-        else if (std::holds_alternative<jswinrt::typeparser::guid_type>(typeSemantics))
+        else if (std::holds_alternative<rnwinrt::typeparser::guid_type>(typeSemantics))
         {
             textWriter.Write("%%"sv, "string", isArray ? "[]" : "");
         }
-        else if (std::holds_alternative<jswinrt::typeparser::object_type>(typeSemantics))
+        else if (std::holds_alternative<rnwinrt::typeparser::object_type>(typeSemantics))
         {
             textWriter.Write("any");
         }
-        else if (std::holds_alternative<jswinrt::typeparser::type_type>(typeSemantics))
+        else if (std::holds_alternative<rnwinrt::typeparser::type_type>(typeSemantics))
         {
             textWriter.Write("any");
         }
-        else if (std::holds_alternative<jswinrt::typeparser::generic_type_index>(typeSemantics))
+        else if (std::holds_alternative<rnwinrt::typeparser::generic_type_index>(typeSemantics))
         {
-            auto& index = std::get<jswinrt::typeparser::generic_type_index>(typeSemantics).index;
+            auto& index = std::get<rnwinrt::typeparser::generic_type_index>(typeSemantics).index;
             textWriter.Write("%%", containerType.GenericParam().first[index].Name(), isArray ? "[]" : "");
         }
         else

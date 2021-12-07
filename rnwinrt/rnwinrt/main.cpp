@@ -1,4 +1,4 @@
-// Copyright (c) Microsoft Corporation. 
+// Copyright (c) Microsoft Corporation.
 // Licensed under the MIT License.
 
 #include "pch.h"
@@ -12,10 +12,7 @@ namespace
 {
     constexpr Option c_commandOptions[]{
         { "input", Option::NoMinArgs, Option::NoMaxArgs, "<spec>", "Windows metadata to include in projection" },
-        { "reference" }, // Has the same effect as "input" with JS/WinRT and is include here to match C++/WinRT.
-        { "reactnative", Option::NoMinArgs, 0, {},
-            "Generates C++ projection files for use in a React Native Windows TurboModule" },
-        { "nodejs", Option::NoMinArgs, 0, {}, "Generates C++ projection files for use in a Node JS addon" },
+        { "reference" }, // Has the same effect as "input" with RN/WinRT and is include here to match C++/WinRT.
         { "output", Option::NoMinArgs, 1, "<path>", "Location of generated code" },
         { "tsoutput", Option::NoMinArgs, 1, "<path>", "Location of generated typescript type files" },
         { "include", Option::NoMinArgs, Option::NoMaxArgs, "<prefix>",
@@ -38,7 +35,7 @@ namespace
     {
         std::cout << R"(React Native WinRT )" << CPPWINRT_VERSION_STRING << std::endl;
         std::cout << R"(Copyright (c) Microsoft Corporation. All rights reserved.)" << std::endl;
-        std::cout << R"(  jswinrt.exe [options...])" << std::endl << std::endl;
+        std::cout << R"(  rnwinrt.exe [options...])" << std::endl << std::endl;
         std::cout << R"(Options:)" << std::endl;
 
         for (const auto& option : c_commandOptions)
@@ -87,15 +84,7 @@ int main(int const argc, char** argv)
         projection_data data;
         parse_metadata(settings, data);
 
-        if (args.Exists("reactnative"))
-        {
-            write_rnwinrt_files(settings, data);
-        }
-
-        if (args.Exists("nodejs"))
-        {
-            // TODO
-        }
+        write_rnwinrt_files(settings, data);
 
         if (!settings.TypescriptOutputFolder.empty())
         {

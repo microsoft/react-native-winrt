@@ -1,8 +1,8 @@
-# The JS/WinRT language projection
+# The RN/WinRT language projection
 
-JavaScript WinRT (JS/WinRT) is a module for React Native Windows which provides access to WinRT APIs from Javascript. It uses components from [xlang](https://github.com/Microsoft/xlang) to [parse metadata](https://github.com/microsoft/winmd) for public or private WinRT COM APIs and generate JSI (JavaScript Interface) wrappers for [C++/WinRT](https://github.com/microsoft/cppwinrt) types at compile-time and the code generator was itself derived from `cppwinrt.exe`.
+React Native WinRT (RN/WinRT) is a module for React Native Windows which provides access to WinRT APIs from Javascript. It uses components from [xlang](https://github.com/Microsoft/xlang) to [parse metadata](https://github.com/microsoft/winmd) for public or private WinRT COM APIs and generate JSI (JavaScript Interface) wrappers for [C++/WinRT](https://github.com/microsoft/cppwinrt) types at compile-time and the code generator was itself derived from `cppwinrt.exe`.
 
-## Building JS/WinRT Sample
+## Building RN/WinRT Sample
 
 - Open a dev command prompt pointing at the root of the repo.
 - Run `npm install` under ["\samples\RNWinRTTestApp\"](./samples/RNWinRTTestApp)

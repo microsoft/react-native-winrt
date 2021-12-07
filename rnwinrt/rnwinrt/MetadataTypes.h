@@ -1,4 +1,4 @@
-// Copyright (c) Microsoft Corporation. 
+// Copyright (c) Microsoft Corporation.
 // Licensed under the MIT License.
 
 #pragma once
@@ -231,7 +231,7 @@ struct class_projection_data : named_projection_data
     class_method_data methods;
 };
 
-namespace jswinrt
+namespace rnwinrt
 {
     struct writer;
 }
@@ -244,7 +244,7 @@ struct interface_instance
     {
     }
 
-    virtual void write_cpp_name(jswinrt::writer& writer, std::string_view typeNameMod) = 0;
+    virtual void write_cpp_name(rnwinrt::writer& writer, std::string_view typeNameMod) = 0;
 };
 
 struct interface_projection_data : interface_instance
@@ -254,7 +254,7 @@ struct interface_projection_data : interface_instance
     {
     }
 
-    virtual void write_cpp_name(jswinrt::writer& writer, std::string_view typeNameMod) override;
+    virtual void write_cpp_name(rnwinrt::writer& writer, std::string_view typeNameMod) override;
 
     winmd::reader::TypeDef type_def;
     interface_method_data methods;
@@ -267,7 +267,7 @@ struct generic_interface_instantiation : interface_instance
     {
     }
 
-    virtual void write_cpp_name(jswinrt::writer& writer, std::string_view typeNameMod) override;
+    virtual void write_cpp_name(rnwinrt::writer& writer, std::string_view typeNameMod) override;
 
     generic_instantiation instantiation;
 };

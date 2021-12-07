@@ -46,7 +46,7 @@ The following steps demonstrate how to use the Microsoft.ReactNative.WinRT NuGet
         import './WinRTTurboModule';
         ```
 
-    1. Create a file named `WinRTTurboModule.js` under your root project directory (next to `index.js`), and copy the contents of [jswinrt/js/WinRTTurboModule.js](../jswinrt/js/WinRTTurboModule.js) to it.  This should be something like the following:
+    1. Create a file named `WinRTTurboModule.js` under your root project directory (next to `index.js`), and copy the contents of [rnwinrt/js/WinRTTurboModule.js](../rnwinrt/js/WinRTTurboModule.js) to it.  This should be something like the following:
 
         ```js
         import * as TurboModuleRegistry from 'react-native/Libraries/TurboModule/TurboModuleRegistry';

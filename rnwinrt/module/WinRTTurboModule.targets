@@ -1,0 +1,160 @@
+﻿<!--
+***********************************************************************************************
+Copyright (C) Microsoft Corporation. All rights reserved.
+***********************************************************************************************
+-->
+
+<Project xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+
+    <PropertyGroup>
+        <!-- Only do this for MSBuild versions below 16.0
+             as it is since done automatically, see https://github.com/microsoft/msbuild/pull/3605-->
+        <MSBuildAllProjects Condition="'$(MSBuildToolsVersion)'  &lt;= '15'">$(MSBuildAllProjects);$(MSBuildThisFileFullPath)</MSBuildAllProjects>
+    </PropertyGroup>
+
+    <PropertyGroup>
+        <RnWinRTVerbosity Condition="'$(RnWinRTVerbosity)' == ''">normal</RnWinRTVerbosity>
+        <RnWinRTCommandVerbosity Condition="'$(RnWinRTVerbosity)' == 'high'">-verbose</RnWinRTCommandVerbosity>
+        <Error Condition="'$(RnWinRTPath)' == ''">RnWinRTPath not specified!</Error>
+
+        <GeneratedFilesDir Condition="'$(GeneratedFilesDir)' == ''">$(IntDir)Generated Files\</GeneratedFilesDir>
+        <TsOutDir Condition="'$(TsOutDir)' == ''">$(GeneratedFilesDir)types\</TsOutDir>
+
+        <!-- Note: Before* targets run before Compute* targets. -->
+        <BeforeClCompileTargets>
+            $(BeforeClCompileTargets);RnWinRTMakeProjections;
+        </BeforeClCompileTargets>
+        <BuildDependsOn>
+            RnWinRTAddGeneratedCppFiles;
+            $(BuildDependsOn)
+        </BuildDependsOn>
+    </PropertyGroup>
+
+    <Target Name="GetRnWinRTPlatformWinMDInputs"
+            DependsOnTargets="ResolveAssemblyReferences;GetRnWinRTPlatformWinMDReferences"
+            Returns="@(RnWinRTWinMDInputs)">
+        <ItemGroup>
+            <_RnWinRTWinMDInputs Remove="@(_RnWinRTWinMDInputs)" />
+            <_RnWinRTWinMDInputs Include="@(RnWinRTPlatformWinMDReferences)" />
+            <RnWinRTWinMDInputs Include="@(_RnWinRTWinMDInputs)">
+                <WinMDPath>%(FullPath)</WinMDPath>
+            </RnWinRTWinMDInputs>
+        </ItemGroup>
+        <Message Text="RnWinRTWinMDInputs: @(RnWinRTWinMDInputs->'%(WinMDPath)')" Importance="$(RnWinRTVerbosity)"/>
+    </Target>
+
+    <!--Define platform WinMD references for modern IDL compilation-->
+    <Target Name="GetRnWinRTPlatformWinMDReferences"
+            DependsOnTargets="ResolveAssemblyReferences;$(GetRnWinRTPlatformWinMDReferencesDependsOn)"
+            Returns="@(RnWinRTPlatformWinMDReferences)">
+        <ItemGroup>
+            <_RnWinRTPlatformWinMDReferences Remove="@(_RnWinRTPlatformWinMDReferences)" />
+            <_RnWinRTPlatformWinMDReferences Include="@(ReferencePath)" Condition="'%(ReferencePath.IsSystemReference)' == 'true' and '%(ReferencePath.WinMDFile)' == 'true' and '%(ReferencePath.ReferenceSourceTarget)' == 'ResolveAssemblyReference'" />
+            <_RnWinRTPlatformWinMDReferences Condition="'$(RnWinRTOverrideSDKReferences)' != 'true'" Include="$(WindowsSDK_MetadataPathVersioned)\**\Windows.Foundation.FoundationContract.winmd" />
+            <_RnWinRTPlatformWinMDReferences Condition="'$(RnWinRTOverrideSDKReferences)' != 'true'" Include="$(WindowsSDK_MetadataPathVersioned)\**\Windows.Foundation.UniversalApiContract.winmd" />
+            <_RnWinRTPlatformWinMDReferences Condition="'$(RnWinRTOverrideSDKReferences)' != 'true'" Include="$(WindowsSDK_MetadataPathVersioned)\**\Windows.Networking.Connectivity.WwanContract.winmd" />
+            <_RnWinRTPlatformWinMDReferences Include="$(RnWinRTSDKReferences)" />
+            <RnWinRTPlatformWinMDReferences Remove="@(RnWinRTPlatformWinMDReferences)"/>
+            <RnWinRTPlatformWinMDReferences Include="@(_RnWinRTPlatformWinMDReferences->'%(FullPath)'->Distinct())">
+                <WinMDPath>%(FullPath)</WinMDPath>
+            </RnWinRTPlatformWinMDReferences>
+        </ItemGroup>
+        <Message Text="RnWinRTPlatformWinMDReferences: @(RnWinRTPlatformWinMDReferences->'%(WinMDPath)')" Importance="$(RnWinRTVerbosity)"/>
+    </Target>
+
+    <!--Get direct WinMD references (including Nuget packages) for projections, IDL processing, and AppX packaging-->
+    <Target Name="GetRnWinRTDirectWinMDReferences"
+            DependsOnTargets="ResolveAssemblyReferences;$(GetRnWinRTDirectWinMDReferencesDependsOn)"
+            Returns="@(RnWinRTDirectWinMDReferences)">
+        <ItemGroup>
+            <_RnWinRTDirectWinMDReferences Remove="@(_RnWinRTDirectWinMDReferences)" />
+            <_RnWinRTDirectWinMDReferences Include="@(ReferencePath)" Condition="'%(ReferencePath.IsSystemReference)' != 'true' and '%(ReferencePath.WinMDFile)' == 'true' and '%(ReferencePath.ReferenceSourceTarget)' == 'ResolveAssemblyReference'" />
+            <RnWinRTDirectWinMDReferences Remove="@(RnWinRTDirectWinMDReferences)"/>
+            <RnWinRTDirectWinMDReferences Include="@(_RnWinRTDirectWinMDReferences)">
+                <WinMDPath>%(FullPath)</WinMDPath>
+            </RnWinRTDirectWinMDReferences>
+        </ItemGroup>
+        <Message Text="RnWinRTDirectWinMDReferences: @(RnWinRTDirectWinMDReferences->'%(WinMDPath)')" Importance="$(RnWinRTVerbosity)"/>
+    </Target>
+
+    <!--Get direct WinMD project references for projections, IDL processing, and AppX packaging-->
+    <Target Name="GetRnWinRTProjectWinMDReferences"
+            DependsOnTargets="ResolveProjectReferences;$(GetRnWinRTProjectWinMDReferencesDependsOn)"
+            Returns="@(RnWinRTStaticProjectWinMDReferences);@(RnWinRTDynamicProjectWinMDReferences)">
+        <ItemGroup>
+            <!-- Get static library project references -->
+            <_RnWinRTStaticProjectReferences Remove="@(_RnWinRTStaticProjectReferences)"/>
+            <_RnWinRTStaticProjectReferences Include="@(_ResolvedProjectReferencePaths)"
+                Condition= "'%(_ResolvedProjectReferencePaths.ProjectType)'=='StaticLibrary' AND
+                    '%(_ResolvedProjectReferencePaths.WinMDFile)' == 'true'"/>
+            <!--Get dynamic library project references-->
+            <_RnWinRTDynamicProjectReferences Remove="@(_RnWinRTDynamicProjectReferences)"/>
+            <_RnWinRTDynamicProjectReferences Include="@(_ResolvedProjectReferencePaths)"
+                Condition= "'%(_ResolvedProjectReferencePaths.ProjectType)'!='StaticLibrary' AND
+                ('%(_ResolvedProjectReferencePaths.WinMDFile)' == 'true' OR
+                    ('%(_ResolvedProjectReferencePaths.WinMDFile)' == '' AND '%(_ResolvedProjectReferencePaths.Extension)' == '.winmd'))"/>
+        </ItemGroup>
+        <ItemGroup>
+            <RnWinRTStaticProjectWinMDReferences Remove="@(RnWinRTStaticProjectWinMDReferences)" />
+            <RnWinRTStaticProjectWinMDReferences Include="@(_RnWinRTStaticProjectReferences)">
+                <WinMDPath>%(FullPath)</WinMDPath>
+            </RnWinRTStaticProjectWinMDReferences>
+            <RnWinRTDynamicProjectWinMDReferences Remove="@(RnWinRTDynamicProjectWinMDReferences)" />
+            <RnWinRTDynamicProjectWinMDReferences Include="@(_RnWinRTDynamicProjectReferences)">
+                <WinMDPath>%(FullPath)</WinMDPath>
+            </RnWinRTDynamicProjectWinMDReferences>
+        </ItemGroup>
+        <Message Text="RnWinRTStaticProjectWinMDReferences: @(RnWinRTStaticProjectWinMDReferences->'%(WinMDPath)')" Importance="$(RnWinRTVerbosity)"/>
+        <Message Text="RnWinRTDynamicProjectWinMDReferences: @(RnWinRTDynamicProjectWinMDReferences->'%(WinMDPath)')" Importance="$(RnWinRTVerbosity)"/>
+    </Target>
+
+    <Target Name="RnWinRTMakeRsp"
+            DependsOnTargets="GetRnWinRTPlatformWinMDInputs;GetRnWinRTPlatformWinMDReferences;GetRnWinRTDirectWinMDReferences;GetRnWinRTProjectWinMDReferences;$(GetRnWinRTProjectWinMDReferences);$(RnWinRTMakePlatformProjectionDependsOn)"
+            Inputs="$(RnWinRTParameters);@(RnWinRTWinMDInputs)"
+            Outputs="$(IntDir)rnwinrt.rsp">
+        <ItemGroup>
+            <_RnwinrtInputs Remove="@(_RnwinrtInputs)"/>
+            <_RnwinrtInputs Include="@(RnWinRTWinMDInputs)"/>
+            <_RnwinrtInputs Include="@(RnWinRTPlatformWinMDReferences)"/>
+            <_RnwinrtInputs Include="@(RnWinRTDirectWinMDReferences)"/>
+            <_RnwinrtInputs Include="@(RnWinRTStaticProjectWinMDReferences)"/>
+            <_RnwinrtInputs Include="@(RnWinRTDynamicProjectWinMDReferences)"/>
+        </ItemGroup>
+        <PropertyGroup>
+            <_RnwinrtParameters>$(RnWinRTCommandVerbosity) $(RnWinRTParameters)</_RnwinrtParameters>
+            <_RnwinrtParameters>$(_RnwinrtParameters) @(_RnwinrtInputs->'-in &quot;%(WinMDPath)&quot;', '&#x0d;&#x0a;')</_RnwinrtParameters>
+            <_RnwinrtParameters>$(_RnwinrtParameters) -out &quot;$(GeneratedFilesDir).&quot; -tsoutput &quot;$(TsOutDir).&quot; </_RnwinrtParameters>
+        </PropertyGroup>
+        <!-- Always write the rnwinrt.rsp file when the target runs, because the file is used as the output of this target. -->
+        <WriteLinesToFile
+            File="$(IntDir)rnwinrt.rsp" Lines="$(_RnwinrtParameters)"
+            ContinueOnError="true" Overwrite="true" />
+    </Target>
+
+    <Target Name="RnWinRTMakeProjections"
+          DependsOnTargets="RnWinRTMakeRsp"
+          Inputs="$(IntDir)rnwinrt.rsp"
+          Outputs="$(GeneratedFilesDir)rnwinrt\Projections.g.h';$(GeneratedFilesDir)rnwinrt\Projections.g.cpp;$(GeneratedFilesDir)rnwinrt\ProjectedValueConverters.g.h';">
+        <PropertyGroup>
+            <RnWinRTPathCommand>&quot;$(RnWinRTExe)&quot; %40"$(IntDir)rnwinrt.rsp"</RnWinRTPathCommand>
+        </PropertyGroup>
+        <Message Text="$(RnWinRTPathCommand)" Importance="$(RnWinRTVerbosity)" />
+        <Exec Command="$(RnWinRTPathCommand)" />
+    </Target>
+
+    <!-- Generated files cannot be referenced for compile using $(GeneratedFilesDir)\rnwinrt\*.g.cpp because the list would not be
+         reevaluated after code generation. This would cause clean builds to fail and incremental builds to use a potentially stale list. -->
+    <Target Name="RnWinRTAddGeneratedCppFiles"
+            DependsOnTargets="RnWinRTMakeProjections">
+        <ItemGroup>
+            <_FilesToBuild Remove="@(_FilesToBuild)"/>
+            <_FilesToBuild Include="$(GeneratedFilesDir)rnwinrt\*.g.cpp"/>
+        </ItemGroup>
+        <ItemGroup>
+            <ClCompile Include="@(_FilesToBuild)" />
+            <FileWrites Include="@(_FilesToBuild)" />
+        </ItemGroup>
+        <Message Text="GeneratedCppFiles: @(_FilesToBuild)" Importance="$(RnWinRTVerbosity)" />
+    </Target>
+
+</Project>

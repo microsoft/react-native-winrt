@@ -19,11 +19,11 @@ BEGIN
         BLOCK "040904b0"
         BEGIN
             VALUE "CompanyName", "Microsoft Corporation"
-            VALUE "FileDescription", "JS/WinRT"
+            VALUE "FileDescription", "React Native WinRT"
             VALUE "FileVersion", "0.0.0.1"
             VALUE "LegalCopyright", "Microsoft Corporation. All rights reserved."
-            VALUE "OriginalFilename", "jswinrt.exe"
-            VALUE "ProductName", "JS/WinRT"
+            VALUE "OriginalFilename", "rnwinrt.exe"
+            VALUE "ProductName", "React Native WinRT"
             VALUE "ProductVersion", "0.0.0.1"
         END
     END
