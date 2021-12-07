@@ -45,7 +45,7 @@ jobs:
       - task: 333b11bd-d341-40d9-afcf-b32d5ce6f23b@2
         inputs:
           command: 'pack'
-          packagesToPack: 'jswinrt/nuget/Microsoft.Windows.JsWinRT.nuspec'
+          packagesToPack: 'jswinrt/nuget/Microsoft.ReactNative.WinRT.nuspec'
           configuration: 'Release'
           packDestination: '$(Build.ArtifactStagingDirectory)'
           versioningScheme: 'off'
