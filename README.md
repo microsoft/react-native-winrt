@@ -1,19 +1,16 @@
-# The JS/WinRT language projection
+# React Native WinRT
 
-JavaScript WinRT (JS/WinRT) is a module for React Native Windows which provides access to WinRT APIs from Javascript. It uses components from [xlang](https://github.com/Microsoft/xlang) to [parse metadata](https://github.com/microsoft/winmd) for public or private WinRT COM APIs and generate JSI (JavaScript Interface) wrappers for [C++/WinRT](https://github.com/microsoft/cppwinrt) types at compile-time and the code generator was itself derived from `cppwinrt.exe`.
+React Native WinRT is a module for [React Native for Windows](https://microsoft.github.io/react-native-windows/) developers who want to call native (non-XAML) WinRT APIs in their apps. It uses components from [xlang](https://github.com/Microsoft/xlang) to [parse metadata](https://github.com/microsoft/winmd) for public or private WinRT COM APIs and generate JSI (JavaScript Interface) wrappers for [C++/WinRT](https://github.com/microsoft/cppwinrt) types at compile-time. The code generator was itself derived from `cppwinrt.exe`.
 
-## Building JS/WinRT Sample
+This repo generates the **Microsoft.ReactNative.WinRT** NuGet package for specific versions of React Native Windows. 
 
-- Open a dev command prompt pointing at the root of the repo.
-- Run `npm install` under ["\samples\RNWinRTTestApp\"](./samples/RNWinRTTestApp)
-- Open the [`RNWinRTTestApp.sln`](./samples/RNWinRTTestApp/windows/RNWinRTTestApp.sln) solution.
-- Build the x64 Release or Debug configuration.
-- If running Debug: Run 'yarn start' under ["\samples\RNWinRTTestApp\"](./samples/RNWinRTTestApp)
-- F5 deploy the sample app.
+## Getting started
 
-## Usage
+Refer to the [usage docs](docs/USAGE.md) for instructions on how to use React Native WinRT in your React Native Windows app to call projected WinRT APIs in Javascript.
 
-Refer to the [usage docs](docs/USAGE.md) for instructions on how to use react-native-winrt in your React Native Windows app to call projected WinRT APIs in Javascript.
+### Sample code
+
+See the [sample app](/samples/RNWinRTTestApp/) for an example of using the **Microsoft.ReactNative.WinRT** package to consume WinRT APIs.
 
 ## Contributing
 
