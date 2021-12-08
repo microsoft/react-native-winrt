@@ -33,7 +33,7 @@ namespace
 
     void PrintUsage()
     {
-        std::cout << R"(React Native WinRT )" << CPPWINRT_VERSION_STRING << std::endl;
+        std::cout << R"(React Native WinRT )" << RNWINRT_VERSION_STRING << std::endl;
         std::cout << R"(Copyright (c) Microsoft Corporation. All rights reserved.)" << std::endl;
         std::cout << R"(  rnwinrt.exe [options...])" << std::endl << std::endl;
         std::cout << R"(Options:)" << std::endl;

@@ -9,6 +9,11 @@
     <!-- TODO: This is to ensure that VS will re-run msbuild each time we "build". Otherwise changes to base.h/cpp might
          not get recompiled... This slows compilation down slightly, but is net goodness -->
     <DisableFastUpToDateCheck>true</DisableFastUpToDateCheck>
+    <RnWinRTMajorVersion Condition="'$(RnWinRTMajorVersion)' == ''">0</RnWinRTMajorVersion>
+    <RnWinRTMinorVersion Condition="'$(RnWinRTMinorVersion)' == ''">0</RnWinRTMinorVersion>
+    <RnWinRTBuild Condition="'$(RnWinRTBuild)' == ''">0</RnWinRTBuild>
+    <RnWinRTBuildQFE Condition="'$(RnWinRTBuildQFE)' == ''">1</RnWinRTBuildQFE>
+    <RnWinRTBuildVersion>$(RnWinRTMajorVersion).$(RnWinRTMinorVersion).$(RnWinRTBuild).$(RnWinRTBuildQFE)</RnWinRTBuildVersion>
   </PropertyGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.Default.props" />
   <ItemGroup Label="ProjectConfigurations">
@@ -103,7 +108,7 @@
       <LanguageStandard>stdcpp17</LanguageStandard>
       <PrecompiledHeader>Use</PrecompiledHeader>
       <PrecompiledHeaderFile>pch.h</PrecompiledHeaderFile>
-      <PreprocessorDefinitions>CPPWINRT_VERSION_STRING="$(CppWinRTBuildVersion)";%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <PreprocessorDefinitions>RNWINRT_VERSION_STRING="$(RnWinRTBuildVersion)";%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <MultiProcessorCompilation>true</MultiProcessorCompilation>
       <AdditionalOptions>/await /bigobj</AdditionalOptions>
       <AdditionalOptions Condition="'$(Clang)'=='1'">-Wno-unused-command-line-argument -fno-delayed-template-parsing -Xclang -fcoroutines-ts -mcx16</AdditionalOptions>
@@ -113,7 +118,14 @@
       <SubSystem>Console</SubSystem>
     </Link>
     <ResourceCompile>
-      <PreprocessorDefinitions>CPPWINRT_VERSION_STRING="$(CppWinRTBuildVersion)";%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <PreprocessorDefinitions>
+        RNWINRT_MAJOR_VERSION=$(RnWinRTMajorVersion);
+        RNWINRT_MINOR_VERSION=$(RnWinRTMinorVersion);
+        RNWINRT_BUILD=$(RnWinRTBuild);
+        RNWINRT_BUILD_QFE=$(RnWinRTBuildQFE);
+        RNWINRT_VERSION_STRING="\"$(RnWinRTBuildVersion)\"";
+        %(PreprocessorDefinitions)
+      </PreprocessorDefinitions>
     </ResourceCompile>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)'=='Debug'">
