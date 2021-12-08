@@ -14,8 +14,8 @@ pool:
 variables:
   product_major_version: 0
   product_minor_version: 63
-  product_build: ${{Date:yyyyMMdd}}
-  product_build_qfe: ${{Rev:r}}
+  product_build: ${{ Date:yyyyMMdd }}
+  product_build_qfe: ${{ Rev:r }}
 
 # NOTE: The first two digits are the targeted React Native version
 name: $(product_major_version).$(product_minor_version).$(product_build).$(product_build_qfe)
