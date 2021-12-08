@@ -39,7 +39,7 @@ jobs:
           vsVersion: 'latest'
           platform: 'x64'
           configuration: 'Release'
-          msbuildArgs: '-p:RnWinRTMajorVersion=$(product_major_version);RnWinRTMinorVersion=$(product_minor_version);RnWinRTBuild=$(product_build);RnWinRTBuildQFE=$(product_build_qfe)'
+          msbuildArgs: '-p:RnWinRTMajorVersion=${{variables.product_major_version}};RnWinRTMinorVersion=${{variables.product_minor_version}};RnWinRTBuild=${{variables.product_build}};RnWinRTBuildQFE=${{variables.product_build_qfe}}'
 
       - task: EsrpCodeSigning@1
         displayName: 'ESRP CodeSigning'
