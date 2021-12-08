@@ -18,14 +18,14 @@ jobs:
       - task: 333b11bd-d341-40d9-afcf-b32d5ce6f23b@2
         inputs:
           command: 'restore'
-          restoreSolution: 'jswinrt\jswinrt.sln'
+          restoreSolution: 'rnwinrt\rnwinrt.sln'
           feedsToUse: 'config'
           nugetConfigPath: ''
 
       - task: VSBuild@1
-        displayName: 'Build solution jswinrt.sln'
+        displayName: 'Build solution rnwinrt.sln'
         inputs:
-          solution: jswinrt\jswinrt.sln
+          solution: rnwinrt\rnwinrt.sln
           vsVersion: 'latest'
           platform: 'x64'
           configuration: 'Release'
@@ -34,8 +34,8 @@ jobs:
         displayName: 'ESRP CodeSigning'
         inputs:
           ConnectedServiceName: 'Xlang Code Signing'
-          FolderPath: '$(Build.SourcesDirectory)\jswinrt\x64\Release'
-          Pattern: 'jswinrt.exe'
+          FolderPath: '$(Build.SourcesDirectory)\rnwinrt\x64\Release'
+          Pattern: 'rnwinrt.exe'
           UseMinimatch: true
           signConfigType: 'inlineSignParams'
           SessionTimeout: '60'
@@ -45,11 +45,11 @@ jobs:
       - task: 333b11bd-d341-40d9-afcf-b32d5ce6f23b@2
         inputs:
           command: 'pack'
-          packagesToPack: 'jswinrt/nuget/Microsoft.ReactNative.WinRT.nuspec'
+          packagesToPack: 'rnwinrt/nuget/Microsoft.ReactNative.WinRT.nuspec'
           configuration: 'Release'
           packDestination: '$(Build.ArtifactStagingDirectory)'
           versioningScheme: 'off'
-          buildProperties: 'jswinrt_nuget_version=$(Build.BuildNumber);jswinrt_exe=$(Build.SourcesDirectory)\jswinrt\x64\Release\jswinrt.exe;reactnative_files=$(Build.SourcesDirectory)\jswinrt\module'
+          buildProperties: 'rnwinrt_nuget_version=$(Build.BuildNumber);rnwinrt_exe=$(Build.SourcesDirectory)\rnwinrt\x64\Release\rnwinrt.exe;reactnative_files=$(Build.SourcesDirectory)\rnwinrt\module'
 
       - task: EsrpCodeSigning@1
         displayName: 'ESRP CodeSigning'

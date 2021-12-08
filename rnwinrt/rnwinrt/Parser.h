@@ -1,4 +1,4 @@
-// Copyright (c) Microsoft Corporation. 
+// Copyright (c) Microsoft Corporation.
 // Licensed under the MIT License.
 
 // This file has been copied from cswinrt: https://github.com/microsoft/CsWinRT/blob/master/src/cswinrt/helpers.h and
@@ -6,7 +6,7 @@
 
 #pragma once
 
-namespace jswinrt::typeparser
+namespace rnwinrt::typeparser
 {
     using namespace std::literals;
     using namespace winmd::reader;

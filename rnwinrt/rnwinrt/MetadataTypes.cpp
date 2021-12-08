@@ -1,4 +1,4 @@
-// Copyright (c) Microsoft Corporation. 
+// Copyright (c) Microsoft Corporation.
 // Licensed under the MIT License.
 
 #include "pch.h"
@@ -684,24 +684,24 @@ void parse_metadata(const Settings& settings, projection_data& data)
         });
 }
 
-void interface_projection_data::write_cpp_name(jswinrt::writer& writer, std::string_view typeNameMod)
+void interface_projection_data::write_cpp_name(rnwinrt::writer& writer, std::string_view typeNameMod)
 {
-    jswinrt::cpp_typename{ type_def }(writer);
+    rnwinrt::cpp_typename{ type_def }(writer);
     writer.write(typeNameMod);
 }
 
-void generic_interface_instantiation::write_cpp_name(jswinrt::writer& writer, std::string_view typeNameMod)
+void generic_interface_instantiation::write_cpp_name(rnwinrt::writer& writer, std::string_view typeNameMod)
 {
     auto& sig = instantiation.signature();
     auto typeDef = generic_type_def(sig);
     writer.write_fmt(
-        "%%<", jswinrt::cpp_typename{ typeDef.TypeNamespace(), remove_tick(typeDef.TypeName()) }, typeNameMod);
+        "%%<", rnwinrt::cpp_typename{ typeDef.TypeNamespace(), remove_tick(typeDef.TypeName()) }, typeNameMod);
 
     std::string_view prefix;
     auto genericParamStack = instantiation.parent_stack();
     for (auto&& param : sig.GenericArgs())
     {
-        writer.write_fmt("%%", prefix, [&](jswinrt::writer& w) { write_cppwinrt_type(w, param, genericParamStack); });
+        writer.write_fmt("%%", prefix, [&](rnwinrt::writer& w) { write_cppwinrt_type(w, param, genericParamStack); });
         prefix = ", "sv;
     }
 

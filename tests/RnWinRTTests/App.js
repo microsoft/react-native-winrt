@@ -1,11 +1,11 @@
-// Copyright (c) Microsoft Corporation. 
+// Copyright (c) Microsoft Corporation.
 // Licensed under the MIT License.
 
 /**
  * @format
  */
 // TODO: JSI does not allow property setters to return a value, which causes Chakra to throw errors in strict mode
-//       https://github.com/microsoft/jswinrt/issues/8
+//       https://github.com/microsoft/react-native-winrt/issues/8
 // 'use strict';
 
 import React, { Component } from 'react';
@@ -65,13 +65,13 @@ class App extends Component {
         return acc;
     }, {});
 
-    state = { 
-        completedCount: 0, 
-        passCount: 0, 
+    state = {
+        completedCount: 0,
+        passCount: 0,
         testSuiteCompletedCount: this.testSuites.reduce((acc, testSuite) => { return {...acc, [testSuite.name]: 0}}, {}),
         testSuitePassCount: this.testSuites.reduce((acc, testSuite) => { return {...acc, [testSuite.name]: 0}}, {}),
         testSuiteVisibility: this.testSuites.reduce((acc, testSuite) => { return {...acc, [testSuite.name]: false}}, {}),
-        filterText: "", 
+        filterText: "",
     };
 
 
@@ -166,10 +166,10 @@ class App extends Component {
 
     toggleTestSuiteVisibility(testSuite) {
         this.setState({
-            testSuiteVisibility: { 
+            testSuiteVisibility: {
                 ...this.state.testSuiteVisibility,
                 [testSuite.name]: !this.state.testSuiteVisibility[testSuite.name]
-            },            
+            },
         })
     }
 
@@ -190,14 +190,14 @@ class App extends Component {
                                 <View style={styles.listEntry}>
                                     <Text style={[styles.rowItem, {fontWeight: 'bold'}]}>{testSuite.name}</Text>
                                     <Text style={[styles.rowItem, {flex: 1}]}>{
-                                        this.state.testSuitePassCount[testSuite.name] 
-                                        + "/" 
+                                        this.state.testSuitePassCount[testSuite.name]
+                                        + "/"
                                         + this.state.testSuiteCompletedCount[testSuite.name]
                                         + " passed. "
                                         + (testSuite.scenarios.length - this.state.testSuiteCompletedCount[testSuite.name])
                                         + " pending."
                                     }</Text>
-                                    <Button style={[styles.rowItem, {flex: 1}]} 
+                                    <Button style={[styles.rowItem, {flex: 1}]}
                                         title={this.state.testSuiteVisibility[testSuite.name] ? "Hide all tests" : "Show all tests"}
                                         onPress={() => this.toggleTestSuiteVisibility(testSuite)}/>
                                 </View>
@@ -206,7 +206,7 @@ class App extends Component {
                                         this.state.testSuiteVisibility[testSuite.name] || scenario.result !== TestResult.Pass
                                             ? <Scenario key={scenario.name} scenario={scenario} />
                                             : <View key={idx} style={{marginHorizontal: 1}}/>
-                                    )) 
+                                    ))
                                 }
                             </View>
                         ))

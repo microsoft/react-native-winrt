@@ -1,4 +1,4 @@
-// Copyright (c) Microsoft Corporation. 
+// Copyright (c) Microsoft Corporation.
 // Licensed under the MIT License.
 
 #pragma once
@@ -8,7 +8,7 @@
 
 #include "MetadataTypes.h"
 
-namespace jswinrt
+namespace rnwinrt
 {
     struct writer
     {

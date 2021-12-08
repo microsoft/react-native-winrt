@@ -1,4 +1,4 @@
-// Copyright (c) Microsoft Corporation. 
+// Copyright (c) Microsoft Corporation.
 // Licensed under the MIT License.
 
 /**
@@ -14,7 +14,7 @@ import {
 export function makePropertiesTestScenarios(pThis) {
     return [
         // Static properties for activable class
-        // TODO: Figure out why static properties are not working: https://github.com/microsoft/jswinrt/issues/7
+        // TODO: Figure out why static properties are not working: https://github.com/microsoft/react-native-winrt/issues/7
         new TestScenario('Test::StaticBoolProperty', runStaticBoolProperty.bind(pThis)),
         new TestScenario('Test::StaticCharProperty', runStaticCharProperty.bind(pThis)),
         new TestScenario('Test::StaticU8Property', runStaticU8Property.bind(pThis)),

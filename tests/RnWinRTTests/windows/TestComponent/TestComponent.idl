@@ -1,4 +1,4 @@
-// Copyright (c) Microsoft Corporation. 
+// Copyright (c) Microsoft Corporation.
 // Licensed under the MIT License.
 
 // NOTE: The majority of this is derived from https://github.com/microsoft/TestWinRT. The implementation has diverged,
@@ -590,7 +590,7 @@ namespace TestComponent
         void RaiseRefEvent(Windows.Foundation.IReference<Int32> value);
         void RaiseObjectEvent(TestObject value);
 
-        // Used to validate the fix to https://github.com/microsoft/jswinrt/issues/119
+        // Used to validate the fix to https://github.com/microsoft/react-native-winrt/issues/119
         static Windows.Foundation.IAsyncOperation<Windows.Foundation.Collections.IVectorView<ITestInterface> > GetObjectsAsync();
     }
 

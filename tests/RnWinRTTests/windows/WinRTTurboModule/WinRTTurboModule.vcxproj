@@ -1,10 +1,10 @@
 <?xml version="1.0" encoding="utf-8"?>
 <Project DefaultTargets="Build" ToolsVersion="16.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
   <PropertyGroup>
-    <JsWinRTPath>..\..\..\..\jswinrt\</JsWinRTPath>
-    <JsWinRTExe>$(SolutionDir)x64\Release\jswinrt.exe</JsWinRTExe>
+    <RnWinRTPath>..\..\..\..\rnwinrt\</RnWinRTPath>
+    <RnWinRTExe>$(SolutionDir)x64\Release\rnwinrt.exe</RnWinRTExe>
   </PropertyGroup>
-  <Import Project="$(JsWinRTPath)module\WinRTTurboModule.props" Condition="Exists('$(JsWinRTPath)module\WinRTTurboModule.props')" />
+  <Import Project="$(RnWinRTPath)module\WinRTTurboModule.props" Condition="Exists('$(RnWinRTPath)module\WinRTTurboModule.props')" />
   <Import Project="..\packages\Microsoft.Windows.CppWinRT.2.0.201113.7\build\native\Microsoft.Windows.CppWinRT.props" Condition="Exists('..\packages\Microsoft.Windows.CppWinRT.2.0.201113.7\build\native\Microsoft.Windows.CppWinRT.props')" />
   <PropertyGroup Label="Globals">
     <MinimalCoreWin>true</MinimalCoreWin>
@@ -24,8 +24,8 @@
     <CppWinRTGenerateWindowsMetadata>true</CppWinRTGenerateWindowsMetadata>
     <CppWinRTVerbosity>high</CppWinRTVerbosity>
     <CppWinRTParameters>-base</CppWinRTParameters>
-    <JsWinRTParameters>-include Windows.Foundation -include TestComponent -include Windows.Web.Http.HttpStatusCode</JsWinRTParameters>
-    <JsWinRTVerbosity>high</JsWinRTVerbosity>
+    <RnWinRTParameters>-include Windows.Foundation -include TestComponent -include Windows.Web.Http.HttpStatusCode</RnWinRTParameters>
+    <RnWinRTVerbosity>high</RnWinRTVerbosity>
   </PropertyGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.Default.props" />
   <ItemGroup Label="ProjectConfigurations">
@@ -123,7 +123,7 @@
   <ItemGroup>
     <ClInclude Include="pch.h" />
     <ClInclude Include="ReactPackageProvider.h" />
-    <ClInclude Include="$(JsWinRTPath)module\WinRTTurboModule.h" />
+    <ClInclude Include="$(RnWinRTPath)module\WinRTTurboModule.h" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="pch.cpp">
@@ -139,7 +139,7 @@
     <None Include="packages.config" />
   </ItemGroup>
   <ItemGroup>
-    <ProjectReference Include="..\..\..\..\jswinrt\jswinrt\jswinrt.vcxproj">
+    <ProjectReference Include="..\..\..\..\rnwinrt\rnwinrt\rnwinrt.vcxproj">
       <Project>{249A6C52-D3DF-4B3C-BF7C-9DD62C267CB0}</Project>
     </ProjectReference>
     <ProjectReference Include="..\TestComponent\TestComponent.vcxproj">
@@ -148,7 +148,7 @@
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">
-    <Import Project="$(JsWinRTPath)module\WinRTTurboModule.targets" />
+    <Import Project="$(RnWinRTPath)module\WinRTTurboModule.targets" />
     <Import Project="..\packages\Microsoft.Windows.CppWinRT.2.0.200615.7\build\native\Microsoft.Windows.CppWinRT.targets" Condition="Exists('..\packages\Microsoft.Windows.CppWinRT.2.0.200615.7\build\native\Microsoft.Windows.CppWinRT.targets')" />
   </ImportGroup>
   <Import Project="$(ReactNativeWindowsDir)\PropertySheets\External\Microsoft.ReactNative.Uwp.CppLib.targets" Condition="Exists('$(ReactNativeWindowsDir)\PropertySheets\External\Microsoft.ReactNative.Uwp.CppLib.targets')" />

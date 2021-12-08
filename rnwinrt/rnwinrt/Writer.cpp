@@ -1,4 +1,4 @@
-// Copyright (c) Microsoft Corporation. 
+// Copyright (c) Microsoft Corporation.
 // Licensed under the MIT License.
 
 #include "pch.h"
@@ -9,7 +9,7 @@ using namespace winmd::reader;
 
 static constexpr const std::size_t default_buffer_size = 16 * 1024; // 16 KB
 
-namespace jswinrt
+namespace rnwinrt
 {
     writer::writer()
     {
