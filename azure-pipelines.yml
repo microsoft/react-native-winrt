@@ -14,7 +14,7 @@ pool:
 variables:
   product_major_version: 0
   product_minor_version: 63
-  product_build: $[Get-Date -Format yyyyMMdd]
+  product_build: $[format('{0:yyyyMMdd}', pipeline.startTime)]
   product_build_qfe: $[counter(variables['product_major_version'].variables['product_minor_version'].variables['product_build'], 0)]
 
 # NOTE: The first two digits are the targeted React Native version
