@@ -6,6 +6,7 @@
 
 trigger:
 - main
+- release/*
 
 pool:
   vmImage: 'windows-2019'
@@ -111,7 +112,15 @@ jobs:
       useHermes: true
 
   - job: Publish
-    dependsOn: E2ETest
+    dependsOn:
+    - E2ETest
+    - E2ETestHermes
+    condition: |
+      or
+      (
+        eq(variables['Build.SourceBranch'], 'refs/heads/main'),
+        startsWith(variables['Build.SourceBranch'], 'refs/heads/release/')
+      )
     steps:
       - task: DownloadBuildArtifacts@0 
         inputs: 
