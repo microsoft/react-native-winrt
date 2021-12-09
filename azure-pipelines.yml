@@ -6,6 +6,7 @@
 
 trigger:
 - main
+- release/*
 
 pool:
   vmImage: 'windows-2019'
