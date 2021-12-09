@@ -15,7 +15,7 @@ variables:
   product_major_version: 0
   product_minor_version: 63
   product_build: $(Get-Date -Format yyyyMMdd)
-  product_build_qfe: $[counter($(product_major_version).$(product_minor_version).$(product_build)), 0)]
+  product_build_qfe: $[counter(variables['product_major_version'].variables['product_minor_version'].variables['product_build']), 0)]
 
 # NOTE: The first two digits are the targeted React Native version
 name: $(product_major_version).$(product_minor_version).$(product_build).$(product_build_qfe)
