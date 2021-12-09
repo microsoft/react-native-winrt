@@ -15,7 +15,7 @@ variables:
   product_major_version: 0
   product_minor_version: 63
   product_build: $[format('{0:yyyyMMdd}', pipeline.startTime)]
-  product_build_qfe: $[counter(format('{0}.{1}.{2}', variables['product_major_version'], variables['product_minor_version'], variables['product_build']), 0)]
+  product_build_qfe: $[counter(format('{0}.{1}.{2}', variables['product_major_version'], variables['product_minor_version'], variables['product_build']), 1)]
 
 # NOTE: The first two digits are the targeted React Native version
 name: $(product_major_version).$(product_minor_version).$(product_build).$(product_build_qfe)
