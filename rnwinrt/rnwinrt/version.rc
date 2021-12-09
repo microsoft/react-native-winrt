@@ -2,8 +2,8 @@
 #include "winres.h"
 
 VS_VERSION_INFO VERSIONINFO
- FILEVERSION 0,0,0,1
- PRODUCTVERSION 0,0,0,1
+ FILEVERSION RNWINRT_MAJOR_VERSION, RNWINRT_MINOR_VERSION, RNWINRT_BUILD, RNWINRT_BUILD_QFE
+ PRODUCTVERSION RNWINRT_MAJOR_VERSION, RNWINRT_MINOR_VERSION, RNWINRT_BUILD, RNWINRT_BUILD_QFE
  FILEFLAGSMASK 0x3fL
 #ifdef _DEBUG
  FILEFLAGS 0x1L
@@ -20,11 +20,11 @@ BEGIN
         BEGIN
             VALUE "CompanyName", "Microsoft Corporation"
             VALUE "FileDescription", "React Native WinRT"
-            VALUE "FileVersion", "0.0.0.1"
+            VALUE "FileVersion", RNWINRT_VERSION_STRING
             VALUE "LegalCopyright", "Microsoft Corporation. All rights reserved."
             VALUE "OriginalFilename", "rnwinrt.exe"
             VALUE "ProductName", "React Native WinRT"
-            VALUE "ProductVersion", "0.0.0.1"
+            VALUE "ProductVersion", RNWINRT_VERSION_STRING
         END
     END
     BLOCK "VarFileInfo"
