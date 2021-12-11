@@ -74,8 +74,6 @@ class App extends Component {
         filterText: "",
     };
 
-
-
     runSync(scenario, fn) {
         let previousResult = scenario.result;
         var result = TestResult.Fail;

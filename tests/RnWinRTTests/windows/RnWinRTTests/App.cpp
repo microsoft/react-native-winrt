@@ -1,6 +1,5 @@
-// Copyright (c) Microsoft Corporation. 
+// Copyright (c) Microsoft Corporation.
 // Licensed under the MIT License.
-
 #include "pch.h"
 
 #include "App.h"
@@ -8,14 +7,14 @@
 #include "AutolinkedNativeModules.g.h"
 #include "ReactPackageProvider.h"
 
-using namespace winrt::RnWinRTTests;
-using namespace winrt::RnWinRTTests::implementation;
 using namespace winrt;
-using namespace Windows::UI::Xaml;
-using namespace Windows::UI::Xaml::Controls;
-using namespace Windows::UI::Xaml::Navigation;
-using namespace Windows::ApplicationModel;
+using namespace xaml;
+using namespace xaml::Controls;
+using namespace xaml::Navigation;
 
+using namespace Windows::ApplicationModel;
+namespace winrt::RnWinRTTests::implementation
+{
 /// <summary>
 /// Initializes the singleton application object.  This is the first line of
 /// authored code executed, and as such is the logical equivalent of main() or
@@ -23,10 +22,15 @@ using namespace Windows::ApplicationModel;
 /// </summary>
 App::App() noexcept
 {
-    JavaScriptMainModuleName(L"index");
+#if BUNDLE
+    JavaScriptBundleFile(L"index.windows");
     InstanceSettings().UseWebDebugger(false);
-    InstanceSettings().UseDirectDebugger(true);
+    InstanceSettings().UseFastRefresh(false);
+#else
+    JavaScriptBundleFile(L"index");
+    InstanceSettings().UseWebDebugger(false);
     InstanceSettings().UseFastRefresh(true);
+#endif
 
 #if _DEBUG
     InstanceSettings().UseDeveloperSupport(true);
@@ -38,6 +42,7 @@ App::App() noexcept
 
     PackageProviders().Append(make<ReactPackageProvider>()); // Includes all modules in this project
     PackageProviders().Append(winrt::WinRTTurboModule::ReactPackageProvider());
+
     InitializeComponent();
 }
 
@@ -51,7 +56,19 @@ void App::OnLaunched(activation::LaunchActivatedEventArgs const& e)
     super::OnLaunched(e);
 
     Frame rootFrame = Window::Current().Content().as<Frame>();
-    rootFrame.Navigate(xaml_typename<RnWinRTTests::MainPage>(), box_value(e.Arguments()));
+    rootFrame.Navigate(xaml_typename<MainPage>(), box_value(e.Arguments()));
+}
+
+/// <summary>
+/// Invoked when the application is activated by some means other than normal launching.
+/// </summary>
+void App::OnActivated(Activation::IActivatedEventArgs const &e) {
+  auto preActivationContent = Window::Current().Content();
+  super::OnActivated(e);
+  if (!preActivationContent && Window::Current()) {
+    Frame rootFrame = Window::Current().Content().as<Frame>();
+    rootFrame.Navigate(xaml_typename<MainPage>(), nullptr);
+  }
 }
 
 /// <summary>
@@ -75,3 +92,5 @@ void App::OnNavigationFailed(IInspectable const&, NavigationFailedEventArgs cons
 {
     throw hresult_error(E_FAIL, hstring(L"Failed to load Page ") + e.SourcePageType().Name);
 }
+
+} // namespace winrt::RnWinRTTests::implementation
