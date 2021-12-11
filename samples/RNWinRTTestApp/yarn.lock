@@ -1438,19 +1438,20 @@
   "resolved" "https://registry.npmjs.org/@react-native-community/eslint-plugin/-/eslint-plugin-1.1.0.tgz"
   "version" "1.1.0"
 
-"@react-native-windows/cli@0.65.3":
-  "integrity" "sha512-3cDyZkzYEOnwr9c1+nppsmQKjsG9QSd8/INUYYSvypwhOMHs7M/L7epECUSlUhh3ldGYAMWQhqvZ53KHgSBL1w=="
-  "resolved" "https://registry.npmjs.org/@react-native-windows/cli/-/cli-0.65.3.tgz"
-  "version" "0.65.3"
+"@react-native-windows/cli@0.66.1":
+  "integrity" "sha512-lEFpn+EVphz9GkeSdQsNWBgaeXlLrml8rD2GLep/gd53wwBSXs4mqU3UXZ5XyJi7GOgLe2pD7VNYt0YIpNgK2w=="
+  "resolved" "https://registry.npmjs.org/@react-native-windows/cli/-/cli-0.66.1.tgz"
+  "version" "0.66.1"
   dependencies:
-    "@react-native-windows/package-utils" "0.65.1"
-    "@react-native-windows/telemetry" "0.65.1"
+    "@react-native-windows/package-utils" "0.66.0"
+    "@react-native-windows/telemetry" "0.66.0"
     "@xmldom/xmldom" "^0.7.5"
     "chalk" "^4.1.0"
     "cli-spinners" "^2.2.0"
     "envinfo" "^7.5.0"
     "find-up" "^4.1.0"
     "glob" "^7.1.1"
+    "lodash" "^4.17.15"
     "mustache" "^4.0.1"
     "ora" "^3.4.0"
     "prompts" "^2.4.1"
@@ -1462,28 +1463,35 @@
     "xml-parser" "^1.2.1"
     "xpath" "^0.0.27"
 
-"@react-native-windows/find-repo-root@0.65.1":
-  "integrity" "sha512-hOyPzHxLz01hM4qEOePTHEkaZtk85H3pG+hp4ut6QwUvUgRP8IApGM1syS3yLd7HF9uIMWBfsI9az5Ey866pZA=="
-  "resolved" "https://registry.npmjs.org/@react-native-windows/find-repo-root/-/find-repo-root-0.65.1.tgz"
-  "version" "0.65.1"
+"@react-native-windows/find-repo-root@0.66.0":
+  "integrity" "sha512-VJj/VvbPZ361Y0D9k53eyRo8ESDKaBaSkO3OHdV7yPr9W9UDHpQyw92fQ4EUz/4z91exyb0BceUS+5cDw8usPw=="
+  "resolved" "https://registry.npmjs.org/@react-native-windows/find-repo-root/-/find-repo-root-0.66.0.tgz"
+  "version" "0.66.0"
   dependencies:
     "find-up" "^4.1.0"
 
-"@react-native-windows/package-utils@0.65.1":
-  "integrity" "sha512-q85JJY3OU1vDe7u7OD132PclGQJOjpjf7UaGW0CZhg/mRMEGBZlOqnrYKgFW6R7dRmA66GaNo63Oak1s23P8HA=="
-  "resolved" "https://registry.npmjs.org/@react-native-windows/package-utils/-/package-utils-0.65.1.tgz"
-  "version" "0.65.1"
+"@react-native-windows/package-utils@0.66.0":
+  "integrity" "sha512-hh+WuSZEsni3KTxi7SAMYJY/xZx55XmBV3/LI8t87WlfEs1jsFDEkDgJ8RZa5z1CKv+OGTVoMprYUzk0xqz1aA=="
+  "resolved" "https://registry.npmjs.org/@react-native-windows/package-utils/-/package-utils-0.66.0.tgz"
+  "version" "0.66.0"
   dependencies:
-    "@react-native-windows/find-repo-root" "0.65.1"
+    "@react-native-windows/find-repo-root" "0.66.0"
     "get-monorepo-packages" "^1.2.0"
     "lodash" "^4.17.15"
 
-"@react-native-windows/telemetry@0.65.1":
-  "integrity" "sha512-QIZICmLPWkW+IU3GaSXo34jBIUJs/gOTCeWL9JBO5Aw02Uv650zVdFBwgZtXJV9zLGXPZ/M3q6H8xSwHG0tugg=="
-  "resolved" "https://registry.npmjs.org/@react-native-windows/telemetry/-/telemetry-0.65.1.tgz"
-  "version" "0.65.1"
+"@react-native-windows/telemetry@0.66.0":
+  "integrity" "sha512-SxN0o1GkqT5Vpw+3GlFXpiKXgaOhDetqtqf6pbxfiykKPODKduOO8qneS6zzW7Mbw30yXtNOrKBM0CxNRQQeOg=="
+  "resolved" "https://registry.npmjs.org/@react-native-windows/telemetry/-/telemetry-0.66.0.tgz"
+  "version" "0.66.0"
   dependencies:
     "applicationinsights" "^1.8.8"
+
+"@react-native-windows/virtualized-list@0.66.0":
+  "integrity" "sha512-DXve8EACESyBbTykaJykvvgptaXaosBJVgkyHOzn4xOr/aywmn9TU92OPyn7D9Ya2+axK/ZOwyl70ZHjlqpHNA=="
+  "resolved" "https://registry.npmjs.org/@react-native-windows/virtualized-list/-/virtualized-list-0.66.0.tgz"
+  "version" "0.66.0"
+  dependencies:
+    "invariant" "^2.2.4"
 
 "@react-native/assets@1.0.0":
   "integrity" "sha512-KrwSpS1tKI70wuKl68DwJZYEvXktDHdZMG0k2AXD/rJVSlB23/X2CB2cutVR0HwNMJIal9HOUOBB2rVfa6UGtQ=="
@@ -1495,10 +1503,10 @@
   "resolved" "https://registry.npmjs.org/@react-native/normalize-color/-/normalize-color-1.0.0.tgz"
   "version" "1.0.0"
 
-"@react-native/polyfills@1.0.0":
-  "integrity" "sha512-0jbp4RxjYopTsIdLl+/Fy2TiwVYHy4mgeu07DG4b/LyM0OS/+lPP5c9sbnt/AMlnF6qz2JRZpPpGw1eMNS6A4w=="
-  "resolved" "https://registry.npmjs.org/@react-native/polyfills/-/polyfills-1.0.0.tgz"
-  "version" "1.0.0"
+"@react-native/polyfills@2.0.0":
+  "integrity" "sha512-K0aGNn1TjalKj+65D7ycc1//H9roAQ51GJVk5ZJQFb2teECGmzd86bYDC0aYdbRf7gtovescq4Zt6FR0tgXiHQ=="
+  "resolved" "https://registry.npmjs.org/@react-native/polyfills/-/polyfills-2.0.0.tgz"
+  "version" "2.0.0"
 
 "@sideway/address@^4.1.3":
   "integrity" "sha512-8ncEUtmnTsMmL7z1YPB47kPUq7LpKWJNFPsRzHiIajGC5uXlWGn+AmkYPcHNl8S4tcEGx+cnORnNYaw2wvL+LQ=="
@@ -3709,10 +3717,10 @@
   dependencies:
     "function-bind" "^1.1.1"
 
-"hermes-engine@~0.8.1":
-  "integrity" "sha512-as9Iccj/qrqqtDmfYUHbOIjt5xsQbUB6pjNIW3i1+RVr+pCAdz5S8/Jry778mz3rJWplYzHWdR1u1xQSYfBRYw=="
-  "resolved" "https://registry.npmjs.org/hermes-engine/-/hermes-engine-0.8.1.tgz"
-  "version" "0.8.1"
+"hermes-engine@~0.9.0":
+  "integrity" "sha512-r7U+Y4P2Qg/igFVZN+DpT7JFfXUn1MM4dFne8aW+cCrF6RRymof+VqrUHs1kl07j8h8V2CNesU19RKgWbr3qPw=="
+  "resolved" "https://registry.npmjs.org/hermes-engine/-/hermes-engine-0.9.0.tgz"
+  "version" "0.9.0"
 
 "hermes-parser@0.4.7":
   "integrity" "sha512-jc+zCtXbtwTiXoMAoXOHepxAaGVFIp89wwE9qcdwnMd/uGVEtPoY8FaFSsx0ThPvyKirdR2EsIIDVrpbSXz1Ag=="
@@ -5916,10 +5924,10 @@
   "resolved" "https://registry.npmjs.org/range-parser/-/range-parser-1.2.1.tgz"
   "version" "1.2.1"
 
-"react-devtools-core@^4.6.0":
-  "integrity" "sha512-sXbBjGAWcf9HAblTP/zMtFhGHqxAfIR+GPxONZsSGN9FHnF4635dx1s2LdQWG9rJ+Ehr3nWg+BUAB6P78my5PA=="
-  "resolved" "https://registry.npmjs.org/react-devtools-core/-/react-devtools-core-4.10.1.tgz"
-  "version" "4.10.1"
+"react-devtools-core@^4.13.0":
+  "integrity" "sha512-clGWwJHV5MHwTwYyKc+7FZHwzdbzrD2/AoZSkicUcr6YLc3Za9a9FaLhccWDHfjQ+ron9yzNhDT6Tv+FiPkD3g=="
+  "resolved" "https://registry.npmjs.org/react-devtools-core/-/react-devtools-core-4.21.0.tgz"
+  "version" "4.21.0"
   dependencies:
     "shell-quote" "^1.6.1"
     "ws" "^7"
@@ -5948,25 +5956,26 @@
     "jscodeshift" "^0.11.0"
     "nullthrows" "^1.1.1"
 
-"react-native-windows@0.65.9":
-  "integrity" "sha512-bd44O2IkHuAxemwweLkCTnWJnkeqHevUqwbxhTI3Uix1/WokgGlxZebaLNT3X/+KgSMMhNpNeTjOQeE6wHEyWQ=="
-  "resolved" "https://registry.npmjs.org/react-native-windows/-/react-native-windows-0.65.9.tgz"
-  "version" "0.65.9"
+"react-native-windows@0.66.5":
+  "integrity" "sha512-iHsKgZBXasyXyKmbEeSNEivEnwR7EBm5H9pJRxeV2VLLug216TL6BKRqouwEP4Bw2/lbtrW5Wzb5oayGvTFRUg=="
+  "resolved" "https://registry.npmjs.org/react-native-windows/-/react-native-windows-0.66.5.tgz"
+  "version" "0.66.5"
   dependencies:
     "@babel/runtime" "^7.0.0"
     "@jest/create-cache-key-function" "^27.0.1"
     "@react-native-community/cli" "^6.0.0"
     "@react-native-community/cli-platform-android" "^6.0.0"
     "@react-native-community/cli-platform-ios" "^6.0.0"
-    "@react-native-windows/cli" "0.65.3"
+    "@react-native-windows/cli" "0.66.1"
+    "@react-native-windows/virtualized-list" "0.66.0"
     "@react-native/assets" "1.0.0"
     "@react-native/normalize-color" "1.0.0"
-    "@react-native/polyfills" "1.0.0"
+    "@react-native/polyfills" "2.0.0"
     "abort-controller" "^3.0.0"
     "anser" "^1.4.9"
     "base64-js" "^1.1.2"
     "event-target-shim" "^5.0.1"
-    "hermes-engine" "~0.8.1"
+    "hermes-engine" "~0.9.0"
     "invariant" "^2.2.4"
     "jsc-android" "^250230.2.1"
     "metro-babel-register" "0.66.2"
@@ -5977,20 +5986,21 @@
     "pretty-format" "^26.5.2"
     "promise" "^8.0.3"
     "prop-types" "^15.7.2"
-    "react-devtools-core" "^4.6.0"
+    "react-devtools-core" "^4.13.0"
+    "react-native-codegen" "^0.0.7"
     "react-refresh" "^0.4.0"
     "regenerator-runtime" "^0.13.2"
-    "scheduler" "^0.20.1"
+    "scheduler" "^0.20.2"
     "source-map-support" "^0.5.19"
     "stacktrace-parser" "^0.1.3"
     "use-subscription" "^1.0.0"
     "whatwg-fetch" "^3.0.0"
     "ws" "^6.1.4"
 
-"react-native@*", "react-native@^0.65.0", "react-native@0.65.2":
-  "integrity" "sha512-0pzZFmSv38691PB2Zj2JE3x+57a8vdgGeUw2ai0MR3p6psdRes3BBR8miEv/gB7fgFKNDKdRJGDuyFVioKN1jA=="
-  "resolved" "https://registry.npmjs.org/react-native/-/react-native-0.65.2.tgz"
-  "version" "0.65.2"
+"react-native@*", "react-native@^0.66.0", "react-native@0.66.0":
+  "integrity" "sha512-m26TKwzsfHVdZ1hDG+7mZ4M4ftxFFZrhtiT0OXuwfBzmNtB3xhsJtYszPeizw33c9YNp8rvehKT3c4ldDCW6kA=="
+  "resolved" "https://registry.npmjs.org/react-native/-/react-native-0.66.0.tgz"
+  "version" "0.66.0"
   dependencies:
     "@jest/create-cache-key-function" "^27.0.1"
     "@react-native-community/cli" "^6.0.0"
@@ -5998,12 +6008,12 @@
     "@react-native-community/cli-platform-ios" "^6.0.0"
     "@react-native/assets" "1.0.0"
     "@react-native/normalize-color" "1.0.0"
-    "@react-native/polyfills" "1.0.0"
+    "@react-native/polyfills" "2.0.0"
     "abort-controller" "^3.0.0"
     "anser" "^1.4.9"
     "base64-js" "^1.1.2"
     "event-target-shim" "^5.0.1"
-    "hermes-engine" "~0.8.1"
+    "hermes-engine" "~0.9.0"
     "invariant" "^2.2.4"
     "jsc-android" "^250230.2.1"
     "metro-babel-register" "0.66.2"
@@ -6014,7 +6024,8 @@
     "pretty-format" "^26.5.2"
     "promise" "^8.0.3"
     "prop-types" "^15.7.2"
-    "react-devtools-core" "^4.6.0"
+    "react-devtools-core" "^4.13.0"
+    "react-native-codegen" "^0.0.7"
     "react-refresh" "^0.4.0"
     "regenerator-runtime" "^0.13.2"
     "scheduler" "^0.20.2"
@@ -6350,7 +6361,7 @@
   dependencies:
     "xmlchars" "^2.2.0"
 
-"scheduler@^0.20.1", "scheduler@^0.20.2":
+"scheduler@^0.20.2":
   "integrity" "sha512-2eWfGgAqqWFGqtdMmcL5zCMK1U8KlXv8SQFGglL3CEtd0aDVDWgeF/YoCmvln55m5zSk3J/20hTaSBeSObsQDQ=="
   "resolved" "https://registry.npmjs.org/scheduler/-/scheduler-0.20.2.tgz"
   "version" "0.20.2"
@@ -7423,9 +7434,9 @@
   "version" "7.5.6"
 
 "ws@^7":
-  "integrity" "sha512-Qm8k8ojNQIMx7S+Zp8u/uHOx7Qazv3Yv4q68MiWWWOJhiwG5W3x7iqmRtJo8xxrciZUY4vRxUTJCKuRnF28ZZw=="
-  "resolved" "https://registry.npmjs.org/ws/-/ws-7.4.4.tgz"
-  "version" "7.4.4"
+  "integrity" "sha512-6GLgCqo2cy2A2rjCNFlxQS6ZljG/coZfZXclldI8FB/1G3CCI36Zd8xy2HrFVACi8tfk5XrgLQEk+P0Tnz9UcA=="
+  "resolved" "https://registry.npmjs.org/ws/-/ws-7.5.6.tgz"
+  "version" "7.5.6"
 
 "xcode@^2.0.0":
   "integrity" "sha512-uCrmPITrqTEzhn0TtT57fJaNaw8YJs1aCzs+P/QqxsDbvPZSv7XMPPwXrKvHtD6pLjBM/NaVwraWJm8q83Y4iQ=="
