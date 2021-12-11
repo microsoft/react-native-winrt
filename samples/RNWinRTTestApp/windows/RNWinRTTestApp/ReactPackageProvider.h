@@ -1,6 +1,5 @@
-// Copyright (c) Microsoft Corporation. 
+// Copyright (c) Microsoft Corporation.
 // Licensed under the MIT License.
-
 #pragma once
 
 #include "winrt/Microsoft.ReactNative.h"
@@ -13,5 +12,3 @@ namespace winrt::RNWinRTTestApp::implementation
         void CreatePackage(winrt::Microsoft::ReactNative::IReactPackageBuilder const &packageBuilder) noexcept;
     };
 } // namespace winrt::RNWinRTTestApp::implementation
-
-

@@ -1,6 +1,5 @@
-// Copyright (c) Microsoft Corporation. 
+﻿// Copyright (c) Microsoft Corporation.
 // Licensed under the MIT License.
-
 #include "pch.h"
 
 #include "MainPage.h"
@@ -11,7 +10,7 @@
 #include "App.h"
 
 using namespace winrt;
-using namespace Windows::UI::Xaml;
+using namespace xaml;
 
 namespace winrt::RnWinRTTests::implementation
 {

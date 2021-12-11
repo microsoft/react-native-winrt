@@ -1,7 +1,7 @@
-// Copyright (c) Microsoft Corporation. 
+﻿// Copyright (c) Microsoft Corporation.
 // Licensed under the MIT License.
-
 #include "pch.h"
+
 #include "MainPage.h"
 #if __has_include("MainPage.g.cpp")
 #include "MainPage.g.cpp"
@@ -10,7 +10,7 @@
 #include "App.h"
 
 using namespace winrt;
-using namespace Windows::UI::Xaml;
+using namespace xaml;
 
 namespace winrt::RNWinRTTestApp::implementation
 {
@@ -21,5 +21,3 @@ namespace winrt::RNWinRTTestApp::implementation
         ReactRootView().ReactNativeHost(app->Host());
     }
 }
-
-

@@ -1,4 +1,4 @@
-// Copyright (c) Microsoft Corporation. 
+// Copyright (c) Microsoft Corporation.
 // Licensed under the MIT License.
 
 /**
@@ -18,7 +18,11 @@ export class Scenario extends Component {
         super(props);
 
         this.state.result = this.props.scenario.result;
-        this.props.scenario.addListener('completed', this.onCompleted.bind(this));
+        this.eventRegistration = this.props.scenario.addListener('completed', this.onCompleted.bind(this));
+    }
+
+    componentWillUnmount() {
+        this.eventRegistration.remove();
     }
 
     onCompleted() {

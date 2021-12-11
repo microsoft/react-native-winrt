@@ -3,8 +3,8 @@
   "version": "0.0.1",
   "private": true,
   "dependencies": {
-    "react": "17.0.1",
-    "react-native": "0.64.3",
-    "react-native-windows": "0.64.27"
+    "react": "17.0.2",
+    "react-native": "0.65.2",
+    "react-native-windows": "0.65.9"
   }
 }

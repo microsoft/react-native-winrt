@@ -1,7 +1,7 @@
-// Copyright (c) Microsoft Corporation. 
+// Copyright (c) Microsoft Corporation.
 // Licensed under the MIT License.
-
 #include "pch.h"
+
 #include "ReactPackageProvider.h"
 #include "NativeModules.h"
 
@@ -16,5 +16,3 @@ void ReactPackageProvider::CreatePackage(IReactPackageBuilder const &packageBuil
 }
 
 } // namespace winrt::RNWinRTTestApp::implementation
-
-

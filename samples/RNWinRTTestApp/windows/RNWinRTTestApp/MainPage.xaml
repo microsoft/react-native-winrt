@@ -6,8 +6,11 @@
     xmlns:react="using:Microsoft.ReactNative"
     xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
-    mc:Ignorable="d">
-    <react:ReactRootView 
+    mc:Ignorable="d"
+    Background="{ThemeResource ApplicationPageBackgroundThemeBrush}">
+    <react:ReactRootView
         x:Name="ReactRootView"
-        ComponentName="RNWinRTTestApp" />
+        ComponentName="RNWinRTTestApp"
+        Background="{ThemeResource ApplicationPageBackgroundThemeBrush}"
+        MinHeight="400"/>
 </Page>
