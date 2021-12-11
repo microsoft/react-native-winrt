@@ -13,7 +13,6 @@
     <ClInclude Include="ReactPackageProvider.h" />
   </ItemGroup>
   <ItemGroup>
-    <None Include="jswinrt.config" />
     <None Include="packages.config" />
   </ItemGroup>
 </Project>
