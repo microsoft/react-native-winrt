@@ -68,9 +68,9 @@ The following steps demonstrate how to use the Microsoft.ReactNative.WinRT NuGet
 - When running Debug, you may see the error: "ReferenceError: Windows is not defined". The browser debugger is not supported with React Native Windows, so you may need to change this line in `App.cpp`:
 
     ```cpp
-    `InstanceSettings().UseWebDebugger(true);`
+    InstanceSettings().UseWebDebugger(true);
     ```
     to this:
     ```cpp
-    `InstanceSettings().UseWebDebugger(false);`
+    InstanceSettings().UseWebDebugger(false);
     ```
