@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <Project DefaultTargets="Build" ToolsVersion="16.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
   <PropertyGroup>
-    <RnWinRTDir>..\packages\Microsoft.ReactNative.WinRT.0.64.20211210.2</RnWinRTDir>
+    <RnWinRTDir>..\packages\Microsoft.ReactNative.WinRT.0.66.20211211.4</RnWinRTDir>
   </PropertyGroup>
   <Import Project="$(RnWinRTDir)\build\native\WinRTTurboModule.props" Condition="Exists('$(RnWinRTDir)\build\native\WinRTTurboModule.props')" />
   <Import Project="..\packages\Microsoft.Windows.CppWinRT.2.0.210505.3\build\native\Microsoft.Windows.CppWinRT.props" Condition="Exists('..\packages\Microsoft.Windows.CppWinRT.2.0.210505.3\build\native\Microsoft.Windows.CppWinRT.props')" />
