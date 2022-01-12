@@ -12,7 +12,7 @@
     <tags>RN WinRT RNW rnwinrt WinMD xlang</tags>
     <copyright>© Microsoft Corporation. All rights reserved.</copyright>
     <license type="file">LICENSE</license>
-    <projectUrl>https://github.com/microsoft/react-native-windows/tree/main/</projectUrl>
+    <projectUrl>https://github.com/microsoft/react-native-winrt</projectUrl>
   </metadata>
   <files>
     <file src="LICENSE"/>
