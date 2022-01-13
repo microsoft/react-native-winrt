@@ -14,12 +14,13 @@ See the [sample app](/samples/RNWinRTTestApp/) for an example of using the **Mic
 
 ## Versioning
 
-The versioning for React Native WinRT aligns with versions of React Native Windows. A new version of React Native Windows is not guaranteed to be supported by a lower version of **Microsoft.ReactNative.WinRT**. For example, a React Native Windows 0.67 app may not be compatible with **Microsoft.ReactNative.WinRT** 0.66.* package versions due to potential breaking changes.
+The versioning scheme for React Native WinRT aligns with versions of React Native Windows. A new major version of React Native Windows is not guaranteed to be supported by a lower version of React Native WinRT. For example, a React Native Windows 0.67 app may not be compatible with **Microsoft.ReactNative.WinRT** 0.66.* package versions due to potential breaking changes.
 
-This repo supports the following versions of React Native Windows: 
-- [0.64](https://github.com/microsoft/react-native-winrt/tree/release/0.64)
-- [0.65](https://github.com/microsoft/react-native-winrt/tree/release/0.65)
-- [0.66](https://github.com/microsoft/react-native-winrt/tree/release/0.66).
+React Native WinRT currently supports the following versions of React Native Windows: 
+
+- [release/0.66](https://github.com/microsoft/react-native-winrt/tree/release/0.66)
+- [release/0.65](https://github.com/microsoft/react-native-winrt/tree/release/0.65)
+- [release/0.64](https://github.com/microsoft/react-native-winrt/tree/release/0.64)
 
 ## Contributing
 
