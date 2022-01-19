@@ -12,6 +12,16 @@ Refer to the [usage docs](docs/USAGE.md) for instructions on how to use React Na
 
 See the [sample app](/samples/RNWinRTTestApp/) for an example of using React Native WinRT to consume WinRT APIs.
 
+## Versioning
+
+The versioning scheme for React Native WinRT aligns with versions of React Native for Windows. A new major version of React Native for Windows is not guaranteed to be supported by a mismatched version of React Native WinRT. For example, a React Native for Windows 0.67 app may not be compatible with **Microsoft.ReactNative.WinRT** 0.66.* package versions due to potential breaking changes.
+
+React Native WinRT currently supports the following versions of React Native for Windows: 
+
+- [release/0.66](https://github.com/microsoft/react-native-winrt/tree/release/0.66)
+- [release/0.65](https://github.com/microsoft/react-native-winrt/tree/release/0.65)
+- [release/0.64](https://github.com/microsoft/react-native-winrt/tree/release/0.64)
+
 ## Contributing
 
 This project welcomes contributions and suggestions of all types. See our [Contributor's Guide](/CONTRIBUTING.md) for more information.
