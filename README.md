@@ -14,6 +14,8 @@ See the [sample app](/samples/RNWinRTTestApp/) for an example of using React Nat
 
 <img src="samples/RNWinRTTestApp/images/sample-app.png" width="500">
 
+*Note: This is an example of the sample app. The image is pulled from the user's photo library and will likely be different.*
+
 ## Versioning
 
 The versioning scheme for React Native WinRT aligns with versions of React Native for Windows. A new major version of React Native for Windows is not guaranteed to be supported by a mismatched version of React Native WinRT. For example, a React Native for Windows 0.67 app may not be compatible with **Microsoft.ReactNative.WinRT** 0.66.* package versions due to potential breaking changes.
