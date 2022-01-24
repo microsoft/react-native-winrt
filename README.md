@@ -12,7 +12,7 @@ Refer to the [usage docs](docs/USAGE.md) for instructions on how to use React Na
 
 See the [sample app](/samples/RNWinRTTestApp/) for an example of using React Native WinRT to consume WinRT APIs.
 
-<img src="samples/RNWinRTTestApp/images/sample-app.png" width="400">
+<img src="samples/RNWinRTTestApp/images/sample-app.png" width="500">
 
 ## Versioning
 
