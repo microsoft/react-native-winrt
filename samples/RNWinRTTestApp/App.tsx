@@ -1,4 +1,4 @@
-// Copyright (c) Microsoft Corporation. 
+// Copyright (c) Microsoft Corporation.
 // Licensed under the MIT License.
 
 import React from "react";
@@ -10,6 +10,7 @@ import {
     View,
     Text,
     StatusBar,
+    Pressable,
 } from "react-native";
 
 import {
@@ -17,11 +18,13 @@ import {
     Header,
 } from "react-native/Libraries/NewAppScreen";
 
+import {showNotification} from './Notifications'
+
 async function updateJumpListAsync(): Promise<void> {
     try {
         const StartScreenApi = Windows.UI.StartScreen;
         const jumplist = await StartScreenApi.JumpList.loadCurrentAsync();
-        
+
         jumplist.systemGroupKind = StartScreenApi.JumpListSystemGroupKind.recent;
 
         const items = jumplist.items;
@@ -97,7 +100,7 @@ async function getPictureThumbnailAsync(): Promise<string> {
 
         const library = StorageApi.KnownFolders.picturesLibrary;
         let files = await library.getFilesAsync();
-        
+
         let file: StorageApi.StorageFile | null = null;
         if (files.size > 0) {
             file = files.getAt(0);
@@ -201,6 +204,27 @@ const App = () => {
                     </View>
                     <View style={styles.body}>
                         <View style={styles.sectionContainer}>
+                            <Text style={styles.sectionTitle}>Windows.UI.Notifications Example</Text>
+                            <View style={{ flexDirection: 'row', flexWrap: 'wrap', alignItems: 'center' }}>
+                                <Text style={[{ paddingRight: 10 }, styles.sectionDescription]}>Click the button to show a notification: </Text>
+                                <Pressable style={styles.sectionDescriptionButton} onPress={() => {
+                                    showNotification({
+                                        template: Windows.UI.Notifications.ToastTemplateType.toastImageAndText01,
+                                        // The template schema can be found at https://docs.microsoft.com/previous-versions/windows/apps/hh761494(v=win.10)
+                                        text: "hello world",
+                                        image: {
+                                            src: "https://microsoft.github.io/react-native-windows/img/header_logo.svg",
+                                            alt: "React logo",
+                                        }
+                                    });
+                                }}>
+                                    <Text style={styles.sectionDescriptionButtonText}>Press</Text>
+                                </Pressable>
+                            </View>
+                        </View>
+                    </View>
+                    <View style={styles.body}>
+                        <View style={styles.sectionContainer}>
                             <Text style={styles.sectionTitle}>Windows.Storage API + picturesLibrary capability Example</Text>
                             <AsyncImage imageUriPromise={imageUriPromise} />
                         </View>
@@ -237,6 +261,19 @@ const styles = StyleSheet.create({
     },
     sectionDescription: {
         marginTop: 8,
+        fontSize: 18,
+        fontWeight: "400",
+        color: Colors.dark,
+    },
+    sectionDescriptionButton: {
+        alignItems: 'center',
+        justifyContent: 'center',
+        paddingVertical: 4,
+        paddingHorizontal: 24,
+        borderRadius: 1,
+        backgroundColor: Colors.light,
+    },
+    sectionDescriptionButtonText: {
         fontSize: 18,
         fontWeight: "400",
         color: Colors.dark,
