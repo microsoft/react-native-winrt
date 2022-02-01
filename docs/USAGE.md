@@ -37,7 +37,7 @@ The following steps demonstrate how to use the Microsoft.ReactNative.WinRT NuGet
     1. Add the following line to your project's `App.cpp` file, underneath the line `PackageProviders().Append(make<ReactPackageProvider>());`:
 
         ```cpp
-        PackageProviders().Append(winrt::WinRTTurboModule::ReactPackageProvider());`
+        PackageProviders().Append(winrt::WinRTTurboModule::ReactPackageProvider());
         ```
 
     1. Add the following line to your project's `index.js` file:
@@ -63,7 +63,7 @@ The following steps demonstrate how to use the Microsoft.ReactNative.WinRT NuGet
 
 ### Troubleshooting
 
-- If running Debug, make sure to run `yarn start` in the command prompt before running the app. Otherwise, you may see an error with "connection with server could not be established"
+- If running Debug, make sure to run `yarn start` in the command prompt before running the app. Otherwise, you may see an error with "connection with server could not be established".
 
 - When running Debug, you may see the error: "ReferenceError: Windows is not defined". The browser debugger is not supported with React Native Windows, so you may need to change this line in `App.cpp`:
 
