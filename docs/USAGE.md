@@ -4,7 +4,6 @@
 
 To use React Native WinRT in your existing React Native for Windows (RNW) app, make sure you have the following requirements installed:
 
-- Visual Studio 2019 or later 
 - See [System Requirements](https://microsoft.github.io/react-native-windows/docs/rnw-dependencies) for React Native for Windows development
 - [Windows SDK](https://developer.microsoft.com/en-us/windows/downloads/windows-sdk/)
 
@@ -30,11 +29,11 @@ The following steps demonstrate how to use React Native WinRT to consume WinRT A
 
     1. Add [`WinRTTurboModule.vcxproj`](../samples/RNWinRTTestApp/windows/WinRTTurboModule/WinRTTurboModule.vcxproj) to your solution. In Visual Studio: right click on the solution, and click **Add** -> **Existing Project**. Navigate to `WinRTTurboModule.vcxproj` in the file picker dialog and open the file.
 
-    1. Turn off deploy for the `WinRTTurboModule` project. In Visual Studio, go to **Build** -> **Configuration Manager**, and uncheck the **Deploy** option for the Build/Configuration being used.
+    1. Turn off deploy for the `WinRTTurboModule` project. If you are using Visual Studio, go to **Build** -> **Configuration Manager**, and uncheck the **Deploy** option for the Build/Configuration being used.
 
         <img src="images/winrtturbomodule-uncheck-deploy.png" alt="Uncheck deploy" width="350">
 
-    1. Specify the WinRT namespaces that you want to consume using the `RnWinRTParameters` property in `WinRTTurboModule.vcxproj`. `RnWinRTParameters` is a property defined in the Microsoft.ReactNative.WinRT package. In Visual Studio, right click on the `WinRTTurboModule` project and select **Unload Project**. You can then directly edit `WinRTTurboModule.vcxproj`. Here is an example of how to set the `RnWinRTParameters` property:
+    1. Specify the WinRT namespaces that you want to consume using the `RnWinRTParameters` property in `WinRTTurboModule.vcxproj`. `RnWinRTParameters` is a property defined in the Microsoft.ReactNative.WinRT package. If you are using Visual Studio, right click on the `WinRTTurboModule` project and select **Unload Project**. You can then directly edit `WinRTTurboModule.vcxproj`. Here is an example of how to set the `RnWinRTParameters` property:
 
         ```xml
         <RnWinRTParameters>-include Windows.Globalization -include Windows.Storage</RnWinRTParameters>
@@ -44,7 +43,7 @@ The following steps demonstrate how to use React Native WinRT to consume WinRT A
 
 1. Follow these steps to include the projected WinRT namespaces and consume them in your RNW app.
 
-    1. Add a project reference from your React Native Windows app to the `WinRTTurboModule` project. In Visual Studio, right click on your React Native Windows app project, select **Add Project Reference** and select **WinRTTurboModule**.
+    1. Add a project reference from your React Native Windows app to the `WinRTTurboModule` project. If you are using Visual Studio, right click on your React Native Windows app project, select **Add Project Reference** and select **WinRTTurboModule**.
 
     1. Add the following line to to your project's `pch.h` file.
 
