@@ -57,13 +57,7 @@ The following steps demonstrate how to use React Native WinRT to consume WinRT A
         PackageProviders().Append(winrt::WinRTTurboModule::ReactPackageProvider());
         ```
 
-    1. Add the following line to your project's `index.js` file:
-
-        ```js
-        import './WinRTTurboModule';
-        ```
-
-    1. Create a file named `WinRTTurboModule.js` under your root project directory (next to `index.js`), and copy the contents of [rnwinrt/js/WinRTTurboModule.js](../rnwinrt/js/WinRTTurboModule.js) to it.  This should be something like the following:
+    1. Import the WinRT module in your React Native app. Create a file named `WinRTTurboModule.js` under your root project directory (next to `index.js`), and copy the contents of [rnwinrt/js/WinRTTurboModule.js](../rnwinrt/js/WinRTTurboModule.js) to it.  This should be something like the following:
 
         ```js
         import * as TurboModuleRegistry from 'react-native/Libraries/TurboModule/TurboModuleRegistry';
@@ -72,6 +66,13 @@ The following steps demonstrate how to use React Native WinRT to consume WinRT A
             module.initialize();
         }
         export default module;
+        ```
+        Then, add the following line to your project's `index.js` file, **before** the App import statement:
+
+        ```js
+        import './WinRTTurboModule';
+        ...
+        import App from './App';
         ```
 
     1. You can now call any of the projected WinRT APIs in your RNW app (in Javascript or Typescript). See [App.tsx](../samples/RNWinRTTestApp/App.tsx) in the sample for an example.  
@@ -95,3 +96,8 @@ The following steps demonstrate how to use React Native WinRT to consume WinRT A
  - When building the `WinRTTurboModule` project, you may see compiler build warnings like *"warning C4702: unreachable code"*. These warnings can be safely ignored and are a result of projecting a subset of the Windows SDK.
 
 - When building the `WinRTTurboModule` project, you may see several IntelliSense build errors and warnings in the Visual Studio Error List Window. These can be safely ignored, and the project should still build successfully.
+
+- When running your React Native app, you may see the following error: *'Invariant Violation: Module AppRegistry is not a registered callable module (calling runApplication). A frequent cause of the error is that the application entry file path is incorrect.
+This can also happen when the JS bundle is corrupt or there is an early initialization error when loading React Native.'* 
+
+    To address this error, make sure to import the WinRTTurboModule **before** the App import statement in `index.js*.
