@@ -1,8 +1,8 @@
-## Usage 
+# Developer Usage 
 
 This document describes how to use React Native WinRT in your React Native for Windows app to access Windows Runtime APIs provided by the Windows SDK.
 
-### Requirements
+## Requirements
 
 Make sure you have the following requirements installed:
 
@@ -10,7 +10,7 @@ Make sure you have the following requirements installed:
 - [Windows SDK](https://developer.microsoft.com/en-us/windows/downloads/windows-sdk/)
 - [Visual Studio](https://visualstudio.microsoft.com/downloads/) 
 
-### Usage Steps 
+## Usage Steps 
 
 1. Open your existing RNW app, or follow [these docs](https://microsoft.github.io/react-native-windows/docs/getting-started) to create a new RNW app.
 
@@ -80,7 +80,7 @@ Make sure you have the following requirements installed:
 
 1. Build and deploy/run your RNW app. If running Debug, first run `yarn start` in the command prompt from the root directory of your app.
 
-### Troubleshooting and Known Issues
+## Troubleshooting and Known Issues
 
 - If running Debug, make sure to run `yarn start` in the command prompt before running the app. Otherwise, you may see an error with *"connection with server could not be established"*.
 
