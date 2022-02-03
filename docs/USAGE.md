@@ -1,15 +1,16 @@
 ## Usage 
 
+This document describes how to use React Native WinRT in your React Native for Windows app to access Windows Runtime APIs provided by the Windows SDK.
+
 ### Requirements
 
-To use React Native WinRT in your existing React Native for Windows (RNW) app, make sure you have the following requirements installed:
+Make sure you have the following requirements installed:
 
 - See [System Requirements](https://microsoft.github.io/react-native-windows/docs/rnw-dependencies) for React Native for Windows development
 - [Windows SDK](https://developer.microsoft.com/en-us/windows/downloads/windows-sdk/)
+- [Visual Studio](https://visualstudio.microsoft.com/downloads/) 
 
 ### Usage Steps 
-
-The following steps demonstrate how to use React Native WinRT to consume WinRT APIs in a React Native or Windows (RNW) app.
 
 1. Open your existing RNW app, or follow [these docs](https://microsoft.github.io/react-native-windows/docs/getting-started) to create a new RNW app.
 
@@ -27,7 +28,7 @@ The following steps demonstrate how to use React Native WinRT to consume WinRT A
 
         <img src="images/winrtturbomodule-file-explorer.png" alt="File Explorer folder structure" width="200">
 
-    1. Add [`WinRTTurboModule.vcxproj`](../samples/RNWinRTTestApp/windows/WinRTTurboModule/WinRTTurboModule.vcxproj) to your solution. In Visual Studio: right click on the solution, and click **Add** -> **Existing Project**. Navigate to `WinRTTurboModule.vcxproj` in the file picker dialog and open the file.
+    1. Add [`WinRTTurboModule.vcxproj`](../samples/RNWinRTTestApp/windows/WinRTTurboModule/WinRTTurboModule.vcxproj) to your React Native for Windows app solution. In Visual Studio: right click on the solution, and click **Add** -> **Existing Project**. Navigate to `WinRTTurboModule.vcxproj` in the file picker dialog and open the file.
 
     1. Turn off deploy for the `WinRTTurboModule` project. If you are using Visual Studio, go to **Build** -> **Configuration Manager**, and uncheck the **Deploy** option for the Build/Configuration being used.
 
@@ -100,4 +101,4 @@ The following steps demonstrate how to use React Native WinRT to consume WinRT A
 - When running your React Native app, you may see the following error: *'Invariant Violation: Module AppRegistry is not a registered callable module (calling runApplication). A frequent cause of the error is that the application entry file path is incorrect.
 This can also happen when the JS bundle is corrupt or there is an early initialization error when loading React Native.'* 
 
-    To address this error, make sure to import the WinRTTurboModule **before** the App import statement in `index.js*.
+    To address this error, make sure to import the WinRTTurboModule **before** the App import statement in `index.js`.
