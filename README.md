@@ -22,6 +22,7 @@ The versioning scheme for React Native WinRT aligns with versions of React Nativ
 
 React Native WinRT currently supports the following versions of React Native for Windows: 
 
+- [release/0.67](https://github.com/microsoft/react-native-winrt/tree/release/0.67)
 - [release/0.66](https://github.com/microsoft/react-native-winrt/tree/release/0.66)
 - [release/0.65](https://github.com/microsoft/react-native-winrt/tree/release/0.65)
 - [release/0.64](https://github.com/microsoft/react-native-winrt/tree/release/0.64)
