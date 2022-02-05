@@ -7,8 +7,7 @@ This document describes how to use React Native WinRT in your React Native for W
 Make sure you have the following requirements installed:
 
 - See [System Requirements](https://microsoft.github.io/react-native-windows/docs/rnw-dependencies) for React Native for Windows development
-- [Windows SDK](https://developer.microsoft.com/windows/downloads/windows-sdk/)
-- [Visual Studio](https://visualstudio.microsoft.com/downloads/) 
+- [Visual Studio](https://visualstudio.microsoft.com/downloads/) is *recommended* for the steps to add the native module project (`WinRTTurboModule`)
 
 ## Usage Steps 
 
