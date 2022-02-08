@@ -1,10 +1,10 @@
 <?xml version="1.0" encoding="utf-8"?>
 <Project DefaultTargets="Build" ToolsVersion="16.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
   <PropertyGroup>
-    <RnWinRTDir>..\packages\Microsoft.ReactNative.WinRT.0.66.20211211.4</RnWinRTDir>
+    <RnWinRTDir>$(SolutionDir)\packages\Microsoft.ReactNative.WinRT.0.66.20211211.4</RnWinRTDir>
   </PropertyGroup>
   <Import Project="$(RnWinRTDir)\build\native\WinRTTurboModule.props" Condition="Exists('$(RnWinRTDir)\build\native\WinRTTurboModule.props')" />
-  <Import Project="..\packages\Microsoft.Windows.CppWinRT.2.0.210505.3\build\native\Microsoft.Windows.CppWinRT.props" Condition="Exists('..\packages\Microsoft.Windows.CppWinRT.2.0.210505.3\build\native\Microsoft.Windows.CppWinRT.props')" />
+  <Import Project="$(SolutionDir)\packages\Microsoft.Windows.CppWinRT.2.0.210505.3\build\native\Microsoft.Windows.CppWinRT.props" Condition="Exists('$(SolutionDir)\packages\Microsoft.Windows.CppWinRT.2.0.210505.3\build\native\Microsoft.Windows.CppWinRT.props')" />
   <PropertyGroup Label="Globals">
     <MinimalCoreWin>true</MinimalCoreWin>
     <ProjectGuid>{E13C9C82-0013-422C-945E-848A258AC4DB}</ProjectGuid>
@@ -21,7 +21,6 @@
     <CppWinRTRootNamespaceAutoMerge>true</CppWinRTRootNamespaceAutoMerge>
     <CppWinRTGenerateWindowsMetadata>true</CppWinRTGenerateWindowsMetadata>
     <CppWinRTParameters>-base</CppWinRTParameters>
-    <RnWinRTParameters>-include Windows.Foundation -include Windows.UI.StartScreen -include Windows.UI.ViewManagement -include Windows.Storage -include Windows.Security.Cryptography.CryptographicBuffer -include Windows.Security.Cryptography.ICryptographicBufferStatics -include Windows.Security.Cryptography.BinaryStringEncoding -include Windows.UI.Notifications -include Windows.Data.Xml.Dom</RnWinRTParameters>
   </PropertyGroup>
   <PropertyGroup Label="ReactNativeWindowsProps">
     <ReactNativeWindowsDir Condition="'$(ReactNativeWindowsDir)' == ''">$([MSBuild]::GetDirectoryNameOfFileAbove($(SolutionDir), 'node_modules\react-native-windows\package.json'))\node_modules\react-native-windows\</ReactNativeWindowsDir>
@@ -141,19 +140,16 @@
   <ItemGroup>
     <Midl Include="WinRTTurboModule.idl" />
   </ItemGroup>
-  <ItemGroup>
-    <None Include="packages.config" />
-  </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">
-    <Import Project="..\packages\Microsoft.Windows.CppWinRT.2.0.210505.3\build\native\Microsoft.Windows.CppWinRT.targets" Condition="Exists('..\packages\Microsoft.Windows.CppWinRT.2.0.210505.3\build\native\Microsoft.Windows.CppWinRT.targets')" />
+    <Import Project="$(SolutionDir)\packages\Microsoft.Windows.CppWinRT.2.0.210505.3\build\native\Microsoft.Windows.CppWinRT.targets" Condition="Exists('$(SolutionDir)\packages\Microsoft.Windows.CppWinRT.2.0.210505.3\build\native\Microsoft.Windows.CppWinRT.targets')" />
     <Import Project="$(RnWinRTDir)\build\native\WinRTTurboModule.targets" Condition="Exists('$(RnWinRTDir)\build\native\WinRTTurboModule.targets')" />
   </ImportGroup>
   <Target Name="EnsureNuGetPackageBuildImports" BeforeTargets="PrepareForBuild">
     <PropertyGroup>
       <ErrorText>This project references NuGet package(s) that are missing on this computer. Use NuGet Package Restore to download them.  For more information, see http://go.microsoft.com/fwlink/?LinkID=322105. The missing file is {0}.</ErrorText>
     </PropertyGroup>
-    <Error Condition="!Exists('..\packages\Microsoft.Windows.CppWinRT.2.0.210505.3\build\native\Microsoft.Windows.CppWinRT.props')" Text="$([System.String]::Format('$(ErrorText)', '..\packages\Microsoft.Windows.CppWinRT.2.0.210505.3\build\native\Microsoft.Windows.CppWinRT.props'))" />
+    <Error Condition="!Exists('$(SolutionDir)\packages\Microsoft.Windows.CppWinRT.2.0.210505.3\build\native\Microsoft.Windows.CppWinRT.props')" Text="$([System.String]::Format('$(ErrorText)', '$(SolutionDir)\packages\Microsoft.Windows.CppWinRT.2.0.210505.3\build\native\Microsoft.Windows.CppWinRT.props'))" />
     <Error Condition="!Exists('$(RnWinRTDir)\build\native\WinRTTurboModule.targets')" Text="$([System.String]::Format('$(ErrorText)', '$(RnWinRTDir)\build\native\WinRTTurboModule.targets'))" />
   </Target>
 </Project>
