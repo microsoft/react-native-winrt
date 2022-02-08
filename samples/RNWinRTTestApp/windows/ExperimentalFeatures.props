@@ -17,7 +17,20 @@
       See https://microsoft.github.io/react-native-windows/docs/winui3
     -->
     <UseWinUI3>false</UseWinUI3>
-  
+    
+    <!-- Specify WinRT namespaces to consume -->
+    <RnWinRTParameters>
+      -include Windows.Foundation 
+      -include Windows.UI.StartScreen 
+      -include Windows.UI.ViewManagement 
+      -include Windows.Storage 
+      -include Windows.Security.Cryptography.CryptographicBuffer 
+      -include Windows.Security.Cryptography.ICryptographicBufferStatics 
+      -include Windows.Security.Cryptography.BinaryStringEncoding 
+      -include Windows.UI.Notifications 
+      -include Windows.Data.Xml.Dom
+    </RnWinRTParameters>
+
   </PropertyGroup>
 
 </Project>
