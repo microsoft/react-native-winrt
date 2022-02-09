@@ -32,7 +32,7 @@ Make sure you have the following requirements installed:
     1. Specify the WinRT namespaces that you want to consume using the `RnWinRTParameters` property in the `ExperimentalFeatures.props` file. `RnWinRTParameters` is a property used by the Microsoft.ReactNative.WinRT package. Here is an example of how to set the `RnWinRTParameters` property:
 
         ```xml
-        <PropertyGroup Label="React Native WinRT properties”> 
+        <PropertyGroup Label="React Native WinRT properties"> 
             <RnWinRTParameters> 
                 -include Windows.UI.Notifications  
                 -include Windows.Data.Xml.Dom 
