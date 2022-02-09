@@ -183,7 +183,7 @@ const App = () => {
                             <Text style={styles.sectionDescription} selectable={true}>
                                 Click the following buttons to log events. These
                                 events can be seen in different ETW logging tools such as{' '}
-                                <Text style={{color: 'blue', textDecorationLine: 'underline'}} accessibilityRole='link' onPress={() => Linking.openURL('https://docs.microsoft.com/en-us/windows/uwp/debug-test-perf/device-portal#event-tracing-for-windows-etw-logging')}>Device Portal</Text>
+                                <Text style={{color: 'blue', textDecorationLine: 'underline'}} accessibilityRole='link' onPress={() => Linking.openURL('https://docs.microsoft.com/windows/uwp/debug-test-perf/device-portal#event-tracing-for-windows-etw-logging')}>Device Portal</Text>
                                 {' '}or xperf. To view
                                 these events, use the provider GUID{' '}
                                 <Text style={{fontFamily: 'Consolas', backgroundColor: 'whitesmoke'}}>eff1e128-4903-5093-096a-bdc29b38456f</Text>
