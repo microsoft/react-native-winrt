@@ -25,10 +25,6 @@ Make sure you have the following requirements installed:
 
     1. Add `WinRTTurboModule.vcxproj` under the `WinRTTurboModule` directory to your RNW app solution. In Visual Studio: right click on the solution, and click **Add** -> **Existing Project**. Navigate to `WinRTTurboModule.vcxproj` in the file picker dialog and open the file.
 
-    1. Turn off deploy for the `WinRTTurboModule` project. If you are using Visual Studio, go to **Build** -> **Configuration Manager**, and uncheck the **Deploy** option for the Build/Configuration being used.
-
-        <img src="images/winrtturbomodule-uncheck-deploy.png" alt="Uncheck deploy" width="350">
-
     1. Specify the WinRT namespaces that you want to consume using the `RnWinRTParameters` property in the `ExperimentalFeatures.props` file. `RnWinRTParameters` is a property used by the Microsoft.ReactNative.WinRT package. Here is an example of how to set the `RnWinRTParameters` property:
 
         ```xml
