@@ -77,6 +77,10 @@ Make sure you have the following requirements installed:
 
     1. You can now call any of the projected WinRT APIs in your RNW app (in Javascript or Typescript). See [App.tsx](../samples/RNWinRTTestApp/App.tsx) in the sample for an example.  
 
+1. [OPTIONAL] By default, `rnwinrt.exe` will output `*.d.ts` type declaration files under the path `/windows/WinRTTurboModule/Generated Files/types`. If your project is using TypeScript, these files will get picked up automatically, assuming you haven't changed your `tsconfig.json` to exclude it. If you are using Javascript as well as Visual Studio Code to edit files, you can follow the instructions outlined [here](https://code.visualstudio.com/docs/nodejs/working-with-javascript#_type-checking-javascript) to get type checking as well as auto-complete. Namely, this involves adding a `jsconfig.json` to the root of your project and the coment `// @ts-check` to the top of all desired `*.js` files. If you are using an editor other than Visual Studio code, then you may need to consult your editor's documentation as these steps may not work for you, if the scenario is even supported at all.
+
+    * *NOTE: There are currently a number of known issues with the generation of type declaration files, so you may see some innocuous errors reported by the editor, even though the code will work properly in practice*
+
 1. Build and deploy/run your RNW app. If running Debug, first run `yarn start` in the command prompt from the root directory of your app.
 
 ## Troubleshooting and Known Issues

@@ -1,5 +1,6 @@
-// Copyright (c) Microsoft Corporation. 
+// Copyright (c) Microsoft Corporation.
 // Licensed under the MIT License.
+// @ts-check
 
 /**
  * @format
@@ -82,19 +83,19 @@ function runV2InterfaceMethods(scenario) {
     });
 }
 
-function runExecuteNonAccessibleMethodTest(scenario) {    
+function runExecuteNonAccessibleMethodTest(scenario) {
     this.runSync(scenario, () => {
         const hierarchyBase = new TestComponent.HierarchyBase();
         const hierarchyDerived = new TestComponent.HierarchyDerived("");
-        
-        assert.throwsError(() => {    
+
+        assert.throwsError(() => {
             hierarchyBase.overriddenHierarchyBaseMethodOverride();
         }, "TypeError");
 
-        assert.throwsError(() => {    
+        assert.throwsError(() => {
             hierarchyDerived.overriddenHierarchyBaseMethodOverride();
         }, "TypeError");
-        
+
         assert.throwsError(() => {
             hierarchyBase.inaccessibleHierarchyBaseMethod();
         }, "TypeError");
