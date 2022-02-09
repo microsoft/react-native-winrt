@@ -79,7 +79,7 @@ Make sure you have the following requirements installed:
 
 1. [OPTIONAL] By default, `rnwinrt.exe` will output `*.d.ts` type declaration files under the path `/windows/WinRTTurboModule/Generated Files/types`.
 If your project is using TypeScript, these files will get picked up automatically, assuming you haven't changed your `tsconfig.json` to exclude it.
-If you are using Javascript as well as Visual Studio Code to edit files, you can follow the instructions outlined [here](https://code.visualstudio.com/docs/nodejs/working-with-javascript#_type-checking-javascript) to get type checking as well as auto-complete.
+If you are using Javascript as well as Visual Studio Code to edit files, you can follow the instructions outlined in [Working with Javascript in Visual Studio Code](https://code.visualstudio.com/docs/nodejs/working-with-javascript#_type-checking-javascript) to get type checking as well as auto-complete.
 Namely, this involves adding a `jsconfig.json` to the root of your project and the coment `// @ts-check` to the top of all desired `*.js` files.
 If you are using an editor other than Visual Studio code, then you may need to consult your editor's documentation as these steps may not work for you, if the scenario is even supported at all.
 
