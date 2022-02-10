@@ -7,6 +7,7 @@ The WinRT APIs demonstrated in this sample include:
 - `Windows.Foundation.Uri`
 - `Windows.Storage`
 - `Windows.Foundation.Diagnostics`
+- `Windows.UI.Notifications`
 
 ## Prerequisites
 
