@@ -11,7 +11,6 @@ The WinRT APIs demonstrated in this sample include:
 
 ## Prerequisites
 
-- Visual Studio 2019 or later
 - See [System Requirements](https://microsoft.github.io/react-native-windows/docs/rnw-dependencies) for React Native for Windows development
 
 ## Building and running the sample
@@ -19,10 +18,14 @@ The WinRT APIs demonstrated in this sample include:
 1. Clone or download the react-native-winrt repository.
 2. Open a developer command prompt pointing at this directory.
 3. Run `npm install` from this directory.
-4. Open the solution file [`\windows\RNWinRTTestApp.sln`](./windows/RNWinRTTestApp.sln) in Visual Studio.
-5. Build the solution.
-6. If running Debug: run `yarn start` in the command prompt from this directory.
-7. F5 deploy the sample app (*RNWinRTTestApp*).
+4. If using the **command line**: 
+    - Run `npx react-native run-windows`
+    
+    If using **Visual Studio**:
+    - Open the solution file [`\windows\RNWinRTTestApp.sln`](./windows/RNWinRTTestApp.sln) in Visual Studio.
+    - Build the solution.
+    - If running Debug: run `yarn start` in the command prompt from this directory.
+    - F5 deploy the sample app (*RNWinRTTestApp*).
 
 You will see something similar to below after successfully building and running the sample:
 
