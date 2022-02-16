@@ -1,0 +1,33 @@
+{
+  "name": "react-native-winrt",
+  "version": "0.0.1",
+  "license": "MIT",
+  "description": "React Native WinRT is a module for React Native for Windows developers who want to call native (non-XAML) WinRT APIs in their apps",
+  "main": "index.js",
+  "repository": {
+    "type": "git",
+    "url": "git@github.com/microsoft/react-native-winrt.git"
+  },
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "files": [
+    "LICENSE",
+    "README.md"
+  ],
+  "keywords": [
+    "RN",
+    "React Native",
+    "RNW",
+    "React Native Windows",
+    "WinRT",
+    "React Native WinRT",
+    "rnwinrt",
+    "WinMD",
+    "xlang"
+  ],
+  "bugs": {
+    "url": "https://github.com/microsoft/react-native-winrt/issues"
+  },
+  "homepage": "https://github.com/microsoft/react-native-winrt#readme"
+}
