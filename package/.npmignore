@@ -1,0 +1,8 @@
+
+# Test build output
+windows/WinRTTurboModule/Generated Files
+windows/WinRTTurboModule/Debug
+windows/WinRTTurboModule/Release
+windows/WinRTTurboModule/x64
+windows/WinRTTurboModule/arm
+windows/WinRTTurboModule/arm64
