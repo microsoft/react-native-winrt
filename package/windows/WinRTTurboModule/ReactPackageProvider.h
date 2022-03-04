@@ -1,7 +1,7 @@
-// Copyright (c) Microsoft Corporation. 
+// Copyright (c) Microsoft Corporation.
 // Licensed under the MIT License.
-
 #pragma once
+
 #include <ReactPackageProvider.g.h>
 
 namespace winrt::WinRTTurboModule::implementation
