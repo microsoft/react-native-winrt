@@ -26,6 +26,7 @@ import { makeDelegateAndEventTestScenarios } from './DelegateAndEventTests'
 import { makeAsyncTestScenarios } from './AsyncTests'
 import { makeCollectionsTestScenarios } from './CollectionsTests'
 import { makeInheritanceTestScenarios } from './InheritanceTests'
+import { TestComponent } from './WinRTTurboModule'
 
 class App extends Component {
     test = new TestComponent.Test();

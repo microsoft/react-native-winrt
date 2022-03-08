@@ -1,9 +1,11 @@
-// Copyright (c) Microsoft Corporation. 
+// Copyright (c) Microsoft Corporation.
 // Licensed under the MIT License.
 
 /**
  * @format
  */
+
+import { TestComponent } from './WinRTTurboModule'
 
 import {
     TestScenario,

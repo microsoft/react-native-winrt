@@ -7,6 +7,8 @@
 
 import EventEmitter from 'react-native/Libraries/vendor/emitter/EventEmitter';
 
+import { TestComponent } from './WinRTTurboModule'
+
 function stringify(val) {
     if (val == null) return 'null';
     else if (typeof(val) == 'object') return JSON.stringify(val);

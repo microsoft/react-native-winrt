@@ -18,6 +18,7 @@ thread_local runtime_context* current_thread_context = nullptr;
 WinRTTurboModule::WinRTTurboModule(std::shared_ptr<react::CallInvoker> invoker) :
     TurboModule("WinRTTurboModule", invoker), m_invoker(std::move(invoker))
 {
+    m_rootNamespaces.resize(root_namespaces.size());
     methodMap_["initialize"] = MethodMetadata{ 0, WinRTTurboModuleSpecJSI_initialize };
 
     APTTYPE type;
@@ -36,6 +37,18 @@ WinRTTurboModule::~WinRTTurboModule()
     }
 }
 
+// HostObject overrides
+jsi::Value WinRTTurboModule::get(jsi::Runtime& runtime, const jsi::PropNameID& propName)
+{
+    auto name = propName.utf8(runtime);
+    if (auto itr = find_by_name(root_namespaces, name); itr != root_namespaces.end())
+    {
+        return jsi::Value(runtime, get_namespace(runtime, itr - root_namespaces.begin()));
+    }
+
+    return TurboModule::get(runtime, propName);
+}
+
 // Functions exposed to JS
 void WinRTTurboModule::initialize(jsi::Runtime& runtime)
 {
@@ -43,16 +56,30 @@ void WinRTTurboModule::initialize(jsi::Runtime& runtime)
     {
         m_initialized = true;
 
-        assert(!current_thread_context);
-        current_thread_context = new runtime_context(
-            runtime, [invoker = m_invoker](std::function<void()> fn) { invoker->invokeAsync(std::move(fn)); });
-
         auto global = runtime.global();
-        for (auto data : root_namespaces)
+        for (std::size_t i = 0; i < root_namespaces.size(); ++i)
         {
-            global.setProperty(runtime, make_string(runtime, data->name), data->create(runtime));
+            global.setProperty(runtime, make_string(runtime, root_namespaces[i]->name), get_namespace(runtime, i));
         }
     }
+}
+
+jsi::Value& WinRTTurboModule::get_namespace(jsi::Runtime& runtime, std::size_t index)
+{
+    assert(index < root_namespaces.size());
+    auto& slot = m_rootNamespaces[index];
+    if (slot.isUndefined())
+    {
+        if (!current_thread_context)
+        {
+            current_thread_context = new runtime_context(
+                runtime, [invoker = m_invoker](std::function<void()> fn) { invoker->invokeAsync(std::move(fn)); });
+        }
+
+        slot = root_namespaces[index]->create(runtime);
+    }
+
+    return slot;
 }
 
 runtime_context* rnwinrt::current_runtime_context()

@@ -5,6 +5,8 @@
  * @format
  */
 
+import { TestComponent } from './WinRTTurboModule'
+
 import {
     TestScenario,
     TestValues,

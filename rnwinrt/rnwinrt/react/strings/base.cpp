@@ -376,18 +376,27 @@ jsi::Value projected_statics_class::remove_event_listener(jsi::Runtime& runtime,
 
 jsi::Value static_activatable_class_data::create(jsi::Runtime& runtime) const
 {
-    auto code = "(function() { return "s;
-    code.append(full_namespace);
-    code.append(".");
-    code.append(name);
-    code.append(".ctor.apply(this, arguments); })");
-    auto result = runtime.evaluateJavaScript(std::make_shared<jsi::StringBuffer>(std::move(code)), "Activatable Class")
+    // NOTE: The following is the function, just reduced in size:
+    //      function(ctor)
+    //      {
+    //          var ctorFn = ctor;
+    //          Array.prototype.shift.apply(arguments);
+    //          return ctorFn.apply(null, arguments);
+    //      }
+    // TODO: Use prepareJavaScript/evaluatePreparedJavaScript so that we only need to pay the compilation cost once?
+    auto code = "(function(a){var b=a;Array.prototype.shift.apply(arguments);return b.apply(null,arguments);})"s;
+    auto ctorFn = runtime.evaluateJavaScript(std::make_shared<jsi::StringBuffer>(std::move(code)), "Activatable Class")
                       .asObject(runtime);
 
     // TODO: param count? Seems to not matter? It would be rather simple to calculate when generating the constructor
     // function, but would also be more data...
-    result.setProperty(
-        runtime, "ctor", jsi::Function::createFromHostFunction(runtime, make_propid(runtime, name), 0, constructor));
+    auto activationFn = jsi::Function::createFromHostFunction(runtime, make_propid(runtime, name), 0, constructor);
+
+    // NOTE: When used as a constructor, the 'this' object is an empty object passed in by the calling code, hence why
+    // we bind with 'null' here. Ideally we could pass the constructor function as 'this' to avoid the awkward shifting
+    // of arguments above, however it'll just get thrown away by 'new', so bind it as the first argument.
+    auto bindFn = ctorFn.getPropertyAsFunction(runtime, "bind");
+    auto result = bindFn.callWithThis(runtime, ctorFn, jsi::Value::null(), activationFn).asObject(runtime);
 
     // JSI does not allow us to create a 'Function' that is also a 'HostObject' and therefore cannot provide virtual
     // get/set functions and instead must attach them to the function object
