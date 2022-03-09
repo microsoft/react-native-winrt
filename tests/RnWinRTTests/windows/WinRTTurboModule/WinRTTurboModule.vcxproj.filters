@@ -11,6 +11,7 @@
   <ItemGroup>
     <ClInclude Include="pch.h" />
     <ClInclude Include="ReactPackageProvider.h" />
+    <ClInclude Include="$(RnWinRTPath)module\WinRTTurboModule.h" />
   </ItemGroup>
   <ItemGroup>
     <None Include="packages.config" />
