@@ -18,10 +18,11 @@ namespace winrt::RNWinRTTestApp::implementation
     {
         App() noexcept;
         void OnLaunched(activation::LaunchActivatedEventArgs const&);
-        void OnActivated(Windows::ApplicationModel::Activation::IActivatedEventArgs const &e);
+        void OnActivated(Windows::ApplicationModel::Activation::IActivatedEventArgs const& e);
         void OnSuspending(IInspectable const&, Windows::ApplicationModel::SuspendingEventArgs const&);
         void OnNavigationFailed(IInspectable const&, xaml::Navigation::NavigationFailedEventArgs const&);
-      private:
+
+    private:
         using super = AppT<App>;
     };
 } // namespace winrt::RNWinRTTestApp::implementation
