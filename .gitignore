@@ -123,3 +123,8 @@ buck-out/
 
 # Bundle artifact
 *.jsbundle
+
+# Package files that we either copy and don't want to commit, or are intermediate files we shouldn't commit
+package/LICENSE
+package/index.js
+package/packfiles.new
