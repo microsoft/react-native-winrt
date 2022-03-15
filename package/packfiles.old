@@ -1,5 +1,14 @@
+bin/rnwinrt.exe
+bin/rnwinrt.pdb
+index.d.ts
 index.js
 LICENSE
+module/dllmain.cpp
+module/WinRTTurboModule.cpp
+module/WinRTTurboModule.def
+module/WinRTTurboModule.h
+module/WinRTTurboModule.props
+module/WinRTTurboModule.targets
 package.json
 react-native.config.js
 README.md

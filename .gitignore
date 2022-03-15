@@ -128,3 +128,5 @@ buck-out/
 package/LICENSE
 package/index.js
 package/packfiles.new
+package/bin/
+package/module/

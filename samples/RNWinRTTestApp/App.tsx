@@ -19,7 +19,7 @@ import {
     Header,
 } from "react-native/Libraries/NewAppScreen";
 
-import {showNotification} from './Notifications'
+import { showNotification } from './Notifications';
 
 async function updateJumpListAsync(): Promise<void> {
     try {
