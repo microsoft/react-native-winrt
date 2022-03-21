@@ -1,4 +1,4 @@
-# Developer Usage 
+# Nuget Developer Usage 
 
 This document describes how to use React Native WinRT in your React Native for Windows (RNW) app to access Windows Runtime APIs provided by the Windows SDK.
 
