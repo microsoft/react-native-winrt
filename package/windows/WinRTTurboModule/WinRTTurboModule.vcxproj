@@ -102,7 +102,6 @@
         $(ReactCommonDir)callinvoker;
         $(ReactCommonDir)react\nativemodule\core;
         $(GeneratedFilesDir);
-        $(RnWinRTPath)module;
         %(AdditionalIncludeDirectories);
       </AdditionalIncludeDirectories>
       <AdditionalUsingDirectories>

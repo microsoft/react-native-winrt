@@ -102,7 +102,7 @@ async function getPictureThumbnailAsync(): Promise<string> {
         const library = StorageApi.KnownFolders.picturesLibrary;
         let files = await library.getFilesAsync();
 
-        let file: StorageApi.StorageFile | null = null;
+        let file: Windows.Storage.StorageFile | null = null;
         if (files.size > 0) {
             file = files.getAt(0);
         } else {

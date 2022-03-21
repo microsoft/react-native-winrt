@@ -2,7 +2,7 @@
 
 React Native WinRT is a module for [React Native for Windows](https://microsoft.github.io/react-native-windows/) developers who want to call native (non-XAML) WinRT APIs in their apps. It uses components from [xlang](https://github.com/Microsoft/xlang) to [parse metadata](https://github.com/microsoft/winmd) for public or private WinRT COM APIs and generate JSI (JavaScript Interface) wrappers for [C++/WinRT](https://github.com/microsoft/cppwinrt) types at compile-time. The code generator was itself derived from `cppwinrt.exe`.
 
-This repo generates the [Microsoft.ReactNative.WinRT NuGet packages](https://www.nuget.org/packages/Microsoft.ReactNative.WinRT) for specific versions of React Native Windows. 
+This repo generates the [Microsoft.ReactNative.WinRT NuGet packages](https://www.nuget.org/packages/Microsoft.ReactNative.WinRT) as well as the [react-native-winrt npm package](https://www.npmjs.com/package/react-native-winrt) for specific versions of React Native Windows. 
 
 ## Getting started
 
