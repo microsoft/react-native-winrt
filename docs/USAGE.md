@@ -51,3 +51,5 @@ Make sure you have the following requirements installed:
 |Linker warning *"warning C4702: unreachable code"*|These warnings can be safely ignored and are a result of projecting a subset of the Windows SDK.|
 |IntelliSense errors and warnings in the Visual Studio Error List Window|These can be safely ignored so long as the project still builds successfully.|
 |*"Invariant Violation: Module AppRegistry is not a registered callable module (calling runApplication)..."*|This typically indicates that something in your `App.js` threw an error during initialization. If React Native WinRT is to blame, the cause is likely that you are trying to use a WinRT namespace before the turbo module has been loaded/initialized. If this is the case, ensure that the `import 'react-native-winrt'` comes before `import App from './App'` in your `index.js`.|
+
+If the above does not help resolve your issue, take a look at the [debugging tips](DEBUGGING.md) for instructions on how to debug various issues.

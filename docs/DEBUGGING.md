@@ -1,6 +1,6 @@
 # Debugging
 For the most part, the underlying causes of various issues can be resolved without any actual debugging.
-It is suggested that you first follow the instructions in [the usage guide](USAGE.md#Troubleshooting_and_Known_Issues).
+It is suggested that you first follow the instructions in [the usage guide](USAGE.md#Troubleshooting-and-Known-Issues).
 If none of these suggestions help solve your issue, you may need to do a bit of debugging to determine what your particular issue might be.
 In general, it helps to know what may have caused the issue.
 For example, the steps to debug an issue when adding React Native WinRT to a project may differ significantly from an issue when trying to use a new type in a project where React Native WinRT was successfully being used before.

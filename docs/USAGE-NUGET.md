@@ -71,4 +71,4 @@ Make sure you have the following requirements installed:
 1. Build and run your RNW app. If running Debug, first run `yarn start` in the command prompt from the root directory of your app.
 
 ## Troubleshooting and Known Issues
-The troubleshooting instructions for using the nuget package will be mostly identical to the [troubleshooting instructions for the npm package](USAGE.md#Troubleshooting_and_Known_Issues), with the key difference being that the module import for the npm package will be `import 'react-native-winrt'` as opposed to `import './WinRTTurboModule'`. 
+The troubleshooting instructions for using the nuget package will be mostly identical to the [troubleshooting instructions for the npm package](USAGE.md#Troubleshooting-and-Known-Issues), with the key difference being that the module import for the npm package will be `import 'react-native-winrt'` as opposed to `import './WinRTTurboModule'`. 
