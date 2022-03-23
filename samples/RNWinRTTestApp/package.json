@@ -12,8 +12,8 @@
   },
   "dependencies": {
     "react": "17.0.2",
-    "react-native": "0.67.3",
-    "react-native-windows": "0.67.3",
+    "react-native": "0.67.4",
+    "react-native-windows": "0.67.5",
     "react-native-winrt": "file:../../package"
   },
   "devDependencies": {
