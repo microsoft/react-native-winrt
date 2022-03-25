@@ -6,7 +6,7 @@ The code generator was itself derived from `cppwinrt.exe`.
 
 ## Getting started
 
-Refer to the [Github usage docs](https://github.com/microsoft/react-native-winrt/blob/main/docs/USAGE.md) for instructions on how to use React Native WinRT in your React Native Windows app to call projected WinRT APIs in Javascript.
+Refer to the [GitHub usage docs](https://github.com/microsoft/react-native-winrt/blob/main/docs/USAGE.md) for instructions on how to use React Native WinRT in your React Native Windows app to call projected WinRT APIs in JavaScript.
 
 ## Versioning
 
