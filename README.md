@@ -6,7 +6,7 @@ This repo generates the [react-native-winrt npm package](https://www.npmjs.com/p
 
 ## Getting started
 
-Refer to the [usage docs](docs/USAGE.md) for instructions on how to use React Native WinRT in your React Native Windows app to call projected WinRT APIs in Javascript.
+Refer to the [usage docs](docs/USAGE.md) for instructions on how to use React Native WinRT in your React Native Windows app to call projected WinRT APIs in JavaScript.
 
 ### Sample code
 
