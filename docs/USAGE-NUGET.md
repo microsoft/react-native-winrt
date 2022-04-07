@@ -44,7 +44,7 @@ Make sure you have the following requirements installed:
 
     1. Add a project reference from your RNW app to the `WinRTTurboModule` project. If you are using Visual Studio, right click on your RNW app project, select **Add Project Reference** and select **WinRTTurboModule**.
 
-    1. Add the following line to to your project's `pch.h` file.
+    1. Add the following line to your project's `pch.h` file.
 
         ```cpp
         #include <winrt/WinRTTurboModule.h>
