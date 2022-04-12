@@ -6,12 +6,12 @@ set ROOT_DIR=%~dp0..
 set PACKAGE_DIR=%ROOT_DIR%\package
 
 :: Build the rnwinrt executable so that we can copy it later
-call nuget restore %ROOT_DIR%\rnwinrt\rnwinrt.sln > NUL
+call msbuild "%ROOT_DIR%\rnwinrt\rnwinrt.sln" -t:Restore -p:RestorePackagesConfig=true > NUL
 if %ERRORLEVEL% NEQ 0 (
     echo ERROR: Failed to run nuget restore on rnwinrt.sln
     exit /B %ERRORLEVEL%
 )
-call msbuild %ROOT_DIR%\rnwinrt\rnwinrt.sln -p:Platform=x64;Configuration=Release > NUL
+call msbuild "%ROOT_DIR%\rnwinrt\rnwinrt.sln" -p:Platform=x64;Configuration=Release > NUL
 if %ERRORLEVEL% NEQ 0 (
     echo ERROR: Failed to build rnwinrt.sln
     exit /B %ERRORLEVEL%
@@ -34,6 +34,6 @@ call :copy_file rnwinrt\module\WinRTTurboModule.targets module\WinRTTurboModule.
 exit /B %RESULT%
 
 :copy_file
-    echo f | xcopy /y %ROOT_DIR%\%1 %PACKAGE_DIR%\%2 > NUL
+    echo f | xcopy /y "%ROOT_DIR%\%1" "%PACKAGE_DIR%\%2" > NUL
     if %ERRORLEVEL% NEQ 0 set RESULT=%ERRORLEVEL%
     exit /B %ERRORLEVEL%
