@@ -1,10 +1,12 @@
 <?xml version="1.0" encoding="utf-8"?>
 <Project DefaultTargets="Build" ToolsVersion="16.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <Import Project="$(SolutionDir)\ExperimentalFeatures.props" Condition="Exists('$(SolutionDir)\ExperimentalFeatures.props')" />
   <PropertyGroup>
-    <RnWinRTDir>$(SolutionDir)\packages\Microsoft.ReactNative.WinRT.0.67.20220127.3</RnWinRTDir>
+    <RnWinRTPath>$([MSBuild]::NormalizeDirectory('$(MSBuildThisFileDirectory)', '..\..'))</RnWinRTPath>
+    <RnWinRTExe>$(RnWinRTPath)bin\rnwinrt.exe</RnWinRTExe>
     <CppWinRTDir>$(SolutionDir)\packages\Microsoft.Windows.CppWinRT.2.0.210505.3</CppWinRTDir>
   </PropertyGroup>
-  <Import Project="$(RnWinRTDir)\build\native\WinRTTurboModule.props" Condition="Exists('$(RnWinRTDir)\build\native\WinRTTurboModule.props')" />
+  <Import Project="$(RnWinRTPath)module\WinRTTurboModule.props" />
   <Import Project="$(CppWinRTDir)\build\native\Microsoft.Windows.CppWinRT.props" Condition="Exists('$(CppWinRTDir)\build\native\Microsoft.Windows.CppWinRT.props')" />
   <PropertyGroup Label="Globals">
     <MinimalCoreWin>true</MinimalCoreWin>
@@ -78,7 +80,6 @@
   </PropertyGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.props" />
   <Import Project="$(ReactNativeWindowsDir)\PropertySheets\external\Microsoft.ReactNative.Uwp.CppLib.props" Condition="Exists('$(ReactNativeWindowsDir)\PropertySheets\External\Microsoft.ReactNative.Uwp.CppLib.props')" />
-  <Import Project="$(ReactNativeWindowsDir)\PropertySheets\External\Microsoft.ReactNative.Uwp.CppLib.targets" Condition="Exists('$(ReactNativeWindowsDir)\PropertySheets\External\Microsoft.ReactNative.Uwp.CppLib.targets')" />
   <Target Name="EnsureReactNativeWindowsTargets" BeforeTargets="PrepareForBuild">
     <PropertyGroup>
       <ErrorText>This project references targets in your node_modules\react-native-windows folder. The missing file is {0}.</ErrorText>
@@ -101,7 +102,6 @@
         $(ReactCommonDir)callinvoker;
         $(ReactCommonDir)react\nativemodule\core;
         $(GeneratedFilesDir);
-        $(RnWinRTDir)rnwinrt\module;
         %(AdditionalIncludeDirectories);
       </AdditionalIncludeDirectories>
       <AdditionalUsingDirectories>
@@ -144,13 +144,19 @@
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">
     <Import Project="$(CppWinRTDir)\build\native\Microsoft.Windows.CppWinRT.targets" Condition="Exists('$(CppWinRTDir)\build\native\Microsoft.Windows.CppWinRT.targets')" />
-    <Import Project="$(RnWinRTDir)\build\native\WinRTTurboModule.targets" Condition="Exists('$(RnWinRTDir)\build\native\WinRTTurboModule.targets')" />
+    <Import Project="$(RnWinRTPath)module\WinRTTurboModule.targets" />
+    <Import Project="$(ReactNativeWindowsDir)\PropertySheets\External\Microsoft.ReactNative.Uwp.CppLib.targets" Condition="Exists('$(ReactNativeWindowsDir)\PropertySheets\External\Microsoft.ReactNative.Uwp.CppLib.targets')" />
+
+    <Import Project="$(SolutionDir)\packages\Microsoft.ReactNative.$(ReactNativeWindowsVersion)\build\native\Microsoft.ReactNative.targets" Condition="'$(UseExperimentalNuget)'=='true' And Exists('$(SolutionDir)\packages\Microsoft.ReactNative.Cxx.$(ReactNativeWindowsVersion)\build\native\Microsoft.ReactNative.Cxx.targets')" />
+    <Import Project="$(SolutionDir)\packages\Microsoft.ReactNative.Cxx.$(ReactNativeWindowsVersion)\build\native\Microsoft.ReactNative.Cxx.targets" Condition="'$(UseExperimentalNuget)'=='true' And Exists('$(SolutionDir)\packages\Microsoft.ReactNative.Cxx.$(ReactNativeWindowsVersion)\build\native\Microsoft.ReactNative.Cxx.targets')" />
   </ImportGroup>
   <Target Name="EnsureNuGetPackageBuildImports" BeforeTargets="PrepareForBuild">
     <PropertyGroup>
       <ErrorText>This project references NuGet package(s) that are missing on this computer. Use NuGet Package Restore to download them.  For more information, see http://go.microsoft.com/fwlink/?LinkID=322105. The missing file is {0}.</ErrorText>
     </PropertyGroup>
     <Error Condition="!Exists('$(CppWinRTDir)\build\native\Microsoft.Windows.CppWinRT.props')" Text="$([System.String]::Format('$(ErrorText)', '$(CppWinRTDir)\build\native\Microsoft.Windows.CppWinRT.props'))" />
-    <Error Condition="!Exists('$(RnWinRTDir)\build\native\WinRTTurboModule.targets')" Text="$([System.String]::Format('$(ErrorText)', '$(RnWinRTDir)\build\native\WinRTTurboModule.targets'))" />
+
+    <Error Condition="'$(UseExperimentalNuget)'=='true' And !Exists('$(SolutionDir)\packages\Microsoft.ReactNative.Cxx.$(ReactNativeWindowsVersion)\build\native\Microsoft.ReactNative.Cxx.targets')" Text="$([System.String]::Format('$(ErrorText)', '$(SolutionDir)\packages\Microsoft.ReactNative.Cxx.$(ReactNativeWindowsVersion)\build\native\Microsoft.ReactNative.Cxx.targets'))"  />
+    <Error Condition="'$(UseExperimentalNuget)'=='true' And !Exists('$(SolutionDir)\packages\Microsoft.ReactNative.$(ReactNativeWindowsVersion)\build\native\Microsoft.ReactNative.targets')" Text="$([System.String]::Format('$(ErrorText)', '$(SolutionDir)\packages\Microsoft.ReactNative.$(ReactNativeWindowsVersion)\build\native\Microsoft.ReactNative.targets'))"  />
   </Target>
 </Project>

@@ -15,6 +15,7 @@
 #include <UI.Xaml.Controls.h>
 #include <UI.Xaml.Markup.h>
 #include <UI.Xaml.Navigation.h>
+#include <VersionMacros.h>
 #include <winrt/Windows.ApplicationModel.Activation.h>
 
 #include <winrt/Microsoft.ReactNative.h>
