@@ -11,6 +11,7 @@ import {
     Text,
     StatusBar,
     Pressable,
+    Linking,
 } from "react-native";
 
 import {
@@ -125,25 +126,6 @@ async function getPictureThumbnailAsync(): Promise<string> {
     return "";
 }
 
-function logWindowsTelemetry(): void
-{
-    try {
-        const DiagnosticsApi = Windows.Foundation.Diagnostics;
-        const loggingChannel =  new DiagnosticsApi.LoggingChannel("Microsoft-Windows-Shell-Launcher",
-          new DiagnosticsApi.LoggingChannelOptions("{4F50731A-89CF-4782-B3E0-DCE8C90476BA}"), "{3d6120a6-0986-51c4-213a-e2975903051d}")
-
-        const loggingOptions = new DiagnosticsApi.LoggingOptions();
-        loggingOptions.keywords = 0x0000400000000000;
-        loggingOptions.tags = 0;
-
-        const loggingFields = new DiagnosticsApi.LoggingFields();
-        loggingFields.addUInt64("PartA_PrivTags", 0x0000000002000000);
-        loggingChannel.logEvent("ReactNativeWindows_WinRTProjections", loggingFields, DiagnosticsApi.LoggingLevel.warning, loggingOptions);
-    } catch (e) {
-        console.error(e);
-    }
-}
-
 interface AsyncImageProps {
     imageUriPromise?: Promise<string>;
 }
@@ -175,7 +157,8 @@ function AsyncImage(props: AsyncImageProps) {
 
 const App = () => {
     updateJumpListAsync();
-    logWindowsTelemetry();
+    // NOTE: The Id used is the hash of the string 'SampleProvider'. This Guid is 'eff1e128-4903-5093-096a-bdc29b38456f'
+    const loggingChannel = new Windows.Foundation.Diagnostics.LoggingChannel("SampleProvider", null);
     const imageUriPromise = getPictureThumbnailAsync();
 
     return (
@@ -197,9 +180,35 @@ const App = () => {
                     <View style={styles.body}>
                         <View style={styles.sectionContainer}>
                             <Text style={styles.sectionTitle}>Windows.Foundation.Diagnostics.LoggingChannel Example</Text>
-                            <Text style={styles.sectionDescription}>
-                                {`Use Telemetry RealTime Tool to verify`}
+                            <Text style={styles.sectionDescription} selectable={true}>
+                                Click the following buttons to log events. These
+                                events can be seen in different ETW logging tools such as{' '}
+                                <Text style={{color: 'blue', textDecorationLine: 'underline'}} accessibilityRole='link' onPress={() => Linking.openURL('https://docs.microsoft.com/windows/uwp/debug-test-perf/device-portal#event-tracing-for-windows-etw-logging')}>Device Portal</Text>
+                                {' '}or xperf. To view
+                                these events, use the provider GUID{' '}
+                                <Text style={{fontFamily: 'Consolas', backgroundColor: 'whitesmoke'}}>eff1e128-4903-5093-096a-bdc29b38456f</Text>
                             </Text>
+                            <View style={{ paddingTop: 10, flexDirection: 'row', justifyContent: 'center', flexWrap: 'wrap', alignItems: 'center' }}>
+                                <Pressable style={[{marginHorizontal: 10}, styles.sectionDescriptionButton]} onPress={() => {
+                                    loggingChannel.logMessage("This string is being logged from an RNW application!");
+                                }}>
+                                    <Text style={styles.sectionDescriptionButtonText}>Log String</Text>
+                                </Pressable>
+                                <Pressable style={[{marginHorizontal: 10}, styles.sectionDescriptionButton]} onPress={() => {
+                                    loggingChannel.logValuePair("This value is being logged from an RNW application!", 42);
+                                }}>
+                                    <Text style={styles.sectionDescriptionButtonText}>Log Value Pair</Text>
+                                </Pressable>
+                                <Pressable style={[{marginHorizontal: 10}, styles.sectionDescriptionButton]} onPress={() => {
+                                    var fields = new Windows.Foundation.Diagnostics.LoggingFields();
+                                    fields.addString("string", "Hello, from RNW!");
+                                    fields.addInt32("int32", 42);
+                                    fields.addDateTime("date", new Date());
+                                    loggingChannel.logEvent("This structure is being logged from an RNW application!", fields);
+                                }}>
+                                    <Text style={styles.sectionDescriptionButtonText}>Log With Fields</Text>
+                                </Pressable>
+                            </View>
                         </View>
                     </View>
                     <View style={styles.body}>
