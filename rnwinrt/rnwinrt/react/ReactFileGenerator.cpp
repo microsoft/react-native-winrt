@@ -1070,6 +1070,24 @@ static void write_rnwinrt_base_files(const Settings& settings)
     }
 }
 
+void write_rnwinrt_js_module_file(const Settings& settings, const projection_data& data)
+{
+    // Write the 'module.js' file that exports root namespaces as well as the default module
+    rnwinrt::file_writer writer(settings.JsOutputFolder / "module.js");
+    writer.write(R"^-^(
+import { TurboModuleRegistry } from 'react-native';
+
+const module = TurboModuleRegistry.get('WinRTTurboModule');
+
+export default module;
+)^-^");
+
+    for (auto& ns : data.root_namespaces)
+    {
+        writer.write_fmt("export const % = module ? module.% : undefined;\n", ns->full_name, ns->full_name);
+    }
+}
+
 void write_rnwinrt_files(const Settings& settings, const projection_data& data)
 {
     // Projections.g.cpp
@@ -1083,4 +1101,7 @@ void write_rnwinrt_files(const Settings& settings, const projection_data& data)
 
     // base.h/base.cpp
     write_rnwinrt_base_files(settings);
+
+    // Projections.js
+    write_rnwinrt_js_module_file(settings, data);
 }

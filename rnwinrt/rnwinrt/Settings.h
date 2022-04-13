@@ -10,6 +10,7 @@ struct Settings
     Settings(const CommandReader& commandReader);
 
     const std::filesystem::path OutputFolder;
+    const std::filesystem::path JsOutputFolder;
     const std::filesystem::path TypescriptOutputFolder;
     winmd::reader::cache Cache;
     const TypeFilter Filter;

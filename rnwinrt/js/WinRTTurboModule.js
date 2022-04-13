@@ -1,11 +1,5 @@
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT License.
 
-import { TurboModuleRegistry } from 'react-native';
-
-const module = TurboModuleRegistry.get('WinRTTurboModule');
-if (module) {
-    module.initialize();
-}
-
-export default module;
+export { default } from './windows/WinRTTurboModule/Generated Files/js/module';
+export * from './windows/WinRTTurboModule/Generated Files/js/module';

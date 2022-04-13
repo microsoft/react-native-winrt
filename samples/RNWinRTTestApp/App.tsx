@@ -21,6 +21,8 @@ import {
 
 import { showNotification } from './Notifications';
 
+import { Windows } from 'react-native-winrt';
+
 async function updateJumpListAsync(): Promise<void> {
     try {
         const StartScreenApi = Windows.UI.StartScreen;
