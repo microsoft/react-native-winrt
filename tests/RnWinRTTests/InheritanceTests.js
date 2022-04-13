@@ -5,7 +5,8 @@
  * @format
  */
 
-import { TestComponent } from './WinRTTurboModule'
+// Unlike other tests, this uses the default export directly to test its use
+import winrt from './WinRTTurboModule'
 
 import {
     TestScenario,
@@ -28,15 +29,15 @@ export function makeInheritanceTestScenarios(pThis) {
 function runInvalidDerivedClassConstructorTest(scenario) {
     this.runSync(scenario, () => {
         assert.throwsError(() => {
-            const hierarchyDerived = new TestComponent.HierarchyDerived();
+            const hierarchyDerived = new winrt.TestComponent.HierarchyDerived();
         }, "Error", "TypeError: No constructor overload exists for TestComponent.HierarchyDerived with 0 args");
     });
 }
 
 function runBaseClassMethodFromDerivedClassTest(scenario) {
     this.runSync(scenario, () => {
-        const hierarchyBase = new TestComponent.HierarchyBase();
-        const hierarchyDerived = new TestComponent.HierarchyDerived("");
+        const hierarchyBase = new winrt.TestComponent.HierarchyBase();
+        const hierarchyDerived = new winrt.TestComponent.HierarchyDerived("");
         assert.equal(hierarchyBase.nonOverriddenHierarchyBaseMethod(), "HierarchyBase.NonOverriddenHierarchyBaseMethod");
         assert.equal(hierarchyDerived.nonOverriddenHierarchyBaseMethod(), "HierarchyBase.NonOverriddenHierarchyBaseMethod");
     });
@@ -44,8 +45,8 @@ function runBaseClassMethodFromDerivedClassTest(scenario) {
 
 function runOverriddenBaseClassMethodFromDerivedClassTest(scenario) {
     this.runSync(scenario, () => {
-        const hierarchyBase = new TestComponent.HierarchyBase();
-        const hierarchyDerived = new TestComponent.HierarchyDerived("");
+        const hierarchyBase = new winrt.TestComponent.HierarchyBase();
+        const hierarchyDerived = new winrt.TestComponent.HierarchyDerived("");
         assert.equal(hierarchyBase.overriddenHierarchyBaseMethod(), "HierarchyBase.OverriddenHierarchyBaseMethod");
         assert.equal(hierarchyDerived.overriddenHierarchyBaseMethod(), "HierarchyDerived.OverriddenHierarchyBaseMethod");
     });
@@ -53,15 +54,15 @@ function runOverriddenBaseClassMethodFromDerivedClassTest(scenario) {
 
 function runDerivedClassMethod(scenario) {
     this.runSync(scenario, () => {
-        const hierarchyDerived = new TestComponent.HierarchyDerived("");
+        const hierarchyDerived = new winrt.TestComponent.HierarchyDerived("");
         assert.equal(hierarchyDerived.hierarchyDerivedMethod(), "HierarchyDerived.HierarchyDerivedMethod");
     });
 }
 
 function runOverloadedMethodTest(scenario) {
     this.runSync(scenario, () => {
-        const hierarchyBase = new TestComponent.HierarchyBase();
-        const hierarchyDerived = new TestComponent.HierarchyDerived("");
+        const hierarchyBase = new winrt.TestComponent.HierarchyBase();
+        const hierarchyDerived = new winrt.TestComponent.HierarchyDerived("");
         assert.equal(hierarchyBase.overloadedHierarchyBaseMethod("hello"), "HierarchyBase.OverloadedHierarchyBaseMethod");
         assert.equal(hierarchyDerived.overloadedHierarchyBaseMethod("hello", "world"), "HierarchyDerived.OverloadedHierarchyBaseMethod");
     });
@@ -69,16 +70,16 @@ function runOverloadedMethodTest(scenario) {
 
 function runStaticMethodFromDerivedClassTest(scenario) {
     this.runSync(scenario, () => {
-        assert.equal(TestComponent.HierarchyBase.staticHierarchyBaseMethod(), "HierarchyBase.StaticHierarchyBaseMethod");
+        assert.equal(winrt.TestComponent.HierarchyBase.staticHierarchyBaseMethod(), "HierarchyBase.StaticHierarchyBaseMethod");
         // TODO: remove this comment when this support is added
-        // assert.equal(TestComponent.HierarchyDerived.staticHierarchyBaseMethod(), "HierarchyBase.StaticHierarchyBaseMethod");
+        // assert.equal(winrt.TestComponent.HierarchyDerived.staticHierarchyBaseMethod(), "HierarchyBase.StaticHierarchyBaseMethod");
     });
 }
 
 function runV2InterfaceMethods(scenario) {
     this.runSync(scenario, () => {
-        const hierarchyBase = new TestComponent.HierarchyBase();
-        const hierarchyDerived = new TestComponent.HierarchyDerived("");
+        const hierarchyBase = new winrt.TestComponent.HierarchyBase();
+        const hierarchyDerived = new winrt.TestComponent.HierarchyDerived("");
         assert.equal(hierarchyBase.iHierarchyV2ContractMethod(), "HierarchyBase.IHierarchyV2ContractMethod");
         assert.equal(hierarchyDerived.iHierarchyV2ContractMethod(), "HierarchyBase.IHierarchyV2ContractMethod");
     });
@@ -86,8 +87,8 @@ function runV2InterfaceMethods(scenario) {
 
 function runExecuteNonAccessibleMethodTest(scenario) {
     this.runSync(scenario, () => {
-        const hierarchyBase = new TestComponent.HierarchyBase();
-        const hierarchyDerived = new TestComponent.HierarchyDerived("");
+        const hierarchyBase = new winrt.TestComponent.HierarchyBase();
+        const hierarchyDerived = new winrt.TestComponent.HierarchyDerived("");
 
         assert.throwsError(() => {
             hierarchyBase.overriddenHierarchyBaseMethodOverride();
