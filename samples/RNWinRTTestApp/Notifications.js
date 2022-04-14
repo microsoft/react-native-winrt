@@ -1,5 +1,8 @@
 
-const Notifications = Windows.UI.Notifications;
+// Example using the module export
+import winrt from 'react-native-winrt';
+
+const Notifications = winrt.Windows.UI.Notifications;
 const ToastTemplateType = Notifications.ToastTemplateType;
 const ToastNotificationManager = Notifications.ToastNotificationManager;
 const ToastNotification = Notifications.ToastNotification;
