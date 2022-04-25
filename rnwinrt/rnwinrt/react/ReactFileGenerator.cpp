@@ -1102,6 +1102,9 @@ void write_rnwinrt_files(const Settings& settings, const projection_data& data)
     // base.h/base.cpp
     write_rnwinrt_base_files(settings);
 
-    // Projections.js
-    write_rnwinrt_js_module_file(settings, data);
+    if (settings.GenerateModule)
+    {
+        // Projections.js
+        write_rnwinrt_js_module_file(settings, data);
+    }
 }

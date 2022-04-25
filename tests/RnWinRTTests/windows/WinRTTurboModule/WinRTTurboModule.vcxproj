@@ -22,7 +22,7 @@
     <CppWinRTRootNamespaceAutoMerge>true</CppWinRTRootNamespaceAutoMerge>
     <CppWinRTGenerateWindowsMetadata>true</CppWinRTGenerateWindowsMetadata>
     <CppWinRTParameters>-base</CppWinRTParameters>
-    <RnWinRTParameters>-include Windows.Foundation -include TestComponent -include Windows.Web.Http.HttpStatusCode</RnWinRTParameters>
+    <RnWinRTParameters>-module -include Windows.Foundation -include TestComponent -include Windows.Web.Http.HttpStatusCode</RnWinRTParameters>
     <RnWinRTVerbosity>high</RnWinRTVerbosity>
   </PropertyGroup>
   <PropertyGroup Label="ReactNativeWindowsProps">

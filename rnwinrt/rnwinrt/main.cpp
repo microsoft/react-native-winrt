@@ -28,6 +28,8 @@ namespace
         { "deprecatedincluded", Option::NoMinArgs, 0, {}, "Includes types and methods that are marked deprecated." },
         { "webhosthiddenincluded", Option::NoMinArgs, 0, {},
             "Includes types annotated with WebHostHidden that are intended to be hidden from JS callers." },
+        { "module", Option::NoMinArgs, 0, {},
+            "Generated TypeScript files are more geared towards a modular experience" },
         { "verbose", Option::NoMinArgs, 0, {}, "Enables verbose logging" },
     };
 

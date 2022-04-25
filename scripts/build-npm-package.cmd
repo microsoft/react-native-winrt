@@ -20,7 +20,6 @@ if %ERRORLEVEL% NEQ 0 (
 :: NOTE: All of the following are relative to 'ROOT_DIR' and 'PACKAGE_DIR'
 set RESULT=0
 call :copy_file LICENSE LICENSE
-call :copy_file rnwinrt\js\WinRTTurboModule.js index.js
 
 call :copy_file rnwinrt\x64\Release\rnwinrt.exe bin\rnwinrt.exe
 call :copy_file rnwinrt\x64\Release\rnwinrt.pdb bin\rnwinrt.pdb

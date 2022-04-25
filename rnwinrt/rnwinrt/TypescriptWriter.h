@@ -16,6 +16,39 @@ public:
     {
     }
 
+    void Write(const projection_data& data, TextWriter& textWriter)
+    {
+        textWriter.Write("//tslint:disable"sv);
+
+        for (auto& ns : data.root_namespaces)
+        {
+            textWriter.WriteBlankLine();
+            WriteNamespaceRecursive(ns.get(), textWriter);
+        }
+    }
+
+    void WriteNamespaceRecursive(const namespace_projection_data* ns, TextWriter& textWriter)
+    {
+        textWriter.WriteIndentedLine("export namespace % {%}"sv, ns->name, [&]() {
+            textWriter.AddIndent();
+            if (ns->members)
+            {
+                for (auto const& type : ns->members->types)
+                {
+                    WriteTypeDefiniton(type.second, textWriter);
+                }
+            }
+
+            for (auto& child : ns->namespace_children)
+            {
+                WriteNamespaceRecursive(child.get(), textWriter);
+            }
+
+            textWriter.ReduceIndent();
+            textWriter.WriteIndentedLine();
+        });
+    }
+
     void Write(const namespace_projection_data& ns, TextWriter& textWriter)
     {
         textWriter.Write("%"sv, "//tslint:disable"sv);
@@ -126,19 +159,19 @@ public:
             {
                 if (type.TypeNamespace() == "Windows.Foundation" && type.TypeName() == "IAsyncInfo")
                 {
-                    textWriter.Write(
-                        "%", R"(interface WinRTPromiseBase<TResult, TProgress> extends PromiseLike<TResult> {
-        then<U, V>(success?: (value: TResult) => Promise<U>, error?: (error: any) => Promise<U>, progress?: (progress: TProgress) => void): Promise<U>;
-        then<U, V>(success?: (value: TResult) => Promise<U>, error?: (error: any) => U, progress?: (progress: TProgress) => void): Promise<U>;
-        then<U, V>(success?: (value: TResult) => U, error?: (error: any) => Promise<U>, progress?: (progress: TProgress) => void): Promise<U>;
-        then<U, V>(success?: (value: TResult) => U, error?: (error: any) => U, progress?: (progress: TProgress) => void): Promise<U>;
-        done<U, V>(success?: (value: TResult) => any, error?: (error: any) => any, progress?: (progress: TProgress) => void): void;
-        cancel(): void;
-        operation: IAsyncInfo;
-    }
+                    textWriter.Write("interface WinRTPromiseBase<TResult, TProgress> extends PromiseLike<TResult> {");
+                    textWriter.AddIndent();
+                    textWriter.WriteIndentedLine("then<U, V>(success?: (value: TResult) => Promise<U>, error?: (error: any) => Promise<U>, progress?: (progress: TProgress) => void): Promise<U>;");
+                    textWriter.WriteIndentedLine("then<U, V>(success?: (value: TResult) => Promise<U>, error?: (error: any) => U, progress?: (progress: TProgress) => void): Promise<U>;");
+                    textWriter.WriteIndentedLine("then<U, V>(success?: (value: TResult) => U, error?: (error: any) => Promise<U>, progress?: (progress: TProgress) => void): Promise<U>;");
+                    textWriter.WriteIndentedLine("then<U, V>(success?: (value: TResult) => U, error?: (error: any) => U, progress?: (progress: TProgress) => void): Promise<U>;");
+                    textWriter.WriteIndentedLine("done<U, V>(success?: (value: TResult) => any, error?: (error: any) => any, progress?: (progress: TProgress) => void): void;");
+                    textWriter.WriteIndentedLine("cancel(): void;");
+                    textWriter.WriteIndentedLine("operation: IAsyncInfo;");
+                    textWriter.ReduceIndent();
+                    textWriter.WriteIndentedLine("}\n");
 
-    type WinRTPromise<TResult, TProgress> = WinRTPromiseBase<TResult, TProgress> & Promise<TResult>;
-)");
+                    textWriter.WriteIndentedLine("type WinRTPromise<TResult, TProgress> = WinRTPromiseBase<TResult, TProgress> & Promise<TResult>;\n");
                     textWriter.WriteIndentedLine();
                 }
                 if (type.Flags().Abstract() && (category != winmd::reader::category::interface_type))
@@ -293,60 +326,56 @@ public:
     {
         if (type.TypeNamespace() == "Windows.Foundation.Collections" && type.TypeName() == "IMapView`2")
         {
-            textWriter.Write("%", R"(
-        readonly [key: string]: any;)");
+            textWriter.WriteIndentedLine("readonly [key: string]: any;");
         }
         else if (type.TypeNamespace() == "Windows.Foundation.Collections" && type.TypeName() == "IMap`2")
         {
-            textWriter.Write("%", R"(
-        [key: string]: any;)");
+            textWriter.WriteIndentedLine("[key: string]: any;");
         }
         else if (type.TypeNamespace() == "Windows.Foundation.Collections" && type.TypeName() == "IVector`1")
         {
-            textWriter.Write("%", R"(
-        length: number;
-        [index: number]: T;
-        concat(...items: (T | ConcatArray<T>)[]): T[];
-        copyWithin(target: number, start: number, end?: number): this;
-        every<S extends T>(predicate: (value: T, index: number, array: T[]) => value is S, thisArg?: any): this is S[];
-        some(predicate: (value: T, index: number, array: T[]) => unknown, thisArg?: any): boolean;
-        filter<S extends T>(predicate: (value: T, index: number, array: T[]) => value is S, thisArg?: any): S[];
-        filter(predicate: (value: T, index: number, array: T[]) => unknown, thisArg?: any): T[];
-        forEach(callbackfn: (value: T, index: number, array: T[]) => void, thisArg?: any): void;
-        lastIndexOf(searchElement: T, fromIndex?: number): number;
-        pop(): T | undefined;
-        push(...items: T[]): number;
-        map<U>(callbackfn: (value: T, index: number, array: T[]) => U, thisArg?: any): U[];
-        reduce(callbackfn: (previousValue: T, currentValue: T, currentIndex: number, array: T[]) => T): T;
-        reduce(callbackfn: (previousValue: T, currentValue: T, currentIndex: number, array: T[]) => T, initialValue: T): T;
-        reduceRight(callbackfn: (previousValue: T, currentValue: T, currentIndex: number, array: T[]) => T): T;
-        reduceRight(callbackfn: (previousValue: T, currentValue: T, currentIndex: number, array: T[]) => T, initialValue: T): T;
-        reverse(): T[];
-        shift(): T | undefined;
-        slice(start?: number, end?: number): T[];
-        sort(compareFn?: (a: T, b: T) => number): this;
-        splice(start: number, deleteCount?: number): T[];
-        some(predicate: (value: T, index: number, array: T[]) => unknown, thisArg?: any): boolean;
-        unshift(...items: T[]): number;)");
+            textWriter.WriteIndentedLine("length: number;");
+            textWriter.WriteIndentedLine("[index: number]: T;");
+            textWriter.WriteIndentedLine("concat(...items: (T | ConcatArray<T>)[]): T[];");
+            textWriter.WriteIndentedLine("copyWithin(target: number, start: number, end?: number): this;");
+            textWriter.WriteIndentedLine("every<S extends T>(predicate: (value: T, index: number, array: T[]) => value is S, thisArg?: any): this is S[];");
+            textWriter.WriteIndentedLine("some(predicate: (value: T, index: number, array: T[]) => unknown, thisArg?: any): boolean;");
+            textWriter.WriteIndentedLine("filter<S extends T>(predicate: (value: T, index: number, array: T[]) => value is S, thisArg?: any): S[];");
+            textWriter.WriteIndentedLine("filter(predicate: (value: T, index: number, array: T[]) => unknown, thisArg?: any): T[];");
+            textWriter.WriteIndentedLine("forEach(callbackfn: (value: T, index: number, array: T[]) => void, thisArg?: any): void;");
+            textWriter.WriteIndentedLine("lastIndexOf(searchElement: T, fromIndex?: number): number;");
+            textWriter.WriteIndentedLine("pop(): T | undefined;");
+            textWriter.WriteIndentedLine("push(...items: T[]): number;");
+            textWriter.WriteIndentedLine("map<U>(callbackfn: (value: T, index: number, array: T[]) => U, thisArg?: any): U[];");
+            textWriter.WriteIndentedLine("reduce(callbackfn: (previousValue: T, currentValue: T, currentIndex: number, array: T[]) => T): T;");
+            textWriter.WriteIndentedLine("reduce(callbackfn: (previousValue: T, currentValue: T, currentIndex: number, array: T[]) => T, initialValue: T): T;");
+            textWriter.WriteIndentedLine("reduceRight(callbackfn: (previousValue: T, currentValue: T, currentIndex: number, array: T[]) => T): T;");
+            textWriter.WriteIndentedLine("reduceRight(callbackfn: (previousValue: T, currentValue: T, currentIndex: number, array: T[]) => T, initialValue: T): T;");
+            textWriter.WriteIndentedLine("reverse(): T[];");
+            textWriter.WriteIndentedLine("shift(): T | undefined;");
+            textWriter.WriteIndentedLine("slice(start?: number, end?: number): T[];");
+            textWriter.WriteIndentedLine("sort(compareFn?: (a: T, b: T) => number): this;");
+            textWriter.WriteIndentedLine("splice(start: number, deleteCount?: number): T[];");
+            textWriter.WriteIndentedLine("some(predicate: (value: T, index: number, array: T[]) => unknown, thisArg?: any): boolean;");
+            textWriter.WriteIndentedLine("unshift(...items: T[]): number;");
         }
         else if (type.TypeNamespace() == "Windows.Foundation.Collections" && type.TypeName() == "IVectorView`1")
         {
-            textWriter.Write("%", R"(
-        length: number;
-        readonly [index: number]: T;
-        concat(...items: (T | ConcatArray<T>)[]): T[];
-        every<S extends T>(predicate: (value: T, index: number, array: T[]) => value is S, thisArg?: any): this is S[];
-        filter<S extends T>(predicate: (value: T, index: number, array: T[]) => value is S, thisArg?: any): S[];
-        filter(predicate: (value: T, index: number, array: T[]) => unknown, thisArg?: any): T[];
-        forEach(callbackfn: (value: T, index: number, array: T[]) => void, thisArg?: any): void;
-        lastIndexOf(searchElement: T, fromIndex?: number): number;
-        map<U>(callbackfn: (value: T, index: number, array: T[]) => U, thisArg?: any): U[];
-        reduce(callbackfn: (previousValue: T, currentValue: T, currentIndex: number, array: T[]) => T): T;
-        reduce(callbackfn: (previousValue: T, currentValue: T, currentIndex: number, array: T[]) => T, initialValue: T): T;
-        reduceRight(callbackfn: (previousValue: T, currentValue: T, currentIndex: number, array: T[]) => T): T;
-        reduceRight(callbackfn: (previousValue: T, currentValue: T, currentIndex: number, array: T[]) => T, initialValue: T): T;
-        slice(start?: number, end?: number): T[];
-        some(predicate: (value: T, index: number, array: T[]) => unknown, thisArg?: any): boolean;)");
+            textWriter.WriteIndentedLine("length: number;");
+            textWriter.WriteIndentedLine("readonly [index: number]: T;");
+            textWriter.WriteIndentedLine("concat(...items: (T | ConcatArray<T>)[]): T[];");
+            textWriter.WriteIndentedLine("every<S extends T>(predicate: (value: T, index: number, array: T[]) => value is S, thisArg?: any): this is S[];");
+            textWriter.WriteIndentedLine("filter<S extends T>(predicate: (value: T, index: number, array: T[]) => value is S, thisArg?: any): S[];");
+            textWriter.WriteIndentedLine("filter(predicate: (value: T, index: number, array: T[]) => unknown, thisArg?: any): T[];");
+            textWriter.WriteIndentedLine("forEach(callbackfn: (value: T, index: number, array: T[]) => void, thisArg?: any): void;");
+            textWriter.WriteIndentedLine("lastIndexOf(searchElement: T, fromIndex?: number): number;");
+            textWriter.WriteIndentedLine("map<U>(callbackfn: (value: T, index: number, array: T[]) => U, thisArg?: any): U[];");
+            textWriter.WriteIndentedLine("reduce(callbackfn: (previousValue: T, currentValue: T, currentIndex: number, array: T[]) => T): T;");
+            textWriter.WriteIndentedLine("reduce(callbackfn: (previousValue: T, currentValue: T, currentIndex: number, array: T[]) => T, initialValue: T): T;");
+            textWriter.WriteIndentedLine("reduceRight(callbackfn: (previousValue: T, currentValue: T, currentIndex: number, array: T[]) => T): T;");
+            textWriter.WriteIndentedLine("reduceRight(callbackfn: (previousValue: T, currentValue: T, currentIndex: number, array: T[]) => T, initialValue: T): T;");
+            textWriter.WriteIndentedLine("slice(start?: number, end?: number): T[];");
+            textWriter.WriteIndentedLine("some(predicate: (value: T, index: number, array: T[]) => unknown, thisArg?: any): boolean;");
         }
     }
 
@@ -698,6 +727,14 @@ public:
     }
 };
 
+inline void write_typescript_module_file(const Settings& settings, const projection_data& data)
+{
+    TextWriter textWriter;
+    TypescriptWriter typescriptWriter(settings);
+    typescriptWriter.Write(data, textWriter);
+    textWriter.FlushToFile(settings.TypescriptOutputFolder / L"WinRTModule.d.ts");
+}
+
 inline void write_typescript_file(const Settings& settings, const namespace_projection_data& ns)
 {
     TextWriter textWriter;
@@ -726,17 +763,24 @@ inline void write_typescript_files(const Settings& settings, const projection_da
     std::filesystem::remove_all(settings.TypescriptOutputFolder);
     std::filesystem::create_directory(settings.TypescriptOutputFolder);
 
-    for (auto& ns : data.root_namespaces)
+    if (settings.GenerateModule)
     {
-        write_typescript_file(settings, *ns);
+        write_typescript_module_file(settings, data);
     }
+    else
+    {
+        for (auto& ns : data.root_namespaces)
+        {
+            write_typescript_file(settings, *ns);
+        }
 
-    // Write the 'Projections.d.ts' file that imports all other files
-    TextWriter writer;
-    writer.Write("//tslint:disable\n\n"sv);
-    for (auto& ns : data.root_namespaces)
-    {
-        write_typescript_namespace_imports(writer, *ns);
+        // Write the 'Projections.d.ts' file that imports all other files
+        TextWriter writer;
+        writer.Write("//tslint:disable\n\n"sv);
+        for (auto& ns : data.root_namespaces)
+        {
+            write_typescript_namespace_imports(writer, *ns);
+        }
+        writer.FlushToFile(settings.TypescriptOutputFolder / "Projections.d.ts");
     }
-    writer.FlushToFile(settings.TypescriptOutputFolder / "Projections.d.ts");
 }

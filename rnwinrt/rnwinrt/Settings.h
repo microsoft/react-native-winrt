@@ -18,6 +18,7 @@ struct Settings
     const bool FilterToAllowForWeb;
     const bool IncludeDeprecated;
     const bool IncludeWebHostHidden;
+    const bool GenerateModule;
     const bool Verbose;
 };
 
