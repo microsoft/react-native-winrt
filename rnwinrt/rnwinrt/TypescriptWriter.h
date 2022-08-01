@@ -711,6 +711,15 @@ inline void write_typescript_file(const Settings& settings, const namespace_proj
     }
 }
 
+inline void write_typescript_namespace_imports(TextWriter& writer, const namespace_projection_data& ns)
+{
+    writer.Write("import './%';\n"sv, ns.full_name);
+    for (auto& childNs : ns.namespace_children)
+    {
+        write_typescript_namespace_imports(writer, *childNs);
+    }
+}
+
 inline void write_typescript_files(const Settings& settings, const projection_data& data)
 {
     assert(!settings.TypescriptOutputFolder.empty());
@@ -721,4 +730,13 @@ inline void write_typescript_files(const Settings& settings, const projection_da
     {
         write_typescript_file(settings, *ns);
     }
+
+    // Write the 'Projections.d.ts' file that imports all other files
+    TextWriter writer;
+    writer.Write("//tslint:disable\n\n"sv);
+    for (auto& ns : data.root_namespaces)
+    {
+        write_typescript_namespace_imports(writer, *ns);
+    }
+    writer.FlushToFile(settings.TypescriptOutputFolder / "Projections.d.ts");
 }

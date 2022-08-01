@@ -1,6 +1,6 @@
 # React Native WinRT Sample
 
-This sample demonstrates how to use the **Microsoft.ReactNative.WinRT** package to consume projected WinRT APIs with Javascript in a React Native for Windows app.
+This sample demonstrates how to use the **react-native-winrt** package to consume projected WinRT APIs with Javascript in a React Native for Windows app.
 
 The WinRT APIs demonstrated in this sample include:
 - `Windows.UI.StartScreen`
@@ -11,18 +11,39 @@ The WinRT APIs demonstrated in this sample include:
 
 ## Prerequisites
 
-- Visual Studio 2019 or later
 - See [System Requirements](https://microsoft.github.io/react-native-windows/docs/rnw-dependencies) for React Native for Windows development
 
 ## Building and running the sample
 
+1. Open an 'x64 Native Tools Command Prompt for VS 2022' (or whichever version of Visual Studio you have installed)
 1. Clone or download the react-native-winrt repository.
-2. Open a developer command prompt pointing at this directory.
-3. Run `npm install` from this directory.
-4. Open the solution file [`\windows\RNWinRTTestApp.sln`](./windows/RNWinRTTestApp.sln) in Visual Studio.
-5. Build the solution.
-6. If running Debug: run `yarn start` in the command prompt from this directory.
-7. F5 deploy the sample app (*RNWinRTTestApp*).
+    ```cmd
+    C:\> git clone https://github.com/microsoft/react-native-winrt.git
+    C:\> cd react-native-winrt
+    ```
+1. "Build" the local package by executing the script:
+    ```cmd
+    C:\react-native-winrt> scripts\build-npm-package.cmd
+    ```
+1. Change the working directory to this directory
+    ```cmd
+    C:\react-native-winrt> cd samples\RNWinRTTestApp
+    ```
+1. Run `yarn install`
+    ```cmd
+    C:\react-native-winrt\samples\RNWinRTTestApp> yarn install
+    ```
+    > *NOTE: Because this project references local file contents for the `react-native-winrt` package, you must run `yarn install` as opposed to `npm install`, otherwise you may get build errors*
+1. If using the **command line**: 
+    ```cmd
+    C:\react-native-winrt\samples\RNWinRTTestApp> npx react-native run-windows
+    ```
+    
+    If using **Visual Studio**:
+    - Open the solution file [`\windows\RNWinRTTestApp.sln`](./windows/RNWinRTTestApp.sln) in Visual Studio.
+    - Build the solution.
+    - If running Debug: run `yarn start` in the command prompt from this directory.
+    - F5 deploy the sample app (*RNWinRTTestApp*).
 
 You will see something similar to below after successfully building and running the sample:
 
