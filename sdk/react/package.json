@@ -4,7 +4,7 @@
   "private": true,
   "dependencies": {
     "react": "17.0.2",
-    "react-native": "0.67.1",
-    "react-native-windows": "0.67.0"
+    "react-native": "0.68.2",
+    "react-native-windows": "0.68.12"
   }
 }
