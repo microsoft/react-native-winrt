@@ -15,6 +15,9 @@
     <RnWinRTBuildQFE Condition="'$(RnWinRTBuildQFE)' == ''">1</RnWinRTBuildQFE>
     <RnWinRTBuildVersion>$(RnWinRTMajorVersion).$(RnWinRTMinorVersion).$(RnWinRTBuild).$(RnWinRTBuildQFE)</RnWinRTBuildVersion>
   </PropertyGroup>
+  <PropertyGroup Label="NuGet">
+    <ResolveNuGetPackages>false</ResolveNuGetPackages>
+  </PropertyGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.Default.props" />
   <ItemGroup Label="ProjectConfigurations">
     <ProjectConfiguration Include="Debug|ARM">
