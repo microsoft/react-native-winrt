@@ -24,6 +24,7 @@ For example, a React Native for Windows 0.67 app may not be compatible with **re
 
 React Native WinRT currently supports the following versions of React Native for Windows: 
 
+- [release/0.69](https://github.com/microsoft/react-native-winrt/tree/release/0.69)
 - [release/0.68](https://github.com/microsoft/react-native-winrt/tree/release/0.68)
 - [release/0.67](https://github.com/microsoft/react-native-winrt/tree/release/0.67)
 - [release/0.66](https://github.com/microsoft/react-native-winrt/tree/release/0.66)

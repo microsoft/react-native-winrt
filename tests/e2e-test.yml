@@ -16,9 +16,9 @@ jobs:
       - task: NuGetToolInstaller@1
 
       - task: CmdLine@2
-        displayName: npm install
+        displayName: yarn install
         inputs:
-          script: "npm install"
+          script: "yarn install"
           workingDirectory: $(Build.SourcesDirectory)\tests\RnWinRTTests
 
       - task: PowerShell@2

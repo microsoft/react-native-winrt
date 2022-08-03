@@ -6,6 +6,7 @@ windows/WinRTTurboModule/Release
 windows/WinRTTurboModule/x64
 windows/WinRTTurboModule/arm
 windows/WinRTTurboModule/arm64
+windows/WinRTTurboModule/obj
 
 # Files used to validate that we're uploading the correct files to NPM
 packfiles.old

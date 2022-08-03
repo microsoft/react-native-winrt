@@ -14,7 +14,7 @@ pool:
 # NOTE: The major/minor versions correspond to the React Native version we target/have tested against
 variables:
   product_major_version: 0
-  product_minor_version: 68
+  product_minor_version: 69
   product_build: $[format('{0:yyyyMMdd}', pipeline.startTime)]
   product_build_qfe: $[counter(format('{0}.{1}.{2}', variables['product_major_version'], variables['product_minor_version'], variables['product_build']), 1)]
 
