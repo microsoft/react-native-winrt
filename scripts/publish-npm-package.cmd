@@ -16,7 +16,7 @@ if %ERRORLEVEL% NEQ 0 (
 
 :: Do a dry run to verify that we're not publishing a ton of unnecessary files
 pushd %PACKAGE_ROOT_DIR%
-    call npx npm-packlist > packfiles.new
+    call npx --yes npm-packlist > packfiles.new
     sort packfiles.new > packfiles.new.temp
     move /Y packfiles.new.temp packfiles.new > NUL
     fc /c packfiles.old packfiles.new > NUL 2>&1
