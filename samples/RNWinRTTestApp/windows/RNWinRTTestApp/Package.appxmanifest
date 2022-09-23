@@ -6,7 +6,7 @@
   xmlns:uap="http://schemas.microsoft.com/appx/manifest/uap/windows10"
   IgnorableNamespaces="uap mp">
 
- <Identity
+  <Identity
     Name="dc534f0d-ea9e-42f8-8169-cb98130df899"
     Publisher="CN=Microsoft Windows, O=Microsoft Corporation, L=Redmond, S=Washington, C=US"
     Version="1.0.0.0" />
@@ -21,7 +21,6 @@
 
   <Dependencies>
     <TargetDeviceFamily Name="Windows.Universal" MinVersion="10.0.0.0" MaxVersionTested="10.0.0.0" />
-    <PackageDependency Name="Microsoft.VCLibs.140.00" MinVersion="14.0.27810.0" Publisher="CN=Microsoft Corporation, O=Microsoft Corporation, L=Redmond, S=Washington, C=US"/>
   </Dependencies>
 
   <Resources>
@@ -29,7 +28,8 @@
   </Resources>
 
   <Applications>
-    <Application Id="App"
+    <Application
+      Id="App"
       Executable="$targetnametoken$.exe"
       EntryPoint="RNWinRTTestApp.App">
       <uap:VisualElements
