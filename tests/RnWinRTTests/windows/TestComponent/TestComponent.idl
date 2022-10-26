@@ -300,6 +300,9 @@ namespace TestComponent
         static void RaiseStaticRefEvent(Windows.Foundation.IReference<Int32> value);
         static void RaiseStaticObjectEvent(TestObject value);
 
+        // Trigger event on a background thread
+        static Windows.Foundation.IAsyncAction RaiseStaticNumericEventAsync(Int32 value);
+
         // Static delegate invocation
         static Boolean StaticInvokeBoolDelegate(Boolean value, BoolDelegate targetFn);
         static Char StaticInvokeCharDelegate(Char value, CharDelegate targetFn);

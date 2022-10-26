@@ -232,6 +232,8 @@ namespace winrt::TestComponent::implementation
         static void RaiseStaticRefEvent(Windows::Foundation::IReference<int32_t> const& value);
         static void RaiseStaticObjectEvent(TestComponent::TestObject const& value);
 
+        static Windows::Foundation::IAsyncAction RaiseStaticNumericEventAsync(int32_t value);
+
         static bool StaticInvokeBoolDelegate(bool inputValue, BoolDelegate const& targetFn);
         static char16_t StaticInvokeCharDelegate(char16_t inputValue, CharDelegate const& targetFn);
         static int32_t StaticInvokeNumericDelegate(int32_t inputValue, NumericDelegate const& targetFn);
