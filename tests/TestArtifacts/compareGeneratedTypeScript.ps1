@@ -18,6 +18,7 @@ function compareFiles
 }
 
 
+compareFiles "Projections.d.ts" $expectedFilesDir $generatedFilesDir
 compareFiles "TestComponent.d.ts" $expectedFilesDir $generatedFilesDir
 compareFiles "Windows.d.ts" $expectedFilesDir $generatedFilesDir
 compareFiles "Windows.Foundation.Collections.d.ts" $expectedFilesDir $generatedFilesDir
