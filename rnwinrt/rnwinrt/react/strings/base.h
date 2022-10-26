@@ -1284,7 +1284,9 @@ namespace rnwinrt
         Func callback;
         std::atomic_int ref_count{ 0 };
 
-        lifetime_tracker(Func callback) : callback(std::move(callback)) {}
+        lifetime_tracker(Func callback) : callback(std::move(callback))
+        {
+        }
 
         // Should copy *references* to this type, not the type itself
         lifetime_tracker(const lifetime_tracker&) = delete;
@@ -1407,9 +1409,7 @@ namespace rnwinrt
                     winrt::throw_last_error();
                 }
 
-                lifetime_tracker tracker([&] {
-                    ::SetEvent(event.get());
-                });
+                lifetime_tracker tracker([&] { ::SetEvent(event.get()); });
 
                 std::exception_ptr exception;
                 bool invoked = false;
