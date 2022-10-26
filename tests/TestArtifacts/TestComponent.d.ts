@@ -356,6 +356,7 @@ declare namespace TestComponent {
         public static raiseStaticCompositeStructEvent(value: TestComponent.CompositeType): void;
         public static raiseStaticRefEvent(value: number | null): void;
         public static raiseStaticObjectEvent(value: TestComponent.TestObject): void;
+        public static raiseStaticNumericEventAsync(value: number): Windows.Foundation.WinRTPromise<void, void>;
         public static staticInvokeBoolDelegate(value: boolean, targetFn: TestComponent.BoolDelegate): boolean;
         public static staticInvokeCharDelegate(value: string, targetFn: TestComponent.CharDelegate): string;
         public static staticInvokeNumericDelegate(value: number, targetFn: TestComponent.NumericDelegate): number;

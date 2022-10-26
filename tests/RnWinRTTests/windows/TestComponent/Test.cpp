@@ -1010,6 +1010,12 @@ namespace winrt::TestComponent::implementation
         s_objectEventSource(nullptr, value);
     }
 
+    IAsyncAction Test::RaiseStaticNumericEventAsync(int32_t value)
+    {
+        co_await winrt::resume_background();
+        s_numericEventSource(nullptr, value);
+    }
+
     bool Test::StaticInvokeBoolDelegate(bool inputValue, BoolDelegate const& targetFn)
     {
         return targetFn(inputValue);
