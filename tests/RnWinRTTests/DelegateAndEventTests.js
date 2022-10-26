@@ -1,4 +1,4 @@
-// Copyright (c) Microsoft Corporation. 
+// Copyright (c) Microsoft Corporation.
 // Licensed under the MIT License.
 
 /**
@@ -25,6 +25,9 @@ export function makeDelegateAndEventTestScenarios(pThis) {
         new TestScenario('Test::StaticCompositeStructEventHandler', runStaticCompositeStructEventHandler.bind(pThis)),
         new TestScenario('Test::StaticRefEventHandler', runStaticRefEventHandler.bind(pThis)),
         new TestScenario('Test::StaticObjectEventHandler', runStaticObjectEventHandler.bind(pThis)),
+
+        // Async Event Callbacks
+        new TestScenario('Async Event Handling', runAsyncEventHandler.bind(pThis)),
 
         // Static Delegates
         new TestScenario('Test::StaticInvokeBoolDelegate', runStaticBoolDelegate.bind(pThis)),
@@ -143,6 +146,27 @@ function runStaticRefEventHandler(scenario) {
 function runStaticObjectEventHandler(scenario) {
     var vals = TestValues.s32.valid.map(val => new TestComponent.TestObject(val));
     testStaticEventHandler.call(this, scenario, vals, 'staticobjecteventhandler', (arg) => TestComponent.Test.raiseStaticObjectEvent(arg));
+}
+
+function runAsyncEventHandler(scenario) {
+    this.runAsync(scenario, (resolve, reject) => {
+        var eventSender = undefined;
+        var eventValue = 0;
+
+        var handler = (sender, arg) => {
+            eventSender = sender;
+            eventValue = arg;
+        };
+        TestComponent.Test.addEventListener('staticnumericeventhandler', handler);
+
+        TestComponent.Test.raiseStaticNumericEventAsync(42)
+            .then(() => {
+                assert.equal(eventSender, null);
+                assert.equal(eventValue, 42);
+                resolve();
+            }).catch(reject)
+            .finally(() => TestComponent.Test.removeEventListener('staticnumericeventhandler', handler));
+    });
 }
 
 function runStaticObjectEventHandlerForNonActivableClass(scenario) {

@@ -1275,6 +1275,93 @@ namespace rnwinrt
         }
     };
 
+    // React's CallInvoker type does not have a way to communicate failure back to us (i.e. if the provided function
+    // object won't run). So we instead capture an object that can track the lifetime of the function object so that we
+    // can determine if the function will never be called
+    template <typename Func>
+    struct lifetime_tracker
+    {
+        Func callback;
+        std::atomic_int ref_count{ 0 };
+
+        lifetime_tracker(Func callback) : callback(std::move(callback))
+        {
+        }
+
+        // Should copy *references* to this type, not the type itself
+        lifetime_tracker(const lifetime_tracker&) = delete;
+        lifetime_tracker& operator=(const lifetime_tracker&) = delete;
+
+        struct reference
+        {
+            lifetime_tracker* target;
+
+            reference(lifetime_tracker* target) noexcept : target(target)
+            {
+                target->ref_count.fetch_add(1, std::memory_order_relaxed);
+            }
+
+            reference(const reference& other) noexcept : target(other.target)
+            {
+                if (target)
+                {
+                    target->ref_count.fetch_add(1, std::memory_order_relaxed);
+                }
+            }
+
+            reference(reference&& other) noexcept : target(other.target)
+            {
+                other.target = nullptr;
+            }
+
+            ~reference()
+            {
+                reset();
+            }
+
+            reference& operator=(const reference& other) noexcept
+            {
+                if (this != &other)
+                {
+                    reset();
+
+                    target = other.target;
+                    if (target)
+                    {
+                        target->ref_count.fetch_add(1, std::memory_order_relaxed);
+                    }
+                }
+
+                return *this;
+            }
+
+            reference& operator=(reference&& other) noexcept
+            {
+                std::swap(target, other.target);
+            }
+
+            void reset()
+            {
+                auto ptr = std::exchange(target, nullptr);
+                if (ptr)
+                {
+                    auto count = ptr->ref_count.fetch_sub(1, std::memory_order_acq_rel);
+                    if (count == 1) // Returns the previous value
+                    {
+                        ptr->callback();
+                    }
+                }
+            }
+        };
+
+        // Should only be called once; begins the reference tracking
+        reference begin() noexcept
+        {
+            assert(ref_count.load(std::memory_order_relaxed) == 0);
+            return reference(this);
+        }
+    };
+
     struct runtime_context
     {
         jsi::Runtime& runtime;
@@ -1322,8 +1409,17 @@ namespace rnwinrt
                     winrt::throw_last_error();
                 }
 
+                lifetime_tracker tracker([&] { ::SetEvent(event.get()); });
+
                 std::exception_ptr exception;
-                call_invoker([&]() {
+                bool invoked = false;
+                call_invoker([&, ref = tracker.begin()]() mutable {
+                    // Force the completion of the event once the callback completes so we don't need to wait for the
+                    // lambda to be destroyed if for some reason it isn't immediate. Note that this sets the callback
+                    // pointer to null, so there's no dangling reference anywhere
+                    auto forceComplete = std::move(ref);
+                    assert(tracker.ref_count.load(std::memory_order_relaxed) == 1);
+
                     try
                     {
                         fn();
@@ -1332,7 +1428,8 @@ namespace rnwinrt
                     {
                         exception = std::current_exception();
                     }
-                    ::SetEvent(event.get());
+
+                    invoked = true;
                 });
 
                 if (::WaitForSingleObject(event.get(), INFINITE) != WAIT_OBJECT_0)
@@ -1343,6 +1440,10 @@ namespace rnwinrt
                 if (exception)
                 {
                     std::rethrow_exception(exception);
+                }
+                else if (!invoked)
+                {
+                    throw winrt::hresult_error(JSCRIPT_E_CANTEXECUTE);
                 }
             }
         }
