@@ -1,22 +1,24 @@
-bin/rnwinrt.exe
-bin/rnwinrt.pdb
-index.d.ts
-index.js
-LICENSE
-module/dllmain.cpp
-module/WinRTTurboModule.cpp
-module/WinRTTurboModule.def
-module/WinRTTurboModule.h
-module/WinRTTurboModule.props
-module/WinRTTurboModule.targets
-package.json
-react-native.config.js
-README.md
-windows/WinRTTurboModule/packages.config
-windows/WinRTTurboModule/pch.cpp
-windows/WinRTTurboModule/pch.h
-windows/WinRTTurboModule/ReactPackageProvider.cpp
-windows/WinRTTurboModule/ReactPackageProvider.h
-windows/WinRTTurboModule/WinRTTurboModule.idl
-windows/WinRTTurboModule/WinRTTurboModule.vcxproj
-windows/WinRTTurboModule/WinRTTurboModule.vcxproj.filters
+[
+  "LICENSE",
+  "windows/WinRTTurboModule/packages.config",
+  "module/dllmain.cpp",
+  "windows/WinRTTurboModule/pch.cpp",
+  "windows/WinRTTurboModule/ReactPackageProvider.cpp",
+  "module/WinRTTurboModule.cpp",
+  "module/WinRTTurboModule.def",
+  "bin/rnwinrt.exe",
+  "windows/WinRTTurboModule/WinRTTurboModule.vcxproj.filters",
+  "windows/WinRTTurboModule/pch.h",
+  "windows/WinRTTurboModule/ReactPackageProvider.h",
+  "module/WinRTTurboModule.h",
+  "windows/WinRTTurboModule/WinRTTurboModule.idl",
+  "index.js",
+  "react-native.config.js",
+  "package.json",
+  "README.md",
+  "bin/rnwinrt.pdb",
+  "module/WinRTTurboModule.props",
+  "module/WinRTTurboModule.targets",
+  "index.d.ts",
+  "windows/WinRTTurboModule/WinRTTurboModule.vcxproj"
+]
