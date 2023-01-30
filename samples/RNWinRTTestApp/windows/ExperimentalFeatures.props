@@ -33,6 +33,8 @@
     -->
     <UseExperimentalNuget>true</UseExperimentalNuget>
 
+    <ReactExperimentalFeaturesSet>true</ReactExperimentalFeaturesSet>
+
     <!-- Specify WinRT namespaces to consume -->
     <RnWinRTParameters>
       -include Windows.Foundation
