@@ -1,7 +1,7 @@
 //tslint:disable
 
 declare namespace TestComponent {
-    type BoolArrayDelegate = (values: boolean[]) => { subset: boolean[]; outValue: boolean[]; returnValue: boolean[] };
+    type BoolArrayDelegate = (values: boolean[], subset: boolean[]) => { outValue: boolean[]; returnValue: boolean[] };
     
     type BoolDelegate = (value: boolean) => boolean;
     
@@ -11,13 +11,13 @@ declare namespace TestComponent {
         value: boolean;
     }
 
-    type CharArrayDelegate = (values: string[]) => { subset: string[]; outValue: string[]; returnValue: string[] };
+    type CharArrayDelegate = (values: string[], subset: string[]) => { outValue: string[]; returnValue: string[] };
     
     type CharDelegate = (value: string) => string;
     
     type CharDelegateWithOutParam = (value: string) => string;
     
-    type CompositeStructArrayDelegate = (values: TestComponent.CompositeType[]) => { subset: TestComponent.CompositeType[]; outValue: TestComponent.CompositeType[]; returnValue: TestComponent.CompositeType[] };
+    type CompositeStructArrayDelegate = (values: TestComponent.CompositeType[], subset: TestComponent.CompositeType[]) => { outValue: TestComponent.CompositeType[]; returnValue: TestComponent.CompositeType[] };
     
     type CompositeStructDelegate = (value: TestComponent.CompositeType) => TestComponent.CompositeType;
     
@@ -29,13 +29,13 @@ declare namespace TestComponent {
         bools: TestComponent.BooleanTypes;
     }
 
-    type EnumArrayDelegate = (values: TestComponent.TestEnum[]) => { subset: TestComponent.TestEnum[]; outValue: TestComponent.TestEnum[]; returnValue: TestComponent.TestEnum[] };
+    type EnumArrayDelegate = (values: TestComponent.TestEnum[], subset: TestComponent.TestEnum[]) => { outValue: TestComponent.TestEnum[]; returnValue: TestComponent.TestEnum[] };
     
     type EnumDelegate = (value: TestComponent.TestEnum) => TestComponent.TestEnum;
     
     type EnumDelegateWithOutParam = (value: TestComponent.TestEnum) => TestComponent.TestEnum;
     
-    type GuidArrayDelegate = (values: string[]) => { subset: string[]; outValue: string[]; returnValue: string[] };
+    type GuidArrayDelegate = (values: string[], subset: string[]) => { outValue: string[]; returnValue: string[] };
     
     type GuidDelegate = (value: string) => string;
     
@@ -62,9 +62,9 @@ declare namespace TestComponent {
         readonly magicValue: number;
     }
 
-    type InterwovenDelegate = (inBool: boolean, inNumeric: number, inArray: number[]) => { outBool: boolean; outNumeric: number; outArray: number[]; fillArray: number[]; returnValue: number };
+    type InterwovenDelegate = (inBool: boolean, inNumeric: number, inArray: number[], fillArray: number[]) => { outBool: boolean; outNumeric: number; outArray: number[]; returnValue: number };
     
-    type NumericArrayDelegate = (values: number[]) => { subset: number[]; outValue: number[]; returnValue: number[] };
+    type NumericArrayDelegate = (values: number[], subset: number[]) => { outValue: number[]; returnValue: number[] };
     
     type NumericDelegate = (value: number) => number;
     
@@ -83,13 +83,13 @@ declare namespace TestComponent {
         enum: TestComponent.TestEnum;
     }
 
-    type ObjectArrayDelegate = (values: TestComponent.TestObject[]) => { subset: TestComponent.TestObject[]; outValue: TestComponent.TestObject[]; returnValue: TestComponent.TestObject[] };
+    type ObjectArrayDelegate = (values: TestComponent.TestObject[], subset: TestComponent.TestObject[]) => { outValue: TestComponent.TestObject[]; returnValue: TestComponent.TestObject[] };
     
     type ObjectDelegate = (value: TestComponent.TestObject) => TestComponent.TestObject;
     
     type ObjectDelegateWithOutParam = (value: TestComponent.TestObject) => TestComponent.TestObject;
     
-    type RefArrayDelegate = (values: number[] | null) => { subset: number[] | null; outValue: number[] | null; returnValue: number[] | null };
+    type RefArrayDelegate = (values: number[] | null, subset: number[] | null) => { outValue: number[] | null; returnValue: number[] | null };
     
     type RefDelegate = (value: number | null) => number | null;
     
@@ -126,7 +126,7 @@ declare namespace TestComponent {
         public static removeEventListener(type: "objecteventhandler", listener: Windows.Foundation.EventHandler<TestComponent.TestObject>): void;
     }
 
-    type StringArrayDelegate = (values: string[]) => { subset: string[]; outValue: string[]; returnValue: string[] };
+    type StringArrayDelegate = (values: string[], subset: string[]) => { outValue: string[]; returnValue: string[] };
     
     type StringDelegate = (value: string) => string;
     
@@ -257,16 +257,16 @@ declare namespace TestComponent {
         public compositeStructArrayOutParam(values: TestComponent.CompositeType[]): { rot1: TestComponent.CompositeType[]; rot2: TestComponent.CompositeType[]; returnValue: TestComponent.CompositeType[] };
         public refArrayOutParam(values: number[] | null): { rot1: number[] | null; rot2: number[] | null; returnValue: number[] | null };
         public objectArrayOutParam(values: TestComponent.TestObject[]): { rot1: TestComponent.TestObject[]; rot2: TestComponent.TestObject[]; returnValue: TestComponent.TestObject[] };
-        public boolFillParam(): boolean[];
-        public charFillParam(): string[];
-        public numericFillParam(): number[];
-        public stringFillParam(): string[];
-        public guidFillParam(): string[];
-        public enumFillParam(): TestComponent.TestEnum[];
-        public compositeStructFillParam(): TestComponent.CompositeType[];
-        public refFillParam(): number[] | null;
-        public objectFillParam(): TestComponent.TestObject[];
-        public interwovenParams(inBool: boolean, inNumeric: number, inArray: number[]): { outBool: boolean; outNumeric: number; outArray: number[]; refArray: number[]; returnValue: number };
+        public boolFillParam(values: boolean[]): void;
+        public charFillParam(values: string[]): void;
+        public numericFillParam(values: number[]): void;
+        public stringFillParam(values: string[]): void;
+        public guidFillParam(values: string[]): void;
+        public enumFillParam(values: TestComponent.TestEnum[]): void;
+        public compositeStructFillParam(values: TestComponent.CompositeType[]): void;
+        public refFillParam(values: number[] | null): void;
+        public objectFillParam(values: TestComponent.TestObject[]): void;
+        public interwovenParams(inBool: boolean, inNumeric: number, inArray: number[], refArray: number[]): { outBool: boolean; outNumeric: number; outArray: number[]; returnValue: number };
         public raiseBoolEvent(value: boolean): void;
         public raiseCharEvent(value: string): void;
         public raiseNumericEvent(value: number): void;
@@ -337,16 +337,16 @@ declare namespace TestComponent {
         public static staticCompositeStructArrayOutParam(values: TestComponent.CompositeType[]): { rot1: TestComponent.CompositeType[]; rot2: TestComponent.CompositeType[]; returnValue: TestComponent.CompositeType[] };
         public static staticRefArrayOutParam(values: number[] | null): { rot1: number[] | null; rot2: number[] | null; returnValue: number[] | null };
         public static staticObjectArrayOutParam(values: TestComponent.TestObject[]): { rot1: TestComponent.TestObject[]; rot2: TestComponent.TestObject[]; returnValue: TestComponent.TestObject[] };
-        public static staticBoolFillParam(): boolean[];
-        public static staticCharFillParam(): string[];
-        public static staticNumericFillParam(): number[];
-        public static staticStringFillParam(): string[];
-        public static staticGuidFillParam(): string[];
-        public static staticEnumFillParam(): TestComponent.TestEnum[];
-        public static staticCompositeStructFillParam(): TestComponent.CompositeType[];
-        public static staticRefFillParam(): number[] | null;
-        public static staticObjectFillParam(): TestComponent.TestObject[];
-        public static staticInterwovenParams(inBool: boolean, inNumeric: number, inArray: number[]): { outBool: boolean; outNumeric: number; outArray: number[]; refArray: number[]; returnValue: number };
+        public static staticBoolFillParam(values: boolean[]): void;
+        public static staticCharFillParam(values: string[]): void;
+        public static staticNumericFillParam(values: number[]): void;
+        public static staticStringFillParam(values: string[]): void;
+        public static staticGuidFillParam(values: string[]): void;
+        public static staticEnumFillParam(values: TestComponent.TestEnum[]): void;
+        public static staticCompositeStructFillParam(values: TestComponent.CompositeType[]): void;
+        public static staticRefFillParam(values: number[] | null): void;
+        public static staticObjectFillParam(values: TestComponent.TestObject[]): void;
+        public static staticInterwovenParams(inBool: boolean, inNumeric: number, inArray: number[], refArray: number[]): { outBool: boolean; outNumeric: number; outArray: number[]; returnValue: number };
         public static raiseStaticBoolEvent(value: boolean): void;
         public static raiseStaticCharEvent(value: string): void;
         public static raiseStaticNumericEvent(value: number): void;
