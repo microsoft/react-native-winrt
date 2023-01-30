@@ -12,8 +12,8 @@
   },
   "dependencies": {
     "react": "18.1.0",
-    "react-native": "0.70.1",
-    "react-native-windows": "0.70.1",
+    "react-native": "0.71.0",
+    "react-native-windows": "0.71.0",
     "react-native-winrt": "file:../../package"
   },
   "devDependencies": {
@@ -22,7 +22,7 @@
     "@react-native-community/eslint-config": "^2.0.0",
     "@tsconfig/react-native": "^2.0.2",
     "@types/jest": "^26.0.23",
-    "@types/react-native": "^0.70.0",
+    "@types/react-native": "^0.71.0",
     "@types/react-test-renderer": "^18.0.0",
     "@typescript-eslint/eslint-plugin": "^5.37.0",
     "@typescript-eslint/parser": "^5.37.0",
