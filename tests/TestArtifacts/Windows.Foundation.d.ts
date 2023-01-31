@@ -306,7 +306,7 @@ declare namespace Windows.Foundation {
         public first(): Windows.Foundation.Collections.IIterator<Windows.Foundation.IWwwFormUrlDecoderEntry>;
         public getAt(index: number): Windows.Foundation.IWwwFormUrlDecoderEntry;
         public indexOf(value: Windows.Foundation.IWwwFormUrlDecoderEntry): { index: number; returnValue: boolean };
-        public getMany(startIndex: number): { items: Windows.Foundation.IWwwFormUrlDecoderEntry[]; returnValue: number };
+        public getMany(startIndex: number, items: Windows.Foundation.IWwwFormUrlDecoderEntry[]): number;
     }
 
     class WwwFormUrlDecoderEntry implements Windows.Foundation.IWwwFormUrlDecoderEntry {

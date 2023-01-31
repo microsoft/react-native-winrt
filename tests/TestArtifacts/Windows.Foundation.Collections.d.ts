@@ -16,7 +16,7 @@ declare namespace Windows.Foundation.Collections {
         readonly current: T;
         readonly hasCurrent: boolean;
         moveNext(): boolean;
-        getMany(): { items: T[]; returnValue: number };
+        getMany(items: T[]): number;
     }
 
     interface IKeyValuePair<K, V> {
@@ -70,7 +70,7 @@ declare namespace Windows.Foundation.Collections {
         readonly size: number;
         getAt(index: number): T;
         indexOf(value: T): { index: number; returnValue: boolean };
-        getMany(startIndex: number): { items: T[]; returnValue: number };
+        getMany(startIndex: number, items: T[]): number;
         length: number;
         readonly [index: number]: T;
         concat(...items: (T | ConcatArray<T>)[]): T[];
@@ -99,7 +99,7 @@ declare namespace Windows.Foundation.Collections {
         append(value: T): void;
         removeAtEnd(): void;
         clear(): void;
-        getMany(startIndex: number): { items: T[]; returnValue: number };
+        getMany(startIndex: number, items: T[]): number;
         replaceAll(items: T[]): void;
         length: number;
         [index: number]: T;

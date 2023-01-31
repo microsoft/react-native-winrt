@@ -445,7 +445,7 @@ public:
                 bool hasAtleastOneInParam = false;
                 for (auto&& [param, paramSignature] : methodSignature.params())
                 {
-                    if (param.Flags().Out())
+                    if (param.Flags().Out() && paramSignature->ByRef())
                     {
                         returnNameTypePairs.push_back(std::make_pair(param.Name(), paramSignature->Type()));
                         continue;
