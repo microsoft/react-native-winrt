@@ -674,7 +674,7 @@ jsi::Value projected_object_instance::get(jsi::Runtime& runtime, const jsi::Prop
             fallbackValue = std::move(*fallback);
     }
 
-    return std::move(fallbackValue);
+    return fallbackValue;
 }
 
 void projected_object_instance::set(jsi::Runtime& runtime, const jsi::PropNameID& id, const jsi::Value& value)
@@ -825,6 +825,10 @@ winrt::hstring projected_value_traits<winrt::hstring>::as_native(jsi::Runtime& r
     PWSTR stringBuffer;
     HSTRING_BUFFER buffer;
     winrt::check_hresult(::WindowsPreallocateStringBuffer(static_cast<uint32_t>(len), &stringBuffer, &buffer));
+
+    // NOTE: WindowsPreallocateStringBuffer will only give back null if the string is empty, however we've already
+    // covered that case
+    _Analysis_assume_(buffer != nullptr);
 
     winrt::hstring result;
     try

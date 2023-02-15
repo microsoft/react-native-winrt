@@ -491,7 +491,7 @@ namespace rnwinrt
         {
             std::aligned_storage_t<BufferSize * sizeof(T), alignof(T)> buffer;
             T* pointer;
-        } m_data;
+        } m_data{};
     };
 
     // Used to capture a lambda whose capture includes non-copyable types in scenarios where a copy constructor is
@@ -1061,7 +1061,7 @@ namespace rnwinrt
         {
         }
 
-        shared_runtime_context(shared_runtime_context&& other) : pointer(other.pointer)
+        shared_runtime_context(shared_runtime_context&& other) noexcept : pointer(other.pointer)
         {
             other.pointer = nullptr;
         }
@@ -4294,7 +4294,7 @@ namespace rnwinrt
                     deleteCount -= assignCount;
                     insertCount -= assignCount;
 
-                    jsi::Array result(runtime, deleteCount + assignCount);
+                    jsi::Array result(runtime, static_cast<std::size_t>(deleteCount) + assignCount);
                     uint32_t i = 0;
                     while (assignCount-- > 0)
                     {
