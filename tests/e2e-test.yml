@@ -53,10 +53,10 @@ jobs:
         condition: succeeded()
 
       - task: PowerShell@2
-        displayName: "Install dependency - Microsoft.UI.Xaml.2.7"
+        displayName: "Install dependency - Microsoft.UI.Xaml.2.8"
         inputs:
           targetType: "inline"
-          script: "Add-AppxPackage $(Build.SourcesDirectory)\\tests\\RnWinRTTests\\windows\\AppPackages\\RnWinRTTests\\RnWinRTTests_1.0.0.0_x64_Test\\Dependencies\\x64\\Microsoft.UI.Xaml.2.7.appx"
+          script: "Add-AppxPackage $(Build.SourcesDirectory)\\tests\\RnWinRTTests\\windows\\AppPackages\\RnWinRTTests\\RnWinRTTests_1.0.0.0_x64_Test\\Dependencies\\x64\\Microsoft.UI.Xaml.2.8.appx"
         condition: succeededOrFailed()
 
       - task: PowerShell@2
