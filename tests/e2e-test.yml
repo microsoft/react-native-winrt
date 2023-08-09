@@ -70,7 +70,7 @@ jobs:
         displayName: "Install RnWinRTTests App"
         inputs:
           targetType: "inline"
-          script: "Add-AppxPackage $(Build.SourcesDirectory)\\tests\\RnWinRTTests\\windows\\AppPackages\\RnWinRTTests\\RnWinRTTests_1.0.0.0_x64_Test\\RnWinRTTests_1.0.0.0_x64.appx"
+          script: "Add-AppxPackage $(Build.SourcesDirectory)\\tests\\RnWinRTTests\\windows\\AppPackages\\RnWinRTTests\\RnWinRTTests_1.0.0.0_x64_Test\\RnWinRTTests_1.0.0.0_x64.msix"
         condition: succeededOrFailed()
 
       - task: PowerShell@2
