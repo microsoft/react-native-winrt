@@ -63,7 +63,7 @@ jobs:
         displayName: "Install dependency - Microsoft.VCLibs.x64.14.00"
         inputs:
           targetType: "inline"
-          script: "Add-AppxPackage $(Build.SourcesDirectory)\\tests\\RnWinRTTests\\windows\\AppPackages\\RnWinRTTests\\RnWinRTTests_1.0.0.0_x64_Test\\Dependencies\\x64\\Microsoft.VCLibs.x64.14.00.appx"
+          script: "Add-AppxPackage $(Build.SourcesDirectory)\\tests\\RnWinRTTests\\windows\\AppPackages\\RnWinRTTests\\RnWinRTTests_1.0.0.0_x64_Test\\Dependencies\\x64\\Microsoft.VCLibs.x64.14.00.Desktop.appx"
         condition: succeededOrFailed()
 
       - task: PowerShell@2
