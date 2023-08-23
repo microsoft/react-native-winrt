@@ -79,7 +79,8 @@ export class DnssdLookupHelper {
     /**
      * Gets the singleton instance of `DnssdLookupHelper`.
      * If no instance exists, it initializes a new one.
-     * 
+     * @example
+     * const finder = DnssdLookupHelper.getInstance();
      * @returns The singleton instance of the `DnssdLookupHelper` class.
      */
     public static getInstance(): DnssdLookupHelper {
@@ -94,7 +95,6 @@ export class DnssdLookupHelper {
      * @example
      * const finder = DnssdLookupHelper.getInstance();
      * let devices = await finder.findAllDevicesAsync();
-     * @example
      * @returns A Promise that resolves to an array of objects implementing IDnssdServiceInstance.
      */
     public async findAllDevicesAsync(): Promise<IDnssdServiceInstance[]> {
