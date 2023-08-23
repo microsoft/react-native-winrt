@@ -46,8 +46,11 @@
       -include Windows.Security.Cryptography.BinaryStringEncoding
       -include Windows.UI.Notifications
       -include Windows.Data.Xml.Dom
+      -include Windows.Networking.ServiceDiscovery.Dnssd
+      -include Windows.Devices.Enumeration
+      -include System.Devices.AepService
+          <!-- TO DO: Remove AepService if not needed -->
     </RnWinRTParameters>
-
   </PropertyGroup>
 
 </Project>
