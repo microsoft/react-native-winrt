@@ -8,7 +8,6 @@ const DnssdServiceWatcher = Dnssd.DnssdServiceWatcher;
  * https://learn.microsoft.com/en-us/uwp/api/windows.networking.servicediscovery.dnssd.dnssdserviceinstance?view=winrt-22621
  */
 export interface IDnssdServiceInstance {
-
     /** Host name of discovered service. */
     hostName: string;
 
