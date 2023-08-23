@@ -91,7 +91,10 @@ export class DnssdLookupHelper {
 
     /**
      * Enumerates IDnssdServiceInstance implementing objects matching the query parameters.
-     * 
+     * @example
+     * const finder = DnssdLookupHelper.getInstance();
+     * let devices = await finder.findAllDevicesAsync();
+     * @example
      * @returns A Promise that resolves to an array of objects implementing IDnssdServiceInstance.
      */
     public async findAllDevicesAsync(): Promise<IDnssdServiceInstance[]> {
@@ -155,7 +158,3 @@ export class DnssdLookupHelper {
         return services;
     }
 }
-
-// To use it:
-// const finder = DnssdLookupHelper.getInstance();
-// finder.findAllDevicesAsync();
