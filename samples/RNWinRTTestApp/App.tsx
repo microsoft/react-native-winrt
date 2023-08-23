@@ -21,6 +21,7 @@ import {
 } from "react-native/Libraries/NewAppScreen";
 
 import { showNotification } from './Notifications';
+import { IDnssdServiceInstance, DnssdLookupHelper } from "././DnssdHelpers";
 
 async function updateJumpListAsync(): Promise<void> {
     try {
@@ -159,17 +160,35 @@ function AsyncImage(props: AsyncImageProps) {
 const App = () => {
     updateJumpListAsync();
     // NOTE: The Id used is the hash of the string 'SampleProvider'. This Guid is 'eff1e128-4903-5093-096a-bdc29b38456f'
-    const loggingChannel = new Windows.Foundation.Diagnostics.LoggingChannel("SampleProvider", null);
+    const loggingChannel = new Windows.Foundation.Diagnostics.LoggingChannel("SampleProvider", null!);
     const imageUriPromise = getPictureThumbnailAsync();
-    const [discoveredDevices, setDiscoveredDevices] = useState([]);
+    const [discoveredDevices, setDiscoveredDevices] = useState<IDnssdServiceInstance[]>([]);
+    const [scanStatus, setScanStatus] = useState('');
 
-    const handleDiscoverDevices = () => {
-        console.log('handleDiscoverDevices called');
-        const discoveredDevices = []; // Insert code here to use WinRT bindings from react-native-winrt to discovery devices
+    const handleDiscoverDevices = async () => {
+        const dnssdLookupHelper = DnssdLookupHelper.getInstance();
 
+        setScanStatus('Scan in progress...');
+        console.log("calling dnssdLookupHelper.findAllDevicesAsync()");
+
+        const startTime = Date.now();  // Capture start time
+    
+        let discoveredDevices : IDnssdServiceInstance[] = await dnssdLookupHelper.findAllDevicesAsync();
+    
+        const endTime = Date.now();  // Capture end time
+    
+        const duration = (endTime - startTime) / 1000;  // Calculate duration in seconds
+        const numberOfDevices = discoveredDevices.length;
+    
+        console.log(`Scan completed in ${duration} seconds. Found ${numberOfDevices} device(s).`);
+    
+        setScanStatus(`Scan completed in ${duration} seconds. Found ${numberOfDevices} device(s).`);
+        console.log(discoveredDevices);
+        
         // Populate the discoveredDevices state
         setDiscoveredDevices(discoveredDevices);
     }
+    
 
     return (
         <>
@@ -187,11 +206,20 @@ const App = () => {
                                 </Pressable>
                             <Text style={styles.sectionDescription}>After I click the button above, I would like you to generate a list of network devices discovered using the react-native-winrt UWP bindings.
                             Please populate the discoveredDevices state, and the list below will map the objects to JSON strings.
-                            
+                            </Text>
+                            <Text style={{...styles.sectionDescription, color: 'blue'}}>
+                                Note: Discovering all advertised devices on the network took anywhere between 30-40 seconds in my test set up. Please check console logs if needed.
+                            </Text>
+                            <Text style={{...styles.sectionDescription, marginTop: 10}}>
+                                {scanStatus}
                             </Text>
                             <View style={{margin: 20, borderWidth: 1, padding: 10, borderColor: 'black'}}>
-                                <Text>Devices:</Text>
-                            {discoveredDevices.map(device => <View>{JSON.stringify(device)}</View>)}
+                                <Text style={styles.sectionDescription}>Devices:</Text>
+                                {discoveredDevices.map((device, index) => (
+                                    <View key={index} style={{ marginTop: 10, marginBottom: 10 }}>
+                                        <Text style={styles.body}>{JSON.stringify(device, null, 4)}</Text>
+                                    </View>
+                                ))}
                             </View>
                         </View>
                     </View>
