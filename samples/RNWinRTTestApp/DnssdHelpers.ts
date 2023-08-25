@@ -129,14 +129,29 @@ export class DnssdLookupHelper {
                                 serviceInfo.instanceName = value;
                                 break;
                             case DnssdLookupHelper.IPADDRESS_PROPERTY:
-                                serviceInfo.ipAddresses = value as string[];
-                                if (serviceInfo.ipAddresses.length > 0) {
-                                    serviceInfo.ipv4Address = serviceInfo.ipAddresses[0];
+                            let ipAddressesArray = value as string[];
+                            serviceInfo.ipAddresses = ipAddressesArray;
+                            
+                            // Handles cases where:
+                            // 1. Both ipv4 and ipv6 addresses are present
+                            // 2. Only an ipv6 address is present
+                            if (ipAddressesArray.length > 0) {
+                                // Regex to check if an IP address is IPv4
+                                const ipv4Pattern = /^((25[0-5]|(2[0-4]|1\d|[1-9]|)\d)\.?\b){4}$/;
+
+                                if (ipv4Pattern.test(ipAddressesArray[0])) {
+                                    serviceInfo.ipv4Address = ipAddressesArray[0];
+                                } else {
+                                    serviceInfo.ipv6Address = ipAddressesArray[0];
                                 }
-                                if (serviceInfo.ipAddresses.length > 1) {
-                                    serviceInfo.ipv6Address = serviceInfo.ipAddresses[1];
-                                }
-                                break;
+                            }
+
+                            // Handles cases where both ipv4 and ipv6 addresses are present
+                            if (ipAddressesArray.length > 1) {
+                                // If two addresses are present, assume the second is always IPv6
+                                serviceInfo.ipv6Address = ipAddressesArray[1];
+                            }
+                            break;
                             case DnssdLookupHelper.PORTNUMBER_PROPERTY:
                                 serviceInfo.portNumber = value;
                                 break;
