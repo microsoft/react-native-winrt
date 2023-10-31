@@ -205,22 +205,29 @@ jsi::Value static_enum_data::create(jsi::Runtime& runtime) const
     return jsi::Value(runtime, jsi::Object::createFromHostObject(runtime, std::make_shared<projected_enum>(this)));
 }
 
-jsi::Value static_enum_data::get_value(std::string_view valueName) const
+jsi::Value static_enum_data::get_value(jsi::Runtime& runtime, std::string_view valueName) const
 {
     // TODO: It would also be rather simple to ensure that the array is sorted and do a binary search, however the
     // number of enum elements is typically pretty small, so that may actually be harmful
-    auto itr = std::find_if(values.begin(), values.end(), [&](auto& mapping) { return mapping.name == valueName; });
+    auto itr = std::find_if(values.begin(), values.end(),
+        [&](auto& mapping) { return mapping.name == valueName || std::to_string((long)mapping.value) == valueName; });
     if (itr == values.end())
     {
         return jsi::Value::undefined();
     }
-
-    return jsi::Value(itr->value);
+    else if (itr->name == valueName)
+    {
+        return jsi::Value(itr->value);
+    }
+    else
+    {
+        return jsi::Value(runtime, make_string(runtime, itr->name));
+    }
 }
 
 jsi::Value projected_enum::get(jsi::Runtime& runtime, const jsi::PropNameID& name)
 {
-    return m_data->get_value(name.utf8(runtime));
+    return m_data->get_value(runtime, name.utf8(runtime));
 }
 
 void projected_enum::set(jsi::Runtime& runtime, const jsi::PropNameID& name, const jsi::Value&)
@@ -236,6 +243,7 @@ std::vector<jsi::PropNameID> projected_enum::getPropertyNames(jsi::Runtime& runt
     for (auto& mapping : m_data->values)
     {
         result.push_back(make_propid(runtime, mapping.name));
+        result.push_back(make_propid(runtime, std::to_string((long)mapping.value)));
     }
 
     return result;

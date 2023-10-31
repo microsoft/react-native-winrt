@@ -1552,7 +1552,7 @@ namespace rnwinrt
 
         virtual jsi::Value create(jsi::Runtime& runtime) const override;
 
-        jsi::Value get_value(std::string_view valueName) const;
+        jsi::Value get_value(jsi::Runtime& runtime, std::string_view valueName) const;
 
         span<const value_mapping> values;
     };
