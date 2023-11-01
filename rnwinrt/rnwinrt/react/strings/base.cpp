@@ -209,20 +209,20 @@ jsi::Value static_enum_data::get_value(jsi::Runtime& runtime, std::string_view v
 {
     // TODO: It would also be rather simple to ensure that the array is sorted and do a binary search, however the
     // number of enum elements is typically pretty small, so that may actually be harmful
-    auto itr = std::find_if(values.begin(), values.end(),
-        [&](auto& mapping) { return mapping.name == valueName || std::to_string((long)mapping.value) == valueName; });
-    if (itr == values.end())
-    {
-        return jsi::Value::undefined();
-    }
-    else if (itr->name == valueName)
+    auto itr = std::find_if(values.begin(), values.end(), [&](auto& mapping) { return mapping.name == valueName; });
+    if (itr != values.end())
     {
         return jsi::Value(itr->value);
     }
-    else
+
+    // Look for a matching value (reverse mapping)
+    itr = std::find_if(values.begin(), values.end(), [&](auto& mapping) { return std::to_string(static_cast<int32_t>(mapping.value)) == valueName; });
+    if (itr != values.end())
     {
         return jsi::Value(runtime, make_string(runtime, itr->name));
     }
+
+    return jsi::Value::undefined();
 }
 
 jsi::Value projected_enum::get(jsi::Runtime& runtime, const jsi::PropNameID& name)
@@ -243,7 +243,8 @@ std::vector<jsi::PropNameID> projected_enum::getPropertyNames(jsi::Runtime& runt
     for (auto& mapping : m_data->values)
     {
         result.push_back(make_propid(runtime, mapping.name));
-        result.push_back(make_propid(runtime, std::to_string((long)mapping.value)));
+        // Reverse mapping (to match TypeScript enums)
+        result.push_back(make_propid(runtime, std::to_string(static_cast<int32_t>(mapping.value))));
     }
 
     return result;
