@@ -410,9 +410,24 @@ namespace rnwinrt::enums::%
         if (!field.Constant()) // Enums have a 'value__' data member we need to ignore
             continue;
 
+        auto constant = field.Constant();
+        std::string_view fieldValueAsString;
+
+        switch (constant.Type())
+        {
+        case ConstantType::Int32:
+            fieldValueAsString = std::to_string(constant.ValueInt32());
+            break;
+        case ConstantType::UInt32:
+            fieldValueAsString = std::to_string(constant.ValueUInt32());
+            break;
+        default:
+            continue;
+        }
+
         writer.write_fmt(R"^-^(
-        { "%"sv, static_cast<double>(winrt::%::%) },)^-^",
-            rnwinrt::camel_case{ field.Name() }, rnwinrt::cpp_typename{ enumData.type_def }, field.Name());
+        { "%"sv, %, "%"sv },)^-^",
+            rnwinrt::camel_case{ field.Name() }, fieldValueAsString, fieldValueAsString);
     }
 
     writer.write_fmt(R"^-^(

@@ -1543,6 +1543,7 @@ namespace rnwinrt
         {
             std::string_view name;
             double value;
+            std::string_view valueAsString;
         };
 
         constexpr static_enum_data(std::string_view name, span<const value_mapping> values) :
