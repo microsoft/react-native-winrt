@@ -411,7 +411,7 @@ namespace rnwinrt::enums::%
             continue;
 
         auto constant = field.Constant();
-        std::string_view fieldValueAsString;
+        std::string fieldValueAsString;
 
         switch (constant.Type())
         {

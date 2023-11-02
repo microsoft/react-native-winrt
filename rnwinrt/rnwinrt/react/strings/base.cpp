@@ -216,7 +216,7 @@ jsi::Value static_enum_data::get_value(jsi::Runtime& runtime, std::string_view v
     }
 
     // Look for a matching value (reverse mapping)
-    itr = std::find_if(values.begin(), values.end(), [&](auto& mapping) { return mapping.valueAsString == valueName; });
+    itr = std::find_if(values.begin(), values.end(), [&](auto& mapping) { return mapping.value_as_string == valueName; });
     if (itr != values.end())
     {
         return jsi::Value(runtime, make_string(runtime, itr->name));
@@ -244,7 +244,7 @@ std::vector<jsi::PropNameID> projected_enum::getPropertyNames(jsi::Runtime& runt
     {
         result.push_back(make_propid(runtime, mapping.name));
         // Reverse mapping (to match TypeScript enums)
-        result.push_back(make_propid(runtime, mapping.valueAsString));
+        result.push_back(make_propid(runtime, mapping.value_as_string));
     }
 
     return result;
