@@ -19,6 +19,7 @@ import {
 import { Scenario } from './Scenario';
 import { styles } from './Styles';
 import { TestResult } from './TestCommon'
+import { makeEnumTestScenarios } from './EnumTests'
 import { makePropertiesTestScenarios } from './PropertiesTests'
 import { makeBasicFunctionTestScenarios } from './BasicFunctionTests'
 import { makeArrayTestScenarios } from './ArrayTests'
@@ -35,6 +36,9 @@ class App extends Component {
 
     testSuites = [
         {
+            name: "Enum Tests",
+            scenarios: makeEnumTestScenarios(this),
+        }, {
             name: "Property Tests",
             scenarios: makePropertiesTestScenarios(this),
         }, {
