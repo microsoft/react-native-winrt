@@ -92,6 +92,12 @@ export const assert = {
         }
     },
 
+    undefined(val) {
+        if (typeof val !== "undefined") {
+            throw new Error('assertUndefined failed!');
+        }
+    },
+
     equal(lhs, rhs) {
         var result = checkEquals(lhs, rhs);
         if (!result.success) {
