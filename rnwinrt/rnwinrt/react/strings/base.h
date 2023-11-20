@@ -1543,6 +1543,7 @@ namespace rnwinrt
         {
             std::string_view name;
             double value;
+            std::string_view value_as_string;
         };
 
         constexpr static_enum_data(std::string_view name, span<const value_mapping> values) :
@@ -1552,7 +1553,7 @@ namespace rnwinrt
 
         virtual jsi::Value create(jsi::Runtime& runtime) const override;
 
-        jsi::Value get_value(std::string_view valueName) const;
+        jsi::Value get_value(jsi::Runtime& runtime, std::string_view valueName) const;
 
         span<const value_mapping> values;
     };
