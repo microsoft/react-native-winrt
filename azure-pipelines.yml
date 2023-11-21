@@ -45,7 +45,7 @@ jobs:
       - task: EsrpCodeSigning@1
         displayName: 'ESRP CodeSigning'
         inputs:
-          ConnectedServiceName: 'Xlang Code Signing'
+          ConnectedServiceName: 'Terminal/Console/WinAppDriver Team Code Signing Connection'
           FolderPath: '$(Build.SourcesDirectory)\rnwinrt\x64\Release'
           Pattern: 'rnwinrt.exe'
           UseMinimatch: true
@@ -66,7 +66,7 @@ jobs:
       - task: EsrpCodeSigning@1
         displayName: 'ESRP CodeSigning'
         inputs:
-          ConnectedServiceName: 'Xlang Code Signing'
+          ConnectedServiceName: 'Terminal/Console/WinAppDriver Team Code Signing Connection'
           FolderPath: '$(Build.ArtifactStagingDirectory)'
           Pattern: '*.nupkg'
           UseMinimatch: true
