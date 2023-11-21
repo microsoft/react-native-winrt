@@ -9,7 +9,7 @@ trigger:
 - release/*
 
 pool:
-  vmImage: 'windows-2022'
+  vmImage: 'windows-2019'
 
 # NOTE: The major/minor versions correspond to the React Native version we target/have tested against
 variables:
