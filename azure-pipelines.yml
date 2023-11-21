@@ -9,7 +9,7 @@ trigger:
 - release/*
 
 pool:
-  vmImage: 'windows-2019'
+  vmImage: 'windows-2022'
 
 # NOTE: The major/minor versions correspond to the React Native version we target/have tested against
 variables:
@@ -42,7 +42,7 @@ jobs:
           configuration: 'Release'
           msbuildArgs: '-p:RnWinRTMajorVersion=$(product_major_version);RnWinRTMinorVersion=$(product_minor_version);RnWinRTBuild=$(product_build);RnWinRTBuildQFE=$(product_build_qfe)'
 
-      - task: EsrpCodeSigning@1
+      - task: EsrpCodeSigning@2
         displayName: 'ESRP CodeSigning'
         inputs:
           ConnectedServiceName: 'Xlang Code Signing'
@@ -63,7 +63,7 @@ jobs:
           versioningScheme: 'off'
           buildProperties: 'rnwinrt_nuget_version=$(Build.BuildNumber);rnwinrt_exe=$(Build.SourcesDirectory)\rnwinrt\x64\Release\rnwinrt.exe;reactnative_files=$(Build.SourcesDirectory)\rnwinrt\module'
 
-      - task: EsrpCodeSigning@1
+      - task: EsrpCodeSigning@2
         displayName: 'ESRP CodeSigning'
         inputs:
           ConnectedServiceName: 'Xlang Code Signing'
