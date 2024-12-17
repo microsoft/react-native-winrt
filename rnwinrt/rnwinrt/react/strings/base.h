@@ -3031,7 +3031,7 @@ namespace rnwinrt
                     auto arg0 = convert_value_to_native<winrt::Windows::Foundation::Collections::IObservableVector<T>>(
                         runtime, args[0]);
                     auto arg1 =
-                        convert_value_to_native<winrt::Windows::Foundation::Collections::IVectorChangedEventArgs<T>>(
+                        convert_value_to_native<winrt::Windows::Foundation::Collections::IVectorChangedEventArgs>(
                             runtime, args[1]);
                     value(arg0, arg1);
                     return jsi::Value::undefined();
