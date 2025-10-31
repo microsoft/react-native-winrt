@@ -85,7 +85,7 @@ namespace rnwinrt::enums::Windows::Foundation::PropertyType
 
 namespace rnwinrt::classes::Windows::Foundation::Deferral
 {
-    static jsi::Value constructor_function(jsi::Runtime& runtime, const jsi::Value&, [[maybe_unused]] const jsi::Value* args, size_t count)
+    static napi_wrappers::Value constructor_function(napi_wrappers::Runtime& runtime, const napi_wrappers::Value&, [[maybe_unused]] const napi_wrappers::Value* args, size_t count)
     {
         if (count == 1)
         {
@@ -102,7 +102,7 @@ namespace rnwinrt::classes::Windows::Foundation::PropertyValue
 {
     static constexpr const static_class_data::function_mapping function_data[] = {
         { "createBoolean",
-            []([[maybe_unused]] jsi::Runtime& runtime, const jsi::Value&, [[maybe_unused]] const jsi::Value* args, size_t count) {
+            []([[maybe_unused]] napi_wrappers::Runtime& runtime, const napi_wrappers::Value&, [[maybe_unused]] const napi_wrappers::Value* args, size_t count) {
                 if (count == 1)
                 {
                     auto arg0 = convert_value_to_native<bool>(runtime, args[0]);
@@ -113,7 +113,7 @@ namespace rnwinrt::classes::Windows::Foundation::PropertyValue
             }
         },
         { "createBooleanArray",
-            []([[maybe_unused]] jsi::Runtime& runtime, const jsi::Value&, [[maybe_unused]] const jsi::Value* args, size_t count) {
+            []([[maybe_unused]] napi_wrappers::Runtime& runtime, const napi_wrappers::Value&, [[maybe_unused]] const napi_wrappers::Value* args, size_t count) {
                 if (count == 1)
                 {
                     auto arg0 = convert_value_to_native<winrt::array_view<const bool>>(runtime, args[0]);
@@ -124,7 +124,7 @@ namespace rnwinrt::classes::Windows::Foundation::PropertyValue
             }
         },
         { "createChar16",
-            []([[maybe_unused]] jsi::Runtime& runtime, const jsi::Value&, [[maybe_unused]] const jsi::Value* args, size_t count) {
+            []([[maybe_unused]] napi_wrappers::Runtime& runtime, const napi_wrappers::Value&, [[maybe_unused]] const napi_wrappers::Value* args, size_t count) {
                 if (count == 1)
                 {
                     auto arg0 = convert_value_to_native<char16_t>(runtime, args[0]);
@@ -135,7 +135,7 @@ namespace rnwinrt::classes::Windows::Foundation::PropertyValue
             }
         },
         { "createChar16Array",
-            []([[maybe_unused]] jsi::Runtime& runtime, const jsi::Value&, [[maybe_unused]] const jsi::Value* args, size_t count) {
+            []([[maybe_unused]] napi_wrappers::Runtime& runtime, const napi_wrappers::Value&, [[maybe_unused]] const napi_wrappers::Value* args, size_t count) {
                 if (count == 1)
                 {
                     auto arg0 = convert_value_to_native<winrt::array_view<const char16_t>>(runtime, args[0]);
@@ -146,7 +146,7 @@ namespace rnwinrt::classes::Windows::Foundation::PropertyValue
             }
         },
         { "createDateTime",
-            []([[maybe_unused]] jsi::Runtime& runtime, const jsi::Value&, [[maybe_unused]] const jsi::Value* args, size_t count) {
+            []([[maybe_unused]] napi_wrappers::Runtime& runtime, const napi_wrappers::Value&, [[maybe_unused]] const napi_wrappers::Value* args, size_t count) {
                 if (count == 1)
                 {
                     auto arg0 = convert_value_to_native<winrt::Windows::Foundation::DateTime>(runtime, args[0]);
@@ -157,7 +157,7 @@ namespace rnwinrt::classes::Windows::Foundation::PropertyValue
             }
         },
         { "createDateTimeArray",
-            []([[maybe_unused]] jsi::Runtime& runtime, const jsi::Value&, [[maybe_unused]] const jsi::Value* args, size_t count) {
+            []([[maybe_unused]] napi_wrappers::Runtime& runtime, const napi_wrappers::Value&, [[maybe_unused]] const napi_wrappers::Value* args, size_t count) {
                 if (count == 1)
                 {
                     auto arg0 = convert_value_to_native<winrt::array_view<const winrt::Windows::Foundation::DateTime>>(runtime, args[0]);
@@ -168,7 +168,7 @@ namespace rnwinrt::classes::Windows::Foundation::PropertyValue
             }
         },
         { "createDouble",
-            []([[maybe_unused]] jsi::Runtime& runtime, const jsi::Value&, [[maybe_unused]] const jsi::Value* args, size_t count) {
+            []([[maybe_unused]] napi_wrappers::Runtime& runtime, const napi_wrappers::Value&, [[maybe_unused]] const napi_wrappers::Value* args, size_t count) {
                 if (count == 1)
                 {
                     auto arg0 = convert_value_to_native<double>(runtime, args[0]);
@@ -179,7 +179,7 @@ namespace rnwinrt::classes::Windows::Foundation::PropertyValue
             }
         },
         { "createDoubleArray",
-            []([[maybe_unused]] jsi::Runtime& runtime, const jsi::Value&, [[maybe_unused]] const jsi::Value* args, size_t count) {
+            []([[maybe_unused]] napi_wrappers::Runtime& runtime, const napi_wrappers::Value&, [[maybe_unused]] const napi_wrappers::Value* args, size_t count) {
                 if (count == 1)
                 {
                     auto arg0 = convert_value_to_native<winrt::array_view<const double>>(runtime, args[0]);
@@ -190,7 +190,7 @@ namespace rnwinrt::classes::Windows::Foundation::PropertyValue
             }
         },
         { "createEmpty",
-            []([[maybe_unused]] jsi::Runtime& runtime, const jsi::Value&, [[maybe_unused]] const jsi::Value* args, size_t count) {
+            []([[maybe_unused]] napi_wrappers::Runtime& runtime, const napi_wrappers::Value&, [[maybe_unused]] const napi_wrappers::Value* args, size_t count) {
                 if (count == 0)
                 {
                     auto result = winrt::Windows::Foundation::PropertyValue::CreateEmpty();
@@ -200,7 +200,7 @@ namespace rnwinrt::classes::Windows::Foundation::PropertyValue
             }
         },
         { "createGuid",
-            []([[maybe_unused]] jsi::Runtime& runtime, const jsi::Value&, [[maybe_unused]] const jsi::Value* args, size_t count) {
+            []([[maybe_unused]] napi_wrappers::Runtime& runtime, const napi_wrappers::Value&, [[maybe_unused]] const napi_wrappers::Value* args, size_t count) {
                 if (count == 1)
                 {
                     auto arg0 = convert_value_to_native<winrt::guid>(runtime, args[0]);
@@ -211,7 +211,7 @@ namespace rnwinrt::classes::Windows::Foundation::PropertyValue
             }
         },
         { "createGuidArray",
-            []([[maybe_unused]] jsi::Runtime& runtime, const jsi::Value&, [[maybe_unused]] const jsi::Value* args, size_t count) {
+            []([[maybe_unused]] napi_wrappers::Runtime& runtime, const napi_wrappers::Value&, [[maybe_unused]] const napi_wrappers::Value* args, size_t count) {
                 if (count == 1)
                 {
                     auto arg0 = convert_value_to_native<winrt::array_view<const winrt::guid>>(runtime, args[0]);
@@ -222,7 +222,7 @@ namespace rnwinrt::classes::Windows::Foundation::PropertyValue
             }
         },
         { "createInspectable",
-            []([[maybe_unused]] jsi::Runtime& runtime, const jsi::Value&, [[maybe_unused]] const jsi::Value* args, size_t count) {
+            []([[maybe_unused]] napi_wrappers::Runtime& runtime, const napi_wrappers::Value&, [[maybe_unused]] const napi_wrappers::Value* args, size_t count) {
                 if (count == 1)
                 {
                     auto arg0 = convert_value_to_native<winrt::Windows::Foundation::IInspectable>(runtime, args[0]);
@@ -233,7 +233,7 @@ namespace rnwinrt::classes::Windows::Foundation::PropertyValue
             }
         },
         { "createInspectableArray",
-            []([[maybe_unused]] jsi::Runtime& runtime, const jsi::Value&, [[maybe_unused]] const jsi::Value* args, size_t count) {
+            []([[maybe_unused]] napi_wrappers::Runtime& runtime, const napi_wrappers::Value&, [[maybe_unused]] const napi_wrappers::Value* args, size_t count) {
                 if (count == 1)
                 {
                     auto arg0 = convert_value_to_native<winrt::array_view<const winrt::Windows::Foundation::IInspectable>>(runtime, args[0]);
@@ -244,7 +244,7 @@ namespace rnwinrt::classes::Windows::Foundation::PropertyValue
             }
         },
         { "createInt16",
-            []([[maybe_unused]] jsi::Runtime& runtime, const jsi::Value&, [[maybe_unused]] const jsi::Value* args, size_t count) {
+            []([[maybe_unused]] napi_wrappers::Runtime& runtime, const napi_wrappers::Value&, [[maybe_unused]] const napi_wrappers::Value* args, size_t count) {
                 if (count == 1)
                 {
                     auto arg0 = convert_value_to_native<int16_t>(runtime, args[0]);
@@ -255,7 +255,7 @@ namespace rnwinrt::classes::Windows::Foundation::PropertyValue
             }
         },
         { "createInt16Array",
-            []([[maybe_unused]] jsi::Runtime& runtime, const jsi::Value&, [[maybe_unused]] const jsi::Value* args, size_t count) {
+            []([[maybe_unused]] napi_wrappers::Runtime& runtime, const napi_wrappers::Value&, [[maybe_unused]] const napi_wrappers::Value* args, size_t count) {
                 if (count == 1)
                 {
                     auto arg0 = convert_value_to_native<winrt::array_view<const int16_t>>(runtime, args[0]);
@@ -266,7 +266,7 @@ namespace rnwinrt::classes::Windows::Foundation::PropertyValue
             }
         },
         { "createInt32",
-            []([[maybe_unused]] jsi::Runtime& runtime, const jsi::Value&, [[maybe_unused]] const jsi::Value* args, size_t count) {
+            []([[maybe_unused]] napi_wrappers::Runtime& runtime, const napi_wrappers::Value&, [[maybe_unused]] const napi_wrappers::Value* args, size_t count) {
                 if (count == 1)
                 {
                     auto arg0 = convert_value_to_native<int32_t>(runtime, args[0]);
@@ -277,7 +277,7 @@ namespace rnwinrt::classes::Windows::Foundation::PropertyValue
             }
         },
         { "createInt32Array",
-            []([[maybe_unused]] jsi::Runtime& runtime, const jsi::Value&, [[maybe_unused]] const jsi::Value* args, size_t count) {
+            []([[maybe_unused]] napi_wrappers::Runtime& runtime, const napi_wrappers::Value&, [[maybe_unused]] const napi_wrappers::Value* args, size_t count) {
                 if (count == 1)
                 {
                     auto arg0 = convert_value_to_native<winrt::array_view<const int32_t>>(runtime, args[0]);
@@ -288,7 +288,7 @@ namespace rnwinrt::classes::Windows::Foundation::PropertyValue
             }
         },
         { "createInt64",
-            []([[maybe_unused]] jsi::Runtime& runtime, const jsi::Value&, [[maybe_unused]] const jsi::Value* args, size_t count) {
+            []([[maybe_unused]] napi_wrappers::Runtime& runtime, const napi_wrappers::Value&, [[maybe_unused]] const napi_wrappers::Value* args, size_t count) {
                 if (count == 1)
                 {
                     auto arg0 = convert_value_to_native<int64_t>(runtime, args[0]);
@@ -299,7 +299,7 @@ namespace rnwinrt::classes::Windows::Foundation::PropertyValue
             }
         },
         { "createInt64Array",
-            []([[maybe_unused]] jsi::Runtime& runtime, const jsi::Value&, [[maybe_unused]] const jsi::Value* args, size_t count) {
+            []([[maybe_unused]] napi_wrappers::Runtime& runtime, const napi_wrappers::Value&, [[maybe_unused]] const napi_wrappers::Value* args, size_t count) {
                 if (count == 1)
                 {
                     auto arg0 = convert_value_to_native<winrt::array_view<const int64_t>>(runtime, args[0]);
@@ -310,7 +310,7 @@ namespace rnwinrt::classes::Windows::Foundation::PropertyValue
             }
         },
         { "createPoint",
-            []([[maybe_unused]] jsi::Runtime& runtime, const jsi::Value&, [[maybe_unused]] const jsi::Value* args, size_t count) {
+            []([[maybe_unused]] napi_wrappers::Runtime& runtime, const napi_wrappers::Value&, [[maybe_unused]] const napi_wrappers::Value* args, size_t count) {
                 if (count == 1)
                 {
                     auto arg0 = convert_value_to_native<winrt::Windows::Foundation::Point>(runtime, args[0]);
@@ -321,7 +321,7 @@ namespace rnwinrt::classes::Windows::Foundation::PropertyValue
             }
         },
         { "createPointArray",
-            []([[maybe_unused]] jsi::Runtime& runtime, const jsi::Value&, [[maybe_unused]] const jsi::Value* args, size_t count) {
+            []([[maybe_unused]] napi_wrappers::Runtime& runtime, const napi_wrappers::Value&, [[maybe_unused]] const napi_wrappers::Value* args, size_t count) {
                 if (count == 1)
                 {
                     auto arg0 = convert_value_to_native<winrt::array_view<const winrt::Windows::Foundation::Point>>(runtime, args[0]);
@@ -332,7 +332,7 @@ namespace rnwinrt::classes::Windows::Foundation::PropertyValue
             }
         },
         { "createRect",
-            []([[maybe_unused]] jsi::Runtime& runtime, const jsi::Value&, [[maybe_unused]] const jsi::Value* args, size_t count) {
+            []([[maybe_unused]] napi_wrappers::Runtime& runtime, const napi_wrappers::Value&, [[maybe_unused]] const napi_wrappers::Value* args, size_t count) {
                 if (count == 1)
                 {
                     auto arg0 = convert_value_to_native<winrt::Windows::Foundation::Rect>(runtime, args[0]);
@@ -343,7 +343,7 @@ namespace rnwinrt::classes::Windows::Foundation::PropertyValue
             }
         },
         { "createRectArray",
-            []([[maybe_unused]] jsi::Runtime& runtime, const jsi::Value&, [[maybe_unused]] const jsi::Value* args, size_t count) {
+            []([[maybe_unused]] napi_wrappers::Runtime& runtime, const napi_wrappers::Value&, [[maybe_unused]] const napi_wrappers::Value* args, size_t count) {
                 if (count == 1)
                 {
                     auto arg0 = convert_value_to_native<winrt::array_view<const winrt::Windows::Foundation::Rect>>(runtime, args[0]);
@@ -354,7 +354,7 @@ namespace rnwinrt::classes::Windows::Foundation::PropertyValue
             }
         },
         { "createSingle",
-            []([[maybe_unused]] jsi::Runtime& runtime, const jsi::Value&, [[maybe_unused]] const jsi::Value* args, size_t count) {
+            []([[maybe_unused]] napi_wrappers::Runtime& runtime, const napi_wrappers::Value&, [[maybe_unused]] const napi_wrappers::Value* args, size_t count) {
                 if (count == 1)
                 {
                     auto arg0 = convert_value_to_native<float>(runtime, args[0]);
@@ -365,7 +365,7 @@ namespace rnwinrt::classes::Windows::Foundation::PropertyValue
             }
         },
         { "createSingleArray",
-            []([[maybe_unused]] jsi::Runtime& runtime, const jsi::Value&, [[maybe_unused]] const jsi::Value* args, size_t count) {
+            []([[maybe_unused]] napi_wrappers::Runtime& runtime, const napi_wrappers::Value&, [[maybe_unused]] const napi_wrappers::Value* args, size_t count) {
                 if (count == 1)
                 {
                     auto arg0 = convert_value_to_native<winrt::array_view<const float>>(runtime, args[0]);
@@ -376,7 +376,7 @@ namespace rnwinrt::classes::Windows::Foundation::PropertyValue
             }
         },
         { "createSize",
-            []([[maybe_unused]] jsi::Runtime& runtime, const jsi::Value&, [[maybe_unused]] const jsi::Value* args, size_t count) {
+            []([[maybe_unused]] napi_wrappers::Runtime& runtime, const napi_wrappers::Value&, [[maybe_unused]] const napi_wrappers::Value* args, size_t count) {
                 if (count == 1)
                 {
                     auto arg0 = convert_value_to_native<winrt::Windows::Foundation::Size>(runtime, args[0]);
@@ -387,7 +387,7 @@ namespace rnwinrt::classes::Windows::Foundation::PropertyValue
             }
         },
         { "createSizeArray",
-            []([[maybe_unused]] jsi::Runtime& runtime, const jsi::Value&, [[maybe_unused]] const jsi::Value* args, size_t count) {
+            []([[maybe_unused]] napi_wrappers::Runtime& runtime, const napi_wrappers::Value&, [[maybe_unused]] const napi_wrappers::Value* args, size_t count) {
                 if (count == 1)
                 {
                     auto arg0 = convert_value_to_native<winrt::array_view<const winrt::Windows::Foundation::Size>>(runtime, args[0]);
@@ -398,7 +398,7 @@ namespace rnwinrt::classes::Windows::Foundation::PropertyValue
             }
         },
         { "createString",
-            []([[maybe_unused]] jsi::Runtime& runtime, const jsi::Value&, [[maybe_unused]] const jsi::Value* args, size_t count) {
+            []([[maybe_unused]] napi_wrappers::Runtime& runtime, const napi_wrappers::Value&, [[maybe_unused]] const napi_wrappers::Value* args, size_t count) {
                 if (count == 1)
                 {
                     auto arg0 = convert_value_to_native<winrt::hstring>(runtime, args[0]);
@@ -409,7 +409,7 @@ namespace rnwinrt::classes::Windows::Foundation::PropertyValue
             }
         },
         { "createStringArray",
-            []([[maybe_unused]] jsi::Runtime& runtime, const jsi::Value&, [[maybe_unused]] const jsi::Value* args, size_t count) {
+            []([[maybe_unused]] napi_wrappers::Runtime& runtime, const napi_wrappers::Value&, [[maybe_unused]] const napi_wrappers::Value* args, size_t count) {
                 if (count == 1)
                 {
                     auto arg0 = convert_value_to_native<winrt::array_view<const winrt::hstring>>(runtime, args[0]);
@@ -420,7 +420,7 @@ namespace rnwinrt::classes::Windows::Foundation::PropertyValue
             }
         },
         { "createTimeSpan",
-            []([[maybe_unused]] jsi::Runtime& runtime, const jsi::Value&, [[maybe_unused]] const jsi::Value* args, size_t count) {
+            []([[maybe_unused]] napi_wrappers::Runtime& runtime, const napi_wrappers::Value&, [[maybe_unused]] const napi_wrappers::Value* args, size_t count) {
                 if (count == 1)
                 {
                     auto arg0 = convert_value_to_native<winrt::Windows::Foundation::TimeSpan>(runtime, args[0]);
@@ -431,7 +431,7 @@ namespace rnwinrt::classes::Windows::Foundation::PropertyValue
             }
         },
         { "createTimeSpanArray",
-            []([[maybe_unused]] jsi::Runtime& runtime, const jsi::Value&, [[maybe_unused]] const jsi::Value* args, size_t count) {
+            []([[maybe_unused]] napi_wrappers::Runtime& runtime, const napi_wrappers::Value&, [[maybe_unused]] const napi_wrappers::Value* args, size_t count) {
                 if (count == 1)
                 {
                     auto arg0 = convert_value_to_native<winrt::array_view<const winrt::Windows::Foundation::TimeSpan>>(runtime, args[0]);
@@ -442,7 +442,7 @@ namespace rnwinrt::classes::Windows::Foundation::PropertyValue
             }
         },
         { "createUInt16",
-            []([[maybe_unused]] jsi::Runtime& runtime, const jsi::Value&, [[maybe_unused]] const jsi::Value* args, size_t count) {
+            []([[maybe_unused]] napi_wrappers::Runtime& runtime, const napi_wrappers::Value&, [[maybe_unused]] const napi_wrappers::Value* args, size_t count) {
                 if (count == 1)
                 {
                     auto arg0 = convert_value_to_native<uint16_t>(runtime, args[0]);
@@ -453,7 +453,7 @@ namespace rnwinrt::classes::Windows::Foundation::PropertyValue
             }
         },
         { "createUInt16Array",
-            []([[maybe_unused]] jsi::Runtime& runtime, const jsi::Value&, [[maybe_unused]] const jsi::Value* args, size_t count) {
+            []([[maybe_unused]] napi_wrappers::Runtime& runtime, const napi_wrappers::Value&, [[maybe_unused]] const napi_wrappers::Value* args, size_t count) {
                 if (count == 1)
                 {
                     auto arg0 = convert_value_to_native<winrt::array_view<const uint16_t>>(runtime, args[0]);
@@ -464,7 +464,7 @@ namespace rnwinrt::classes::Windows::Foundation::PropertyValue
             }
         },
         { "createUInt32",
-            []([[maybe_unused]] jsi::Runtime& runtime, const jsi::Value&, [[maybe_unused]] const jsi::Value* args, size_t count) {
+            []([[maybe_unused]] napi_wrappers::Runtime& runtime, const napi_wrappers::Value&, [[maybe_unused]] const napi_wrappers::Value* args, size_t count) {
                 if (count == 1)
                 {
                     auto arg0 = convert_value_to_native<uint32_t>(runtime, args[0]);
@@ -475,7 +475,7 @@ namespace rnwinrt::classes::Windows::Foundation::PropertyValue
             }
         },
         { "createUInt32Array",
-            []([[maybe_unused]] jsi::Runtime& runtime, const jsi::Value&, [[maybe_unused]] const jsi::Value* args, size_t count) {
+            []([[maybe_unused]] napi_wrappers::Runtime& runtime, const napi_wrappers::Value&, [[maybe_unused]] const napi_wrappers::Value* args, size_t count) {
                 if (count == 1)
                 {
                     auto arg0 = convert_value_to_native<winrt::array_view<const uint32_t>>(runtime, args[0]);
@@ -486,7 +486,7 @@ namespace rnwinrt::classes::Windows::Foundation::PropertyValue
             }
         },
         { "createUInt64",
-            []([[maybe_unused]] jsi::Runtime& runtime, const jsi::Value&, [[maybe_unused]] const jsi::Value* args, size_t count) {
+            []([[maybe_unused]] napi_wrappers::Runtime& runtime, const napi_wrappers::Value&, [[maybe_unused]] const napi_wrappers::Value* args, size_t count) {
                 if (count == 1)
                 {
                     auto arg0 = convert_value_to_native<uint64_t>(runtime, args[0]);
@@ -497,7 +497,7 @@ namespace rnwinrt::classes::Windows::Foundation::PropertyValue
             }
         },
         { "createUInt64Array",
-            []([[maybe_unused]] jsi::Runtime& runtime, const jsi::Value&, [[maybe_unused]] const jsi::Value* args, size_t count) {
+            []([[maybe_unused]] napi_wrappers::Runtime& runtime, const napi_wrappers::Value&, [[maybe_unused]] const napi_wrappers::Value* args, size_t count) {
                 if (count == 1)
                 {
                     auto arg0 = convert_value_to_native<winrt::array_view<const uint64_t>>(runtime, args[0]);
@@ -508,7 +508,7 @@ namespace rnwinrt::classes::Windows::Foundation::PropertyValue
             }
         },
         { "createUInt8",
-            []([[maybe_unused]] jsi::Runtime& runtime, const jsi::Value&, [[maybe_unused]] const jsi::Value* args, size_t count) {
+            []([[maybe_unused]] napi_wrappers::Runtime& runtime, const napi_wrappers::Value&, [[maybe_unused]] const napi_wrappers::Value* args, size_t count) {
                 if (count == 1)
                 {
                     auto arg0 = convert_value_to_native<uint8_t>(runtime, args[0]);
@@ -519,7 +519,7 @@ namespace rnwinrt::classes::Windows::Foundation::PropertyValue
             }
         },
         { "createUInt8Array",
-            []([[maybe_unused]] jsi::Runtime& runtime, const jsi::Value&, [[maybe_unused]] const jsi::Value* args, size_t count) {
+            []([[maybe_unused]] napi_wrappers::Runtime& runtime, const napi_wrappers::Value&, [[maybe_unused]] const napi_wrappers::Value* args, size_t count) {
                 if (count == 1)
                 {
                     auto arg0 = convert_value_to_native<winrt::array_view<const uint8_t>>(runtime, args[0]);
@@ -538,19 +538,19 @@ namespace rnwinrt::interfaces::Windows::Foundation::IAsyncInfo
 {
     static constexpr const static_interface_data::property_mapping property_data[] = {
         { "errorCode",
-            [](jsi::Runtime& runtime, const winrt::Windows::Foundation::IInspectable& thisValue) {
+            [](napi_wrappers::Runtime& runtime, const winrt::Windows::Foundation::IInspectable& thisValue) {
                 return convert_native_to_value(runtime, thisValue.as<winrt::Windows::Foundation::IAsyncInfo>().ErrorCode());
             },
             nullptr
         },
         { "id",
-            [](jsi::Runtime& runtime, const winrt::Windows::Foundation::IInspectable& thisValue) {
+            [](napi_wrappers::Runtime& runtime, const winrt::Windows::Foundation::IInspectable& thisValue) {
                 return convert_native_to_value(runtime, thisValue.as<winrt::Windows::Foundation::IAsyncInfo>().Id());
             },
             nullptr
         },
         { "status",
-            [](jsi::Runtime& runtime, const winrt::Windows::Foundation::IInspectable& thisValue) {
+            [](napi_wrappers::Runtime& runtime, const winrt::Windows::Foundation::IInspectable& thisValue) {
                 return convert_native_to_value(runtime, thisValue.as<winrt::Windows::Foundation::IAsyncInfo>().Status());
             },
             nullptr
@@ -558,15 +558,15 @@ namespace rnwinrt::interfaces::Windows::Foundation::IAsyncInfo
     };
     static constexpr const static_interface_data::function_mapping function_data[] = {
         { "cancel",
-            []([[maybe_unused]] jsi::Runtime& runtime, const winrt::Windows::Foundation::IInspectable& thisValue, [[maybe_unused]] const jsi::Value* args) {
+            []([[maybe_unused]] napi_wrappers::Runtime& runtime, const winrt::Windows::Foundation::IInspectable& thisValue, [[maybe_unused]] const napi_wrappers::Value* args) {
                     thisValue.as<winrt::Windows::Foundation::IAsyncInfo>().Cancel();
-                    return jsi::Value::undefined();
+                    return napi_wrappers::Value::undefined();
                 },
                 0, false },
         { "close",
-            []([[maybe_unused]] jsi::Runtime& runtime, const winrt::Windows::Foundation::IInspectable& thisValue, [[maybe_unused]] const jsi::Value* args) {
+            []([[maybe_unused]] napi_wrappers::Runtime& runtime, const winrt::Windows::Foundation::IInspectable& thisValue, [[maybe_unused]] const napi_wrappers::Value* args) {
                     thisValue.as<winrt::Windows::Foundation::IAsyncInfo>().Close();
-                    return jsi::Value::undefined();
+                    return napi_wrappers::Value::undefined();
                 },
                 0, false },
     };
@@ -578,9 +578,9 @@ namespace rnwinrt::interfaces::Windows::Foundation::IClosable
 {
     static constexpr const static_interface_data::function_mapping function_data[] = {
         { "close",
-            []([[maybe_unused]] jsi::Runtime& runtime, const winrt::Windows::Foundation::IInspectable& thisValue, [[maybe_unused]] const jsi::Value* args) {
+            []([[maybe_unused]] napi_wrappers::Runtime& runtime, const winrt::Windows::Foundation::IInspectable& thisValue, [[maybe_unused]] const napi_wrappers::Value* args) {
                     thisValue.as<winrt::Windows::Foundation::IClosable>().Close();
-                    return jsi::Value::undefined();
+                    return napi_wrappers::Value::undefined();
                 },
                 0, false },
     };
@@ -592,9 +592,9 @@ namespace rnwinrt::interfaces::Windows::Foundation::IDeferral
 {
     static constexpr const static_interface_data::function_mapping function_data[] = {
         { "complete",
-            []([[maybe_unused]] jsi::Runtime& runtime, const winrt::Windows::Foundation::IInspectable& thisValue, [[maybe_unused]] const jsi::Value* args) {
+            []([[maybe_unused]] napi_wrappers::Runtime& runtime, const winrt::Windows::Foundation::IInspectable& thisValue, [[maybe_unused]] const napi_wrappers::Value* args) {
                     thisValue.as<winrt::Windows::Foundation::IDeferral>().Complete();
-                    return jsi::Value::undefined();
+                    return napi_wrappers::Value::undefined();
                 },
                 0, false },
     };
@@ -606,13 +606,13 @@ namespace rnwinrt::interfaces::Windows::Foundation::IPropertyValue
 {
     static constexpr const static_interface_data::property_mapping property_data[] = {
         { "isNumericScalar",
-            [](jsi::Runtime& runtime, const winrt::Windows::Foundation::IInspectable& thisValue) {
+            [](napi_wrappers::Runtime& runtime, const winrt::Windows::Foundation::IInspectable& thisValue) {
                 return convert_native_to_value(runtime, thisValue.as<winrt::Windows::Foundation::IPropertyValue>().IsNumericScalar());
             },
             nullptr
         },
         { "type",
-            [](jsi::Runtime& runtime, const winrt::Windows::Foundation::IInspectable& thisValue) {
+            [](napi_wrappers::Runtime& runtime, const winrt::Windows::Foundation::IInspectable& thisValue) {
                 return convert_native_to_value(runtime, thisValue.as<winrt::Windows::Foundation::IPropertyValue>().Type());
             },
             nullptr
@@ -620,241 +620,241 @@ namespace rnwinrt::interfaces::Windows::Foundation::IPropertyValue
     };
     static constexpr const static_interface_data::function_mapping function_data[] = {
         { "getBoolean",
-            []([[maybe_unused]] jsi::Runtime& runtime, const winrt::Windows::Foundation::IInspectable& thisValue, [[maybe_unused]] const jsi::Value* args) {
+            []([[maybe_unused]] napi_wrappers::Runtime& runtime, const winrt::Windows::Foundation::IInspectable& thisValue, [[maybe_unused]] const napi_wrappers::Value* args) {
                     auto result = thisValue.as<winrt::Windows::Foundation::IPropertyValue>().GetBoolean();
                     return convert_native_to_value(runtime, result);
                 },
                 0, false },
         { "getBooleanArray",
-            []([[maybe_unused]] jsi::Runtime& runtime, const winrt::Windows::Foundation::IInspectable& thisValue, [[maybe_unused]] const jsi::Value* args) {
+            []([[maybe_unused]] napi_wrappers::Runtime& runtime, const winrt::Windows::Foundation::IInspectable& thisValue, [[maybe_unused]] const napi_wrappers::Value* args) {
                     winrt::com_array<bool> arg0;
                     thisValue.as<winrt::Windows::Foundation::IPropertyValue>().GetBooleanArray(arg0);
                     return make_void_return_struct(runtime, "value", arg0);
                 },
                 0, false },
         { "getChar16",
-            []([[maybe_unused]] jsi::Runtime& runtime, const winrt::Windows::Foundation::IInspectable& thisValue, [[maybe_unused]] const jsi::Value* args) {
+            []([[maybe_unused]] napi_wrappers::Runtime& runtime, const winrt::Windows::Foundation::IInspectable& thisValue, [[maybe_unused]] const napi_wrappers::Value* args) {
                     auto result = thisValue.as<winrt::Windows::Foundation::IPropertyValue>().GetChar16();
                     return convert_native_to_value(runtime, result);
                 },
                 0, false },
         { "getChar16Array",
-            []([[maybe_unused]] jsi::Runtime& runtime, const winrt::Windows::Foundation::IInspectable& thisValue, [[maybe_unused]] const jsi::Value* args) {
+            []([[maybe_unused]] napi_wrappers::Runtime& runtime, const winrt::Windows::Foundation::IInspectable& thisValue, [[maybe_unused]] const napi_wrappers::Value* args) {
                     winrt::com_array<char16_t> arg0;
                     thisValue.as<winrt::Windows::Foundation::IPropertyValue>().GetChar16Array(arg0);
                     return make_void_return_struct(runtime, "value", arg0);
                 },
                 0, false },
         { "getDateTime",
-            []([[maybe_unused]] jsi::Runtime& runtime, const winrt::Windows::Foundation::IInspectable& thisValue, [[maybe_unused]] const jsi::Value* args) {
+            []([[maybe_unused]] napi_wrappers::Runtime& runtime, const winrt::Windows::Foundation::IInspectable& thisValue, [[maybe_unused]] const napi_wrappers::Value* args) {
                     auto result = thisValue.as<winrt::Windows::Foundation::IPropertyValue>().GetDateTime();
                     return convert_native_to_value(runtime, result);
                 },
                 0, false },
         { "getDateTimeArray",
-            []([[maybe_unused]] jsi::Runtime& runtime, const winrt::Windows::Foundation::IInspectable& thisValue, [[maybe_unused]] const jsi::Value* args) {
+            []([[maybe_unused]] napi_wrappers::Runtime& runtime, const winrt::Windows::Foundation::IInspectable& thisValue, [[maybe_unused]] const napi_wrappers::Value* args) {
                     winrt::com_array<winrt::Windows::Foundation::DateTime> arg0;
                     thisValue.as<winrt::Windows::Foundation::IPropertyValue>().GetDateTimeArray(arg0);
                     return make_void_return_struct(runtime, "value", arg0);
                 },
                 0, false },
         { "getDouble",
-            []([[maybe_unused]] jsi::Runtime& runtime, const winrt::Windows::Foundation::IInspectable& thisValue, [[maybe_unused]] const jsi::Value* args) {
+            []([[maybe_unused]] napi_wrappers::Runtime& runtime, const winrt::Windows::Foundation::IInspectable& thisValue, [[maybe_unused]] const napi_wrappers::Value* args) {
                     auto result = thisValue.as<winrt::Windows::Foundation::IPropertyValue>().GetDouble();
                     return convert_native_to_value(runtime, result);
                 },
                 0, false },
         { "getDoubleArray",
-            []([[maybe_unused]] jsi::Runtime& runtime, const winrt::Windows::Foundation::IInspectable& thisValue, [[maybe_unused]] const jsi::Value* args) {
+            []([[maybe_unused]] napi_wrappers::Runtime& runtime, const winrt::Windows::Foundation::IInspectable& thisValue, [[maybe_unused]] const napi_wrappers::Value* args) {
                     winrt::com_array<double> arg0;
                     thisValue.as<winrt::Windows::Foundation::IPropertyValue>().GetDoubleArray(arg0);
                     return make_void_return_struct(runtime, "value", arg0);
                 },
                 0, false },
         { "getGuid",
-            []([[maybe_unused]] jsi::Runtime& runtime, const winrt::Windows::Foundation::IInspectable& thisValue, [[maybe_unused]] const jsi::Value* args) {
+            []([[maybe_unused]] napi_wrappers::Runtime& runtime, const winrt::Windows::Foundation::IInspectable& thisValue, [[maybe_unused]] const napi_wrappers::Value* args) {
                     auto result = thisValue.as<winrt::Windows::Foundation::IPropertyValue>().GetGuid();
                     return convert_native_to_value(runtime, result);
                 },
                 0, false },
         { "getGuidArray",
-            []([[maybe_unused]] jsi::Runtime& runtime, const winrt::Windows::Foundation::IInspectable& thisValue, [[maybe_unused]] const jsi::Value* args) {
+            []([[maybe_unused]] napi_wrappers::Runtime& runtime, const winrt::Windows::Foundation::IInspectable& thisValue, [[maybe_unused]] const napi_wrappers::Value* args) {
                     winrt::com_array<winrt::guid> arg0;
                     thisValue.as<winrt::Windows::Foundation::IPropertyValue>().GetGuidArray(arg0);
                     return make_void_return_struct(runtime, "value", arg0);
                 },
                 0, false },
         { "getInspectableArray",
-            []([[maybe_unused]] jsi::Runtime& runtime, const winrt::Windows::Foundation::IInspectable& thisValue, [[maybe_unused]] const jsi::Value* args) {
+            []([[maybe_unused]] napi_wrappers::Runtime& runtime, const winrt::Windows::Foundation::IInspectable& thisValue, [[maybe_unused]] const napi_wrappers::Value* args) {
                     winrt::com_array<winrt::Windows::Foundation::IInspectable> arg0;
                     thisValue.as<winrt::Windows::Foundation::IPropertyValue>().GetInspectableArray(arg0);
                     return make_void_return_struct(runtime, "value", arg0);
                 },
                 0, false },
         { "getInt16",
-            []([[maybe_unused]] jsi::Runtime& runtime, const winrt::Windows::Foundation::IInspectable& thisValue, [[maybe_unused]] const jsi::Value* args) {
+            []([[maybe_unused]] napi_wrappers::Runtime& runtime, const winrt::Windows::Foundation::IInspectable& thisValue, [[maybe_unused]] const napi_wrappers::Value* args) {
                     auto result = thisValue.as<winrt::Windows::Foundation::IPropertyValue>().GetInt16();
                     return convert_native_to_value(runtime, result);
                 },
                 0, false },
         { "getInt16Array",
-            []([[maybe_unused]] jsi::Runtime& runtime, const winrt::Windows::Foundation::IInspectable& thisValue, [[maybe_unused]] const jsi::Value* args) {
+            []([[maybe_unused]] napi_wrappers::Runtime& runtime, const winrt::Windows::Foundation::IInspectable& thisValue, [[maybe_unused]] const napi_wrappers::Value* args) {
                     winrt::com_array<int16_t> arg0;
                     thisValue.as<winrt::Windows::Foundation::IPropertyValue>().GetInt16Array(arg0);
                     return make_void_return_struct(runtime, "value", arg0);
                 },
                 0, false },
         { "getInt32",
-            []([[maybe_unused]] jsi::Runtime& runtime, const winrt::Windows::Foundation::IInspectable& thisValue, [[maybe_unused]] const jsi::Value* args) {
+            []([[maybe_unused]] napi_wrappers::Runtime& runtime, const winrt::Windows::Foundation::IInspectable& thisValue, [[maybe_unused]] const napi_wrappers::Value* args) {
                     auto result = thisValue.as<winrt::Windows::Foundation::IPropertyValue>().GetInt32();
                     return convert_native_to_value(runtime, result);
                 },
                 0, false },
         { "getInt32Array",
-            []([[maybe_unused]] jsi::Runtime& runtime, const winrt::Windows::Foundation::IInspectable& thisValue, [[maybe_unused]] const jsi::Value* args) {
+            []([[maybe_unused]] napi_wrappers::Runtime& runtime, const winrt::Windows::Foundation::IInspectable& thisValue, [[maybe_unused]] const napi_wrappers::Value* args) {
                     winrt::com_array<int32_t> arg0;
                     thisValue.as<winrt::Windows::Foundation::IPropertyValue>().GetInt32Array(arg0);
                     return make_void_return_struct(runtime, "value", arg0);
                 },
                 0, false },
         { "getInt64",
-            []([[maybe_unused]] jsi::Runtime& runtime, const winrt::Windows::Foundation::IInspectable& thisValue, [[maybe_unused]] const jsi::Value* args) {
+            []([[maybe_unused]] napi_wrappers::Runtime& runtime, const winrt::Windows::Foundation::IInspectable& thisValue, [[maybe_unused]] const napi_wrappers::Value* args) {
                     auto result = thisValue.as<winrt::Windows::Foundation::IPropertyValue>().GetInt64();
                     return convert_native_to_value(runtime, result);
                 },
                 0, false },
         { "getInt64Array",
-            []([[maybe_unused]] jsi::Runtime& runtime, const winrt::Windows::Foundation::IInspectable& thisValue, [[maybe_unused]] const jsi::Value* args) {
+            []([[maybe_unused]] napi_wrappers::Runtime& runtime, const winrt::Windows::Foundation::IInspectable& thisValue, [[maybe_unused]] const napi_wrappers::Value* args) {
                     winrt::com_array<int64_t> arg0;
                     thisValue.as<winrt::Windows::Foundation::IPropertyValue>().GetInt64Array(arg0);
                     return make_void_return_struct(runtime, "value", arg0);
                 },
                 0, false },
         { "getPoint",
-            []([[maybe_unused]] jsi::Runtime& runtime, const winrt::Windows::Foundation::IInspectable& thisValue, [[maybe_unused]] const jsi::Value* args) {
+            []([[maybe_unused]] napi_wrappers::Runtime& runtime, const winrt::Windows::Foundation::IInspectable& thisValue, [[maybe_unused]] const napi_wrappers::Value* args) {
                     auto result = thisValue.as<winrt::Windows::Foundation::IPropertyValue>().GetPoint();
                     return convert_native_to_value(runtime, result);
                 },
                 0, false },
         { "getPointArray",
-            []([[maybe_unused]] jsi::Runtime& runtime, const winrt::Windows::Foundation::IInspectable& thisValue, [[maybe_unused]] const jsi::Value* args) {
+            []([[maybe_unused]] napi_wrappers::Runtime& runtime, const winrt::Windows::Foundation::IInspectable& thisValue, [[maybe_unused]] const napi_wrappers::Value* args) {
                     winrt::com_array<winrt::Windows::Foundation::Point> arg0;
                     thisValue.as<winrt::Windows::Foundation::IPropertyValue>().GetPointArray(arg0);
                     return make_void_return_struct(runtime, "value", arg0);
                 },
                 0, false },
         { "getRect",
-            []([[maybe_unused]] jsi::Runtime& runtime, const winrt::Windows::Foundation::IInspectable& thisValue, [[maybe_unused]] const jsi::Value* args) {
+            []([[maybe_unused]] napi_wrappers::Runtime& runtime, const winrt::Windows::Foundation::IInspectable& thisValue, [[maybe_unused]] const napi_wrappers::Value* args) {
                     auto result = thisValue.as<winrt::Windows::Foundation::IPropertyValue>().GetRect();
                     return convert_native_to_value(runtime, result);
                 },
                 0, false },
         { "getRectArray",
-            []([[maybe_unused]] jsi::Runtime& runtime, const winrt::Windows::Foundation::IInspectable& thisValue, [[maybe_unused]] const jsi::Value* args) {
+            []([[maybe_unused]] napi_wrappers::Runtime& runtime, const winrt::Windows::Foundation::IInspectable& thisValue, [[maybe_unused]] const napi_wrappers::Value* args) {
                     winrt::com_array<winrt::Windows::Foundation::Rect> arg0;
                     thisValue.as<winrt::Windows::Foundation::IPropertyValue>().GetRectArray(arg0);
                     return make_void_return_struct(runtime, "value", arg0);
                 },
                 0, false },
         { "getSingle",
-            []([[maybe_unused]] jsi::Runtime& runtime, const winrt::Windows::Foundation::IInspectable& thisValue, [[maybe_unused]] const jsi::Value* args) {
+            []([[maybe_unused]] napi_wrappers::Runtime& runtime, const winrt::Windows::Foundation::IInspectable& thisValue, [[maybe_unused]] const napi_wrappers::Value* args) {
                     auto result = thisValue.as<winrt::Windows::Foundation::IPropertyValue>().GetSingle();
                     return convert_native_to_value(runtime, result);
                 },
                 0, false },
         { "getSingleArray",
-            []([[maybe_unused]] jsi::Runtime& runtime, const winrt::Windows::Foundation::IInspectable& thisValue, [[maybe_unused]] const jsi::Value* args) {
+            []([[maybe_unused]] napi_wrappers::Runtime& runtime, const winrt::Windows::Foundation::IInspectable& thisValue, [[maybe_unused]] const napi_wrappers::Value* args) {
                     winrt::com_array<float> arg0;
                     thisValue.as<winrt::Windows::Foundation::IPropertyValue>().GetSingleArray(arg0);
                     return make_void_return_struct(runtime, "value", arg0);
                 },
                 0, false },
         { "getSize",
-            []([[maybe_unused]] jsi::Runtime& runtime, const winrt::Windows::Foundation::IInspectable& thisValue, [[maybe_unused]] const jsi::Value* args) {
+            []([[maybe_unused]] napi_wrappers::Runtime& runtime, const winrt::Windows::Foundation::IInspectable& thisValue, [[maybe_unused]] const napi_wrappers::Value* args) {
                     auto result = thisValue.as<winrt::Windows::Foundation::IPropertyValue>().GetSize();
                     return convert_native_to_value(runtime, result);
                 },
                 0, false },
         { "getSizeArray",
-            []([[maybe_unused]] jsi::Runtime& runtime, const winrt::Windows::Foundation::IInspectable& thisValue, [[maybe_unused]] const jsi::Value* args) {
+            []([[maybe_unused]] napi_wrappers::Runtime& runtime, const winrt::Windows::Foundation::IInspectable& thisValue, [[maybe_unused]] const napi_wrappers::Value* args) {
                     winrt::com_array<winrt::Windows::Foundation::Size> arg0;
                     thisValue.as<winrt::Windows::Foundation::IPropertyValue>().GetSizeArray(arg0);
                     return make_void_return_struct(runtime, "value", arg0);
                 },
                 0, false },
         { "getString",
-            []([[maybe_unused]] jsi::Runtime& runtime, const winrt::Windows::Foundation::IInspectable& thisValue, [[maybe_unused]] const jsi::Value* args) {
+            []([[maybe_unused]] napi_wrappers::Runtime& runtime, const winrt::Windows::Foundation::IInspectable& thisValue, [[maybe_unused]] const napi_wrappers::Value* args) {
                     auto result = thisValue.as<winrt::Windows::Foundation::IPropertyValue>().GetString();
                     return convert_native_to_value(runtime, result);
                 },
                 0, false },
         { "getStringArray",
-            []([[maybe_unused]] jsi::Runtime& runtime, const winrt::Windows::Foundation::IInspectable& thisValue, [[maybe_unused]] const jsi::Value* args) {
+            []([[maybe_unused]] napi_wrappers::Runtime& runtime, const winrt::Windows::Foundation::IInspectable& thisValue, [[maybe_unused]] const napi_wrappers::Value* args) {
                     winrt::com_array<winrt::hstring> arg0;
                     thisValue.as<winrt::Windows::Foundation::IPropertyValue>().GetStringArray(arg0);
                     return make_void_return_struct(runtime, "value", arg0);
                 },
                 0, false },
         { "getTimeSpan",
-            []([[maybe_unused]] jsi::Runtime& runtime, const winrt::Windows::Foundation::IInspectable& thisValue, [[maybe_unused]] const jsi::Value* args) {
+            []([[maybe_unused]] napi_wrappers::Runtime& runtime, const winrt::Windows::Foundation::IInspectable& thisValue, [[maybe_unused]] const napi_wrappers::Value* args) {
                     auto result = thisValue.as<winrt::Windows::Foundation::IPropertyValue>().GetTimeSpan();
                     return convert_native_to_value(runtime, result);
                 },
                 0, false },
         { "getTimeSpanArray",
-            []([[maybe_unused]] jsi::Runtime& runtime, const winrt::Windows::Foundation::IInspectable& thisValue, [[maybe_unused]] const jsi::Value* args) {
+            []([[maybe_unused]] napi_wrappers::Runtime& runtime, const winrt::Windows::Foundation::IInspectable& thisValue, [[maybe_unused]] const napi_wrappers::Value* args) {
                     winrt::com_array<winrt::Windows::Foundation::TimeSpan> arg0;
                     thisValue.as<winrt::Windows::Foundation::IPropertyValue>().GetTimeSpanArray(arg0);
                     return make_void_return_struct(runtime, "value", arg0);
                 },
                 0, false },
         { "getUInt16",
-            []([[maybe_unused]] jsi::Runtime& runtime, const winrt::Windows::Foundation::IInspectable& thisValue, [[maybe_unused]] const jsi::Value* args) {
+            []([[maybe_unused]] napi_wrappers::Runtime& runtime, const winrt::Windows::Foundation::IInspectable& thisValue, [[maybe_unused]] const napi_wrappers::Value* args) {
                     auto result = thisValue.as<winrt::Windows::Foundation::IPropertyValue>().GetUInt16();
                     return convert_native_to_value(runtime, result);
                 },
                 0, false },
         { "getUInt16Array",
-            []([[maybe_unused]] jsi::Runtime& runtime, const winrt::Windows::Foundation::IInspectable& thisValue, [[maybe_unused]] const jsi::Value* args) {
+            []([[maybe_unused]] napi_wrappers::Runtime& runtime, const winrt::Windows::Foundation::IInspectable& thisValue, [[maybe_unused]] const napi_wrappers::Value* args) {
                     winrt::com_array<uint16_t> arg0;
                     thisValue.as<winrt::Windows::Foundation::IPropertyValue>().GetUInt16Array(arg0);
                     return make_void_return_struct(runtime, "value", arg0);
                 },
                 0, false },
         { "getUInt32",
-            []([[maybe_unused]] jsi::Runtime& runtime, const winrt::Windows::Foundation::IInspectable& thisValue, [[maybe_unused]] const jsi::Value* args) {
+            []([[maybe_unused]] napi_wrappers::Runtime& runtime, const winrt::Windows::Foundation::IInspectable& thisValue, [[maybe_unused]] const napi_wrappers::Value* args) {
                     auto result = thisValue.as<winrt::Windows::Foundation::IPropertyValue>().GetUInt32();
                     return convert_native_to_value(runtime, result);
                 },
                 0, false },
         { "getUInt32Array",
-            []([[maybe_unused]] jsi::Runtime& runtime, const winrt::Windows::Foundation::IInspectable& thisValue, [[maybe_unused]] const jsi::Value* args) {
+            []([[maybe_unused]] napi_wrappers::Runtime& runtime, const winrt::Windows::Foundation::IInspectable& thisValue, [[maybe_unused]] const napi_wrappers::Value* args) {
                     winrt::com_array<uint32_t> arg0;
                     thisValue.as<winrt::Windows::Foundation::IPropertyValue>().GetUInt32Array(arg0);
                     return make_void_return_struct(runtime, "value", arg0);
                 },
                 0, false },
         { "getUInt64",
-            []([[maybe_unused]] jsi::Runtime& runtime, const winrt::Windows::Foundation::IInspectable& thisValue, [[maybe_unused]] const jsi::Value* args) {
+            []([[maybe_unused]] napi_wrappers::Runtime& runtime, const winrt::Windows::Foundation::IInspectable& thisValue, [[maybe_unused]] const napi_wrappers::Value* args) {
                     auto result = thisValue.as<winrt::Windows::Foundation::IPropertyValue>().GetUInt64();
                     return convert_native_to_value(runtime, result);
                 },
                 0, false },
         { "getUInt64Array",
-            []([[maybe_unused]] jsi::Runtime& runtime, const winrt::Windows::Foundation::IInspectable& thisValue, [[maybe_unused]] const jsi::Value* args) {
+            []([[maybe_unused]] napi_wrappers::Runtime& runtime, const winrt::Windows::Foundation::IInspectable& thisValue, [[maybe_unused]] const napi_wrappers::Value* args) {
                     winrt::com_array<uint64_t> arg0;
                     thisValue.as<winrt::Windows::Foundation::IPropertyValue>().GetUInt64Array(arg0);
                     return make_void_return_struct(runtime, "value", arg0);
                 },
                 0, false },
         { "getUInt8",
-            []([[maybe_unused]] jsi::Runtime& runtime, const winrt::Windows::Foundation::IInspectable& thisValue, [[maybe_unused]] const jsi::Value* args) {
+            []([[maybe_unused]] napi_wrappers::Runtime& runtime, const winrt::Windows::Foundation::IInspectable& thisValue, [[maybe_unused]] const napi_wrappers::Value* args) {
                     auto result = thisValue.as<winrt::Windows::Foundation::IPropertyValue>().GetUInt8();
                     return convert_native_to_value(runtime, result);
                 },
                 0, false },
         { "getUInt8Array",
-            []([[maybe_unused]] jsi::Runtime& runtime, const winrt::Windows::Foundation::IInspectable& thisValue, [[maybe_unused]] const jsi::Value* args) {
+            []([[maybe_unused]] napi_wrappers::Runtime& runtime, const winrt::Windows::Foundation::IInspectable& thisValue, [[maybe_unused]] const napi_wrappers::Value* args) {
                     winrt::com_array<uint8_t> arg0;
                     thisValue.as<winrt::Windows::Foundation::IPropertyValue>().GetUInt8Array(arg0);
                     return make_void_return_struct(runtime, "value", arg0);
@@ -869,7 +869,7 @@ namespace rnwinrt::interfaces::Windows::Foundation::IStringable
 {
     static constexpr const static_interface_data::function_mapping function_data[] = {
         { "toString",
-            []([[maybe_unused]] jsi::Runtime& runtime, const winrt::Windows::Foundation::IInspectable& thisValue, [[maybe_unused]] const jsi::Value* args) {
+            []([[maybe_unused]] napi_wrappers::Runtime& runtime, const winrt::Windows::Foundation::IInspectable& thisValue, [[maybe_unused]] const napi_wrappers::Value* args) {
                     auto result = thisValue.as<winrt::Windows::Foundation::IStringable>().ToString();
                     return convert_native_to_value(runtime, result);
                 },
@@ -881,15 +881,15 @@ namespace rnwinrt::interfaces::Windows::Foundation::IStringable
 
 namespace rnwinrt
 {
-    jsi::Value projected_value_traits<winrt::Windows::Foundation::Point>::as_value(jsi::Runtime& runtime, const winrt::Windows::Foundation::Point& value)
+    napi_wrappers::Value projected_value_traits<winrt::Windows::Foundation::Point>::as_value(napi_wrappers::Runtime& runtime, const winrt::Windows::Foundation::Point& value)
     {
-        jsi::Object result(runtime);
+        napi_wrappers::Object result(runtime);
         result.setProperty(runtime, "x", convert_native_to_value(runtime, value.X));
         result.setProperty(runtime, "y", convert_native_to_value(runtime, value.Y));
         return result;
     }
 
-    winrt::Windows::Foundation::Point projected_value_traits<winrt::Windows::Foundation::Point>::as_native(jsi::Runtime& runtime, const jsi::Value& value)
+    winrt::Windows::Foundation::Point projected_value_traits<winrt::Windows::Foundation::Point>::as_native(napi_wrappers::Runtime& runtime, const napi_wrappers::Value& value)
     {
         winrt::Windows::Foundation::Point result{};
         auto obj = value.asObject(runtime);
@@ -900,9 +900,9 @@ namespace rnwinrt
         return result;
     }
 
-    jsi::Value projected_value_traits<winrt::Windows::Foundation::Rect>::as_value(jsi::Runtime& runtime, const winrt::Windows::Foundation::Rect& value)
+    napi_wrappers::Value projected_value_traits<winrt::Windows::Foundation::Rect>::as_value(napi_wrappers::Runtime& runtime, const winrt::Windows::Foundation::Rect& value)
     {
-        jsi::Object result(runtime);
+        napi_wrappers::Object result(runtime);
         result.setProperty(runtime, "x", convert_native_to_value(runtime, value.X));
         result.setProperty(runtime, "y", convert_native_to_value(runtime, value.Y));
         result.setProperty(runtime, "width", convert_native_to_value(runtime, value.Width));
@@ -910,7 +910,7 @@ namespace rnwinrt
         return result;
     }
 
-    winrt::Windows::Foundation::Rect projected_value_traits<winrt::Windows::Foundation::Rect>::as_native(jsi::Runtime& runtime, const jsi::Value& value)
+    winrt::Windows::Foundation::Rect projected_value_traits<winrt::Windows::Foundation::Rect>::as_native(napi_wrappers::Runtime& runtime, const napi_wrappers::Value& value)
     {
         winrt::Windows::Foundation::Rect result{};
         auto obj = value.asObject(runtime);
@@ -925,15 +925,15 @@ namespace rnwinrt
         return result;
     }
 
-    jsi::Value projected_value_traits<winrt::Windows::Foundation::Size>::as_value(jsi::Runtime& runtime, const winrt::Windows::Foundation::Size& value)
+    napi_wrappers::Value projected_value_traits<winrt::Windows::Foundation::Size>::as_value(napi_wrappers::Runtime& runtime, const winrt::Windows::Foundation::Size& value)
     {
-        jsi::Object result(runtime);
+        napi_wrappers::Object result(runtime);
         result.setProperty(runtime, "width", convert_native_to_value(runtime, value.Width));
         result.setProperty(runtime, "height", convert_native_to_value(runtime, value.Height));
         return result;
     }
 
-    winrt::Windows::Foundation::Size projected_value_traits<winrt::Windows::Foundation::Size>::as_native(jsi::Runtime& runtime, const jsi::Value& value)
+    winrt::Windows::Foundation::Size projected_value_traits<winrt::Windows::Foundation::Size>::as_native(napi_wrappers::Runtime& runtime, const napi_wrappers::Value& value)
     {
         winrt::Windows::Foundation::Size result{};
         auto obj = value.asObject(runtime);
@@ -944,10 +944,10 @@ namespace rnwinrt
         return result;
     }
 
-    jsi::Value projected_value_traits<winrt::Windows::Foundation::AsyncActionCompletedHandler>::as_value(jsi::Runtime& runtime, const winrt::Windows::Foundation::AsyncActionCompletedHandler& value)
+    napi_wrappers::Value projected_value_traits<winrt::Windows::Foundation::AsyncActionCompletedHandler>::as_value(napi_wrappers::Runtime& runtime, const winrt::Windows::Foundation::AsyncActionCompletedHandler& value)
     {
-        return jsi::Function::createFromHostFunction(runtime, make_propid(runtime, "AsyncActionCompletedHandler"), 2,
-            [value](jsi::Runtime& runtime, const jsi::Value&, [[maybe_unused]] const jsi::Value* args, size_t count) {
+        return napi_wrappers::Function::createFromHostFunction(runtime, make_propid(runtime, "AsyncActionCompletedHandler"), 2,
+            [value](napi_wrappers::Runtime& runtime, const napi_wrappers::Value&, [[maybe_unused]] const napi_wrappers::Value* args, size_t count) {
                 if (count != 2)
                 {
                     throw_invalid_delegate_arg_count(runtime, "Windows.Foundation"sv, "AsyncActionCompletedHandler"sv);
@@ -956,11 +956,11 @@ namespace rnwinrt
                 auto arg0 = convert_value_to_native<winrt::Windows::Foundation::IAsyncAction>(runtime, args[0]);
                 auto arg1 = convert_value_to_native<winrt::Windows::Foundation::AsyncStatus>(runtime, args[1]);
                 value(arg0, arg1);
-                return jsi::Value::undefined();
+                return napi_wrappers::Value::undefined();
             });
     }
 
-    winrt::Windows::Foundation::AsyncActionCompletedHandler projected_value_traits<winrt::Windows::Foundation::AsyncActionCompletedHandler>::as_native(jsi::Runtime& runtime, const jsi::Value& value)
+    winrt::Windows::Foundation::AsyncActionCompletedHandler projected_value_traits<winrt::Windows::Foundation::AsyncActionCompletedHandler>::as_native(napi_wrappers::Runtime& runtime, const napi_wrappers::Value& value)
     {
         return [ctxt = current_runtime_context()->add_reference(),
                    fn = value.asObject(runtime).asFunction(runtime)](winrt::Windows::Foundation::IAsyncAction const& param0, winrt::Windows::Foundation::AsyncStatus param1) {
@@ -973,21 +973,21 @@ namespace rnwinrt
         };
     }
 
-    jsi::Value projected_value_traits<winrt::Windows::Foundation::DeferralCompletedHandler>::as_value(jsi::Runtime& runtime, const winrt::Windows::Foundation::DeferralCompletedHandler& value)
+    napi_wrappers::Value projected_value_traits<winrt::Windows::Foundation::DeferralCompletedHandler>::as_value(napi_wrappers::Runtime& runtime, const winrt::Windows::Foundation::DeferralCompletedHandler& value)
     {
-        return jsi::Function::createFromHostFunction(runtime, make_propid(runtime, "DeferralCompletedHandler"), 0,
-            [value](jsi::Runtime& runtime, const jsi::Value&, [[maybe_unused]] const jsi::Value* args, size_t count) {
+        return napi_wrappers::Function::createFromHostFunction(runtime, make_propid(runtime, "DeferralCompletedHandler"), 0,
+            [value](napi_wrappers::Runtime& runtime, const napi_wrappers::Value&, [[maybe_unused]] const napi_wrappers::Value* args, size_t count) {
                 if (count != 0)
                 {
                     throw_invalid_delegate_arg_count(runtime, "Windows.Foundation"sv, "DeferralCompletedHandler"sv);
                 }
 
                 value();
-                return jsi::Value::undefined();
+                return napi_wrappers::Value::undefined();
             });
     }
 
-    winrt::Windows::Foundation::DeferralCompletedHandler projected_value_traits<winrt::Windows::Foundation::DeferralCompletedHandler>::as_native(jsi::Runtime& runtime, const jsi::Value& value)
+    winrt::Windows::Foundation::DeferralCompletedHandler projected_value_traits<winrt::Windows::Foundation::DeferralCompletedHandler>::as_native(napi_wrappers::Runtime& runtime, const napi_wrappers::Value& value)
     {
         return [ctxt = current_runtime_context()->add_reference(),
                    fn = value.asObject(runtime).asFunction(runtime)]() {

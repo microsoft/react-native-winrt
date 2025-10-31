@@ -125,7 +125,7 @@ namespace rnwinrt::classes::Windows::Foundation::Metadata::ApiInformation
 {
     static constexpr const static_class_data::function_mapping function_data[] = {
         { "isApiContractPresent",
-            []([[maybe_unused]] jsi::Runtime& runtime, const jsi::Value&, [[maybe_unused]] const jsi::Value* args, size_t count) {
+            []([[maybe_unused]] napi_wrappers::Runtime& runtime, const napi_wrappers::Value&, [[maybe_unused]] const napi_wrappers::Value* args, size_t count) {
                 if (count == 2)
                 {
                     auto arg0 = convert_value_to_native<winrt::hstring>(runtime, args[0]);
@@ -145,7 +145,7 @@ namespace rnwinrt::classes::Windows::Foundation::Metadata::ApiInformation
             }
         },
         { "isEnumNamedValuePresent",
-            []([[maybe_unused]] jsi::Runtime& runtime, const jsi::Value&, [[maybe_unused]] const jsi::Value* args, size_t count) {
+            []([[maybe_unused]] napi_wrappers::Runtime& runtime, const napi_wrappers::Value&, [[maybe_unused]] const napi_wrappers::Value* args, size_t count) {
                 if (count == 2)
                 {
                     auto arg0 = convert_value_to_native<winrt::hstring>(runtime, args[0]);
@@ -157,7 +157,7 @@ namespace rnwinrt::classes::Windows::Foundation::Metadata::ApiInformation
             }
         },
         { "isEventPresent",
-            []([[maybe_unused]] jsi::Runtime& runtime, const jsi::Value&, [[maybe_unused]] const jsi::Value* args, size_t count) {
+            []([[maybe_unused]] napi_wrappers::Runtime& runtime, const napi_wrappers::Value&, [[maybe_unused]] const napi_wrappers::Value* args, size_t count) {
                 if (count == 2)
                 {
                     auto arg0 = convert_value_to_native<winrt::hstring>(runtime, args[0]);
@@ -169,7 +169,7 @@ namespace rnwinrt::classes::Windows::Foundation::Metadata::ApiInformation
             }
         },
         { "isMethodPresent",
-            []([[maybe_unused]] jsi::Runtime& runtime, const jsi::Value&, [[maybe_unused]] const jsi::Value* args, size_t count) {
+            []([[maybe_unused]] napi_wrappers::Runtime& runtime, const napi_wrappers::Value&, [[maybe_unused]] const napi_wrappers::Value* args, size_t count) {
                 if (count == 2)
                 {
                     auto arg0 = convert_value_to_native<winrt::hstring>(runtime, args[0]);
@@ -189,7 +189,7 @@ namespace rnwinrt::classes::Windows::Foundation::Metadata::ApiInformation
             }
         },
         { "isPropertyPresent",
-            []([[maybe_unused]] jsi::Runtime& runtime, const jsi::Value&, [[maybe_unused]] const jsi::Value* args, size_t count) {
+            []([[maybe_unused]] napi_wrappers::Runtime& runtime, const napi_wrappers::Value&, [[maybe_unused]] const napi_wrappers::Value* args, size_t count) {
                 if (count == 2)
                 {
                     auto arg0 = convert_value_to_native<winrt::hstring>(runtime, args[0]);
@@ -201,7 +201,7 @@ namespace rnwinrt::classes::Windows::Foundation::Metadata::ApiInformation
             }
         },
         { "isReadOnlyPropertyPresent",
-            []([[maybe_unused]] jsi::Runtime& runtime, const jsi::Value&, [[maybe_unused]] const jsi::Value* args, size_t count) {
+            []([[maybe_unused]] napi_wrappers::Runtime& runtime, const napi_wrappers::Value&, [[maybe_unused]] const napi_wrappers::Value* args, size_t count) {
                 if (count == 2)
                 {
                     auto arg0 = convert_value_to_native<winrt::hstring>(runtime, args[0]);
@@ -213,7 +213,7 @@ namespace rnwinrt::classes::Windows::Foundation::Metadata::ApiInformation
             }
         },
         { "isTypePresent",
-            []([[maybe_unused]] jsi::Runtime& runtime, const jsi::Value&, [[maybe_unused]] const jsi::Value* args, size_t count) {
+            []([[maybe_unused]] napi_wrappers::Runtime& runtime, const napi_wrappers::Value&, [[maybe_unused]] const napi_wrappers::Value* args, size_t count) {
                 if (count == 1)
                 {
                     auto arg0 = convert_value_to_native<winrt::hstring>(runtime, args[0]);
@@ -224,7 +224,7 @@ namespace rnwinrt::classes::Windows::Foundation::Metadata::ApiInformation
             }
         },
         { "isWriteablePropertyPresent",
-            []([[maybe_unused]] jsi::Runtime& runtime, const jsi::Value&, [[maybe_unused]] const jsi::Value* args, size_t count) {
+            []([[maybe_unused]] napi_wrappers::Runtime& runtime, const napi_wrappers::Value&, [[maybe_unused]] const napi_wrappers::Value* args, size_t count) {
                 if (count == 2)
                 {
                     auto arg0 = convert_value_to_native<winrt::hstring>(runtime, args[0]);

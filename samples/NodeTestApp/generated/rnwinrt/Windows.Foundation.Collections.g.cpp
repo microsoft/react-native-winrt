@@ -32,7 +32,7 @@ namespace rnwinrt::enums::Windows::Foundation::Collections::CollectionChange
 
 namespace rnwinrt::classes::Windows::Foundation::Collections::PropertySet
 {
-    static jsi::Value constructor_function(jsi::Runtime& runtime, const jsi::Value&, [[maybe_unused]] const jsi::Value* args, size_t count)
+    static napi_wrappers::Value constructor_function(napi_wrappers::Runtime& runtime, const napi_wrappers::Value&, [[maybe_unused]] const napi_wrappers::Value* args, size_t count)
     {
         if (count == 0)
         {
@@ -46,7 +46,7 @@ namespace rnwinrt::classes::Windows::Foundation::Collections::PropertySet
 
 namespace rnwinrt::classes::Windows::Foundation::Collections::StringMap
 {
-    static jsi::Value constructor_function(jsi::Runtime& runtime, const jsi::Value&, [[maybe_unused]] const jsi::Value* args, size_t count)
+    static napi_wrappers::Value constructor_function(napi_wrappers::Runtime& runtime, const napi_wrappers::Value&, [[maybe_unused]] const napi_wrappers::Value* args, size_t count)
     {
         if (count == 0)
         {
@@ -60,7 +60,7 @@ namespace rnwinrt::classes::Windows::Foundation::Collections::StringMap
 
 namespace rnwinrt::classes::Windows::Foundation::Collections::ValueSet
 {
-    static jsi::Value constructor_function(jsi::Runtime& runtime, const jsi::Value&, [[maybe_unused]] const jsi::Value* args, size_t count)
+    static napi_wrappers::Value constructor_function(napi_wrappers::Runtime& runtime, const napi_wrappers::Value&, [[maybe_unused]] const napi_wrappers::Value* args, size_t count)
     {
         if (count == 0)
         {
@@ -81,13 +81,13 @@ namespace rnwinrt::interfaces::Windows::Foundation::Collections::IVectorChangedE
 {
     static constexpr const static_interface_data::property_mapping property_data[] = {
         { "collectionChange",
-            [](jsi::Runtime& runtime, const winrt::Windows::Foundation::IInspectable& thisValue) {
+            [](napi_wrappers::Runtime& runtime, const winrt::Windows::Foundation::IInspectable& thisValue) {
                 return convert_native_to_value(runtime, thisValue.as<winrt::Windows::Foundation::Collections::IVectorChangedEventArgs>().CollectionChange());
             },
             nullptr
         },
         { "index",
-            [](jsi::Runtime& runtime, const winrt::Windows::Foundation::IInspectable& thisValue) {
+            [](napi_wrappers::Runtime& runtime, const winrt::Windows::Foundation::IInspectable& thisValue) {
                 return convert_native_to_value(runtime, thisValue.as<winrt::Windows::Foundation::Collections::IVectorChangedEventArgs>().Index());
             },
             nullptr

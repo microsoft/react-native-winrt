@@ -36,7 +36,7 @@ namespace rnwinrt::classes::TestComponent::HierarchyBase
 {
     static constexpr const static_class_data::function_mapping function_data[] = {
         { "staticHierarchyBaseMethod",
-            []([[maybe_unused]] jsi::Runtime& runtime, const jsi::Value&, [[maybe_unused]] const jsi::Value* args, size_t count) {
+            []([[maybe_unused]] napi_wrappers::Runtime& runtime, const napi_wrappers::Value&, [[maybe_unused]] const napi_wrappers::Value* args, size_t count) {
                 if (count == 0)
                 {
                     auto result = winrt::TestComponent::HierarchyBase::StaticHierarchyBaseMethod();
@@ -47,7 +47,7 @@ namespace rnwinrt::classes::TestComponent::HierarchyBase
         },
     };
 
-    static jsi::Value constructor_function(jsi::Runtime& runtime, const jsi::Value&, [[maybe_unused]] const jsi::Value* args, size_t count)
+    static napi_wrappers::Value constructor_function(napi_wrappers::Runtime& runtime, const napi_wrappers::Value&, [[maybe_unused]] const napi_wrappers::Value* args, size_t count)
     {
         if (count == 0)
         {
@@ -61,7 +61,7 @@ namespace rnwinrt::classes::TestComponent::HierarchyBase
 
 namespace rnwinrt::classes::TestComponent::HierarchyDerived
 {
-    static jsi::Value constructor_function(jsi::Runtime& runtime, const jsi::Value&, [[maybe_unused]] const jsi::Value* args, size_t count)
+    static napi_wrappers::Value constructor_function(napi_wrappers::Runtime& runtime, const napi_wrappers::Value&, [[maybe_unused]] const napi_wrappers::Value* args, size_t count)
     {
         if (count == 1)
         {
@@ -78,194 +78,194 @@ namespace rnwinrt::classes::TestComponent::StaticOnlyTest
 {
     static constexpr const static_class_data::property_mapping property_data[] = {
         { "boolProperty",
-            [](jsi::Runtime& runtime) {
+            [](napi_wrappers::Runtime& runtime) {
                 return convert_native_to_value(runtime, winrt::TestComponent::StaticOnlyTest::BoolProperty());
             },
-            [](jsi::Runtime& runtime, const jsi::Value& value) {
+            [](napi_wrappers::Runtime& runtime, const napi_wrappers::Value& value) {
                 winrt::TestComponent::StaticOnlyTest::BoolProperty(convert_value_to_native<bool>(runtime, value));
             },
         },
         { "booleansStructProperty",
-            [](jsi::Runtime& runtime) {
+            [](napi_wrappers::Runtime& runtime) {
                 return convert_native_to_value(runtime, winrt::TestComponent::StaticOnlyTest::BooleansStructProperty());
             },
-            [](jsi::Runtime& runtime, const jsi::Value& value) {
+            [](napi_wrappers::Runtime& runtime, const napi_wrappers::Value& value) {
                 winrt::TestComponent::StaticOnlyTest::BooleansStructProperty(convert_value_to_native<winrt::TestComponent::BooleanTypes>(runtime, value));
             },
         },
         { "charProperty",
-            [](jsi::Runtime& runtime) {
+            [](napi_wrappers::Runtime& runtime) {
                 return convert_native_to_value(runtime, winrt::TestComponent::StaticOnlyTest::CharProperty());
             },
-            [](jsi::Runtime& runtime, const jsi::Value& value) {
+            [](napi_wrappers::Runtime& runtime, const napi_wrappers::Value& value) {
                 winrt::TestComponent::StaticOnlyTest::CharProperty(convert_value_to_native<char16_t>(runtime, value));
             },
         },
         { "compositeStructProperty",
-            [](jsi::Runtime& runtime) {
+            [](napi_wrappers::Runtime& runtime) {
                 return convert_native_to_value(runtime, winrt::TestComponent::StaticOnlyTest::CompositeStructProperty());
             },
-            [](jsi::Runtime& runtime, const jsi::Value& value) {
+            [](napi_wrappers::Runtime& runtime, const napi_wrappers::Value& value) {
                 winrt::TestComponent::StaticOnlyTest::CompositeStructProperty(convert_value_to_native<winrt::TestComponent::CompositeType>(runtime, value));
             },
         },
         { "enumProperty",
-            [](jsi::Runtime& runtime) {
+            [](napi_wrappers::Runtime& runtime) {
                 return convert_native_to_value(runtime, winrt::TestComponent::StaticOnlyTest::EnumProperty());
             },
-            [](jsi::Runtime& runtime, const jsi::Value& value) {
+            [](napi_wrappers::Runtime& runtime, const napi_wrappers::Value& value) {
                 winrt::TestComponent::StaticOnlyTest::EnumProperty(convert_value_to_native<winrt::TestComponent::TestEnum>(runtime, value));
             },
         },
         { "f32Property",
-            [](jsi::Runtime& runtime) {
+            [](napi_wrappers::Runtime& runtime) {
                 return convert_native_to_value(runtime, winrt::TestComponent::StaticOnlyTest::F32Property());
             },
-            [](jsi::Runtime& runtime, const jsi::Value& value) {
+            [](napi_wrappers::Runtime& runtime, const napi_wrappers::Value& value) {
                 winrt::TestComponent::StaticOnlyTest::F32Property(convert_value_to_native<float>(runtime, value));
             },
         },
         { "f64Property",
-            [](jsi::Runtime& runtime) {
+            [](napi_wrappers::Runtime& runtime) {
                 return convert_native_to_value(runtime, winrt::TestComponent::StaticOnlyTest::F64Property());
             },
-            [](jsi::Runtime& runtime, const jsi::Value& value) {
+            [](napi_wrappers::Runtime& runtime, const napi_wrappers::Value& value) {
                 winrt::TestComponent::StaticOnlyTest::F64Property(convert_value_to_native<double>(runtime, value));
             },
         },
         { "guidProperty",
-            [](jsi::Runtime& runtime) {
+            [](napi_wrappers::Runtime& runtime) {
                 return convert_native_to_value(runtime, winrt::TestComponent::StaticOnlyTest::GuidProperty());
             },
-            [](jsi::Runtime& runtime, const jsi::Value& value) {
+            [](napi_wrappers::Runtime& runtime, const napi_wrappers::Value& value) {
                 winrt::TestComponent::StaticOnlyTest::GuidProperty(convert_value_to_native<winrt::guid>(runtime, value));
             },
         },
         { "hResultProperty",
-            [](jsi::Runtime& runtime) {
+            [](napi_wrappers::Runtime& runtime) {
                 return convert_native_to_value(runtime, winrt::TestComponent::StaticOnlyTest::HResultProperty());
             },
-            [](jsi::Runtime& runtime, const jsi::Value& value) {
+            [](napi_wrappers::Runtime& runtime, const napi_wrappers::Value& value) {
                 winrt::TestComponent::StaticOnlyTest::HResultProperty(convert_value_to_native<winrt::hresult>(runtime, value));
             },
         },
         { "numericsStructProperty",
-            [](jsi::Runtime& runtime) {
+            [](napi_wrappers::Runtime& runtime) {
                 return convert_native_to_value(runtime, winrt::TestComponent::StaticOnlyTest::NumericsStructProperty());
             },
-            [](jsi::Runtime& runtime, const jsi::Value& value) {
+            [](napi_wrappers::Runtime& runtime, const napi_wrappers::Value& value) {
                 winrt::TestComponent::StaticOnlyTest::NumericsStructProperty(convert_value_to_native<winrt::TestComponent::NumericTypes>(runtime, value));
             },
         },
         { "objectProperty",
-            [](jsi::Runtime& runtime) {
+            [](napi_wrappers::Runtime& runtime) {
                 return convert_native_to_value(runtime, winrt::TestComponent::StaticOnlyTest::ObjectProperty());
             },
-            [](jsi::Runtime& runtime, const jsi::Value& value) {
+            [](napi_wrappers::Runtime& runtime, const napi_wrappers::Value& value) {
                 winrt::TestComponent::StaticOnlyTest::ObjectProperty(convert_value_to_native<winrt::TestComponent::TestObject>(runtime, value));
             },
         },
         { "refBooleanProperty",
-            [](jsi::Runtime& runtime) {
+            [](napi_wrappers::Runtime& runtime) {
                 return convert_native_to_value(runtime, winrt::TestComponent::StaticOnlyTest::RefBooleanProperty());
             },
-            [](jsi::Runtime& runtime, const jsi::Value& value) {
+            [](napi_wrappers::Runtime& runtime, const napi_wrappers::Value& value) {
                 winrt::TestComponent::StaticOnlyTest::RefBooleanProperty(convert_value_to_native<winrt::Windows::Foundation::IReference<bool>>(runtime, value));
             },
         },
         { "refCharProperty",
-            [](jsi::Runtime& runtime) {
+            [](napi_wrappers::Runtime& runtime) {
                 return convert_native_to_value(runtime, winrt::TestComponent::StaticOnlyTest::RefCharProperty());
             },
-            [](jsi::Runtime& runtime, const jsi::Value& value) {
+            [](napi_wrappers::Runtime& runtime, const napi_wrappers::Value& value) {
                 winrt::TestComponent::StaticOnlyTest::RefCharProperty(convert_value_to_native<winrt::Windows::Foundation::IReference<char16_t>>(runtime, value));
             },
         },
         { "refEnumProperty",
-            [](jsi::Runtime& runtime) {
+            [](napi_wrappers::Runtime& runtime) {
                 return convert_native_to_value(runtime, winrt::TestComponent::StaticOnlyTest::RefEnumProperty());
             },
-            [](jsi::Runtime& runtime, const jsi::Value& value) {
+            [](napi_wrappers::Runtime& runtime, const napi_wrappers::Value& value) {
                 winrt::TestComponent::StaticOnlyTest::RefEnumProperty(convert_value_to_native<winrt::Windows::Foundation::IReference<winrt::TestComponent::TestEnum>>(runtime, value));
             },
         },
         { "refNumericProperty",
-            [](jsi::Runtime& runtime) {
+            [](napi_wrappers::Runtime& runtime) {
                 return convert_native_to_value(runtime, winrt::TestComponent::StaticOnlyTest::RefNumericProperty());
             },
-            [](jsi::Runtime& runtime, const jsi::Value& value) {
+            [](napi_wrappers::Runtime& runtime, const napi_wrappers::Value& value) {
                 winrt::TestComponent::StaticOnlyTest::RefNumericProperty(convert_value_to_native<winrt::Windows::Foundation::IReference<int32_t>>(runtime, value));
             },
         },
         { "s16Property",
-            [](jsi::Runtime& runtime) {
+            [](napi_wrappers::Runtime& runtime) {
                 return convert_native_to_value(runtime, winrt::TestComponent::StaticOnlyTest::S16Property());
             },
-            [](jsi::Runtime& runtime, const jsi::Value& value) {
+            [](napi_wrappers::Runtime& runtime, const napi_wrappers::Value& value) {
                 winrt::TestComponent::StaticOnlyTest::S16Property(convert_value_to_native<int16_t>(runtime, value));
             },
         },
         { "s32Property",
-            [](jsi::Runtime& runtime) {
+            [](napi_wrappers::Runtime& runtime) {
                 return convert_native_to_value(runtime, winrt::TestComponent::StaticOnlyTest::S32Property());
             },
-            [](jsi::Runtime& runtime, const jsi::Value& value) {
+            [](napi_wrappers::Runtime& runtime, const napi_wrappers::Value& value) {
                 winrt::TestComponent::StaticOnlyTest::S32Property(convert_value_to_native<int32_t>(runtime, value));
             },
         },
         { "s64Property",
-            [](jsi::Runtime& runtime) {
+            [](napi_wrappers::Runtime& runtime) {
                 return convert_native_to_value(runtime, winrt::TestComponent::StaticOnlyTest::S64Property());
             },
-            [](jsi::Runtime& runtime, const jsi::Value& value) {
+            [](napi_wrappers::Runtime& runtime, const napi_wrappers::Value& value) {
                 winrt::TestComponent::StaticOnlyTest::S64Property(convert_value_to_native<int64_t>(runtime, value));
             },
         },
         { "stringProperty",
-            [](jsi::Runtime& runtime) {
+            [](napi_wrappers::Runtime& runtime) {
                 return convert_native_to_value(runtime, winrt::TestComponent::StaticOnlyTest::StringProperty());
             },
-            [](jsi::Runtime& runtime, const jsi::Value& value) {
+            [](napi_wrappers::Runtime& runtime, const napi_wrappers::Value& value) {
                 winrt::TestComponent::StaticOnlyTest::StringProperty(convert_value_to_native<winrt::hstring>(runtime, value));
             },
         },
         { "stringsStructProperty",
-            [](jsi::Runtime& runtime) {
+            [](napi_wrappers::Runtime& runtime) {
                 return convert_native_to_value(runtime, winrt::TestComponent::StaticOnlyTest::StringsStructProperty());
             },
-            [](jsi::Runtime& runtime, const jsi::Value& value) {
+            [](napi_wrappers::Runtime& runtime, const napi_wrappers::Value& value) {
                 winrt::TestComponent::StaticOnlyTest::StringsStructProperty(convert_value_to_native<winrt::TestComponent::StringTypes>(runtime, value));
             },
         },
         { "u16Property",
-            [](jsi::Runtime& runtime) {
+            [](napi_wrappers::Runtime& runtime) {
                 return convert_native_to_value(runtime, winrt::TestComponent::StaticOnlyTest::U16Property());
             },
-            [](jsi::Runtime& runtime, const jsi::Value& value) {
+            [](napi_wrappers::Runtime& runtime, const napi_wrappers::Value& value) {
                 winrt::TestComponent::StaticOnlyTest::U16Property(convert_value_to_native<uint16_t>(runtime, value));
             },
         },
         { "u32Property",
-            [](jsi::Runtime& runtime) {
+            [](napi_wrappers::Runtime& runtime) {
                 return convert_native_to_value(runtime, winrt::TestComponent::StaticOnlyTest::U32Property());
             },
-            [](jsi::Runtime& runtime, const jsi::Value& value) {
+            [](napi_wrappers::Runtime& runtime, const napi_wrappers::Value& value) {
                 winrt::TestComponent::StaticOnlyTest::U32Property(convert_value_to_native<uint32_t>(runtime, value));
             },
         },
         { "u64Property",
-            [](jsi::Runtime& runtime) {
+            [](napi_wrappers::Runtime& runtime) {
                 return convert_native_to_value(runtime, winrt::TestComponent::StaticOnlyTest::U64Property());
             },
-            [](jsi::Runtime& runtime, const jsi::Value& value) {
+            [](napi_wrappers::Runtime& runtime, const napi_wrappers::Value& value) {
                 winrt::TestComponent::StaticOnlyTest::U64Property(convert_value_to_native<uint64_t>(runtime, value));
             },
         },
         { "u8Property",
-            [](jsi::Runtime& runtime) {
+            [](napi_wrappers::Runtime& runtime) {
                 return convert_native_to_value(runtime, winrt::TestComponent::StaticOnlyTest::U8Property());
             },
-            [](jsi::Runtime& runtime, const jsi::Value& value) {
+            [](napi_wrappers::Runtime& runtime, const napi_wrappers::Value& value) {
                 winrt::TestComponent::StaticOnlyTest::U8Property(convert_value_to_native<uint8_t>(runtime, value));
             },
         },
@@ -273,7 +273,7 @@ namespace rnwinrt::classes::TestComponent::StaticOnlyTest
 
     static constexpr const static_class_data::event_mapping event_data[] = {
         { "objecteventhandler",
-            [](jsi::Runtime& runtime, const jsi::Value& callback) {
+            [](napi_wrappers::Runtime& runtime, const napi_wrappers::Value& callback) {
                 return winrt::TestComponent::StaticOnlyTest::ObjectEventHandler(convert_value_to_native<winrt::Windows::Foundation::EventHandler<winrt::TestComponent::TestObject>>(runtime, callback));
             },
             [](winrt::event_token token) {
@@ -284,7 +284,7 @@ namespace rnwinrt::classes::TestComponent::StaticOnlyTest
 
     static constexpr const static_class_data::function_mapping function_data[] = {
         { "copyString",
-            []([[maybe_unused]] jsi::Runtime& runtime, const jsi::Value&, [[maybe_unused]] const jsi::Value* args, size_t count) {
+            []([[maybe_unused]] napi_wrappers::Runtime& runtime, const napi_wrappers::Value&, [[maybe_unused]] const napi_wrappers::Value* args, size_t count) {
                 if (count == 1)
                 {
                     auto arg0 = convert_value_to_native<winrt::hstring>(runtime, args[0]);
@@ -295,12 +295,12 @@ namespace rnwinrt::classes::TestComponent::StaticOnlyTest
             }
         },
         { "raiseObjectEvent",
-            []([[maybe_unused]] jsi::Runtime& runtime, const jsi::Value&, [[maybe_unused]] const jsi::Value* args, size_t count) {
+            []([[maybe_unused]] napi_wrappers::Runtime& runtime, const napi_wrappers::Value&, [[maybe_unused]] const napi_wrappers::Value* args, size_t count) {
                 if (count == 1)
                 {
                     auto arg0 = convert_value_to_native<winrt::TestComponent::TestObject>(runtime, args[0]);
                     winrt::TestComponent::StaticOnlyTest::RaiseObjectEvent(arg0);
-                    return jsi::Value::undefined();
+                    return napi_wrappers::Value::undefined();
                 }
                 throw_no_function_overload(runtime, "TestComponent"sv, "StaticOnlyTest"sv, "raiseObjectEvent"sv, count);
             }
@@ -314,258 +314,258 @@ namespace rnwinrt::classes::TestComponent::Test
 {
     static constexpr const static_class_data::property_mapping property_data[] = {
         { "staticBoolProperty",
-            [](jsi::Runtime& runtime) {
+            [](napi_wrappers::Runtime& runtime) {
                 return convert_native_to_value(runtime, winrt::TestComponent::Test::StaticBoolProperty());
             },
-            [](jsi::Runtime& runtime, const jsi::Value& value) {
+            [](napi_wrappers::Runtime& runtime, const napi_wrappers::Value& value) {
                 winrt::TestComponent::Test::StaticBoolProperty(convert_value_to_native<bool>(runtime, value));
             },
         },
         { "staticBooleanArrayProperty",
-            [](jsi::Runtime& runtime) {
+            [](napi_wrappers::Runtime& runtime) {
                 return convert_native_to_value(runtime, winrt::TestComponent::Test::StaticBooleanArrayProperty());
             },
-            [](jsi::Runtime& runtime, const jsi::Value& value) {
+            [](napi_wrappers::Runtime& runtime, const napi_wrappers::Value& value) {
                 winrt::TestComponent::Test::StaticBooleanArrayProperty(convert_value_to_native<winrt::array_view<const bool>>(runtime, value));
             },
         },
         { "staticBooleansStructProperty",
-            [](jsi::Runtime& runtime) {
+            [](napi_wrappers::Runtime& runtime) {
                 return convert_native_to_value(runtime, winrt::TestComponent::Test::StaticBooleansStructProperty());
             },
-            [](jsi::Runtime& runtime, const jsi::Value& value) {
+            [](napi_wrappers::Runtime& runtime, const napi_wrappers::Value& value) {
                 winrt::TestComponent::Test::StaticBooleansStructProperty(convert_value_to_native<winrt::TestComponent::BooleanTypes>(runtime, value));
             },
         },
         { "staticCharArrayProperty",
-            [](jsi::Runtime& runtime) {
+            [](napi_wrappers::Runtime& runtime) {
                 return convert_native_to_value(runtime, winrt::TestComponent::Test::StaticCharArrayProperty());
             },
-            [](jsi::Runtime& runtime, const jsi::Value& value) {
+            [](napi_wrappers::Runtime& runtime, const napi_wrappers::Value& value) {
                 winrt::TestComponent::Test::StaticCharArrayProperty(convert_value_to_native<winrt::array_view<const char16_t>>(runtime, value));
             },
         },
         { "staticCharProperty",
-            [](jsi::Runtime& runtime) {
+            [](napi_wrappers::Runtime& runtime) {
                 return convert_native_to_value(runtime, winrt::TestComponent::Test::StaticCharProperty());
             },
-            [](jsi::Runtime& runtime, const jsi::Value& value) {
+            [](napi_wrappers::Runtime& runtime, const napi_wrappers::Value& value) {
                 winrt::TestComponent::Test::StaticCharProperty(convert_value_to_native<char16_t>(runtime, value));
             },
         },
         { "staticCompositeStructArrayProperty",
-            [](jsi::Runtime& runtime) {
+            [](napi_wrappers::Runtime& runtime) {
                 return convert_native_to_value(runtime, winrt::TestComponent::Test::StaticCompositeStructArrayProperty());
             },
-            [](jsi::Runtime& runtime, const jsi::Value& value) {
+            [](napi_wrappers::Runtime& runtime, const napi_wrappers::Value& value) {
                 winrt::TestComponent::Test::StaticCompositeStructArrayProperty(convert_value_to_native<winrt::array_view<const winrt::TestComponent::CompositeType>>(runtime, value));
             },
         },
         { "staticCompositeStructProperty",
-            [](jsi::Runtime& runtime) {
+            [](napi_wrappers::Runtime& runtime) {
                 return convert_native_to_value(runtime, winrt::TestComponent::Test::StaticCompositeStructProperty());
             },
-            [](jsi::Runtime& runtime, const jsi::Value& value) {
+            [](napi_wrappers::Runtime& runtime, const napi_wrappers::Value& value) {
                 winrt::TestComponent::Test::StaticCompositeStructProperty(convert_value_to_native<winrt::TestComponent::CompositeType>(runtime, value));
             },
         },
         { "staticEnumArrayProperty",
-            [](jsi::Runtime& runtime) {
+            [](napi_wrappers::Runtime& runtime) {
                 return convert_native_to_value(runtime, winrt::TestComponent::Test::StaticEnumArrayProperty());
             },
-            [](jsi::Runtime& runtime, const jsi::Value& value) {
+            [](napi_wrappers::Runtime& runtime, const napi_wrappers::Value& value) {
                 winrt::TestComponent::Test::StaticEnumArrayProperty(convert_value_to_native<winrt::array_view<const winrt::TestComponent::TestEnum>>(runtime, value));
             },
         },
         { "staticEnumProperty",
-            [](jsi::Runtime& runtime) {
+            [](napi_wrappers::Runtime& runtime) {
                 return convert_native_to_value(runtime, winrt::TestComponent::Test::StaticEnumProperty());
             },
-            [](jsi::Runtime& runtime, const jsi::Value& value) {
+            [](napi_wrappers::Runtime& runtime, const napi_wrappers::Value& value) {
                 winrt::TestComponent::Test::StaticEnumProperty(convert_value_to_native<winrt::TestComponent::TestEnum>(runtime, value));
             },
         },
         { "staticF32Property",
-            [](jsi::Runtime& runtime) {
+            [](napi_wrappers::Runtime& runtime) {
                 return convert_native_to_value(runtime, winrt::TestComponent::Test::StaticF32Property());
             },
-            [](jsi::Runtime& runtime, const jsi::Value& value) {
+            [](napi_wrappers::Runtime& runtime, const napi_wrappers::Value& value) {
                 winrt::TestComponent::Test::StaticF32Property(convert_value_to_native<float>(runtime, value));
             },
         },
         { "staticF64Property",
-            [](jsi::Runtime& runtime) {
+            [](napi_wrappers::Runtime& runtime) {
                 return convert_native_to_value(runtime, winrt::TestComponent::Test::StaticF64Property());
             },
-            [](jsi::Runtime& runtime, const jsi::Value& value) {
+            [](napi_wrappers::Runtime& runtime, const napi_wrappers::Value& value) {
                 winrt::TestComponent::Test::StaticF64Property(convert_value_to_native<double>(runtime, value));
             },
         },
         { "staticGuidArrayProperty",
-            [](jsi::Runtime& runtime) {
+            [](napi_wrappers::Runtime& runtime) {
                 return convert_native_to_value(runtime, winrt::TestComponent::Test::StaticGuidArrayProperty());
             },
-            [](jsi::Runtime& runtime, const jsi::Value& value) {
+            [](napi_wrappers::Runtime& runtime, const napi_wrappers::Value& value) {
                 winrt::TestComponent::Test::StaticGuidArrayProperty(convert_value_to_native<winrt::array_view<const winrt::guid>>(runtime, value));
             },
         },
         { "staticGuidProperty",
-            [](jsi::Runtime& runtime) {
+            [](napi_wrappers::Runtime& runtime) {
                 return convert_native_to_value(runtime, winrt::TestComponent::Test::StaticGuidProperty());
             },
-            [](jsi::Runtime& runtime, const jsi::Value& value) {
+            [](napi_wrappers::Runtime& runtime, const napi_wrappers::Value& value) {
                 winrt::TestComponent::Test::StaticGuidProperty(convert_value_to_native<winrt::guid>(runtime, value));
             },
         },
         { "staticNumericArrayProperty",
-            [](jsi::Runtime& runtime) {
+            [](napi_wrappers::Runtime& runtime) {
                 return convert_native_to_value(runtime, winrt::TestComponent::Test::StaticNumericArrayProperty());
             },
-            [](jsi::Runtime& runtime, const jsi::Value& value) {
+            [](napi_wrappers::Runtime& runtime, const napi_wrappers::Value& value) {
                 winrt::TestComponent::Test::StaticNumericArrayProperty(convert_value_to_native<winrt::array_view<const int32_t>>(runtime, value));
             },
         },
         { "staticNumericsStructProperty",
-            [](jsi::Runtime& runtime) {
+            [](napi_wrappers::Runtime& runtime) {
                 return convert_native_to_value(runtime, winrt::TestComponent::Test::StaticNumericsStructProperty());
             },
-            [](jsi::Runtime& runtime, const jsi::Value& value) {
+            [](napi_wrappers::Runtime& runtime, const napi_wrappers::Value& value) {
                 winrt::TestComponent::Test::StaticNumericsStructProperty(convert_value_to_native<winrt::TestComponent::NumericTypes>(runtime, value));
             },
         },
         { "staticObjectArrayProperty",
-            [](jsi::Runtime& runtime) {
+            [](napi_wrappers::Runtime& runtime) {
                 return convert_native_to_value(runtime, winrt::TestComponent::Test::StaticObjectArrayProperty());
             },
-            [](jsi::Runtime& runtime, const jsi::Value& value) {
+            [](napi_wrappers::Runtime& runtime, const napi_wrappers::Value& value) {
                 winrt::TestComponent::Test::StaticObjectArrayProperty(convert_value_to_native<winrt::array_view<const winrt::TestComponent::TestObject>>(runtime, value));
             },
         },
         { "staticObjectProperty",
-            [](jsi::Runtime& runtime) {
+            [](napi_wrappers::Runtime& runtime) {
                 return convert_native_to_value(runtime, winrt::TestComponent::Test::StaticObjectProperty());
             },
-            [](jsi::Runtime& runtime, const jsi::Value& value) {
+            [](napi_wrappers::Runtime& runtime, const napi_wrappers::Value& value) {
                 winrt::TestComponent::Test::StaticObjectProperty(convert_value_to_native<winrt::TestComponent::TestObject>(runtime, value));
             },
         },
         { "staticRefArrayProperty",
-            [](jsi::Runtime& runtime) {
+            [](napi_wrappers::Runtime& runtime) {
                 return convert_native_to_value(runtime, winrt::TestComponent::Test::StaticRefArrayProperty());
             },
-            [](jsi::Runtime& runtime, const jsi::Value& value) {
+            [](napi_wrappers::Runtime& runtime, const napi_wrappers::Value& value) {
                 winrt::TestComponent::Test::StaticRefArrayProperty(convert_value_to_native<winrt::array_view<const winrt::Windows::Foundation::IReference<int32_t>>>(runtime, value));
             },
         },
         { "staticRefBooleanProperty",
-            [](jsi::Runtime& runtime) {
+            [](napi_wrappers::Runtime& runtime) {
                 return convert_native_to_value(runtime, winrt::TestComponent::Test::StaticRefBooleanProperty());
             },
-            [](jsi::Runtime& runtime, const jsi::Value& value) {
+            [](napi_wrappers::Runtime& runtime, const napi_wrappers::Value& value) {
                 winrt::TestComponent::Test::StaticRefBooleanProperty(convert_value_to_native<winrt::Windows::Foundation::IReference<bool>>(runtime, value));
             },
         },
         { "staticRefCharProperty",
-            [](jsi::Runtime& runtime) {
+            [](napi_wrappers::Runtime& runtime) {
                 return convert_native_to_value(runtime, winrt::TestComponent::Test::StaticRefCharProperty());
             },
-            [](jsi::Runtime& runtime, const jsi::Value& value) {
+            [](napi_wrappers::Runtime& runtime, const napi_wrappers::Value& value) {
                 winrt::TestComponent::Test::StaticRefCharProperty(convert_value_to_native<winrt::Windows::Foundation::IReference<char16_t>>(runtime, value));
             },
         },
         { "staticRefEnumProperty",
-            [](jsi::Runtime& runtime) {
+            [](napi_wrappers::Runtime& runtime) {
                 return convert_native_to_value(runtime, winrt::TestComponent::Test::StaticRefEnumProperty());
             },
-            [](jsi::Runtime& runtime, const jsi::Value& value) {
+            [](napi_wrappers::Runtime& runtime, const napi_wrappers::Value& value) {
                 winrt::TestComponent::Test::StaticRefEnumProperty(convert_value_to_native<winrt::Windows::Foundation::IReference<winrt::TestComponent::TestEnum>>(runtime, value));
             },
         },
         { "staticRefNumericProperty",
-            [](jsi::Runtime& runtime) {
+            [](napi_wrappers::Runtime& runtime) {
                 return convert_native_to_value(runtime, winrt::TestComponent::Test::StaticRefNumericProperty());
             },
-            [](jsi::Runtime& runtime, const jsi::Value& value) {
+            [](napi_wrappers::Runtime& runtime, const napi_wrappers::Value& value) {
                 winrt::TestComponent::Test::StaticRefNumericProperty(convert_value_to_native<winrt::Windows::Foundation::IReference<int32_t>>(runtime, value));
             },
         },
         { "staticS16Property",
-            [](jsi::Runtime& runtime) {
+            [](napi_wrappers::Runtime& runtime) {
                 return convert_native_to_value(runtime, winrt::TestComponent::Test::StaticS16Property());
             },
-            [](jsi::Runtime& runtime, const jsi::Value& value) {
+            [](napi_wrappers::Runtime& runtime, const napi_wrappers::Value& value) {
                 winrt::TestComponent::Test::StaticS16Property(convert_value_to_native<int16_t>(runtime, value));
             },
         },
         { "staticS32Property",
-            [](jsi::Runtime& runtime) {
+            [](napi_wrappers::Runtime& runtime) {
                 return convert_native_to_value(runtime, winrt::TestComponent::Test::StaticS32Property());
             },
-            [](jsi::Runtime& runtime, const jsi::Value& value) {
+            [](napi_wrappers::Runtime& runtime, const napi_wrappers::Value& value) {
                 winrt::TestComponent::Test::StaticS32Property(convert_value_to_native<int32_t>(runtime, value));
             },
         },
         { "staticS64Property",
-            [](jsi::Runtime& runtime) {
+            [](napi_wrappers::Runtime& runtime) {
                 return convert_native_to_value(runtime, winrt::TestComponent::Test::StaticS64Property());
             },
-            [](jsi::Runtime& runtime, const jsi::Value& value) {
+            [](napi_wrappers::Runtime& runtime, const napi_wrappers::Value& value) {
                 winrt::TestComponent::Test::StaticS64Property(convert_value_to_native<int64_t>(runtime, value));
             },
         },
         { "staticStringArrayProperty",
-            [](jsi::Runtime& runtime) {
+            [](napi_wrappers::Runtime& runtime) {
                 return convert_native_to_value(runtime, winrt::TestComponent::Test::StaticStringArrayProperty());
             },
-            [](jsi::Runtime& runtime, const jsi::Value& value) {
+            [](napi_wrappers::Runtime& runtime, const napi_wrappers::Value& value) {
                 winrt::TestComponent::Test::StaticStringArrayProperty(convert_value_to_native<winrt::array_view<const winrt::hstring>>(runtime, value));
             },
         },
         { "staticStringProperty",
-            [](jsi::Runtime& runtime) {
+            [](napi_wrappers::Runtime& runtime) {
                 return convert_native_to_value(runtime, winrt::TestComponent::Test::StaticStringProperty());
             },
-            [](jsi::Runtime& runtime, const jsi::Value& value) {
+            [](napi_wrappers::Runtime& runtime, const napi_wrappers::Value& value) {
                 winrt::TestComponent::Test::StaticStringProperty(convert_value_to_native<winrt::hstring>(runtime, value));
             },
         },
         { "staticStringsStructProperty",
-            [](jsi::Runtime& runtime) {
+            [](napi_wrappers::Runtime& runtime) {
                 return convert_native_to_value(runtime, winrt::TestComponent::Test::StaticStringsStructProperty());
             },
-            [](jsi::Runtime& runtime, const jsi::Value& value) {
+            [](napi_wrappers::Runtime& runtime, const napi_wrappers::Value& value) {
                 winrt::TestComponent::Test::StaticStringsStructProperty(convert_value_to_native<winrt::TestComponent::StringTypes>(runtime, value));
             },
         },
         { "staticU16Property",
-            [](jsi::Runtime& runtime) {
+            [](napi_wrappers::Runtime& runtime) {
                 return convert_native_to_value(runtime, winrt::TestComponent::Test::StaticU16Property());
             },
-            [](jsi::Runtime& runtime, const jsi::Value& value) {
+            [](napi_wrappers::Runtime& runtime, const napi_wrappers::Value& value) {
                 winrt::TestComponent::Test::StaticU16Property(convert_value_to_native<uint16_t>(runtime, value));
             },
         },
         { "staticU32Property",
-            [](jsi::Runtime& runtime) {
+            [](napi_wrappers::Runtime& runtime) {
                 return convert_native_to_value(runtime, winrt::TestComponent::Test::StaticU32Property());
             },
-            [](jsi::Runtime& runtime, const jsi::Value& value) {
+            [](napi_wrappers::Runtime& runtime, const napi_wrappers::Value& value) {
                 winrt::TestComponent::Test::StaticU32Property(convert_value_to_native<uint32_t>(runtime, value));
             },
         },
         { "staticU64Property",
-            [](jsi::Runtime& runtime) {
+            [](napi_wrappers::Runtime& runtime) {
                 return convert_native_to_value(runtime, winrt::TestComponent::Test::StaticU64Property());
             },
-            [](jsi::Runtime& runtime, const jsi::Value& value) {
+            [](napi_wrappers::Runtime& runtime, const napi_wrappers::Value& value) {
                 winrt::TestComponent::Test::StaticU64Property(convert_value_to_native<uint64_t>(runtime, value));
             },
         },
         { "staticU8Property",
-            [](jsi::Runtime& runtime) {
+            [](napi_wrappers::Runtime& runtime) {
                 return convert_native_to_value(runtime, winrt::TestComponent::Test::StaticU8Property());
             },
-            [](jsi::Runtime& runtime, const jsi::Value& value) {
+            [](napi_wrappers::Runtime& runtime, const napi_wrappers::Value& value) {
                 winrt::TestComponent::Test::StaticU8Property(convert_value_to_native<uint8_t>(runtime, value));
             },
         },
@@ -573,7 +573,7 @@ namespace rnwinrt::classes::TestComponent::Test
 
     static constexpr const static_class_data::event_mapping event_data[] = {
         { "staticbooleventhandler",
-            [](jsi::Runtime& runtime, const jsi::Value& callback) {
+            [](napi_wrappers::Runtime& runtime, const napi_wrappers::Value& callback) {
                 return winrt::TestComponent::Test::StaticBoolEventHandler(convert_value_to_native<winrt::Windows::Foundation::EventHandler<bool>>(runtime, callback));
             },
             [](winrt::event_token token) {
@@ -581,7 +581,7 @@ namespace rnwinrt::classes::TestComponent::Test
             }
         },
         { "staticchareventhandler",
-            [](jsi::Runtime& runtime, const jsi::Value& callback) {
+            [](napi_wrappers::Runtime& runtime, const napi_wrappers::Value& callback) {
                 return winrt::TestComponent::Test::StaticCharEventHandler(convert_value_to_native<winrt::Windows::Foundation::EventHandler<char16_t>>(runtime, callback));
             },
             [](winrt::event_token token) {
@@ -589,7 +589,7 @@ namespace rnwinrt::classes::TestComponent::Test
             }
         },
         { "staticcompositestructeventhandler",
-            [](jsi::Runtime& runtime, const jsi::Value& callback) {
+            [](napi_wrappers::Runtime& runtime, const napi_wrappers::Value& callback) {
                 return winrt::TestComponent::Test::StaticCompositeStructEventHandler(convert_value_to_native<winrt::Windows::Foundation::EventHandler<winrt::TestComponent::CompositeType>>(runtime, callback));
             },
             [](winrt::event_token token) {
@@ -597,7 +597,7 @@ namespace rnwinrt::classes::TestComponent::Test
             }
         },
         { "staticenumeventhandler",
-            [](jsi::Runtime& runtime, const jsi::Value& callback) {
+            [](napi_wrappers::Runtime& runtime, const napi_wrappers::Value& callback) {
                 return winrt::TestComponent::Test::StaticEnumEventHandler(convert_value_to_native<winrt::Windows::Foundation::EventHandler<winrt::TestComponent::TestEnum>>(runtime, callback));
             },
             [](winrt::event_token token) {
@@ -605,7 +605,7 @@ namespace rnwinrt::classes::TestComponent::Test
             }
         },
         { "staticguideventhandler",
-            [](jsi::Runtime& runtime, const jsi::Value& callback) {
+            [](napi_wrappers::Runtime& runtime, const napi_wrappers::Value& callback) {
                 return winrt::TestComponent::Test::StaticGuidEventHandler(convert_value_to_native<winrt::Windows::Foundation::EventHandler<winrt::guid>>(runtime, callback));
             },
             [](winrt::event_token token) {
@@ -613,7 +613,7 @@ namespace rnwinrt::classes::TestComponent::Test
             }
         },
         { "staticnumericeventhandler",
-            [](jsi::Runtime& runtime, const jsi::Value& callback) {
+            [](napi_wrappers::Runtime& runtime, const napi_wrappers::Value& callback) {
                 return winrt::TestComponent::Test::StaticNumericEventHandler(convert_value_to_native<winrt::Windows::Foundation::EventHandler<int32_t>>(runtime, callback));
             },
             [](winrt::event_token token) {
@@ -621,7 +621,7 @@ namespace rnwinrt::classes::TestComponent::Test
             }
         },
         { "staticobjecteventhandler",
-            [](jsi::Runtime& runtime, const jsi::Value& callback) {
+            [](napi_wrappers::Runtime& runtime, const napi_wrappers::Value& callback) {
                 return winrt::TestComponent::Test::StaticObjectEventHandler(convert_value_to_native<winrt::Windows::Foundation::EventHandler<winrt::TestComponent::TestObject>>(runtime, callback));
             },
             [](winrt::event_token token) {
@@ -629,7 +629,7 @@ namespace rnwinrt::classes::TestComponent::Test
             }
         },
         { "staticrefeventhandler",
-            [](jsi::Runtime& runtime, const jsi::Value& callback) {
+            [](napi_wrappers::Runtime& runtime, const napi_wrappers::Value& callback) {
                 return winrt::TestComponent::Test::StaticRefEventHandler(convert_value_to_native<winrt::Windows::Foundation::EventHandler<winrt::Windows::Foundation::IReference<int32_t>>>(runtime, callback));
             },
             [](winrt::event_token token) {
@@ -637,7 +637,7 @@ namespace rnwinrt::classes::TestComponent::Test
             }
         },
         { "staticstringeventhandler",
-            [](jsi::Runtime& runtime, const jsi::Value& callback) {
+            [](napi_wrappers::Runtime& runtime, const napi_wrappers::Value& callback) {
                 return winrt::TestComponent::Test::StaticStringEventHandler(convert_value_to_native<winrt::Windows::Foundation::EventHandler<winrt::hstring>>(runtime, callback));
             },
             [](winrt::event_token token) {
@@ -648,7 +648,7 @@ namespace rnwinrt::classes::TestComponent::Test
 
     static constexpr const static_class_data::function_mapping function_data[] = {
         { "addAsync",
-            []([[maybe_unused]] jsi::Runtime& runtime, const jsi::Value&, [[maybe_unused]] const jsi::Value* args, size_t count) {
+            []([[maybe_unused]] napi_wrappers::Runtime& runtime, const napi_wrappers::Value&, [[maybe_unused]] const napi_wrappers::Value* args, size_t count) {
                 if (count == 2)
                 {
                     auto arg0 = convert_value_to_native<int32_t>(runtime, args[0]);
@@ -660,7 +660,7 @@ namespace rnwinrt::classes::TestComponent::Test
             }
         },
         { "copyBoolsToVector",
-            []([[maybe_unused]] jsi::Runtime& runtime, const jsi::Value&, [[maybe_unused]] const jsi::Value* args, size_t count) {
+            []([[maybe_unused]] napi_wrappers::Runtime& runtime, const napi_wrappers::Value&, [[maybe_unused]] const napi_wrappers::Value* args, size_t count) {
                 if (count == 1)
                 {
                     auto arg0 = convert_value_to_native<winrt::array_view<const bool>>(runtime, args[0]);
@@ -671,7 +671,7 @@ namespace rnwinrt::classes::TestComponent::Test
             }
         },
         { "copyBoolsToVectorView",
-            []([[maybe_unused]] jsi::Runtime& runtime, const jsi::Value&, [[maybe_unused]] const jsi::Value* args, size_t count) {
+            []([[maybe_unused]] napi_wrappers::Runtime& runtime, const napi_wrappers::Value&, [[maybe_unused]] const napi_wrappers::Value* args, size_t count) {
                 if (count == 1)
                 {
                     auto arg0 = convert_value_to_native<winrt::array_view<const bool>>(runtime, args[0]);
@@ -682,7 +682,7 @@ namespace rnwinrt::classes::TestComponent::Test
             }
         },
         { "copyCharsToVector",
-            []([[maybe_unused]] jsi::Runtime& runtime, const jsi::Value&, [[maybe_unused]] const jsi::Value* args, size_t count) {
+            []([[maybe_unused]] napi_wrappers::Runtime& runtime, const napi_wrappers::Value&, [[maybe_unused]] const napi_wrappers::Value* args, size_t count) {
                 if (count == 1)
                 {
                     auto arg0 = convert_value_to_native<winrt::array_view<const char16_t>>(runtime, args[0]);
@@ -693,7 +693,7 @@ namespace rnwinrt::classes::TestComponent::Test
             }
         },
         { "copyCharsToVectorView",
-            []([[maybe_unused]] jsi::Runtime& runtime, const jsi::Value&, [[maybe_unused]] const jsi::Value* args, size_t count) {
+            []([[maybe_unused]] napi_wrappers::Runtime& runtime, const napi_wrappers::Value&, [[maybe_unused]] const napi_wrappers::Value* args, size_t count) {
                 if (count == 1)
                 {
                     auto arg0 = convert_value_to_native<winrt::array_view<const char16_t>>(runtime, args[0]);
@@ -704,7 +704,7 @@ namespace rnwinrt::classes::TestComponent::Test
             }
         },
         { "copyCompositeStructsToVector",
-            []([[maybe_unused]] jsi::Runtime& runtime, const jsi::Value&, [[maybe_unused]] const jsi::Value* args, size_t count) {
+            []([[maybe_unused]] napi_wrappers::Runtime& runtime, const napi_wrappers::Value&, [[maybe_unused]] const napi_wrappers::Value* args, size_t count) {
                 if (count == 1)
                 {
                     auto arg0 = convert_value_to_native<winrt::array_view<const winrt::TestComponent::CompositeType>>(runtime, args[0]);
@@ -715,7 +715,7 @@ namespace rnwinrt::classes::TestComponent::Test
             }
         },
         { "copyCompositeStructsToVectorView",
-            []([[maybe_unused]] jsi::Runtime& runtime, const jsi::Value&, [[maybe_unused]] const jsi::Value* args, size_t count) {
+            []([[maybe_unused]] napi_wrappers::Runtime& runtime, const napi_wrappers::Value&, [[maybe_unused]] const napi_wrappers::Value* args, size_t count) {
                 if (count == 1)
                 {
                     auto arg0 = convert_value_to_native<winrt::array_view<const winrt::TestComponent::CompositeType>>(runtime, args[0]);
@@ -726,7 +726,7 @@ namespace rnwinrt::classes::TestComponent::Test
             }
         },
         { "copyEnumValuesToVector",
-            []([[maybe_unused]] jsi::Runtime& runtime, const jsi::Value&, [[maybe_unused]] const jsi::Value* args, size_t count) {
+            []([[maybe_unused]] napi_wrappers::Runtime& runtime, const napi_wrappers::Value&, [[maybe_unused]] const napi_wrappers::Value* args, size_t count) {
                 if (count == 1)
                 {
                     auto arg0 = convert_value_to_native<winrt::array_view<const winrt::TestComponent::TestEnum>>(runtime, args[0]);
@@ -737,7 +737,7 @@ namespace rnwinrt::classes::TestComponent::Test
             }
         },
         { "copyEnumValuesToVectorView",
-            []([[maybe_unused]] jsi::Runtime& runtime, const jsi::Value&, [[maybe_unused]] const jsi::Value* args, size_t count) {
+            []([[maybe_unused]] napi_wrappers::Runtime& runtime, const napi_wrappers::Value&, [[maybe_unused]] const napi_wrappers::Value* args, size_t count) {
                 if (count == 1)
                 {
                     auto arg0 = convert_value_to_native<winrt::array_view<const winrt::TestComponent::TestEnum>>(runtime, args[0]);
@@ -748,7 +748,7 @@ namespace rnwinrt::classes::TestComponent::Test
             }
         },
         { "copyGuidsToVector",
-            []([[maybe_unused]] jsi::Runtime& runtime, const jsi::Value&, [[maybe_unused]] const jsi::Value* args, size_t count) {
+            []([[maybe_unused]] napi_wrappers::Runtime& runtime, const napi_wrappers::Value&, [[maybe_unused]] const napi_wrappers::Value* args, size_t count) {
                 if (count == 1)
                 {
                     auto arg0 = convert_value_to_native<winrt::array_view<const winrt::guid>>(runtime, args[0]);
@@ -759,7 +759,7 @@ namespace rnwinrt::classes::TestComponent::Test
             }
         },
         { "copyGuidsToVectorView",
-            []([[maybe_unused]] jsi::Runtime& runtime, const jsi::Value&, [[maybe_unused]] const jsi::Value* args, size_t count) {
+            []([[maybe_unused]] napi_wrappers::Runtime& runtime, const napi_wrappers::Value&, [[maybe_unused]] const napi_wrappers::Value* args, size_t count) {
                 if (count == 1)
                 {
                     auto arg0 = convert_value_to_native<winrt::array_view<const winrt::guid>>(runtime, args[0]);
@@ -770,7 +770,7 @@ namespace rnwinrt::classes::TestComponent::Test
             }
         },
         { "copyNumericsToVector",
-            []([[maybe_unused]] jsi::Runtime& runtime, const jsi::Value&, [[maybe_unused]] const jsi::Value* args, size_t count) {
+            []([[maybe_unused]] napi_wrappers::Runtime& runtime, const napi_wrappers::Value&, [[maybe_unused]] const napi_wrappers::Value* args, size_t count) {
                 if (count == 1)
                 {
                     auto arg0 = convert_value_to_native<winrt::array_view<const int32_t>>(runtime, args[0]);
@@ -781,7 +781,7 @@ namespace rnwinrt::classes::TestComponent::Test
             }
         },
         { "copyNumericsToVectorView",
-            []([[maybe_unused]] jsi::Runtime& runtime, const jsi::Value&, [[maybe_unused]] const jsi::Value* args, size_t count) {
+            []([[maybe_unused]] napi_wrappers::Runtime& runtime, const napi_wrappers::Value&, [[maybe_unused]] const napi_wrappers::Value* args, size_t count) {
                 if (count == 1)
                 {
                     auto arg0 = convert_value_to_native<winrt::array_view<const int32_t>>(runtime, args[0]);
@@ -792,7 +792,7 @@ namespace rnwinrt::classes::TestComponent::Test
             }
         },
         { "copyObjectsToVector",
-            []([[maybe_unused]] jsi::Runtime& runtime, const jsi::Value&, [[maybe_unused]] const jsi::Value* args, size_t count) {
+            []([[maybe_unused]] napi_wrappers::Runtime& runtime, const napi_wrappers::Value&, [[maybe_unused]] const napi_wrappers::Value* args, size_t count) {
                 if (count == 1)
                 {
                     auto arg0 = convert_value_to_native<winrt::array_view<const winrt::TestComponent::TestObject>>(runtime, args[0]);
@@ -803,7 +803,7 @@ namespace rnwinrt::classes::TestComponent::Test
             }
         },
         { "copyObjectsToVectorView",
-            []([[maybe_unused]] jsi::Runtime& runtime, const jsi::Value&, [[maybe_unused]] const jsi::Value* args, size_t count) {
+            []([[maybe_unused]] napi_wrappers::Runtime& runtime, const napi_wrappers::Value&, [[maybe_unused]] const napi_wrappers::Value* args, size_t count) {
                 if (count == 1)
                 {
                     auto arg0 = convert_value_to_native<winrt::array_view<const winrt::Windows::Foundation::IInspectable>>(runtime, args[0]);
@@ -814,7 +814,7 @@ namespace rnwinrt::classes::TestComponent::Test
             }
         },
         { "copyRefsToVector",
-            []([[maybe_unused]] jsi::Runtime& runtime, const jsi::Value&, [[maybe_unused]] const jsi::Value* args, size_t count) {
+            []([[maybe_unused]] napi_wrappers::Runtime& runtime, const napi_wrappers::Value&, [[maybe_unused]] const napi_wrappers::Value* args, size_t count) {
                 if (count == 1)
                 {
                     auto arg0 = convert_value_to_native<winrt::array_view<const winrt::Windows::Foundation::IReference<int32_t>>>(runtime, args[0]);
@@ -825,7 +825,7 @@ namespace rnwinrt::classes::TestComponent::Test
             }
         },
         { "copyRefsToVectorView",
-            []([[maybe_unused]] jsi::Runtime& runtime, const jsi::Value&, [[maybe_unused]] const jsi::Value* args, size_t count) {
+            []([[maybe_unused]] napi_wrappers::Runtime& runtime, const napi_wrappers::Value&, [[maybe_unused]] const napi_wrappers::Value* args, size_t count) {
                 if (count == 1)
                 {
                     auto arg0 = convert_value_to_native<winrt::array_view<const winrt::Windows::Foundation::IReference<int32_t>>>(runtime, args[0]);
@@ -836,7 +836,7 @@ namespace rnwinrt::classes::TestComponent::Test
             }
         },
         { "copyStringsToVector",
-            []([[maybe_unused]] jsi::Runtime& runtime, const jsi::Value&, [[maybe_unused]] const jsi::Value* args, size_t count) {
+            []([[maybe_unused]] napi_wrappers::Runtime& runtime, const napi_wrappers::Value&, [[maybe_unused]] const napi_wrappers::Value* args, size_t count) {
                 if (count == 1)
                 {
                     auto arg0 = convert_value_to_native<winrt::array_view<const winrt::hstring>>(runtime, args[0]);
@@ -847,7 +847,7 @@ namespace rnwinrt::classes::TestComponent::Test
             }
         },
         { "copyStringsToVectorView",
-            []([[maybe_unused]] jsi::Runtime& runtime, const jsi::Value&, [[maybe_unused]] const jsi::Value* args, size_t count) {
+            []([[maybe_unused]] napi_wrappers::Runtime& runtime, const napi_wrappers::Value&, [[maybe_unused]] const napi_wrappers::Value* args, size_t count) {
                 if (count == 1)
                 {
                     auto arg0 = convert_value_to_native<winrt::array_view<const winrt::hstring>>(runtime, args[0]);
@@ -858,7 +858,7 @@ namespace rnwinrt::classes::TestComponent::Test
             }
         },
         { "copyToMapView",
-            []([[maybe_unused]] jsi::Runtime& runtime, const jsi::Value&, [[maybe_unused]] const jsi::Value* args, size_t count) {
+            []([[maybe_unused]] napi_wrappers::Runtime& runtime, const napi_wrappers::Value&, [[maybe_unused]] const napi_wrappers::Value* args, size_t count) {
                 if (count == 1)
                 {
                     auto arg0 = convert_value_to_native<winrt::Windows::Foundation::Collections::IMap<winrt::hstring, int32_t>>(runtime, args[0]);
@@ -869,7 +869,7 @@ namespace rnwinrt::classes::TestComponent::Test
             }
         },
         { "countDoubleAsync",
-            []([[maybe_unused]] jsi::Runtime& runtime, const jsi::Value&, [[maybe_unused]] const jsi::Value* args, size_t count) {
+            []([[maybe_unused]] napi_wrappers::Runtime& runtime, const napi_wrappers::Value&, [[maybe_unused]] const napi_wrappers::Value* args, size_t count) {
                 if (count == 1)
                 {
                     auto arg0 = convert_value_to_native<int32_t>(runtime, args[0]);
@@ -880,7 +880,7 @@ namespace rnwinrt::classes::TestComponent::Test
             }
         },
         { "countToNumberAsync",
-            []([[maybe_unused]] jsi::Runtime& runtime, const jsi::Value&, [[maybe_unused]] const jsi::Value* args, size_t count) {
+            []([[maybe_unused]] napi_wrappers::Runtime& runtime, const napi_wrappers::Value&, [[maybe_unused]] const napi_wrappers::Value* args, size_t count) {
                 if (count == 1)
                 {
                     auto arg0 = convert_value_to_native<int32_t>(runtime, args[0]);
@@ -891,7 +891,7 @@ namespace rnwinrt::classes::TestComponent::Test
             }
         },
         { "createStringToNumberMap",
-            []([[maybe_unused]] jsi::Runtime& runtime, const jsi::Value&, [[maybe_unused]] const jsi::Value* args, size_t count) {
+            []([[maybe_unused]] napi_wrappers::Runtime& runtime, const napi_wrappers::Value&, [[maybe_unused]] const napi_wrappers::Value* args, size_t count) {
                 if (count == 0)
                 {
                     auto result = winrt::TestComponent::Test::CreateStringToNumberMap();
@@ -901,7 +901,7 @@ namespace rnwinrt::classes::TestComponent::Test
             }
         },
         { "getObjectsAsync",
-            []([[maybe_unused]] jsi::Runtime& runtime, const jsi::Value&, [[maybe_unused]] const jsi::Value* args, size_t count) {
+            []([[maybe_unused]] napi_wrappers::Runtime& runtime, const napi_wrappers::Value&, [[maybe_unused]] const napi_wrappers::Value* args, size_t count) {
                 if (count == 0)
                 {
                     auto result = winrt::TestComponent::Test::GetObjectsAsync();
@@ -911,7 +911,7 @@ namespace rnwinrt::classes::TestComponent::Test
             }
         },
         { "immediateReturnAsync",
-            []([[maybe_unused]] jsi::Runtime& runtime, const jsi::Value&, [[maybe_unused]] const jsi::Value* args, size_t count) {
+            []([[maybe_unused]] napi_wrappers::Runtime& runtime, const napi_wrappers::Value&, [[maybe_unused]] const napi_wrappers::Value* args, size_t count) {
                 if (count == 1)
                 {
                     auto arg0 = convert_value_to_native<int32_t>(runtime, args[0]);
@@ -922,18 +922,18 @@ namespace rnwinrt::classes::TestComponent::Test
             }
         },
         { "logFailures",
-            []([[maybe_unused]] jsi::Runtime& runtime, const jsi::Value&, [[maybe_unused]] const jsi::Value* args, size_t count) {
+            []([[maybe_unused]] napi_wrappers::Runtime& runtime, const napi_wrappers::Value&, [[maybe_unused]] const napi_wrappers::Value* args, size_t count) {
                 if (count == 1)
                 {
                     auto arg0 = convert_value_to_native<winrt::hstring>(runtime, args[0]);
                     winrt::TestComponent::Test::LogFailures(arg0);
-                    return jsi::Value::undefined();
+                    return napi_wrappers::Value::undefined();
                 }
                 throw_no_function_overload(runtime, "TestComponent"sv, "Test"sv, "logFailures"sv, count);
             }
         },
         { "makeObservableMap",
-            []([[maybe_unused]] jsi::Runtime& runtime, const jsi::Value&, [[maybe_unused]] const jsi::Value* args, size_t count) {
+            []([[maybe_unused]] napi_wrappers::Runtime& runtime, const napi_wrappers::Value&, [[maybe_unused]] const napi_wrappers::Value* args, size_t count) {
                 if (count == 0)
                 {
                     auto result = winrt::TestComponent::Test::MakeObservableMap();
@@ -943,7 +943,7 @@ namespace rnwinrt::classes::TestComponent::Test
             }
         },
         { "makeObservableVector",
-            []([[maybe_unused]] jsi::Runtime& runtime, const jsi::Value&, [[maybe_unused]] const jsi::Value* args, size_t count) {
+            []([[maybe_unused]] napi_wrappers::Runtime& runtime, const napi_wrappers::Value&, [[maybe_unused]] const napi_wrappers::Value* args, size_t count) {
                 if (count == 0)
                 {
                     auto result = winrt::TestComponent::Test::MakeObservableVector();
@@ -953,7 +953,7 @@ namespace rnwinrt::classes::TestComponent::Test
             }
         },
         { "pauseAsync",
-            []([[maybe_unused]] jsi::Runtime& runtime, const jsi::Value&, [[maybe_unused]] const jsi::Value* args, size_t count) {
+            []([[maybe_unused]] napi_wrappers::Runtime& runtime, const napi_wrappers::Value&, [[maybe_unused]] const napi_wrappers::Value* args, size_t count) {
                 if (count == 1)
                 {
                     auto arg0 = convert_value_to_native<int32_t>(runtime, args[0]);
@@ -964,73 +964,73 @@ namespace rnwinrt::classes::TestComponent::Test
             }
         },
         { "raiseStaticBoolEvent",
-            []([[maybe_unused]] jsi::Runtime& runtime, const jsi::Value&, [[maybe_unused]] const jsi::Value* args, size_t count) {
+            []([[maybe_unused]] napi_wrappers::Runtime& runtime, const napi_wrappers::Value&, [[maybe_unused]] const napi_wrappers::Value* args, size_t count) {
                 if (count == 1)
                 {
                     auto arg0 = convert_value_to_native<bool>(runtime, args[0]);
                     winrt::TestComponent::Test::RaiseStaticBoolEvent(arg0);
-                    return jsi::Value::undefined();
+                    return napi_wrappers::Value::undefined();
                 }
                 throw_no_function_overload(runtime, "TestComponent"sv, "Test"sv, "raiseStaticBoolEvent"sv, count);
             }
         },
         { "raiseStaticCharEvent",
-            []([[maybe_unused]] jsi::Runtime& runtime, const jsi::Value&, [[maybe_unused]] const jsi::Value* args, size_t count) {
+            []([[maybe_unused]] napi_wrappers::Runtime& runtime, const napi_wrappers::Value&, [[maybe_unused]] const napi_wrappers::Value* args, size_t count) {
                 if (count == 1)
                 {
                     auto arg0 = convert_value_to_native<char16_t>(runtime, args[0]);
                     winrt::TestComponent::Test::RaiseStaticCharEvent(arg0);
-                    return jsi::Value::undefined();
+                    return napi_wrappers::Value::undefined();
                 }
                 throw_no_function_overload(runtime, "TestComponent"sv, "Test"sv, "raiseStaticCharEvent"sv, count);
             }
         },
         { "raiseStaticCompositeStructEvent",
-            []([[maybe_unused]] jsi::Runtime& runtime, const jsi::Value&, [[maybe_unused]] const jsi::Value* args, size_t count) {
+            []([[maybe_unused]] napi_wrappers::Runtime& runtime, const napi_wrappers::Value&, [[maybe_unused]] const napi_wrappers::Value* args, size_t count) {
                 if (count == 1)
                 {
                     auto arg0 = convert_value_to_native<winrt::TestComponent::CompositeType>(runtime, args[0]);
                     winrt::TestComponent::Test::RaiseStaticCompositeStructEvent(arg0);
-                    return jsi::Value::undefined();
+                    return napi_wrappers::Value::undefined();
                 }
                 throw_no_function_overload(runtime, "TestComponent"sv, "Test"sv, "raiseStaticCompositeStructEvent"sv, count);
             }
         },
         { "raiseStaticEnumEvent",
-            []([[maybe_unused]] jsi::Runtime& runtime, const jsi::Value&, [[maybe_unused]] const jsi::Value* args, size_t count) {
+            []([[maybe_unused]] napi_wrappers::Runtime& runtime, const napi_wrappers::Value&, [[maybe_unused]] const napi_wrappers::Value* args, size_t count) {
                 if (count == 1)
                 {
                     auto arg0 = convert_value_to_native<winrt::TestComponent::TestEnum>(runtime, args[0]);
                     winrt::TestComponent::Test::RaiseStaticEnumEvent(arg0);
-                    return jsi::Value::undefined();
+                    return napi_wrappers::Value::undefined();
                 }
                 throw_no_function_overload(runtime, "TestComponent"sv, "Test"sv, "raiseStaticEnumEvent"sv, count);
             }
         },
         { "raiseStaticGuidEvent",
-            []([[maybe_unused]] jsi::Runtime& runtime, const jsi::Value&, [[maybe_unused]] const jsi::Value* args, size_t count) {
+            []([[maybe_unused]] napi_wrappers::Runtime& runtime, const napi_wrappers::Value&, [[maybe_unused]] const napi_wrappers::Value* args, size_t count) {
                 if (count == 1)
                 {
                     auto arg0 = convert_value_to_native<winrt::guid>(runtime, args[0]);
                     winrt::TestComponent::Test::RaiseStaticGuidEvent(arg0);
-                    return jsi::Value::undefined();
+                    return napi_wrappers::Value::undefined();
                 }
                 throw_no_function_overload(runtime, "TestComponent"sv, "Test"sv, "raiseStaticGuidEvent"sv, count);
             }
         },
         { "raiseStaticNumericEvent",
-            []([[maybe_unused]] jsi::Runtime& runtime, const jsi::Value&, [[maybe_unused]] const jsi::Value* args, size_t count) {
+            []([[maybe_unused]] napi_wrappers::Runtime& runtime, const napi_wrappers::Value&, [[maybe_unused]] const napi_wrappers::Value* args, size_t count) {
                 if (count == 1)
                 {
                     auto arg0 = convert_value_to_native<int32_t>(runtime, args[0]);
                     winrt::TestComponent::Test::RaiseStaticNumericEvent(arg0);
-                    return jsi::Value::undefined();
+                    return napi_wrappers::Value::undefined();
                 }
                 throw_no_function_overload(runtime, "TestComponent"sv, "Test"sv, "raiseStaticNumericEvent"sv, count);
             }
         },
         { "raiseStaticNumericEventAsync",
-            []([[maybe_unused]] jsi::Runtime& runtime, const jsi::Value&, [[maybe_unused]] const jsi::Value* args, size_t count) {
+            []([[maybe_unused]] napi_wrappers::Runtime& runtime, const napi_wrappers::Value&, [[maybe_unused]] const napi_wrappers::Value* args, size_t count) {
                 if (count == 1)
                 {
                     auto arg0 = convert_value_to_native<int32_t>(runtime, args[0]);
@@ -1041,40 +1041,40 @@ namespace rnwinrt::classes::TestComponent::Test
             }
         },
         { "raiseStaticObjectEvent",
-            []([[maybe_unused]] jsi::Runtime& runtime, const jsi::Value&, [[maybe_unused]] const jsi::Value* args, size_t count) {
+            []([[maybe_unused]] napi_wrappers::Runtime& runtime, const napi_wrappers::Value&, [[maybe_unused]] const napi_wrappers::Value* args, size_t count) {
                 if (count == 1)
                 {
                     auto arg0 = convert_value_to_native<winrt::TestComponent::TestObject>(runtime, args[0]);
                     winrt::TestComponent::Test::RaiseStaticObjectEvent(arg0);
-                    return jsi::Value::undefined();
+                    return napi_wrappers::Value::undefined();
                 }
                 throw_no_function_overload(runtime, "TestComponent"sv, "Test"sv, "raiseStaticObjectEvent"sv, count);
             }
         },
         { "raiseStaticRefEvent",
-            []([[maybe_unused]] jsi::Runtime& runtime, const jsi::Value&, [[maybe_unused]] const jsi::Value* args, size_t count) {
+            []([[maybe_unused]] napi_wrappers::Runtime& runtime, const napi_wrappers::Value&, [[maybe_unused]] const napi_wrappers::Value* args, size_t count) {
                 if (count == 1)
                 {
                     auto arg0 = convert_value_to_native<winrt::Windows::Foundation::IReference<int32_t>>(runtime, args[0]);
                     winrt::TestComponent::Test::RaiseStaticRefEvent(arg0);
-                    return jsi::Value::undefined();
+                    return napi_wrappers::Value::undefined();
                 }
                 throw_no_function_overload(runtime, "TestComponent"sv, "Test"sv, "raiseStaticRefEvent"sv, count);
             }
         },
         { "raiseStaticStringEvent",
-            []([[maybe_unused]] jsi::Runtime& runtime, const jsi::Value&, [[maybe_unused]] const jsi::Value* args, size_t count) {
+            []([[maybe_unused]] napi_wrappers::Runtime& runtime, const napi_wrappers::Value&, [[maybe_unused]] const napi_wrappers::Value* args, size_t count) {
                 if (count == 1)
                 {
                     auto arg0 = convert_value_to_native<winrt::hstring>(runtime, args[0]);
                     winrt::TestComponent::Test::RaiseStaticStringEvent(arg0);
-                    return jsi::Value::undefined();
+                    return napi_wrappers::Value::undefined();
                 }
                 throw_no_function_overload(runtime, "TestComponent"sv, "Test"sv, "raiseStaticStringEvent"sv, count);
             }
         },
         { "returnSameBoolIterable",
-            []([[maybe_unused]] jsi::Runtime& runtime, const jsi::Value&, [[maybe_unused]] const jsi::Value* args, size_t count) {
+            []([[maybe_unused]] napi_wrappers::Runtime& runtime, const napi_wrappers::Value&, [[maybe_unused]] const napi_wrappers::Value* args, size_t count) {
                 if (count == 1)
                 {
                     auto arg0 = convert_value_to_native<winrt::Windows::Foundation::Collections::IIterable<bool>>(runtime, args[0]);
@@ -1085,7 +1085,7 @@ namespace rnwinrt::classes::TestComponent::Test
             }
         },
         { "returnSameBoolVector",
-            []([[maybe_unused]] jsi::Runtime& runtime, const jsi::Value&, [[maybe_unused]] const jsi::Value* args, size_t count) {
+            []([[maybe_unused]] napi_wrappers::Runtime& runtime, const napi_wrappers::Value&, [[maybe_unused]] const napi_wrappers::Value* args, size_t count) {
                 if (count == 1)
                 {
                     auto arg0 = convert_value_to_native<winrt::Windows::Foundation::Collections::IVector<bool>>(runtime, args[0]);
@@ -1096,7 +1096,7 @@ namespace rnwinrt::classes::TestComponent::Test
             }
         },
         { "returnSameBoolVectorView",
-            []([[maybe_unused]] jsi::Runtime& runtime, const jsi::Value&, [[maybe_unused]] const jsi::Value* args, size_t count) {
+            []([[maybe_unused]] napi_wrappers::Runtime& runtime, const napi_wrappers::Value&, [[maybe_unused]] const napi_wrappers::Value* args, size_t count) {
                 if (count == 1)
                 {
                     auto arg0 = convert_value_to_native<winrt::Windows::Foundation::Collections::IVectorView<bool>>(runtime, args[0]);
@@ -1107,7 +1107,7 @@ namespace rnwinrt::classes::TestComponent::Test
             }
         },
         { "returnSameCharIterable",
-            []([[maybe_unused]] jsi::Runtime& runtime, const jsi::Value&, [[maybe_unused]] const jsi::Value* args, size_t count) {
+            []([[maybe_unused]] napi_wrappers::Runtime& runtime, const napi_wrappers::Value&, [[maybe_unused]] const napi_wrappers::Value* args, size_t count) {
                 if (count == 1)
                 {
                     auto arg0 = convert_value_to_native<winrt::Windows::Foundation::Collections::IIterable<char16_t>>(runtime, args[0]);
@@ -1118,7 +1118,7 @@ namespace rnwinrt::classes::TestComponent::Test
             }
         },
         { "returnSameCharVector",
-            []([[maybe_unused]] jsi::Runtime& runtime, const jsi::Value&, [[maybe_unused]] const jsi::Value* args, size_t count) {
+            []([[maybe_unused]] napi_wrappers::Runtime& runtime, const napi_wrappers::Value&, [[maybe_unused]] const napi_wrappers::Value* args, size_t count) {
                 if (count == 1)
                 {
                     auto arg0 = convert_value_to_native<winrt::Windows::Foundation::Collections::IVector<char16_t>>(runtime, args[0]);
@@ -1129,7 +1129,7 @@ namespace rnwinrt::classes::TestComponent::Test
             }
         },
         { "returnSameCharVectorView",
-            []([[maybe_unused]] jsi::Runtime& runtime, const jsi::Value&, [[maybe_unused]] const jsi::Value* args, size_t count) {
+            []([[maybe_unused]] napi_wrappers::Runtime& runtime, const napi_wrappers::Value&, [[maybe_unused]] const napi_wrappers::Value* args, size_t count) {
                 if (count == 1)
                 {
                     auto arg0 = convert_value_to_native<winrt::Windows::Foundation::Collections::IVectorView<char16_t>>(runtime, args[0]);
@@ -1140,7 +1140,7 @@ namespace rnwinrt::classes::TestComponent::Test
             }
         },
         { "returnSameCompositeStructIterable",
-            []([[maybe_unused]] jsi::Runtime& runtime, const jsi::Value&, [[maybe_unused]] const jsi::Value* args, size_t count) {
+            []([[maybe_unused]] napi_wrappers::Runtime& runtime, const napi_wrappers::Value&, [[maybe_unused]] const napi_wrappers::Value* args, size_t count) {
                 if (count == 1)
                 {
                     auto arg0 = convert_value_to_native<winrt::Windows::Foundation::Collections::IIterable<winrt::TestComponent::CompositeType>>(runtime, args[0]);
@@ -1151,7 +1151,7 @@ namespace rnwinrt::classes::TestComponent::Test
             }
         },
         { "returnSameCompositeStructVector",
-            []([[maybe_unused]] jsi::Runtime& runtime, const jsi::Value&, [[maybe_unused]] const jsi::Value* args, size_t count) {
+            []([[maybe_unused]] napi_wrappers::Runtime& runtime, const napi_wrappers::Value&, [[maybe_unused]] const napi_wrappers::Value* args, size_t count) {
                 if (count == 1)
                 {
                     auto arg0 = convert_value_to_native<winrt::Windows::Foundation::Collections::IVector<winrt::TestComponent::CompositeType>>(runtime, args[0]);
@@ -1162,7 +1162,7 @@ namespace rnwinrt::classes::TestComponent::Test
             }
         },
         { "returnSameCompositeStructVectorView",
-            []([[maybe_unused]] jsi::Runtime& runtime, const jsi::Value&, [[maybe_unused]] const jsi::Value* args, size_t count) {
+            []([[maybe_unused]] napi_wrappers::Runtime& runtime, const napi_wrappers::Value&, [[maybe_unused]] const napi_wrappers::Value* args, size_t count) {
                 if (count == 1)
                 {
                     auto arg0 = convert_value_to_native<winrt::Windows::Foundation::Collections::IVectorView<winrt::TestComponent::CompositeType>>(runtime, args[0]);
@@ -1173,7 +1173,7 @@ namespace rnwinrt::classes::TestComponent::Test
             }
         },
         { "returnSameEnumIterable",
-            []([[maybe_unused]] jsi::Runtime& runtime, const jsi::Value&, [[maybe_unused]] const jsi::Value* args, size_t count) {
+            []([[maybe_unused]] napi_wrappers::Runtime& runtime, const napi_wrappers::Value&, [[maybe_unused]] const napi_wrappers::Value* args, size_t count) {
                 if (count == 1)
                 {
                     auto arg0 = convert_value_to_native<winrt::Windows::Foundation::Collections::IIterable<winrt::TestComponent::TestEnum>>(runtime, args[0]);
@@ -1184,7 +1184,7 @@ namespace rnwinrt::classes::TestComponent::Test
             }
         },
         { "returnSameEnumVector",
-            []([[maybe_unused]] jsi::Runtime& runtime, const jsi::Value&, [[maybe_unused]] const jsi::Value* args, size_t count) {
+            []([[maybe_unused]] napi_wrappers::Runtime& runtime, const napi_wrappers::Value&, [[maybe_unused]] const napi_wrappers::Value* args, size_t count) {
                 if (count == 1)
                 {
                     auto arg0 = convert_value_to_native<winrt::Windows::Foundation::Collections::IVector<winrt::TestComponent::TestEnum>>(runtime, args[0]);
@@ -1195,7 +1195,7 @@ namespace rnwinrt::classes::TestComponent::Test
             }
         },
         { "returnSameEnumVectorView",
-            []([[maybe_unused]] jsi::Runtime& runtime, const jsi::Value&, [[maybe_unused]] const jsi::Value* args, size_t count) {
+            []([[maybe_unused]] napi_wrappers::Runtime& runtime, const napi_wrappers::Value&, [[maybe_unused]] const napi_wrappers::Value* args, size_t count) {
                 if (count == 1)
                 {
                     auto arg0 = convert_value_to_native<winrt::Windows::Foundation::Collections::IVectorView<winrt::TestComponent::TestEnum>>(runtime, args[0]);
@@ -1206,7 +1206,7 @@ namespace rnwinrt::classes::TestComponent::Test
             }
         },
         { "returnSameGuidIterable",
-            []([[maybe_unused]] jsi::Runtime& runtime, const jsi::Value&, [[maybe_unused]] const jsi::Value* args, size_t count) {
+            []([[maybe_unused]] napi_wrappers::Runtime& runtime, const napi_wrappers::Value&, [[maybe_unused]] const napi_wrappers::Value* args, size_t count) {
                 if (count == 1)
                 {
                     auto arg0 = convert_value_to_native<winrt::Windows::Foundation::Collections::IIterable<winrt::guid>>(runtime, args[0]);
@@ -1217,7 +1217,7 @@ namespace rnwinrt::classes::TestComponent::Test
             }
         },
         { "returnSameGuidVector",
-            []([[maybe_unused]] jsi::Runtime& runtime, const jsi::Value&, [[maybe_unused]] const jsi::Value* args, size_t count) {
+            []([[maybe_unused]] napi_wrappers::Runtime& runtime, const napi_wrappers::Value&, [[maybe_unused]] const napi_wrappers::Value* args, size_t count) {
                 if (count == 1)
                 {
                     auto arg0 = convert_value_to_native<winrt::Windows::Foundation::Collections::IVector<winrt::guid>>(runtime, args[0]);
@@ -1228,7 +1228,7 @@ namespace rnwinrt::classes::TestComponent::Test
             }
         },
         { "returnSameGuidVectorView",
-            []([[maybe_unused]] jsi::Runtime& runtime, const jsi::Value&, [[maybe_unused]] const jsi::Value* args, size_t count) {
+            []([[maybe_unused]] napi_wrappers::Runtime& runtime, const napi_wrappers::Value&, [[maybe_unused]] const napi_wrappers::Value* args, size_t count) {
                 if (count == 1)
                 {
                     auto arg0 = convert_value_to_native<winrt::Windows::Foundation::Collections::IVectorView<winrt::guid>>(runtime, args[0]);
@@ -1239,7 +1239,7 @@ namespace rnwinrt::classes::TestComponent::Test
             }
         },
         { "returnSameNumericIterable",
-            []([[maybe_unused]] jsi::Runtime& runtime, const jsi::Value&, [[maybe_unused]] const jsi::Value* args, size_t count) {
+            []([[maybe_unused]] napi_wrappers::Runtime& runtime, const napi_wrappers::Value&, [[maybe_unused]] const napi_wrappers::Value* args, size_t count) {
                 if (count == 1)
                 {
                     auto arg0 = convert_value_to_native<winrt::Windows::Foundation::Collections::IIterable<int32_t>>(runtime, args[0]);
@@ -1250,7 +1250,7 @@ namespace rnwinrt::classes::TestComponent::Test
             }
         },
         { "returnSameNumericVector",
-            []([[maybe_unused]] jsi::Runtime& runtime, const jsi::Value&, [[maybe_unused]] const jsi::Value* args, size_t count) {
+            []([[maybe_unused]] napi_wrappers::Runtime& runtime, const napi_wrappers::Value&, [[maybe_unused]] const napi_wrappers::Value* args, size_t count) {
                 if (count == 1)
                 {
                     auto arg0 = convert_value_to_native<winrt::Windows::Foundation::Collections::IVector<int32_t>>(runtime, args[0]);
@@ -1261,7 +1261,7 @@ namespace rnwinrt::classes::TestComponent::Test
             }
         },
         { "returnSameNumericVectorView",
-            []([[maybe_unused]] jsi::Runtime& runtime, const jsi::Value&, [[maybe_unused]] const jsi::Value* args, size_t count) {
+            []([[maybe_unused]] napi_wrappers::Runtime& runtime, const napi_wrappers::Value&, [[maybe_unused]] const napi_wrappers::Value* args, size_t count) {
                 if (count == 1)
                 {
                     auto arg0 = convert_value_to_native<winrt::Windows::Foundation::Collections::IVectorView<int32_t>>(runtime, args[0]);
@@ -1272,7 +1272,7 @@ namespace rnwinrt::classes::TestComponent::Test
             }
         },
         { "returnSameObjectIterable",
-            []([[maybe_unused]] jsi::Runtime& runtime, const jsi::Value&, [[maybe_unused]] const jsi::Value* args, size_t count) {
+            []([[maybe_unused]] napi_wrappers::Runtime& runtime, const napi_wrappers::Value&, [[maybe_unused]] const napi_wrappers::Value* args, size_t count) {
                 if (count == 1)
                 {
                     auto arg0 = convert_value_to_native<winrt::Windows::Foundation::Collections::IIterable<winrt::TestComponent::TestObject>>(runtime, args[0]);
@@ -1283,7 +1283,7 @@ namespace rnwinrt::classes::TestComponent::Test
             }
         },
         { "returnSameObjectVector",
-            []([[maybe_unused]] jsi::Runtime& runtime, const jsi::Value&, [[maybe_unused]] const jsi::Value* args, size_t count) {
+            []([[maybe_unused]] napi_wrappers::Runtime& runtime, const napi_wrappers::Value&, [[maybe_unused]] const napi_wrappers::Value* args, size_t count) {
                 if (count == 1)
                 {
                     auto arg0 = convert_value_to_native<winrt::Windows::Foundation::Collections::IVector<winrt::TestComponent::TestObject>>(runtime, args[0]);
@@ -1294,7 +1294,7 @@ namespace rnwinrt::classes::TestComponent::Test
             }
         },
         { "returnSameObjectVectorView",
-            []([[maybe_unused]] jsi::Runtime& runtime, const jsi::Value&, [[maybe_unused]] const jsi::Value* args, size_t count) {
+            []([[maybe_unused]] napi_wrappers::Runtime& runtime, const napi_wrappers::Value&, [[maybe_unused]] const napi_wrappers::Value* args, size_t count) {
                 if (count == 1)
                 {
                     auto arg0 = convert_value_to_native<winrt::Windows::Foundation::Collections::IVectorView<winrt::TestComponent::TestObject>>(runtime, args[0]);
@@ -1305,7 +1305,7 @@ namespace rnwinrt::classes::TestComponent::Test
             }
         },
         { "returnSameRefIterable",
-            []([[maybe_unused]] jsi::Runtime& runtime, const jsi::Value&, [[maybe_unused]] const jsi::Value* args, size_t count) {
+            []([[maybe_unused]] napi_wrappers::Runtime& runtime, const napi_wrappers::Value&, [[maybe_unused]] const napi_wrappers::Value* args, size_t count) {
                 if (count == 1)
                 {
                     auto arg0 = convert_value_to_native<winrt::Windows::Foundation::Collections::IIterable<winrt::Windows::Foundation::IReference<int32_t>>>(runtime, args[0]);
@@ -1316,7 +1316,7 @@ namespace rnwinrt::classes::TestComponent::Test
             }
         },
         { "returnSameRefVector",
-            []([[maybe_unused]] jsi::Runtime& runtime, const jsi::Value&, [[maybe_unused]] const jsi::Value* args, size_t count) {
+            []([[maybe_unused]] napi_wrappers::Runtime& runtime, const napi_wrappers::Value&, [[maybe_unused]] const napi_wrappers::Value* args, size_t count) {
                 if (count == 1)
                 {
                     auto arg0 = convert_value_to_native<winrt::Windows::Foundation::Collections::IVector<winrt::Windows::Foundation::IReference<int32_t>>>(runtime, args[0]);
@@ -1327,7 +1327,7 @@ namespace rnwinrt::classes::TestComponent::Test
             }
         },
         { "returnSameRefVectorView",
-            []([[maybe_unused]] jsi::Runtime& runtime, const jsi::Value&, [[maybe_unused]] const jsi::Value* args, size_t count) {
+            []([[maybe_unused]] napi_wrappers::Runtime& runtime, const napi_wrappers::Value&, [[maybe_unused]] const napi_wrappers::Value* args, size_t count) {
                 if (count == 1)
                 {
                     auto arg0 = convert_value_to_native<winrt::Windows::Foundation::Collections::IVectorView<winrt::Windows::Foundation::IReference<int32_t>>>(runtime, args[0]);
@@ -1338,7 +1338,7 @@ namespace rnwinrt::classes::TestComponent::Test
             }
         },
         { "returnSameStringIterable",
-            []([[maybe_unused]] jsi::Runtime& runtime, const jsi::Value&, [[maybe_unused]] const jsi::Value* args, size_t count) {
+            []([[maybe_unused]] napi_wrappers::Runtime& runtime, const napi_wrappers::Value&, [[maybe_unused]] const napi_wrappers::Value* args, size_t count) {
                 if (count == 1)
                 {
                     auto arg0 = convert_value_to_native<winrt::Windows::Foundation::Collections::IIterable<winrt::hstring>>(runtime, args[0]);
@@ -1349,7 +1349,7 @@ namespace rnwinrt::classes::TestComponent::Test
             }
         },
         { "returnSameStringVector",
-            []([[maybe_unused]] jsi::Runtime& runtime, const jsi::Value&, [[maybe_unused]] const jsi::Value* args, size_t count) {
+            []([[maybe_unused]] napi_wrappers::Runtime& runtime, const napi_wrappers::Value&, [[maybe_unused]] const napi_wrappers::Value* args, size_t count) {
                 if (count == 1)
                 {
                     auto arg0 = convert_value_to_native<winrt::Windows::Foundation::Collections::IVector<winrt::hstring>>(runtime, args[0]);
@@ -1360,7 +1360,7 @@ namespace rnwinrt::classes::TestComponent::Test
             }
         },
         { "returnSameStringVectorView",
-            []([[maybe_unused]] jsi::Runtime& runtime, const jsi::Value&, [[maybe_unused]] const jsi::Value* args, size_t count) {
+            []([[maybe_unused]] napi_wrappers::Runtime& runtime, const napi_wrappers::Value&, [[maybe_unused]] const napi_wrappers::Value* args, size_t count) {
                 if (count == 1)
                 {
                     auto arg0 = convert_value_to_native<winrt::Windows::Foundation::Collections::IVectorView<winrt::hstring>>(runtime, args[0]);
@@ -1371,7 +1371,7 @@ namespace rnwinrt::classes::TestComponent::Test
             }
         },
         { "staticAdd",
-            []([[maybe_unused]] jsi::Runtime& runtime, const jsi::Value&, [[maybe_unused]] const jsi::Value* args, size_t count) {
+            []([[maybe_unused]] napi_wrappers::Runtime& runtime, const napi_wrappers::Value&, [[maybe_unused]] const napi_wrappers::Value* args, size_t count) {
                 if (count == 2)
                 {
                     auto arg0 = convert_value_to_native<int32_t>(runtime, args[0]);
@@ -1383,7 +1383,7 @@ namespace rnwinrt::classes::TestComponent::Test
             }
         },
         { "staticAddAll",
-            []([[maybe_unused]] jsi::Runtime& runtime, const jsi::Value&, [[maybe_unused]] const jsi::Value* args, size_t count) {
+            []([[maybe_unused]] napi_wrappers::Runtime& runtime, const napi_wrappers::Value&, [[maybe_unused]] const napi_wrappers::Value* args, size_t count) {
                 if (count == 1)
                 {
                     auto arg0 = convert_value_to_native<winrt::array_view<const int32_t>>(runtime, args[0]);
@@ -1394,7 +1394,7 @@ namespace rnwinrt::classes::TestComponent::Test
             }
         },
         { "staticAppend",
-            []([[maybe_unused]] jsi::Runtime& runtime, const jsi::Value&, [[maybe_unused]] const jsi::Value* args, size_t count) {
+            []([[maybe_unused]] napi_wrappers::Runtime& runtime, const napi_wrappers::Value&, [[maybe_unused]] const napi_wrappers::Value* args, size_t count) {
                 if (count == 3)
                 {
                     auto arg0 = convert_value_to_native<winrt::hstring>(runtime, args[0]);
@@ -1407,7 +1407,7 @@ namespace rnwinrt::classes::TestComponent::Test
             }
         },
         { "staticAppendAll",
-            []([[maybe_unused]] jsi::Runtime& runtime, const jsi::Value&, [[maybe_unused]] const jsi::Value* args, size_t count) {
+            []([[maybe_unused]] napi_wrappers::Runtime& runtime, const napi_wrappers::Value&, [[maybe_unused]] const napi_wrappers::Value* args, size_t count) {
                 if (count == 1)
                 {
                     auto arg0 = convert_value_to_native<winrt::array_view<const winrt::hstring>>(runtime, args[0]);
@@ -1418,7 +1418,7 @@ namespace rnwinrt::classes::TestComponent::Test
             }
         },
         { "staticArityOverload",
-            []([[maybe_unused]] jsi::Runtime& runtime, const jsi::Value&, [[maybe_unused]] const jsi::Value* args, size_t count) {
+            []([[maybe_unused]] napi_wrappers::Runtime& runtime, const napi_wrappers::Value&, [[maybe_unused]] const napi_wrappers::Value* args, size_t count) {
                 if (count == 0)
                 {
                     auto result = winrt::TestComponent::Test::StaticArityOverload();
@@ -1441,7 +1441,7 @@ namespace rnwinrt::classes::TestComponent::Test
             }
         },
         { "staticBoolArrayOutParam",
-            []([[maybe_unused]] jsi::Runtime& runtime, const jsi::Value&, [[maybe_unused]] const jsi::Value* args, size_t count) {
+            []([[maybe_unused]] napi_wrappers::Runtime& runtime, const napi_wrappers::Value&, [[maybe_unused]] const napi_wrappers::Value* args, size_t count) {
                 if (count == 1)
                 {
                     auto arg0 = convert_value_to_native<winrt::array_view<const bool>>(runtime, args[0]);
@@ -1454,18 +1454,18 @@ namespace rnwinrt::classes::TestComponent::Test
             }
         },
         { "staticBoolFillParam",
-            []([[maybe_unused]] jsi::Runtime& runtime, const jsi::Value&, [[maybe_unused]] const jsi::Value* args, size_t count) {
+            []([[maybe_unused]] napi_wrappers::Runtime& runtime, const napi_wrappers::Value&, [[maybe_unused]] const napi_wrappers::Value* args, size_t count) {
                 if (count == 1)
                 {
                     auto arg0 = convert_value_to_native<winrt::array_view<bool>>(runtime, args[0]);
                     winrt::TestComponent::Test::StaticBoolFillParam(arg0);
-                    return jsi::Value::undefined();
+                    return napi_wrappers::Value::undefined();
                 }
                 throw_no_function_overload(runtime, "TestComponent"sv, "Test"sv, "staticBoolFillParam"sv, count);
             }
         },
         { "staticBoolOutParam",
-            []([[maybe_unused]] jsi::Runtime& runtime, const jsi::Value&, [[maybe_unused]] const jsi::Value* args, size_t count) {
+            []([[maybe_unused]] napi_wrappers::Runtime& runtime, const napi_wrappers::Value&, [[maybe_unused]] const napi_wrappers::Value* args, size_t count) {
                 if (count == 2)
                 {
                     auto arg0 = convert_value_to_native<bool>(runtime, args[0]);
@@ -1479,7 +1479,7 @@ namespace rnwinrt::classes::TestComponent::Test
             }
         },
         { "staticCharArrayOutParam",
-            []([[maybe_unused]] jsi::Runtime& runtime, const jsi::Value&, [[maybe_unused]] const jsi::Value* args, size_t count) {
+            []([[maybe_unused]] napi_wrappers::Runtime& runtime, const napi_wrappers::Value&, [[maybe_unused]] const napi_wrappers::Value* args, size_t count) {
                 if (count == 1)
                 {
                     auto arg0 = convert_value_to_native<winrt::array_view<const char16_t>>(runtime, args[0]);
@@ -1492,18 +1492,18 @@ namespace rnwinrt::classes::TestComponent::Test
             }
         },
         { "staticCharFillParam",
-            []([[maybe_unused]] jsi::Runtime& runtime, const jsi::Value&, [[maybe_unused]] const jsi::Value* args, size_t count) {
+            []([[maybe_unused]] napi_wrappers::Runtime& runtime, const napi_wrappers::Value&, [[maybe_unused]] const napi_wrappers::Value* args, size_t count) {
                 if (count == 1)
                 {
                     auto arg0 = convert_value_to_native<winrt::array_view<char16_t>>(runtime, args[0]);
                     winrt::TestComponent::Test::StaticCharFillParam(arg0);
-                    return jsi::Value::undefined();
+                    return napi_wrappers::Value::undefined();
                 }
                 throw_no_function_overload(runtime, "TestComponent"sv, "Test"sv, "staticCharFillParam"sv, count);
             }
         },
         { "staticCharOutParam",
-            []([[maybe_unused]] jsi::Runtime& runtime, const jsi::Value&, [[maybe_unused]] const jsi::Value* args, size_t count) {
+            []([[maybe_unused]] napi_wrappers::Runtime& runtime, const napi_wrappers::Value&, [[maybe_unused]] const napi_wrappers::Value* args, size_t count) {
                 if (count == 1)
                 {
                     auto arg0 = convert_value_to_native<char16_t>(runtime, args[0]);
@@ -1516,7 +1516,7 @@ namespace rnwinrt::classes::TestComponent::Test
             }
         },
         { "staticCompositeStructArrayOutParam",
-            []([[maybe_unused]] jsi::Runtime& runtime, const jsi::Value&, [[maybe_unused]] const jsi::Value* args, size_t count) {
+            []([[maybe_unused]] napi_wrappers::Runtime& runtime, const napi_wrappers::Value&, [[maybe_unused]] const napi_wrappers::Value* args, size_t count) {
                 if (count == 1)
                 {
                     auto arg0 = convert_value_to_native<winrt::array_view<const winrt::TestComponent::CompositeType>>(runtime, args[0]);
@@ -1529,18 +1529,18 @@ namespace rnwinrt::classes::TestComponent::Test
             }
         },
         { "staticCompositeStructFillParam",
-            []([[maybe_unused]] jsi::Runtime& runtime, const jsi::Value&, [[maybe_unused]] const jsi::Value* args, size_t count) {
+            []([[maybe_unused]] napi_wrappers::Runtime& runtime, const napi_wrappers::Value&, [[maybe_unused]] const napi_wrappers::Value* args, size_t count) {
                 if (count == 1)
                 {
                     auto arg0 = convert_value_to_native<winrt::array_view<winrt::TestComponent::CompositeType>>(runtime, args[0]);
                     winrt::TestComponent::Test::StaticCompositeStructFillParam(arg0);
-                    return jsi::Value::undefined();
+                    return napi_wrappers::Value::undefined();
                 }
                 throw_no_function_overload(runtime, "TestComponent"sv, "Test"sv, "staticCompositeStructFillParam"sv, count);
             }
         },
         { "staticCompositeStructOutParam",
-            []([[maybe_unused]] jsi::Runtime& runtime, const jsi::Value&, [[maybe_unused]] const jsi::Value* args, size_t count) {
+            []([[maybe_unused]] napi_wrappers::Runtime& runtime, const napi_wrappers::Value&, [[maybe_unused]] const napi_wrappers::Value* args, size_t count) {
                 if (count == 1)
                 {
                     auto arg0 = convert_value_to_native<winrt::TestComponent::CompositeType>(runtime, args[0]);
@@ -1553,7 +1553,7 @@ namespace rnwinrt::classes::TestComponent::Test
             }
         },
         { "staticContractArityOverload",
-            []([[maybe_unused]] jsi::Runtime& runtime, const jsi::Value&, [[maybe_unused]] const jsi::Value* args, size_t count) {
+            []([[maybe_unused]] napi_wrappers::Runtime& runtime, const napi_wrappers::Value&, [[maybe_unused]] const napi_wrappers::Value* args, size_t count) {
                 if (count == 1)
                 {
                     auto arg0 = convert_value_to_native<winrt::hstring>(runtime, args[0]);
@@ -1569,7 +1569,7 @@ namespace rnwinrt::classes::TestComponent::Test
             }
         },
         { "staticContractDefaultOverloadV1",
-            []([[maybe_unused]] jsi::Runtime& runtime, const jsi::Value&, [[maybe_unused]] const jsi::Value* args, size_t count) {
+            []([[maybe_unused]] napi_wrappers::Runtime& runtime, const napi_wrappers::Value&, [[maybe_unused]] const napi_wrappers::Value* args, size_t count) {
                 if (count == 2)
                 {
                     auto arg0 = convert_value_to_native<winrt::hstring>(runtime, args[0]);
@@ -1581,7 +1581,7 @@ namespace rnwinrt::classes::TestComponent::Test
             }
         },
         { "staticContractDefaultOverloadV2",
-            []([[maybe_unused]] jsi::Runtime& runtime, const jsi::Value&, [[maybe_unused]] const jsi::Value* args, size_t count) {
+            []([[maybe_unused]] napi_wrappers::Runtime& runtime, const napi_wrappers::Value&, [[maybe_unused]] const napi_wrappers::Value* args, size_t count) {
                 if (count == 2)
                 {
                     auto arg0 = convert_value_to_native<winrt::hstring>(runtime, args[0]);
@@ -1593,7 +1593,7 @@ namespace rnwinrt::classes::TestComponent::Test
             }
         },
         { "staticContractOutParamOverloadV1",
-            []([[maybe_unused]] jsi::Runtime& runtime, const jsi::Value&, [[maybe_unused]] const jsi::Value* args, size_t count) {
+            []([[maybe_unused]] napi_wrappers::Runtime& runtime, const napi_wrappers::Value&, [[maybe_unused]] const napi_wrappers::Value* args, size_t count) {
                 if (count == 1)
                 {
                     auto arg0 = convert_value_to_native<winrt::hstring>(runtime, args[0]);
@@ -1612,7 +1612,7 @@ namespace rnwinrt::classes::TestComponent::Test
             }
         },
         { "staticContractOutParamOverloadV2",
-            []([[maybe_unused]] jsi::Runtime& runtime, const jsi::Value&, [[maybe_unused]] const jsi::Value* args, size_t count) {
+            []([[maybe_unused]] napi_wrappers::Runtime& runtime, const napi_wrappers::Value&, [[maybe_unused]] const napi_wrappers::Value* args, size_t count) {
                 if (count == 1)
                 {
                     auto arg0 = convert_value_to_native<winrt::hstring>(runtime, args[0]);
@@ -1631,7 +1631,7 @@ namespace rnwinrt::classes::TestComponent::Test
             }
         },
         { "staticDefaultOverload",
-            []([[maybe_unused]] jsi::Runtime& runtime, const jsi::Value&, [[maybe_unused]] const jsi::Value* args, size_t count) {
+            []([[maybe_unused]] napi_wrappers::Runtime& runtime, const napi_wrappers::Value&, [[maybe_unused]] const napi_wrappers::Value* args, size_t count) {
                 if (count == 2)
                 {
                     auto arg0 = convert_value_to_native<winrt::hstring>(runtime, args[0]);
@@ -1643,7 +1643,7 @@ namespace rnwinrt::classes::TestComponent::Test
             }
         },
         { "staticEnumArrayOutParam",
-            []([[maybe_unused]] jsi::Runtime& runtime, const jsi::Value&, [[maybe_unused]] const jsi::Value* args, size_t count) {
+            []([[maybe_unused]] napi_wrappers::Runtime& runtime, const napi_wrappers::Value&, [[maybe_unused]] const napi_wrappers::Value* args, size_t count) {
                 if (count == 1)
                 {
                     auto arg0 = convert_value_to_native<winrt::array_view<const winrt::TestComponent::TestEnum>>(runtime, args[0]);
@@ -1656,18 +1656,18 @@ namespace rnwinrt::classes::TestComponent::Test
             }
         },
         { "staticEnumFillParam",
-            []([[maybe_unused]] jsi::Runtime& runtime, const jsi::Value&, [[maybe_unused]] const jsi::Value* args, size_t count) {
+            []([[maybe_unused]] napi_wrappers::Runtime& runtime, const napi_wrappers::Value&, [[maybe_unused]] const napi_wrappers::Value* args, size_t count) {
                 if (count == 1)
                 {
                     auto arg0 = convert_value_to_native<winrt::array_view<winrt::TestComponent::TestEnum>>(runtime, args[0]);
                     winrt::TestComponent::Test::StaticEnumFillParam(arg0);
-                    return jsi::Value::undefined();
+                    return napi_wrappers::Value::undefined();
                 }
                 throw_no_function_overload(runtime, "TestComponent"sv, "Test"sv, "staticEnumFillParam"sv, count);
             }
         },
         { "staticEnumOutParam",
-            []([[maybe_unused]] jsi::Runtime& runtime, const jsi::Value&, [[maybe_unused]] const jsi::Value* args, size_t count) {
+            []([[maybe_unused]] napi_wrappers::Runtime& runtime, const napi_wrappers::Value&, [[maybe_unused]] const napi_wrappers::Value* args, size_t count) {
                 if (count == 1)
                 {
                     auto arg0 = convert_value_to_native<winrt::TestComponent::TestEnum>(runtime, args[0]);
@@ -1680,7 +1680,7 @@ namespace rnwinrt::classes::TestComponent::Test
             }
         },
         { "staticGuidArrayOutParam",
-            []([[maybe_unused]] jsi::Runtime& runtime, const jsi::Value&, [[maybe_unused]] const jsi::Value* args, size_t count) {
+            []([[maybe_unused]] napi_wrappers::Runtime& runtime, const napi_wrappers::Value&, [[maybe_unused]] const napi_wrappers::Value* args, size_t count) {
                 if (count == 1)
                 {
                     auto arg0 = convert_value_to_native<winrt::array_view<const winrt::guid>>(runtime, args[0]);
@@ -1693,18 +1693,18 @@ namespace rnwinrt::classes::TestComponent::Test
             }
         },
         { "staticGuidFillParam",
-            []([[maybe_unused]] jsi::Runtime& runtime, const jsi::Value&, [[maybe_unused]] const jsi::Value* args, size_t count) {
+            []([[maybe_unused]] napi_wrappers::Runtime& runtime, const napi_wrappers::Value&, [[maybe_unused]] const napi_wrappers::Value* args, size_t count) {
                 if (count == 1)
                 {
                     auto arg0 = convert_value_to_native<winrt::array_view<winrt::guid>>(runtime, args[0]);
                     winrt::TestComponent::Test::StaticGuidFillParam(arg0);
-                    return jsi::Value::undefined();
+                    return napi_wrappers::Value::undefined();
                 }
                 throw_no_function_overload(runtime, "TestComponent"sv, "Test"sv, "staticGuidFillParam"sv, count);
             }
         },
         { "staticGuidOutParam",
-            []([[maybe_unused]] jsi::Runtime& runtime, const jsi::Value&, [[maybe_unused]] const jsi::Value* args, size_t count) {
+            []([[maybe_unused]] napi_wrappers::Runtime& runtime, const napi_wrappers::Value&, [[maybe_unused]] const napi_wrappers::Value* args, size_t count) {
                 if (count == 1)
                 {
                     auto arg0 = convert_value_to_native<winrt::guid>(runtime, args[0]);
@@ -1717,7 +1717,7 @@ namespace rnwinrt::classes::TestComponent::Test
             }
         },
         { "staticInterwovenParams",
-            []([[maybe_unused]] jsi::Runtime& runtime, const jsi::Value&, [[maybe_unused]] const jsi::Value* args, size_t count) {
+            []([[maybe_unused]] napi_wrappers::Runtime& runtime, const napi_wrappers::Value&, [[maybe_unused]] const napi_wrappers::Value* args, size_t count) {
                 if (count == 4)
                 {
                     auto arg0 = convert_value_to_native<bool>(runtime, args[0]);
@@ -1734,7 +1734,7 @@ namespace rnwinrt::classes::TestComponent::Test
             }
         },
         { "staticInvokeBoolArrayDelegate",
-            []([[maybe_unused]] jsi::Runtime& runtime, const jsi::Value&, [[maybe_unused]] const jsi::Value* args, size_t count) {
+            []([[maybe_unused]] napi_wrappers::Runtime& runtime, const napi_wrappers::Value&, [[maybe_unused]] const napi_wrappers::Value* args, size_t count) {
                 if (count == 2)
                 {
                     auto arg0 = convert_value_to_native<winrt::array_view<const bool>>(runtime, args[0]);
@@ -1746,7 +1746,7 @@ namespace rnwinrt::classes::TestComponent::Test
             }
         },
         { "staticInvokeBoolDelegate",
-            []([[maybe_unused]] jsi::Runtime& runtime, const jsi::Value&, [[maybe_unused]] const jsi::Value* args, size_t count) {
+            []([[maybe_unused]] napi_wrappers::Runtime& runtime, const napi_wrappers::Value&, [[maybe_unused]] const napi_wrappers::Value* args, size_t count) {
                 if (count == 2)
                 {
                     auto arg0 = convert_value_to_native<bool>(runtime, args[0]);
@@ -1758,7 +1758,7 @@ namespace rnwinrt::classes::TestComponent::Test
             }
         },
         { "staticInvokeBoolDelegateWithOutParam",
-            []([[maybe_unused]] jsi::Runtime& runtime, const jsi::Value&, [[maybe_unused]] const jsi::Value* args, size_t count) {
+            []([[maybe_unused]] napi_wrappers::Runtime& runtime, const napi_wrappers::Value&, [[maybe_unused]] const napi_wrappers::Value* args, size_t count) {
                 if (count == 2)
                 {
                     auto arg0 = convert_value_to_native<bool>(runtime, args[0]);
@@ -1770,7 +1770,7 @@ namespace rnwinrt::classes::TestComponent::Test
             }
         },
         { "staticInvokeCharArrayDelegate",
-            []([[maybe_unused]] jsi::Runtime& runtime, const jsi::Value&, [[maybe_unused]] const jsi::Value* args, size_t count) {
+            []([[maybe_unused]] napi_wrappers::Runtime& runtime, const napi_wrappers::Value&, [[maybe_unused]] const napi_wrappers::Value* args, size_t count) {
                 if (count == 2)
                 {
                     auto arg0 = convert_value_to_native<winrt::array_view<const char16_t>>(runtime, args[0]);
@@ -1782,7 +1782,7 @@ namespace rnwinrt::classes::TestComponent::Test
             }
         },
         { "staticInvokeCharDelegate",
-            []([[maybe_unused]] jsi::Runtime& runtime, const jsi::Value&, [[maybe_unused]] const jsi::Value* args, size_t count) {
+            []([[maybe_unused]] napi_wrappers::Runtime& runtime, const napi_wrappers::Value&, [[maybe_unused]] const napi_wrappers::Value* args, size_t count) {
                 if (count == 2)
                 {
                     auto arg0 = convert_value_to_native<char16_t>(runtime, args[0]);
@@ -1794,7 +1794,7 @@ namespace rnwinrt::classes::TestComponent::Test
             }
         },
         { "staticInvokeCharDelegateWithOutParam",
-            []([[maybe_unused]] jsi::Runtime& runtime, const jsi::Value&, [[maybe_unused]] const jsi::Value* args, size_t count) {
+            []([[maybe_unused]] napi_wrappers::Runtime& runtime, const napi_wrappers::Value&, [[maybe_unused]] const napi_wrappers::Value* args, size_t count) {
                 if (count == 2)
                 {
                     auto arg0 = convert_value_to_native<char16_t>(runtime, args[0]);
@@ -1806,7 +1806,7 @@ namespace rnwinrt::classes::TestComponent::Test
             }
         },
         { "staticInvokeCompositeStructArrayDelegate",
-            []([[maybe_unused]] jsi::Runtime& runtime, const jsi::Value&, [[maybe_unused]] const jsi::Value* args, size_t count) {
+            []([[maybe_unused]] napi_wrappers::Runtime& runtime, const napi_wrappers::Value&, [[maybe_unused]] const napi_wrappers::Value* args, size_t count) {
                 if (count == 2)
                 {
                     auto arg0 = convert_value_to_native<winrt::array_view<const winrt::TestComponent::CompositeType>>(runtime, args[0]);
@@ -1818,7 +1818,7 @@ namespace rnwinrt::classes::TestComponent::Test
             }
         },
         { "staticInvokeCompositeStructDelegate",
-            []([[maybe_unused]] jsi::Runtime& runtime, const jsi::Value&, [[maybe_unused]] const jsi::Value* args, size_t count) {
+            []([[maybe_unused]] napi_wrappers::Runtime& runtime, const napi_wrappers::Value&, [[maybe_unused]] const napi_wrappers::Value* args, size_t count) {
                 if (count == 2)
                 {
                     auto arg0 = convert_value_to_native<winrt::TestComponent::CompositeType>(runtime, args[0]);
@@ -1830,7 +1830,7 @@ namespace rnwinrt::classes::TestComponent::Test
             }
         },
         { "staticInvokeCompositeStructDelegateWithOutParam",
-            []([[maybe_unused]] jsi::Runtime& runtime, const jsi::Value&, [[maybe_unused]] const jsi::Value* args, size_t count) {
+            []([[maybe_unused]] napi_wrappers::Runtime& runtime, const napi_wrappers::Value&, [[maybe_unused]] const napi_wrappers::Value* args, size_t count) {
                 if (count == 2)
                 {
                     auto arg0 = convert_value_to_native<winrt::TestComponent::CompositeType>(runtime, args[0]);
@@ -1842,7 +1842,7 @@ namespace rnwinrt::classes::TestComponent::Test
             }
         },
         { "staticInvokeEnumArrayDelegate",
-            []([[maybe_unused]] jsi::Runtime& runtime, const jsi::Value&, [[maybe_unused]] const jsi::Value* args, size_t count) {
+            []([[maybe_unused]] napi_wrappers::Runtime& runtime, const napi_wrappers::Value&, [[maybe_unused]] const napi_wrappers::Value* args, size_t count) {
                 if (count == 2)
                 {
                     auto arg0 = convert_value_to_native<winrt::array_view<const winrt::TestComponent::TestEnum>>(runtime, args[0]);
@@ -1854,7 +1854,7 @@ namespace rnwinrt::classes::TestComponent::Test
             }
         },
         { "staticInvokeEnumDelegate",
-            []([[maybe_unused]] jsi::Runtime& runtime, const jsi::Value&, [[maybe_unused]] const jsi::Value* args, size_t count) {
+            []([[maybe_unused]] napi_wrappers::Runtime& runtime, const napi_wrappers::Value&, [[maybe_unused]] const napi_wrappers::Value* args, size_t count) {
                 if (count == 2)
                 {
                     auto arg0 = convert_value_to_native<winrt::TestComponent::TestEnum>(runtime, args[0]);
@@ -1866,7 +1866,7 @@ namespace rnwinrt::classes::TestComponent::Test
             }
         },
         { "staticInvokeEnumDelegateWithOutParam",
-            []([[maybe_unused]] jsi::Runtime& runtime, const jsi::Value&, [[maybe_unused]] const jsi::Value* args, size_t count) {
+            []([[maybe_unused]] napi_wrappers::Runtime& runtime, const napi_wrappers::Value&, [[maybe_unused]] const napi_wrappers::Value* args, size_t count) {
                 if (count == 2)
                 {
                     auto arg0 = convert_value_to_native<winrt::TestComponent::TestEnum>(runtime, args[0]);
@@ -1878,7 +1878,7 @@ namespace rnwinrt::classes::TestComponent::Test
             }
         },
         { "staticInvokeGuidArrayDelegate",
-            []([[maybe_unused]] jsi::Runtime& runtime, const jsi::Value&, [[maybe_unused]] const jsi::Value* args, size_t count) {
+            []([[maybe_unused]] napi_wrappers::Runtime& runtime, const napi_wrappers::Value&, [[maybe_unused]] const napi_wrappers::Value* args, size_t count) {
                 if (count == 2)
                 {
                     auto arg0 = convert_value_to_native<winrt::array_view<const winrt::guid>>(runtime, args[0]);
@@ -1890,7 +1890,7 @@ namespace rnwinrt::classes::TestComponent::Test
             }
         },
         { "staticInvokeGuidDelegate",
-            []([[maybe_unused]] jsi::Runtime& runtime, const jsi::Value&, [[maybe_unused]] const jsi::Value* args, size_t count) {
+            []([[maybe_unused]] napi_wrappers::Runtime& runtime, const napi_wrappers::Value&, [[maybe_unused]] const napi_wrappers::Value* args, size_t count) {
                 if (count == 2)
                 {
                     auto arg0 = convert_value_to_native<winrt::guid>(runtime, args[0]);
@@ -1902,7 +1902,7 @@ namespace rnwinrt::classes::TestComponent::Test
             }
         },
         { "staticInvokeGuidDelegateWithOutParam",
-            []([[maybe_unused]] jsi::Runtime& runtime, const jsi::Value&, [[maybe_unused]] const jsi::Value* args, size_t count) {
+            []([[maybe_unused]] napi_wrappers::Runtime& runtime, const napi_wrappers::Value&, [[maybe_unused]] const napi_wrappers::Value* args, size_t count) {
                 if (count == 2)
                 {
                     auto arg0 = convert_value_to_native<winrt::guid>(runtime, args[0]);
@@ -1914,7 +1914,7 @@ namespace rnwinrt::classes::TestComponent::Test
             }
         },
         { "staticInvokeInterwovenDelegate",
-            []([[maybe_unused]] jsi::Runtime& runtime, const jsi::Value&, [[maybe_unused]] const jsi::Value* args, size_t count) {
+            []([[maybe_unused]] napi_wrappers::Runtime& runtime, const napi_wrappers::Value&, [[maybe_unused]] const napi_wrappers::Value* args, size_t count) {
                 if (count == 4)
                 {
                     auto arg0 = convert_value_to_native<bool>(runtime, args[0]);
@@ -1928,7 +1928,7 @@ namespace rnwinrt::classes::TestComponent::Test
             }
         },
         { "staticInvokeNumericArrayDelegate",
-            []([[maybe_unused]] jsi::Runtime& runtime, const jsi::Value&, [[maybe_unused]] const jsi::Value* args, size_t count) {
+            []([[maybe_unused]] napi_wrappers::Runtime& runtime, const napi_wrappers::Value&, [[maybe_unused]] const napi_wrappers::Value* args, size_t count) {
                 if (count == 2)
                 {
                     auto arg0 = convert_value_to_native<winrt::array_view<const int32_t>>(runtime, args[0]);
@@ -1940,7 +1940,7 @@ namespace rnwinrt::classes::TestComponent::Test
             }
         },
         { "staticInvokeNumericDelegate",
-            []([[maybe_unused]] jsi::Runtime& runtime, const jsi::Value&, [[maybe_unused]] const jsi::Value* args, size_t count) {
+            []([[maybe_unused]] napi_wrappers::Runtime& runtime, const napi_wrappers::Value&, [[maybe_unused]] const napi_wrappers::Value* args, size_t count) {
                 if (count == 2)
                 {
                     auto arg0 = convert_value_to_native<int32_t>(runtime, args[0]);
@@ -1952,7 +1952,7 @@ namespace rnwinrt::classes::TestComponent::Test
             }
         },
         { "staticInvokeNumericDelegateWithOutParam",
-            []([[maybe_unused]] jsi::Runtime& runtime, const jsi::Value&, [[maybe_unused]] const jsi::Value* args, size_t count) {
+            []([[maybe_unused]] napi_wrappers::Runtime& runtime, const napi_wrappers::Value&, [[maybe_unused]] const napi_wrappers::Value* args, size_t count) {
                 if (count == 2)
                 {
                     auto arg0 = convert_value_to_native<int32_t>(runtime, args[0]);
@@ -1964,7 +1964,7 @@ namespace rnwinrt::classes::TestComponent::Test
             }
         },
         { "staticInvokeObjectArrayDelegate",
-            []([[maybe_unused]] jsi::Runtime& runtime, const jsi::Value&, [[maybe_unused]] const jsi::Value* args, size_t count) {
+            []([[maybe_unused]] napi_wrappers::Runtime& runtime, const napi_wrappers::Value&, [[maybe_unused]] const napi_wrappers::Value* args, size_t count) {
                 if (count == 2)
                 {
                     auto arg0 = convert_value_to_native<winrt::array_view<const winrt::TestComponent::TestObject>>(runtime, args[0]);
@@ -1976,7 +1976,7 @@ namespace rnwinrt::classes::TestComponent::Test
             }
         },
         { "staticInvokeObjectDelegate",
-            []([[maybe_unused]] jsi::Runtime& runtime, const jsi::Value&, [[maybe_unused]] const jsi::Value* args, size_t count) {
+            []([[maybe_unused]] napi_wrappers::Runtime& runtime, const napi_wrappers::Value&, [[maybe_unused]] const napi_wrappers::Value* args, size_t count) {
                 if (count == 2)
                 {
                     auto arg0 = convert_value_to_native<winrt::TestComponent::TestObject>(runtime, args[0]);
@@ -1988,7 +1988,7 @@ namespace rnwinrt::classes::TestComponent::Test
             }
         },
         { "staticInvokeObjectDelegateWithOutParam",
-            []([[maybe_unused]] jsi::Runtime& runtime, const jsi::Value&, [[maybe_unused]] const jsi::Value* args, size_t count) {
+            []([[maybe_unused]] napi_wrappers::Runtime& runtime, const napi_wrappers::Value&, [[maybe_unused]] const napi_wrappers::Value* args, size_t count) {
                 if (count == 2)
                 {
                     auto arg0 = convert_value_to_native<winrt::TestComponent::TestObject>(runtime, args[0]);
@@ -2000,7 +2000,7 @@ namespace rnwinrt::classes::TestComponent::Test
             }
         },
         { "staticInvokeRefArrayDelegate",
-            []([[maybe_unused]] jsi::Runtime& runtime, const jsi::Value&, [[maybe_unused]] const jsi::Value* args, size_t count) {
+            []([[maybe_unused]] napi_wrappers::Runtime& runtime, const napi_wrappers::Value&, [[maybe_unused]] const napi_wrappers::Value* args, size_t count) {
                 if (count == 2)
                 {
                     auto arg0 = convert_value_to_native<winrt::array_view<const winrt::Windows::Foundation::IReference<int32_t>>>(runtime, args[0]);
@@ -2012,7 +2012,7 @@ namespace rnwinrt::classes::TestComponent::Test
             }
         },
         { "staticInvokeRefDelegate",
-            []([[maybe_unused]] jsi::Runtime& runtime, const jsi::Value&, [[maybe_unused]] const jsi::Value* args, size_t count) {
+            []([[maybe_unused]] napi_wrappers::Runtime& runtime, const napi_wrappers::Value&, [[maybe_unused]] const napi_wrappers::Value* args, size_t count) {
                 if (count == 2)
                 {
                     auto arg0 = convert_value_to_native<winrt::Windows::Foundation::IReference<int32_t>>(runtime, args[0]);
@@ -2024,7 +2024,7 @@ namespace rnwinrt::classes::TestComponent::Test
             }
         },
         { "staticInvokeRefDelegateWithOutParam",
-            []([[maybe_unused]] jsi::Runtime& runtime, const jsi::Value&, [[maybe_unused]] const jsi::Value* args, size_t count) {
+            []([[maybe_unused]] napi_wrappers::Runtime& runtime, const napi_wrappers::Value&, [[maybe_unused]] const napi_wrappers::Value* args, size_t count) {
                 if (count == 2)
                 {
                     auto arg0 = convert_value_to_native<winrt::Windows::Foundation::IReference<int32_t>>(runtime, args[0]);
@@ -2036,7 +2036,7 @@ namespace rnwinrt::classes::TestComponent::Test
             }
         },
         { "staticInvokeStringArrayDelegate",
-            []([[maybe_unused]] jsi::Runtime& runtime, const jsi::Value&, [[maybe_unused]] const jsi::Value* args, size_t count) {
+            []([[maybe_unused]] napi_wrappers::Runtime& runtime, const napi_wrappers::Value&, [[maybe_unused]] const napi_wrappers::Value* args, size_t count) {
                 if (count == 2)
                 {
                     auto arg0 = convert_value_to_native<winrt::array_view<const winrt::hstring>>(runtime, args[0]);
@@ -2048,7 +2048,7 @@ namespace rnwinrt::classes::TestComponent::Test
             }
         },
         { "staticInvokeStringDelegate",
-            []([[maybe_unused]] jsi::Runtime& runtime, const jsi::Value&, [[maybe_unused]] const jsi::Value* args, size_t count) {
+            []([[maybe_unused]] napi_wrappers::Runtime& runtime, const napi_wrappers::Value&, [[maybe_unused]] const napi_wrappers::Value* args, size_t count) {
                 if (count == 2)
                 {
                     auto arg0 = convert_value_to_native<winrt::hstring>(runtime, args[0]);
@@ -2060,7 +2060,7 @@ namespace rnwinrt::classes::TestComponent::Test
             }
         },
         { "staticInvokeStringDelegateWithOutParam",
-            []([[maybe_unused]] jsi::Runtime& runtime, const jsi::Value&, [[maybe_unused]] const jsi::Value* args, size_t count) {
+            []([[maybe_unused]] napi_wrappers::Runtime& runtime, const napi_wrappers::Value&, [[maybe_unused]] const napi_wrappers::Value* args, size_t count) {
                 if (count == 2)
                 {
                     auto arg0 = convert_value_to_native<winrt::hstring>(runtime, args[0]);
@@ -2072,7 +2072,7 @@ namespace rnwinrt::classes::TestComponent::Test
             }
         },
         { "staticNumericArrayOutParam",
-            []([[maybe_unused]] jsi::Runtime& runtime, const jsi::Value&, [[maybe_unused]] const jsi::Value* args, size_t count) {
+            []([[maybe_unused]] napi_wrappers::Runtime& runtime, const napi_wrappers::Value&, [[maybe_unused]] const napi_wrappers::Value* args, size_t count) {
                 if (count == 1)
                 {
                     auto arg0 = convert_value_to_native<winrt::array_view<const int32_t>>(runtime, args[0]);
@@ -2085,18 +2085,18 @@ namespace rnwinrt::classes::TestComponent::Test
             }
         },
         { "staticNumericFillParam",
-            []([[maybe_unused]] jsi::Runtime& runtime, const jsi::Value&, [[maybe_unused]] const jsi::Value* args, size_t count) {
+            []([[maybe_unused]] napi_wrappers::Runtime& runtime, const napi_wrappers::Value&, [[maybe_unused]] const napi_wrappers::Value* args, size_t count) {
                 if (count == 1)
                 {
                     auto arg0 = convert_value_to_native<winrt::array_view<int32_t>>(runtime, args[0]);
                     winrt::TestComponent::Test::StaticNumericFillParam(arg0);
-                    return jsi::Value::undefined();
+                    return napi_wrappers::Value::undefined();
                 }
                 throw_no_function_overload(runtime, "TestComponent"sv, "Test"sv, "staticNumericFillParam"sv, count);
             }
         },
         { "staticNumericOutParam",
-            []([[maybe_unused]] jsi::Runtime& runtime, const jsi::Value&, [[maybe_unused]] const jsi::Value* args, size_t count) {
+            []([[maybe_unused]] napi_wrappers::Runtime& runtime, const napi_wrappers::Value&, [[maybe_unused]] const napi_wrappers::Value* args, size_t count) {
                 if (count == 1)
                 {
                     auto arg0 = convert_value_to_native<int32_t>(runtime, args[0]);
@@ -2109,7 +2109,7 @@ namespace rnwinrt::classes::TestComponent::Test
             }
         },
         { "staticObjectArrayOutParam",
-            []([[maybe_unused]] jsi::Runtime& runtime, const jsi::Value&, [[maybe_unused]] const jsi::Value* args, size_t count) {
+            []([[maybe_unused]] napi_wrappers::Runtime& runtime, const napi_wrappers::Value&, [[maybe_unused]] const napi_wrappers::Value* args, size_t count) {
                 if (count == 1)
                 {
                     auto arg0 = convert_value_to_native<winrt::array_view<const winrt::TestComponent::TestObject>>(runtime, args[0]);
@@ -2122,18 +2122,18 @@ namespace rnwinrt::classes::TestComponent::Test
             }
         },
         { "staticObjectFillParam",
-            []([[maybe_unused]] jsi::Runtime& runtime, const jsi::Value&, [[maybe_unused]] const jsi::Value* args, size_t count) {
+            []([[maybe_unused]] napi_wrappers::Runtime& runtime, const napi_wrappers::Value&, [[maybe_unused]] const napi_wrappers::Value* args, size_t count) {
                 if (count == 1)
                 {
                     auto arg0 = convert_value_to_native<winrt::array_view<winrt::TestComponent::TestObject>>(runtime, args[0]);
                     winrt::TestComponent::Test::StaticObjectFillParam(arg0);
-                    return jsi::Value::undefined();
+                    return napi_wrappers::Value::undefined();
                 }
                 throw_no_function_overload(runtime, "TestComponent"sv, "Test"sv, "staticObjectFillParam"sv, count);
             }
         },
         { "staticObjectOutParam",
-            []([[maybe_unused]] jsi::Runtime& runtime, const jsi::Value&, [[maybe_unused]] const jsi::Value* args, size_t count) {
+            []([[maybe_unused]] napi_wrappers::Runtime& runtime, const napi_wrappers::Value&, [[maybe_unused]] const napi_wrappers::Value* args, size_t count) {
                 if (count == 1)
                 {
                     auto arg0 = convert_value_to_native<winrt::TestComponent::TestObject>(runtime, args[0]);
@@ -2146,7 +2146,7 @@ namespace rnwinrt::classes::TestComponent::Test
             }
         },
         { "staticOr",
-            []([[maybe_unused]] jsi::Runtime& runtime, const jsi::Value&, [[maybe_unused]] const jsi::Value* args, size_t count) {
+            []([[maybe_unused]] napi_wrappers::Runtime& runtime, const napi_wrappers::Value&, [[maybe_unused]] const napi_wrappers::Value* args, size_t count) {
                 if (count == 2)
                 {
                     auto arg0 = convert_value_to_native<bool>(runtime, args[0]);
@@ -2158,7 +2158,7 @@ namespace rnwinrt::classes::TestComponent::Test
             }
         },
         { "staticOrAll",
-            []([[maybe_unused]] jsi::Runtime& runtime, const jsi::Value&, [[maybe_unused]] const jsi::Value* args, size_t count) {
+            []([[maybe_unused]] napi_wrappers::Runtime& runtime, const napi_wrappers::Value&, [[maybe_unused]] const napi_wrappers::Value* args, size_t count) {
                 if (count == 1)
                 {
                     auto arg0 = convert_value_to_native<winrt::array_view<const bool>>(runtime, args[0]);
@@ -2169,7 +2169,7 @@ namespace rnwinrt::classes::TestComponent::Test
             }
         },
         { "staticOutParamOverload",
-            []([[maybe_unused]] jsi::Runtime& runtime, const jsi::Value&, [[maybe_unused]] const jsi::Value* args, size_t count) {
+            []([[maybe_unused]] napi_wrappers::Runtime& runtime, const napi_wrappers::Value&, [[maybe_unused]] const napi_wrappers::Value* args, size_t count) {
                 if (count == 1)
                 {
                     auto arg0 = convert_value_to_native<winrt::hstring>(runtime, args[0]);
@@ -2188,7 +2188,7 @@ namespace rnwinrt::classes::TestComponent::Test
             }
         },
         { "staticRefArrayOutParam",
-            []([[maybe_unused]] jsi::Runtime& runtime, const jsi::Value&, [[maybe_unused]] const jsi::Value* args, size_t count) {
+            []([[maybe_unused]] napi_wrappers::Runtime& runtime, const napi_wrappers::Value&, [[maybe_unused]] const napi_wrappers::Value* args, size_t count) {
                 if (count == 1)
                 {
                     auto arg0 = convert_value_to_native<winrt::array_view<const winrt::Windows::Foundation::IReference<int32_t>>>(runtime, args[0]);
@@ -2201,18 +2201,18 @@ namespace rnwinrt::classes::TestComponent::Test
             }
         },
         { "staticRefFillParam",
-            []([[maybe_unused]] jsi::Runtime& runtime, const jsi::Value&, [[maybe_unused]] const jsi::Value* args, size_t count) {
+            []([[maybe_unused]] napi_wrappers::Runtime& runtime, const napi_wrappers::Value&, [[maybe_unused]] const napi_wrappers::Value* args, size_t count) {
                 if (count == 1)
                 {
                     auto arg0 = convert_value_to_native<winrt::array_view<winrt::Windows::Foundation::IReference<int32_t>>>(runtime, args[0]);
                     winrt::TestComponent::Test::StaticRefFillParam(arg0);
-                    return jsi::Value::undefined();
+                    return napi_wrappers::Value::undefined();
                 }
                 throw_no_function_overload(runtime, "TestComponent"sv, "Test"sv, "staticRefFillParam"sv, count);
             }
         },
         { "staticRefOutParam",
-            []([[maybe_unused]] jsi::Runtime& runtime, const jsi::Value&, [[maybe_unused]] const jsi::Value* args, size_t count) {
+            []([[maybe_unused]] napi_wrappers::Runtime& runtime, const napi_wrappers::Value&, [[maybe_unused]] const napi_wrappers::Value* args, size_t count) {
                 if (count == 1)
                 {
                     auto arg0 = convert_value_to_native<winrt::Windows::Foundation::IReference<int32_t>>(runtime, args[0]);
@@ -2225,7 +2225,7 @@ namespace rnwinrt::classes::TestComponent::Test
             }
         },
         { "staticStringArrayOutParam",
-            []([[maybe_unused]] jsi::Runtime& runtime, const jsi::Value&, [[maybe_unused]] const jsi::Value* args, size_t count) {
+            []([[maybe_unused]] napi_wrappers::Runtime& runtime, const napi_wrappers::Value&, [[maybe_unused]] const napi_wrappers::Value* args, size_t count) {
                 if (count == 1)
                 {
                     auto arg0 = convert_value_to_native<winrt::array_view<const winrt::hstring>>(runtime, args[0]);
@@ -2238,18 +2238,18 @@ namespace rnwinrt::classes::TestComponent::Test
             }
         },
         { "staticStringFillParam",
-            []([[maybe_unused]] jsi::Runtime& runtime, const jsi::Value&, [[maybe_unused]] const jsi::Value* args, size_t count) {
+            []([[maybe_unused]] napi_wrappers::Runtime& runtime, const napi_wrappers::Value&, [[maybe_unused]] const napi_wrappers::Value* args, size_t count) {
                 if (count == 1)
                 {
                     auto arg0 = convert_value_to_native<winrt::array_view<winrt::hstring>>(runtime, args[0]);
                     winrt::TestComponent::Test::StaticStringFillParam(arg0);
-                    return jsi::Value::undefined();
+                    return napi_wrappers::Value::undefined();
                 }
                 throw_no_function_overload(runtime, "TestComponent"sv, "Test"sv, "staticStringFillParam"sv, count);
             }
         },
         { "staticStringOutParam",
-            []([[maybe_unused]] jsi::Runtime& runtime, const jsi::Value&, [[maybe_unused]] const jsi::Value* args, size_t count) {
+            []([[maybe_unused]] napi_wrappers::Runtime& runtime, const napi_wrappers::Value&, [[maybe_unused]] const napi_wrappers::Value* args, size_t count) {
                 if (count == 1)
                 {
                     auto arg0 = convert_value_to_native<winrt::hstring>(runtime, args[0]);
@@ -2262,7 +2262,7 @@ namespace rnwinrt::classes::TestComponent::Test
             }
         },
         { "throwAsyncException",
-            []([[maybe_unused]] jsi::Runtime& runtime, const jsi::Value&, [[maybe_unused]] const jsi::Value* args, size_t count) {
+            []([[maybe_unused]] napi_wrappers::Runtime& runtime, const napi_wrappers::Value&, [[maybe_unused]] const napi_wrappers::Value* args, size_t count) {
                 if (count == 0)
                 {
                     auto result = winrt::TestComponent::Test::ThrowAsyncException();
@@ -2273,7 +2273,7 @@ namespace rnwinrt::classes::TestComponent::Test
         },
     };
 
-    static jsi::Value constructor_function(jsi::Runtime& runtime, const jsi::Value&, [[maybe_unused]] const jsi::Value* args, size_t count)
+    static napi_wrappers::Value constructor_function(napi_wrappers::Runtime& runtime, const napi_wrappers::Value&, [[maybe_unused]] const napi_wrappers::Value* args, size_t count)
     {
         if (count == 1)
         {
@@ -2298,7 +2298,7 @@ namespace rnwinrt::classes::TestComponent::Test
 
 namespace rnwinrt::classes::TestComponent::TestObject
 {
-    static jsi::Value constructor_function(jsi::Runtime& runtime, const jsi::Value&, [[maybe_unused]] const jsi::Value* args, size_t count)
+    static napi_wrappers::Value constructor_function(napi_wrappers::Runtime& runtime, const napi_wrappers::Value&, [[maybe_unused]] const napi_wrappers::Value* args, size_t count)
     {
         if (count == 1)
         {
@@ -2315,20 +2315,20 @@ namespace rnwinrt::interfaces::TestComponent::IHierarchyBase
 {
     static constexpr const static_interface_data::function_mapping function_data[] = {
         { "nonOverriddenHierarchyBaseMethod",
-            []([[maybe_unused]] jsi::Runtime& runtime, const winrt::Windows::Foundation::IInspectable& thisValue, [[maybe_unused]] const jsi::Value* args) {
+            []([[maybe_unused]] napi_wrappers::Runtime& runtime, const winrt::Windows::Foundation::IInspectable& thisValue, [[maybe_unused]] const napi_wrappers::Value* args) {
                     auto result = thisValue.as<winrt::TestComponent::IHierarchyBase>().NonOverriddenHierarchyBaseMethod();
                     return convert_native_to_value(runtime, result);
                 },
                 0, false },
         { "overloadedHierarchyBaseMethod",
-            []([[maybe_unused]] jsi::Runtime& runtime, const winrt::Windows::Foundation::IInspectable& thisValue, [[maybe_unused]] const jsi::Value* args) {
+            []([[maybe_unused]] napi_wrappers::Runtime& runtime, const winrt::Windows::Foundation::IInspectable& thisValue, [[maybe_unused]] const napi_wrappers::Value* args) {
                     auto arg0 = convert_value_to_native<winrt::hstring>(runtime, args[0]);
                     auto result = thisValue.as<winrt::TestComponent::IHierarchyBase>().OverloadedHierarchyBaseMethod(arg0);
                     return convert_native_to_value(runtime, result);
                 },
                 1, false },
         { "overriddenHierarchyBaseMethod",
-            []([[maybe_unused]] jsi::Runtime& runtime, const winrt::Windows::Foundation::IInspectable& thisValue, [[maybe_unused]] const jsi::Value* args) {
+            []([[maybe_unused]] napi_wrappers::Runtime& runtime, const winrt::Windows::Foundation::IInspectable& thisValue, [[maybe_unused]] const napi_wrappers::Value* args) {
                     auto result = thisValue.as<winrt::TestComponent::IHierarchyBase>().OverriddenHierarchyBaseMethod();
                     return convert_native_to_value(runtime, result);
                 },
@@ -2342,7 +2342,7 @@ namespace rnwinrt::interfaces::TestComponent::IHierarchyBaseFactory
 {
     static constexpr const static_interface_data::function_mapping function_data[] = {
         { "createInstance",
-            []([[maybe_unused]] jsi::Runtime& runtime, const winrt::Windows::Foundation::IInspectable& thisValue, [[maybe_unused]] const jsi::Value* args) {
+            []([[maybe_unused]] napi_wrappers::Runtime& runtime, const winrt::Windows::Foundation::IInspectable& thisValue, [[maybe_unused]] const napi_wrappers::Value* args) {
                     auto arg0 = convert_value_to_native<winrt::Windows::Foundation::IInspectable>(runtime, args[0]);
                     winrt::Windows::Foundation::IInspectable arg1;
                     auto result = thisValue.as<winrt::TestComponent::IHierarchyBaseFactory>().CreateInstance(arg0, arg1);
@@ -2358,13 +2358,13 @@ namespace rnwinrt::interfaces::TestComponent::IHierarchyDerived
 {
     static constexpr const static_interface_data::function_mapping function_data[] = {
         { "hierarchyDerivedMethod",
-            []([[maybe_unused]] jsi::Runtime& runtime, const winrt::Windows::Foundation::IInspectable& thisValue, [[maybe_unused]] const jsi::Value* args) {
+            []([[maybe_unused]] napi_wrappers::Runtime& runtime, const winrt::Windows::Foundation::IInspectable& thisValue, [[maybe_unused]] const napi_wrappers::Value* args) {
                     auto result = thisValue.as<winrt::TestComponent::IHierarchyDerived>().HierarchyDerivedMethod();
                     return convert_native_to_value(runtime, result);
                 },
                 0, false },
         { "overloadedHierarchyBaseMethod",
-            []([[maybe_unused]] jsi::Runtime& runtime, const winrt::Windows::Foundation::IInspectable& thisValue, [[maybe_unused]] const jsi::Value* args) {
+            []([[maybe_unused]] napi_wrappers::Runtime& runtime, const winrt::Windows::Foundation::IInspectable& thisValue, [[maybe_unused]] const napi_wrappers::Value* args) {
                     auto arg0 = convert_value_to_native<winrt::hstring>(runtime, args[0]);
                     auto arg1 = convert_value_to_native<winrt::hstring>(runtime, args[1]);
                     auto result = thisValue.as<winrt::TestComponent::IHierarchyDerived>().OverloadedHierarchyBaseMethod(arg0, arg1);
@@ -2380,7 +2380,7 @@ namespace rnwinrt::interfaces::TestComponent::IHierarchyDerivedFactory
 {
     static constexpr const static_interface_data::function_mapping function_data[] = {
         { "createInstance",
-            []([[maybe_unused]] jsi::Runtime& runtime, const winrt::Windows::Foundation::IInspectable& thisValue, [[maybe_unused]] const jsi::Value* args) {
+            []([[maybe_unused]] napi_wrappers::Runtime& runtime, const winrt::Windows::Foundation::IInspectable& thisValue, [[maybe_unused]] const napi_wrappers::Value* args) {
                     auto arg0 = convert_value_to_native<winrt::hstring>(runtime, args[0]);
                     auto arg1 = convert_value_to_native<winrt::Windows::Foundation::IInspectable>(runtime, args[1]);
                     winrt::Windows::Foundation::IInspectable arg2;
@@ -2397,7 +2397,7 @@ namespace rnwinrt::interfaces::TestComponent::IHierarchyV2Contract
 {
     static constexpr const static_interface_data::function_mapping function_data[] = {
         { "iHierarchyV2ContractMethod",
-            []([[maybe_unused]] jsi::Runtime& runtime, const winrt::Windows::Foundation::IInspectable& thisValue, [[maybe_unused]] const jsi::Value* args) {
+            []([[maybe_unused]] napi_wrappers::Runtime& runtime, const winrt::Windows::Foundation::IInspectable& thisValue, [[maybe_unused]] const napi_wrappers::Value* args) {
                     auto result = thisValue.as<winrt::TestComponent::IHierarchyV2Contract>().IHierarchyV2ContractMethod();
                     return convert_native_to_value(runtime, result);
                 },
@@ -2411,307 +2411,307 @@ namespace rnwinrt::interfaces::TestComponent::ITest
 {
     static constexpr const static_interface_data::property_mapping property_data[] = {
         { "boolProperty",
-            [](jsi::Runtime& runtime, const winrt::Windows::Foundation::IInspectable& thisValue) {
+            [](napi_wrappers::Runtime& runtime, const winrt::Windows::Foundation::IInspectable& thisValue) {
                 return convert_native_to_value(runtime, thisValue.as<winrt::TestComponent::ITest>().BoolProperty());
             },
             nullptr
         },
         { "booleanArrayProperty",
-            [](jsi::Runtime& runtime, const winrt::Windows::Foundation::IInspectable& thisValue) {
+            [](napi_wrappers::Runtime& runtime, const winrt::Windows::Foundation::IInspectable& thisValue) {
                 return convert_native_to_value(runtime, thisValue.as<winrt::TestComponent::ITest>().BooleanArrayProperty());
             },
-            [](jsi::Runtime& runtime, const winrt::Windows::Foundation::IInspectable& thisValue, const jsi::Value& value) {
+            [](napi_wrappers::Runtime& runtime, const winrt::Windows::Foundation::IInspectable& thisValue, const napi_wrappers::Value& value) {
                 thisValue.as<winrt::TestComponent::ITest>().BooleanArrayProperty(convert_value_to_native<winrt::array_view<const bool>>(runtime, value));
             },
         },
         { "booleansStructProperty",
-            [](jsi::Runtime& runtime, const winrt::Windows::Foundation::IInspectable& thisValue) {
+            [](napi_wrappers::Runtime& runtime, const winrt::Windows::Foundation::IInspectable& thisValue) {
                 return convert_native_to_value(runtime, thisValue.as<winrt::TestComponent::ITest>().BooleansStructProperty());
             },
-            [](jsi::Runtime& runtime, const winrt::Windows::Foundation::IInspectable& thisValue, const jsi::Value& value) {
+            [](napi_wrappers::Runtime& runtime, const winrt::Windows::Foundation::IInspectable& thisValue, const napi_wrappers::Value& value) {
                 thisValue.as<winrt::TestComponent::ITest>().BooleansStructProperty(convert_value_to_native<winrt::TestComponent::BooleanTypes>(runtime, value));
             },
         },
         { "charArrayProperty",
-            [](jsi::Runtime& runtime, const winrt::Windows::Foundation::IInspectable& thisValue) {
+            [](napi_wrappers::Runtime& runtime, const winrt::Windows::Foundation::IInspectable& thisValue) {
                 return convert_native_to_value(runtime, thisValue.as<winrt::TestComponent::ITest>().CharArrayProperty());
             },
-            [](jsi::Runtime& runtime, const winrt::Windows::Foundation::IInspectable& thisValue, const jsi::Value& value) {
+            [](napi_wrappers::Runtime& runtime, const winrt::Windows::Foundation::IInspectable& thisValue, const napi_wrappers::Value& value) {
                 thisValue.as<winrt::TestComponent::ITest>().CharArrayProperty(convert_value_to_native<winrt::array_view<const char16_t>>(runtime, value));
             },
         },
         { "charProperty",
-            [](jsi::Runtime& runtime, const winrt::Windows::Foundation::IInspectable& thisValue) {
+            [](napi_wrappers::Runtime& runtime, const winrt::Windows::Foundation::IInspectable& thisValue) {
                 return convert_native_to_value(runtime, thisValue.as<winrt::TestComponent::ITest>().CharProperty());
             },
-            [](jsi::Runtime& runtime, const winrt::Windows::Foundation::IInspectable& thisValue, const jsi::Value& value) {
+            [](napi_wrappers::Runtime& runtime, const winrt::Windows::Foundation::IInspectable& thisValue, const napi_wrappers::Value& value) {
                 thisValue.as<winrt::TestComponent::ITest>().CharProperty(convert_value_to_native<char16_t>(runtime, value));
             },
         },
         { "compositeStructArrayProperty",
-            [](jsi::Runtime& runtime, const winrt::Windows::Foundation::IInspectable& thisValue) {
+            [](napi_wrappers::Runtime& runtime, const winrt::Windows::Foundation::IInspectable& thisValue) {
                 return convert_native_to_value(runtime, thisValue.as<winrt::TestComponent::ITest>().CompositeStructArrayProperty());
             },
-            [](jsi::Runtime& runtime, const winrt::Windows::Foundation::IInspectable& thisValue, const jsi::Value& value) {
+            [](napi_wrappers::Runtime& runtime, const winrt::Windows::Foundation::IInspectable& thisValue, const napi_wrappers::Value& value) {
                 thisValue.as<winrt::TestComponent::ITest>().CompositeStructArrayProperty(convert_value_to_native<winrt::array_view<const winrt::TestComponent::CompositeType>>(runtime, value));
             },
         },
         { "compositeStructProperty",
-            [](jsi::Runtime& runtime, const winrt::Windows::Foundation::IInspectable& thisValue) {
+            [](napi_wrappers::Runtime& runtime, const winrt::Windows::Foundation::IInspectable& thisValue) {
                 return convert_native_to_value(runtime, thisValue.as<winrt::TestComponent::ITest>().CompositeStructProperty());
             },
-            [](jsi::Runtime& runtime, const winrt::Windows::Foundation::IInspectable& thisValue, const jsi::Value& value) {
+            [](napi_wrappers::Runtime& runtime, const winrt::Windows::Foundation::IInspectable& thisValue, const napi_wrappers::Value& value) {
                 thisValue.as<winrt::TestComponent::ITest>().CompositeStructProperty(convert_value_to_native<winrt::TestComponent::CompositeType>(runtime, value));
             },
         },
         { "constructorParamCount",
-            [](jsi::Runtime& runtime, const winrt::Windows::Foundation::IInspectable& thisValue) {
+            [](napi_wrappers::Runtime& runtime, const winrt::Windows::Foundation::IInspectable& thisValue) {
                 return convert_native_to_value(runtime, thisValue.as<winrt::TestComponent::ITest>().ConstructorParamCount());
             },
             nullptr
         },
         { "dateTimeProperty",
-            [](jsi::Runtime& runtime, const winrt::Windows::Foundation::IInspectable& thisValue) {
+            [](napi_wrappers::Runtime& runtime, const winrt::Windows::Foundation::IInspectable& thisValue) {
                 return convert_native_to_value(runtime, thisValue.as<winrt::TestComponent::ITest>().DateTimeProperty());
             },
-            [](jsi::Runtime& runtime, const winrt::Windows::Foundation::IInspectable& thisValue, const jsi::Value& value) {
+            [](napi_wrappers::Runtime& runtime, const winrt::Windows::Foundation::IInspectable& thisValue, const napi_wrappers::Value& value) {
                 thisValue.as<winrt::TestComponent::ITest>().DateTimeProperty(convert_value_to_native<winrt::Windows::Foundation::DateTime>(runtime, value));
             },
         },
         { "enumArrayProperty",
-            [](jsi::Runtime& runtime, const winrt::Windows::Foundation::IInspectable& thisValue) {
+            [](napi_wrappers::Runtime& runtime, const winrt::Windows::Foundation::IInspectable& thisValue) {
                 return convert_native_to_value(runtime, thisValue.as<winrt::TestComponent::ITest>().EnumArrayProperty());
             },
-            [](jsi::Runtime& runtime, const winrt::Windows::Foundation::IInspectable& thisValue, const jsi::Value& value) {
+            [](napi_wrappers::Runtime& runtime, const winrt::Windows::Foundation::IInspectable& thisValue, const napi_wrappers::Value& value) {
                 thisValue.as<winrt::TestComponent::ITest>().EnumArrayProperty(convert_value_to_native<winrt::array_view<const winrt::TestComponent::TestEnum>>(runtime, value));
             },
         },
         { "enumProperty",
-            [](jsi::Runtime& runtime, const winrt::Windows::Foundation::IInspectable& thisValue) {
+            [](napi_wrappers::Runtime& runtime, const winrt::Windows::Foundation::IInspectable& thisValue) {
                 return convert_native_to_value(runtime, thisValue.as<winrt::TestComponent::ITest>().EnumProperty());
             },
-            [](jsi::Runtime& runtime, const winrt::Windows::Foundation::IInspectable& thisValue, const jsi::Value& value) {
+            [](napi_wrappers::Runtime& runtime, const winrt::Windows::Foundation::IInspectable& thisValue, const napi_wrappers::Value& value) {
                 thisValue.as<winrt::TestComponent::ITest>().EnumProperty(convert_value_to_native<winrt::TestComponent::TestEnum>(runtime, value));
             },
         },
         { "f32Property",
-            [](jsi::Runtime& runtime, const winrt::Windows::Foundation::IInspectable& thisValue) {
+            [](napi_wrappers::Runtime& runtime, const winrt::Windows::Foundation::IInspectable& thisValue) {
                 return convert_native_to_value(runtime, thisValue.as<winrt::TestComponent::ITest>().F32Property());
             },
-            [](jsi::Runtime& runtime, const winrt::Windows::Foundation::IInspectable& thisValue, const jsi::Value& value) {
+            [](napi_wrappers::Runtime& runtime, const winrt::Windows::Foundation::IInspectable& thisValue, const napi_wrappers::Value& value) {
                 thisValue.as<winrt::TestComponent::ITest>().F32Property(convert_value_to_native<float>(runtime, value));
             },
         },
         { "f64Property",
-            [](jsi::Runtime& runtime, const winrt::Windows::Foundation::IInspectable& thisValue) {
+            [](napi_wrappers::Runtime& runtime, const winrt::Windows::Foundation::IInspectable& thisValue) {
                 return convert_native_to_value(runtime, thisValue.as<winrt::TestComponent::ITest>().F64Property());
             },
-            [](jsi::Runtime& runtime, const winrt::Windows::Foundation::IInspectable& thisValue, const jsi::Value& value) {
+            [](napi_wrappers::Runtime& runtime, const winrt::Windows::Foundation::IInspectable& thisValue, const napi_wrappers::Value& value) {
                 thisValue.as<winrt::TestComponent::ITest>().F64Property(convert_value_to_native<double>(runtime, value));
             },
         },
         { "guidArrayProperty",
-            [](jsi::Runtime& runtime, const winrt::Windows::Foundation::IInspectable& thisValue) {
+            [](napi_wrappers::Runtime& runtime, const winrt::Windows::Foundation::IInspectable& thisValue) {
                 return convert_native_to_value(runtime, thisValue.as<winrt::TestComponent::ITest>().GuidArrayProperty());
             },
-            [](jsi::Runtime& runtime, const winrt::Windows::Foundation::IInspectable& thisValue, const jsi::Value& value) {
+            [](napi_wrappers::Runtime& runtime, const winrt::Windows::Foundation::IInspectable& thisValue, const napi_wrappers::Value& value) {
                 thisValue.as<winrt::TestComponent::ITest>().GuidArrayProperty(convert_value_to_native<winrt::array_view<const winrt::guid>>(runtime, value));
             },
         },
         { "guidProperty",
-            [](jsi::Runtime& runtime, const winrt::Windows::Foundation::IInspectable& thisValue) {
+            [](napi_wrappers::Runtime& runtime, const winrt::Windows::Foundation::IInspectable& thisValue) {
                 return convert_native_to_value(runtime, thisValue.as<winrt::TestComponent::ITest>().GuidProperty());
             },
-            [](jsi::Runtime& runtime, const winrt::Windows::Foundation::IInspectable& thisValue, const jsi::Value& value) {
+            [](napi_wrappers::Runtime& runtime, const winrt::Windows::Foundation::IInspectable& thisValue, const napi_wrappers::Value& value) {
                 thisValue.as<winrt::TestComponent::ITest>().GuidProperty(convert_value_to_native<winrt::guid>(runtime, value));
             },
         },
         { "hResultProperty",
-            [](jsi::Runtime& runtime, const winrt::Windows::Foundation::IInspectable& thisValue) {
+            [](napi_wrappers::Runtime& runtime, const winrt::Windows::Foundation::IInspectable& thisValue) {
                 return convert_native_to_value(runtime, thisValue.as<winrt::TestComponent::ITest>().HResultProperty());
             },
-            [](jsi::Runtime& runtime, const winrt::Windows::Foundation::IInspectable& thisValue, const jsi::Value& value) {
+            [](napi_wrappers::Runtime& runtime, const winrt::Windows::Foundation::IInspectable& thisValue, const napi_wrappers::Value& value) {
                 thisValue.as<winrt::TestComponent::ITest>().HResultProperty(convert_value_to_native<winrt::hresult>(runtime, value));
             },
         },
         { "numericArrayProperty",
-            [](jsi::Runtime& runtime, const winrt::Windows::Foundation::IInspectable& thisValue) {
+            [](napi_wrappers::Runtime& runtime, const winrt::Windows::Foundation::IInspectable& thisValue) {
                 return convert_native_to_value(runtime, thisValue.as<winrt::TestComponent::ITest>().NumericArrayProperty());
             },
-            [](jsi::Runtime& runtime, const winrt::Windows::Foundation::IInspectable& thisValue, const jsi::Value& value) {
+            [](napi_wrappers::Runtime& runtime, const winrt::Windows::Foundation::IInspectable& thisValue, const napi_wrappers::Value& value) {
                 thisValue.as<winrt::TestComponent::ITest>().NumericArrayProperty(convert_value_to_native<winrt::array_view<const int32_t>>(runtime, value));
             },
         },
         { "numericsStructProperty",
-            [](jsi::Runtime& runtime, const winrt::Windows::Foundation::IInspectable& thisValue) {
+            [](napi_wrappers::Runtime& runtime, const winrt::Windows::Foundation::IInspectable& thisValue) {
                 return convert_native_to_value(runtime, thisValue.as<winrt::TestComponent::ITest>().NumericsStructProperty());
             },
-            [](jsi::Runtime& runtime, const winrt::Windows::Foundation::IInspectable& thisValue, const jsi::Value& value) {
+            [](napi_wrappers::Runtime& runtime, const winrt::Windows::Foundation::IInspectable& thisValue, const napi_wrappers::Value& value) {
                 thisValue.as<winrt::TestComponent::ITest>().NumericsStructProperty(convert_value_to_native<winrt::TestComponent::NumericTypes>(runtime, value));
             },
         },
         { "objectArrayProperty",
-            [](jsi::Runtime& runtime, const winrt::Windows::Foundation::IInspectable& thisValue) {
+            [](napi_wrappers::Runtime& runtime, const winrt::Windows::Foundation::IInspectable& thisValue) {
                 return convert_native_to_value(runtime, thisValue.as<winrt::TestComponent::ITest>().ObjectArrayProperty());
             },
-            [](jsi::Runtime& runtime, const winrt::Windows::Foundation::IInspectable& thisValue, const jsi::Value& value) {
+            [](napi_wrappers::Runtime& runtime, const winrt::Windows::Foundation::IInspectable& thisValue, const napi_wrappers::Value& value) {
                 thisValue.as<winrt::TestComponent::ITest>().ObjectArrayProperty(convert_value_to_native<winrt::array_view<const winrt::TestComponent::TestObject>>(runtime, value));
             },
         },
         { "objectProperty",
-            [](jsi::Runtime& runtime, const winrt::Windows::Foundation::IInspectable& thisValue) {
+            [](napi_wrappers::Runtime& runtime, const winrt::Windows::Foundation::IInspectable& thisValue) {
                 return convert_native_to_value(runtime, thisValue.as<winrt::TestComponent::ITest>().ObjectProperty());
             },
-            [](jsi::Runtime& runtime, const winrt::Windows::Foundation::IInspectable& thisValue, const jsi::Value& value) {
+            [](napi_wrappers::Runtime& runtime, const winrt::Windows::Foundation::IInspectable& thisValue, const napi_wrappers::Value& value) {
                 thisValue.as<winrt::TestComponent::ITest>().ObjectProperty(convert_value_to_native<winrt::TestComponent::TestObject>(runtime, value));
             },
         },
         { "propertyValue",
-            [](jsi::Runtime& runtime, const winrt::Windows::Foundation::IInspectable& thisValue) {
+            [](napi_wrappers::Runtime& runtime, const winrt::Windows::Foundation::IInspectable& thisValue) {
                 return convert_native_to_value(runtime, thisValue.as<winrt::TestComponent::ITest>().PropertyValue());
             },
-            [](jsi::Runtime& runtime, const winrt::Windows::Foundation::IInspectable& thisValue, const jsi::Value& value) {
+            [](napi_wrappers::Runtime& runtime, const winrt::Windows::Foundation::IInspectable& thisValue, const napi_wrappers::Value& value) {
                 thisValue.as<winrt::TestComponent::ITest>().PropertyValue(convert_value_to_native<winrt::Windows::Foundation::IPropertyValue>(runtime, value));
             },
         },
         { "propertyValueCppType",
-            [](jsi::Runtime& runtime, const winrt::Windows::Foundation::IInspectable& thisValue) {
+            [](napi_wrappers::Runtime& runtime, const winrt::Windows::Foundation::IInspectable& thisValue) {
                 return convert_native_to_value(runtime, thisValue.as<winrt::TestComponent::ITest>().PropertyValueCppType());
             },
             nullptr
         },
         { "refArrayProperty",
-            [](jsi::Runtime& runtime, const winrt::Windows::Foundation::IInspectable& thisValue) {
+            [](napi_wrappers::Runtime& runtime, const winrt::Windows::Foundation::IInspectable& thisValue) {
                 return convert_native_to_value(runtime, thisValue.as<winrt::TestComponent::ITest>().RefArrayProperty());
             },
-            [](jsi::Runtime& runtime, const winrt::Windows::Foundation::IInspectable& thisValue, const jsi::Value& value) {
+            [](napi_wrappers::Runtime& runtime, const winrt::Windows::Foundation::IInspectable& thisValue, const napi_wrappers::Value& value) {
                 thisValue.as<winrt::TestComponent::ITest>().RefArrayProperty(convert_value_to_native<winrt::array_view<const winrt::Windows::Foundation::IReference<int32_t>>>(runtime, value));
             },
         },
         { "refBooleanProperty",
-            [](jsi::Runtime& runtime, const winrt::Windows::Foundation::IInspectable& thisValue) {
+            [](napi_wrappers::Runtime& runtime, const winrt::Windows::Foundation::IInspectable& thisValue) {
                 return convert_native_to_value(runtime, thisValue.as<winrt::TestComponent::ITest>().RefBooleanProperty());
             },
-            [](jsi::Runtime& runtime, const winrt::Windows::Foundation::IInspectable& thisValue, const jsi::Value& value) {
+            [](napi_wrappers::Runtime& runtime, const winrt::Windows::Foundation::IInspectable& thisValue, const napi_wrappers::Value& value) {
                 thisValue.as<winrt::TestComponent::ITest>().RefBooleanProperty(convert_value_to_native<winrt::Windows::Foundation::IReference<bool>>(runtime, value));
             },
         },
         { "refCharProperty",
-            [](jsi::Runtime& runtime, const winrt::Windows::Foundation::IInspectable& thisValue) {
+            [](napi_wrappers::Runtime& runtime, const winrt::Windows::Foundation::IInspectable& thisValue) {
                 return convert_native_to_value(runtime, thisValue.as<winrt::TestComponent::ITest>().RefCharProperty());
             },
-            [](jsi::Runtime& runtime, const winrt::Windows::Foundation::IInspectable& thisValue, const jsi::Value& value) {
+            [](napi_wrappers::Runtime& runtime, const winrt::Windows::Foundation::IInspectable& thisValue, const napi_wrappers::Value& value) {
                 thisValue.as<winrt::TestComponent::ITest>().RefCharProperty(convert_value_to_native<winrt::Windows::Foundation::IReference<char16_t>>(runtime, value));
             },
         },
         { "refEnumProperty",
-            [](jsi::Runtime& runtime, const winrt::Windows::Foundation::IInspectable& thisValue) {
+            [](napi_wrappers::Runtime& runtime, const winrt::Windows::Foundation::IInspectable& thisValue) {
                 return convert_native_to_value(runtime, thisValue.as<winrt::TestComponent::ITest>().RefEnumProperty());
             },
-            [](jsi::Runtime& runtime, const winrt::Windows::Foundation::IInspectable& thisValue, const jsi::Value& value) {
+            [](napi_wrappers::Runtime& runtime, const winrt::Windows::Foundation::IInspectable& thisValue, const napi_wrappers::Value& value) {
                 thisValue.as<winrt::TestComponent::ITest>().RefEnumProperty(convert_value_to_native<winrt::Windows::Foundation::IReference<winrt::TestComponent::TestEnum>>(runtime, value));
             },
         },
         { "refNumericProperty",
-            [](jsi::Runtime& runtime, const winrt::Windows::Foundation::IInspectable& thisValue) {
+            [](napi_wrappers::Runtime& runtime, const winrt::Windows::Foundation::IInspectable& thisValue) {
                 return convert_native_to_value(runtime, thisValue.as<winrt::TestComponent::ITest>().RefNumericProperty());
             },
-            [](jsi::Runtime& runtime, const winrt::Windows::Foundation::IInspectable& thisValue, const jsi::Value& value) {
+            [](napi_wrappers::Runtime& runtime, const winrt::Windows::Foundation::IInspectable& thisValue, const napi_wrappers::Value& value) {
                 thisValue.as<winrt::TestComponent::ITest>().RefNumericProperty(convert_value_to_native<winrt::Windows::Foundation::IReference<int32_t>>(runtime, value));
             },
         },
         { "s16Property",
-            [](jsi::Runtime& runtime, const winrt::Windows::Foundation::IInspectable& thisValue) {
+            [](napi_wrappers::Runtime& runtime, const winrt::Windows::Foundation::IInspectable& thisValue) {
                 return convert_native_to_value(runtime, thisValue.as<winrt::TestComponent::ITest>().S16Property());
             },
-            [](jsi::Runtime& runtime, const winrt::Windows::Foundation::IInspectable& thisValue, const jsi::Value& value) {
+            [](napi_wrappers::Runtime& runtime, const winrt::Windows::Foundation::IInspectable& thisValue, const napi_wrappers::Value& value) {
                 thisValue.as<winrt::TestComponent::ITest>().S16Property(convert_value_to_native<int16_t>(runtime, value));
             },
         },
         { "s32Property",
-            [](jsi::Runtime& runtime, const winrt::Windows::Foundation::IInspectable& thisValue) {
+            [](napi_wrappers::Runtime& runtime, const winrt::Windows::Foundation::IInspectable& thisValue) {
                 return convert_native_to_value(runtime, thisValue.as<winrt::TestComponent::ITest>().S32Property());
             },
-            [](jsi::Runtime& runtime, const winrt::Windows::Foundation::IInspectable& thisValue, const jsi::Value& value) {
+            [](napi_wrappers::Runtime& runtime, const winrt::Windows::Foundation::IInspectable& thisValue, const napi_wrappers::Value& value) {
                 thisValue.as<winrt::TestComponent::ITest>().S32Property(convert_value_to_native<int32_t>(runtime, value));
             },
         },
         { "s64Property",
-            [](jsi::Runtime& runtime, const winrt::Windows::Foundation::IInspectable& thisValue) {
+            [](napi_wrappers::Runtime& runtime, const winrt::Windows::Foundation::IInspectable& thisValue) {
                 return convert_native_to_value(runtime, thisValue.as<winrt::TestComponent::ITest>().S64Property());
             },
-            [](jsi::Runtime& runtime, const winrt::Windows::Foundation::IInspectable& thisValue, const jsi::Value& value) {
+            [](napi_wrappers::Runtime& runtime, const winrt::Windows::Foundation::IInspectable& thisValue, const napi_wrappers::Value& value) {
                 thisValue.as<winrt::TestComponent::ITest>().S64Property(convert_value_to_native<int64_t>(runtime, value));
             },
         },
         { "stringArrayProperty",
-            [](jsi::Runtime& runtime, const winrt::Windows::Foundation::IInspectable& thisValue) {
+            [](napi_wrappers::Runtime& runtime, const winrt::Windows::Foundation::IInspectable& thisValue) {
                 return convert_native_to_value(runtime, thisValue.as<winrt::TestComponent::ITest>().StringArrayProperty());
             },
-            [](jsi::Runtime& runtime, const winrt::Windows::Foundation::IInspectable& thisValue, const jsi::Value& value) {
+            [](napi_wrappers::Runtime& runtime, const winrt::Windows::Foundation::IInspectable& thisValue, const napi_wrappers::Value& value) {
                 thisValue.as<winrt::TestComponent::ITest>().StringArrayProperty(convert_value_to_native<winrt::array_view<const winrt::hstring>>(runtime, value));
             },
         },
         { "stringProperty",
-            [](jsi::Runtime& runtime, const winrt::Windows::Foundation::IInspectable& thisValue) {
+            [](napi_wrappers::Runtime& runtime, const winrt::Windows::Foundation::IInspectable& thisValue) {
                 return convert_native_to_value(runtime, thisValue.as<winrt::TestComponent::ITest>().StringProperty());
             },
-            [](jsi::Runtime& runtime, const winrt::Windows::Foundation::IInspectable& thisValue, const jsi::Value& value) {
+            [](napi_wrappers::Runtime& runtime, const winrt::Windows::Foundation::IInspectable& thisValue, const napi_wrappers::Value& value) {
                 thisValue.as<winrt::TestComponent::ITest>().StringProperty(convert_value_to_native<winrt::hstring>(runtime, value));
             },
         },
         { "stringsStructProperty",
-            [](jsi::Runtime& runtime, const winrt::Windows::Foundation::IInspectable& thisValue) {
+            [](napi_wrappers::Runtime& runtime, const winrt::Windows::Foundation::IInspectable& thisValue) {
                 return convert_native_to_value(runtime, thisValue.as<winrt::TestComponent::ITest>().StringsStructProperty());
             },
-            [](jsi::Runtime& runtime, const winrt::Windows::Foundation::IInspectable& thisValue, const jsi::Value& value) {
+            [](napi_wrappers::Runtime& runtime, const winrt::Windows::Foundation::IInspectable& thisValue, const napi_wrappers::Value& value) {
                 thisValue.as<winrt::TestComponent::ITest>().StringsStructProperty(convert_value_to_native<winrt::TestComponent::StringTypes>(runtime, value));
             },
         },
         { "timeSpanProperty",
-            [](jsi::Runtime& runtime, const winrt::Windows::Foundation::IInspectable& thisValue) {
+            [](napi_wrappers::Runtime& runtime, const winrt::Windows::Foundation::IInspectable& thisValue) {
                 return convert_native_to_value(runtime, thisValue.as<winrt::TestComponent::ITest>().TimeSpanProperty());
             },
-            [](jsi::Runtime& runtime, const winrt::Windows::Foundation::IInspectable& thisValue, const jsi::Value& value) {
+            [](napi_wrappers::Runtime& runtime, const winrt::Windows::Foundation::IInspectable& thisValue, const napi_wrappers::Value& value) {
                 thisValue.as<winrt::TestComponent::ITest>().TimeSpanProperty(convert_value_to_native<winrt::Windows::Foundation::TimeSpan>(runtime, value));
             },
         },
         { "u16Property",
-            [](jsi::Runtime& runtime, const winrt::Windows::Foundation::IInspectable& thisValue) {
+            [](napi_wrappers::Runtime& runtime, const winrt::Windows::Foundation::IInspectable& thisValue) {
                 return convert_native_to_value(runtime, thisValue.as<winrt::TestComponent::ITest>().U16Property());
             },
-            [](jsi::Runtime& runtime, const winrt::Windows::Foundation::IInspectable& thisValue, const jsi::Value& value) {
+            [](napi_wrappers::Runtime& runtime, const winrt::Windows::Foundation::IInspectable& thisValue, const napi_wrappers::Value& value) {
                 thisValue.as<winrt::TestComponent::ITest>().U16Property(convert_value_to_native<uint16_t>(runtime, value));
             },
         },
         { "u32Property",
-            [](jsi::Runtime& runtime, const winrt::Windows::Foundation::IInspectable& thisValue) {
+            [](napi_wrappers::Runtime& runtime, const winrt::Windows::Foundation::IInspectable& thisValue) {
                 return convert_native_to_value(runtime, thisValue.as<winrt::TestComponent::ITest>().U32Property());
             },
-            [](jsi::Runtime& runtime, const winrt::Windows::Foundation::IInspectable& thisValue, const jsi::Value& value) {
+            [](napi_wrappers::Runtime& runtime, const winrt::Windows::Foundation::IInspectable& thisValue, const napi_wrappers::Value& value) {
                 thisValue.as<winrt::TestComponent::ITest>().U32Property(convert_value_to_native<uint32_t>(runtime, value));
             },
         },
         { "u64Property",
-            [](jsi::Runtime& runtime, const winrt::Windows::Foundation::IInspectable& thisValue) {
+            [](napi_wrappers::Runtime& runtime, const winrt::Windows::Foundation::IInspectable& thisValue) {
                 return convert_native_to_value(runtime, thisValue.as<winrt::TestComponent::ITest>().U64Property());
             },
-            [](jsi::Runtime& runtime, const winrt::Windows::Foundation::IInspectable& thisValue, const jsi::Value& value) {
+            [](napi_wrappers::Runtime& runtime, const winrt::Windows::Foundation::IInspectable& thisValue, const napi_wrappers::Value& value) {
                 thisValue.as<winrt::TestComponent::ITest>().U64Property(convert_value_to_native<uint64_t>(runtime, value));
             },
         },
         { "u8Property",
-            [](jsi::Runtime& runtime, const winrt::Windows::Foundation::IInspectable& thisValue) {
+            [](napi_wrappers::Runtime& runtime, const winrt::Windows::Foundation::IInspectable& thisValue) {
                 return convert_native_to_value(runtime, thisValue.as<winrt::TestComponent::ITest>().U8Property());
             },
-            [](jsi::Runtime& runtime, const winrt::Windows::Foundation::IInspectable& thisValue, const jsi::Value& value) {
+            [](napi_wrappers::Runtime& runtime, const winrt::Windows::Foundation::IInspectable& thisValue, const napi_wrappers::Value& value) {
                 thisValue.as<winrt::TestComponent::ITest>().U8Property(convert_value_to_native<uint8_t>(runtime, value));
             },
         },
     };
     static constexpr const static_interface_data::event_mapping event_data[] = {
         { "booleventhandler",
-            [](jsi::Runtime& runtime, const winrt::Windows::Foundation::IInspectable& thisValue, const jsi::Value& callback) {
+            [](napi_wrappers::Runtime& runtime, const winrt::Windows::Foundation::IInspectable& thisValue, const napi_wrappers::Value& callback) {
                 return thisValue.as<winrt::TestComponent::ITest>().BoolEventHandler(convert_value_to_native<winrt::Windows::Foundation::TypedEventHandler<winrt::TestComponent::Test, bool>>(runtime, callback));
             },
             [](const winrt::Windows::Foundation::IInspectable& thisValue, winrt::event_token token) {
@@ -2719,7 +2719,7 @@ namespace rnwinrt::interfaces::TestComponent::ITest
             }
         },
         { "chareventhandler",
-            [](jsi::Runtime& runtime, const winrt::Windows::Foundation::IInspectable& thisValue, const jsi::Value& callback) {
+            [](napi_wrappers::Runtime& runtime, const winrt::Windows::Foundation::IInspectable& thisValue, const napi_wrappers::Value& callback) {
                 return thisValue.as<winrt::TestComponent::ITest>().CharEventHandler(convert_value_to_native<winrt::Windows::Foundation::TypedEventHandler<winrt::TestComponent::Test, char16_t>>(runtime, callback));
             },
             [](const winrt::Windows::Foundation::IInspectable& thisValue, winrt::event_token token) {
@@ -2727,7 +2727,7 @@ namespace rnwinrt::interfaces::TestComponent::ITest
             }
         },
         { "compositestructeventhandler",
-            [](jsi::Runtime& runtime, const winrt::Windows::Foundation::IInspectable& thisValue, const jsi::Value& callback) {
+            [](napi_wrappers::Runtime& runtime, const winrt::Windows::Foundation::IInspectable& thisValue, const napi_wrappers::Value& callback) {
                 return thisValue.as<winrt::TestComponent::ITest>().CompositeStructEventHandler(convert_value_to_native<winrt::Windows::Foundation::TypedEventHandler<winrt::TestComponent::Test, winrt::TestComponent::CompositeType>>(runtime, callback));
             },
             [](const winrt::Windows::Foundation::IInspectable& thisValue, winrt::event_token token) {
@@ -2735,7 +2735,7 @@ namespace rnwinrt::interfaces::TestComponent::ITest
             }
         },
         { "enumeventhandler",
-            [](jsi::Runtime& runtime, const winrt::Windows::Foundation::IInspectable& thisValue, const jsi::Value& callback) {
+            [](napi_wrappers::Runtime& runtime, const winrt::Windows::Foundation::IInspectable& thisValue, const napi_wrappers::Value& callback) {
                 return thisValue.as<winrt::TestComponent::ITest>().EnumEventHandler(convert_value_to_native<winrt::Windows::Foundation::TypedEventHandler<winrt::TestComponent::Test, winrt::TestComponent::TestEnum>>(runtime, callback));
             },
             [](const winrt::Windows::Foundation::IInspectable& thisValue, winrt::event_token token) {
@@ -2743,7 +2743,7 @@ namespace rnwinrt::interfaces::TestComponent::ITest
             }
         },
         { "guideventhandler",
-            [](jsi::Runtime& runtime, const winrt::Windows::Foundation::IInspectable& thisValue, const jsi::Value& callback) {
+            [](napi_wrappers::Runtime& runtime, const winrt::Windows::Foundation::IInspectable& thisValue, const napi_wrappers::Value& callback) {
                 return thisValue.as<winrt::TestComponent::ITest>().GuidEventHandler(convert_value_to_native<winrt::Windows::Foundation::TypedEventHandler<winrt::TestComponent::Test, winrt::guid>>(runtime, callback));
             },
             [](const winrt::Windows::Foundation::IInspectable& thisValue, winrt::event_token token) {
@@ -2751,7 +2751,7 @@ namespace rnwinrt::interfaces::TestComponent::ITest
             }
         },
         { "numericeventhandler",
-            [](jsi::Runtime& runtime, const winrt::Windows::Foundation::IInspectable& thisValue, const jsi::Value& callback) {
+            [](napi_wrappers::Runtime& runtime, const winrt::Windows::Foundation::IInspectable& thisValue, const napi_wrappers::Value& callback) {
                 return thisValue.as<winrt::TestComponent::ITest>().NumericEventHandler(convert_value_to_native<winrt::Windows::Foundation::TypedEventHandler<winrt::TestComponent::Test, int32_t>>(runtime, callback));
             },
             [](const winrt::Windows::Foundation::IInspectable& thisValue, winrt::event_token token) {
@@ -2759,7 +2759,7 @@ namespace rnwinrt::interfaces::TestComponent::ITest
             }
         },
         { "objecteventhandler",
-            [](jsi::Runtime& runtime, const winrt::Windows::Foundation::IInspectable& thisValue, const jsi::Value& callback) {
+            [](napi_wrappers::Runtime& runtime, const winrt::Windows::Foundation::IInspectable& thisValue, const napi_wrappers::Value& callback) {
                 return thisValue.as<winrt::TestComponent::ITest>().ObjectEventHandler(convert_value_to_native<winrt::Windows::Foundation::TypedEventHandler<winrt::TestComponent::Test, winrt::TestComponent::TestObject>>(runtime, callback));
             },
             [](const winrt::Windows::Foundation::IInspectable& thisValue, winrt::event_token token) {
@@ -2767,7 +2767,7 @@ namespace rnwinrt::interfaces::TestComponent::ITest
             }
         },
         { "refeventhandler",
-            [](jsi::Runtime& runtime, const winrt::Windows::Foundation::IInspectable& thisValue, const jsi::Value& callback) {
+            [](napi_wrappers::Runtime& runtime, const winrt::Windows::Foundation::IInspectable& thisValue, const napi_wrappers::Value& callback) {
                 return thisValue.as<winrt::TestComponent::ITest>().RefEventHandler(convert_value_to_native<winrt::Windows::Foundation::TypedEventHandler<winrt::TestComponent::Test, winrt::Windows::Foundation::IReference<int32_t>>>(runtime, callback));
             },
             [](const winrt::Windows::Foundation::IInspectable& thisValue, winrt::event_token token) {
@@ -2775,7 +2775,7 @@ namespace rnwinrt::interfaces::TestComponent::ITest
             }
         },
         { "stringeventhandler",
-            [](jsi::Runtime& runtime, const winrt::Windows::Foundation::IInspectable& thisValue, const jsi::Value& callback) {
+            [](napi_wrappers::Runtime& runtime, const winrt::Windows::Foundation::IInspectable& thisValue, const napi_wrappers::Value& callback) {
                 return thisValue.as<winrt::TestComponent::ITest>().StringEventHandler(convert_value_to_native<winrt::Windows::Foundation::TypedEventHandler<winrt::TestComponent::Test, winrt::hstring>>(runtime, callback));
             },
             [](const winrt::Windows::Foundation::IInspectable& thisValue, winrt::event_token token) {
@@ -2786,7 +2786,7 @@ namespace rnwinrt::interfaces::TestComponent::ITest
 
     static constexpr const static_interface_data::function_mapping function_data[] = {
         { "add",
-            []([[maybe_unused]] jsi::Runtime& runtime, const winrt::Windows::Foundation::IInspectable& thisValue, [[maybe_unused]] const jsi::Value* args) {
+            []([[maybe_unused]] napi_wrappers::Runtime& runtime, const winrt::Windows::Foundation::IInspectable& thisValue, [[maybe_unused]] const napi_wrappers::Value* args) {
                     auto arg0 = convert_value_to_native<int32_t>(runtime, args[0]);
                     auto arg1 = convert_value_to_native<int32_t>(runtime, args[1]);
                     auto result = thisValue.as<winrt::TestComponent::ITest>().Add(arg0, arg1);
@@ -2794,14 +2794,14 @@ namespace rnwinrt::interfaces::TestComponent::ITest
                 },
                 2, false },
         { "addAll",
-            []([[maybe_unused]] jsi::Runtime& runtime, const winrt::Windows::Foundation::IInspectable& thisValue, [[maybe_unused]] const jsi::Value* args) {
+            []([[maybe_unused]] napi_wrappers::Runtime& runtime, const winrt::Windows::Foundation::IInspectable& thisValue, [[maybe_unused]] const napi_wrappers::Value* args) {
                     auto arg0 = convert_value_to_native<winrt::array_view<const int32_t>>(runtime, args[0]);
                     auto result = thisValue.as<winrt::TestComponent::ITest>().AddAll(arg0);
                     return convert_native_to_value(runtime, result);
                 },
                 1, false },
         { "append",
-            []([[maybe_unused]] jsi::Runtime& runtime, const winrt::Windows::Foundation::IInspectable& thisValue, [[maybe_unused]] const jsi::Value* args) {
+            []([[maybe_unused]] napi_wrappers::Runtime& runtime, const winrt::Windows::Foundation::IInspectable& thisValue, [[maybe_unused]] const napi_wrappers::Value* args) {
                     auto arg0 = convert_value_to_native<winrt::hstring>(runtime, args[0]);
                     auto arg1 = convert_value_to_native<char16_t>(runtime, args[1]);
                     auto arg2 = convert_value_to_native<winrt::hstring>(runtime, args[2]);
@@ -2810,27 +2810,27 @@ namespace rnwinrt::interfaces::TestComponent::ITest
                 },
                 3, false },
         { "appendAll",
-            []([[maybe_unused]] jsi::Runtime& runtime, const winrt::Windows::Foundation::IInspectable& thisValue, [[maybe_unused]] const jsi::Value* args) {
+            []([[maybe_unused]] napi_wrappers::Runtime& runtime, const winrt::Windows::Foundation::IInspectable& thisValue, [[maybe_unused]] const napi_wrappers::Value* args) {
                     auto arg0 = convert_value_to_native<winrt::array_view<const winrt::hstring>>(runtime, args[0]);
                     auto result = thisValue.as<winrt::TestComponent::ITest>().AppendAll(arg0);
                     return convert_native_to_value(runtime, result);
                 },
                 1, false },
         { "arityOverload",
-            []([[maybe_unused]] jsi::Runtime& runtime, const winrt::Windows::Foundation::IInspectable& thisValue, [[maybe_unused]] const jsi::Value* args) {
+            []([[maybe_unused]] napi_wrappers::Runtime& runtime, const winrt::Windows::Foundation::IInspectable& thisValue, [[maybe_unused]] const napi_wrappers::Value* args) {
                     auto result = thisValue.as<winrt::TestComponent::ITest>().ArityOverload();
                     return convert_native_to_value(runtime, result);
                 },
                 0, false },
         { "arityOverload",
-            []([[maybe_unused]] jsi::Runtime& runtime, const winrt::Windows::Foundation::IInspectable& thisValue, [[maybe_unused]] const jsi::Value* args) {
+            []([[maybe_unused]] napi_wrappers::Runtime& runtime, const winrt::Windows::Foundation::IInspectable& thisValue, [[maybe_unused]] const napi_wrappers::Value* args) {
                     auto arg0 = convert_value_to_native<winrt::hstring>(runtime, args[0]);
                     auto result = thisValue.as<winrt::TestComponent::ITest>().ArityOverload(arg0);
                     return convert_native_to_value(runtime, result);
                 },
                 1, false },
         { "arityOverload",
-            []([[maybe_unused]] jsi::Runtime& runtime, const winrt::Windows::Foundation::IInspectable& thisValue, [[maybe_unused]] const jsi::Value* args) {
+            []([[maybe_unused]] napi_wrappers::Runtime& runtime, const winrt::Windows::Foundation::IInspectable& thisValue, [[maybe_unused]] const napi_wrappers::Value* args) {
                     auto arg0 = convert_value_to_native<winrt::hstring>(runtime, args[0]);
                     auto arg1 = convert_value_to_native<winrt::hstring>(runtime, args[1]);
                     auto result = thisValue.as<winrt::TestComponent::ITest>().ArityOverload(arg0, arg1);
@@ -2838,15 +2838,15 @@ namespace rnwinrt::interfaces::TestComponent::ITest
                 },
                 2, false },
         { "assignPropertyValueAsType",
-            []([[maybe_unused]] jsi::Runtime& runtime, const winrt::Windows::Foundation::IInspectable& thisValue, [[maybe_unused]] const jsi::Value* args) {
+            []([[maybe_unused]] napi_wrappers::Runtime& runtime, const winrt::Windows::Foundation::IInspectable& thisValue, [[maybe_unused]] const napi_wrappers::Value* args) {
                     auto arg0 = convert_value_to_native<winrt::Windows::Foundation::IPropertyValue>(runtime, args[0]);
                     auto arg1 = convert_value_to_native<winrt::hstring>(runtime, args[1]);
                     thisValue.as<winrt::TestComponent::ITest>().AssignPropertyValueAsType(arg0, arg1);
-                    return jsi::Value::undefined();
+                    return napi_wrappers::Value::undefined();
                 },
                 2, false },
         { "boolArrayOutParam",
-            []([[maybe_unused]] jsi::Runtime& runtime, const winrt::Windows::Foundation::IInspectable& thisValue, [[maybe_unused]] const jsi::Value* args) {
+            []([[maybe_unused]] napi_wrappers::Runtime& runtime, const winrt::Windows::Foundation::IInspectable& thisValue, [[maybe_unused]] const napi_wrappers::Value* args) {
                     auto arg0 = convert_value_to_native<winrt::array_view<const bool>>(runtime, args[0]);
                     winrt::com_array<bool> arg1;
                     winrt::com_array<bool> arg2;
@@ -2855,14 +2855,14 @@ namespace rnwinrt::interfaces::TestComponent::ITest
                 },
                 1, false },
         { "boolFillParam",
-            []([[maybe_unused]] jsi::Runtime& runtime, const winrt::Windows::Foundation::IInspectable& thisValue, [[maybe_unused]] const jsi::Value* args) {
+            []([[maybe_unused]] napi_wrappers::Runtime& runtime, const winrt::Windows::Foundation::IInspectable& thisValue, [[maybe_unused]] const napi_wrappers::Value* args) {
                     auto arg0 = convert_value_to_native<winrt::array_view<bool>>(runtime, args[0]);
                     thisValue.as<winrt::TestComponent::ITest>().BoolFillParam(arg0);
-                    return jsi::Value::undefined();
+                    return napi_wrappers::Value::undefined();
                 },
                 1, false },
         { "boolOutParam",
-            []([[maybe_unused]] jsi::Runtime& runtime, const winrt::Windows::Foundation::IInspectable& thisValue, [[maybe_unused]] const jsi::Value* args) {
+            []([[maybe_unused]] napi_wrappers::Runtime& runtime, const winrt::Windows::Foundation::IInspectable& thisValue, [[maybe_unused]] const napi_wrappers::Value* args) {
                     auto arg0 = convert_value_to_native<bool>(runtime, args[0]);
                     auto arg1 = convert_value_to_native<bool>(runtime, args[1]);
                     bool arg2;
@@ -2872,7 +2872,7 @@ namespace rnwinrt::interfaces::TestComponent::ITest
                 },
                 2, false },
         { "charArrayOutParam",
-            []([[maybe_unused]] jsi::Runtime& runtime, const winrt::Windows::Foundation::IInspectable& thisValue, [[maybe_unused]] const jsi::Value* args) {
+            []([[maybe_unused]] napi_wrappers::Runtime& runtime, const winrt::Windows::Foundation::IInspectable& thisValue, [[maybe_unused]] const napi_wrappers::Value* args) {
                     auto arg0 = convert_value_to_native<winrt::array_view<const char16_t>>(runtime, args[0]);
                     winrt::com_array<char16_t> arg1;
                     winrt::com_array<char16_t> arg2;
@@ -2881,14 +2881,14 @@ namespace rnwinrt::interfaces::TestComponent::ITest
                 },
                 1, false },
         { "charFillParam",
-            []([[maybe_unused]] jsi::Runtime& runtime, const winrt::Windows::Foundation::IInspectable& thisValue, [[maybe_unused]] const jsi::Value* args) {
+            []([[maybe_unused]] napi_wrappers::Runtime& runtime, const winrt::Windows::Foundation::IInspectable& thisValue, [[maybe_unused]] const napi_wrappers::Value* args) {
                     auto arg0 = convert_value_to_native<winrt::array_view<char16_t>>(runtime, args[0]);
                     thisValue.as<winrt::TestComponent::ITest>().CharFillParam(arg0);
-                    return jsi::Value::undefined();
+                    return napi_wrappers::Value::undefined();
                 },
                 1, false },
         { "charOutParam",
-            []([[maybe_unused]] jsi::Runtime& runtime, const winrt::Windows::Foundation::IInspectable& thisValue, [[maybe_unused]] const jsi::Value* args) {
+            []([[maybe_unused]] napi_wrappers::Runtime& runtime, const winrt::Windows::Foundation::IInspectable& thisValue, [[maybe_unused]] const napi_wrappers::Value* args) {
                     auto arg0 = convert_value_to_native<char16_t>(runtime, args[0]);
                     char16_t arg1;
                     char16_t arg2;
@@ -2897,7 +2897,7 @@ namespace rnwinrt::interfaces::TestComponent::ITest
                 },
                 1, false },
         { "compositeStructArrayOutParam",
-            []([[maybe_unused]] jsi::Runtime& runtime, const winrt::Windows::Foundation::IInspectable& thisValue, [[maybe_unused]] const jsi::Value* args) {
+            []([[maybe_unused]] napi_wrappers::Runtime& runtime, const winrt::Windows::Foundation::IInspectable& thisValue, [[maybe_unused]] const napi_wrappers::Value* args) {
                     auto arg0 = convert_value_to_native<winrt::array_view<const winrt::TestComponent::CompositeType>>(runtime, args[0]);
                     winrt::com_array<winrt::TestComponent::CompositeType> arg1;
                     winrt::com_array<winrt::TestComponent::CompositeType> arg2;
@@ -2906,14 +2906,14 @@ namespace rnwinrt::interfaces::TestComponent::ITest
                 },
                 1, false },
         { "compositeStructFillParam",
-            []([[maybe_unused]] jsi::Runtime& runtime, const winrt::Windows::Foundation::IInspectable& thisValue, [[maybe_unused]] const jsi::Value* args) {
+            []([[maybe_unused]] napi_wrappers::Runtime& runtime, const winrt::Windows::Foundation::IInspectable& thisValue, [[maybe_unused]] const napi_wrappers::Value* args) {
                     auto arg0 = convert_value_to_native<winrt::array_view<winrt::TestComponent::CompositeType>>(runtime, args[0]);
                     thisValue.as<winrt::TestComponent::ITest>().CompositeStructFillParam(arg0);
-                    return jsi::Value::undefined();
+                    return napi_wrappers::Value::undefined();
                 },
                 1, false },
         { "compositeStructOutParam",
-            []([[maybe_unused]] jsi::Runtime& runtime, const winrt::Windows::Foundation::IInspectable& thisValue, [[maybe_unused]] const jsi::Value* args) {
+            []([[maybe_unused]] napi_wrappers::Runtime& runtime, const winrt::Windows::Foundation::IInspectable& thisValue, [[maybe_unused]] const napi_wrappers::Value* args) {
                     auto arg0 = convert_value_to_native<winrt::TestComponent::CompositeType>(runtime, args[0]);
                     winrt::TestComponent::CompositeType arg1;
                     winrt::TestComponent::CompositeType arg2;
@@ -2922,13 +2922,13 @@ namespace rnwinrt::interfaces::TestComponent::ITest
                 },
                 1, false },
         { "contractArityOverload",
-            []([[maybe_unused]] jsi::Runtime& runtime, const winrt::Windows::Foundation::IInspectable& thisValue, [[maybe_unused]] const jsi::Value* args) {
+            []([[maybe_unused]] napi_wrappers::Runtime& runtime, const winrt::Windows::Foundation::IInspectable& thisValue, [[maybe_unused]] const napi_wrappers::Value* args) {
                     auto result = thisValue.as<winrt::TestComponent::ITest>().ContractArityOverload();
                     return convert_native_to_value(runtime, result);
                 },
                 0, false },
         { "contractDefaultOverloadV1",
-            []([[maybe_unused]] jsi::Runtime& runtime, const winrt::Windows::Foundation::IInspectable& thisValue, [[maybe_unused]] const jsi::Value* args) {
+            []([[maybe_unused]] napi_wrappers::Runtime& runtime, const winrt::Windows::Foundation::IInspectable& thisValue, [[maybe_unused]] const napi_wrappers::Value* args) {
                     auto arg0 = convert_value_to_native<winrt::hstring>(runtime, args[0]);
                     auto arg1 = convert_value_to_native<int32_t>(runtime, args[1]);
                     auto result = thisValue.as<winrt::TestComponent::ITest>().ContractDefaultOverloadV1(arg0, arg1);
@@ -2936,7 +2936,7 @@ namespace rnwinrt::interfaces::TestComponent::ITest
                 },
                 2, true },
         { "contractDefaultOverloadV2",
-            []([[maybe_unused]] jsi::Runtime& runtime, const winrt::Windows::Foundation::IInspectable& thisValue, [[maybe_unused]] const jsi::Value* args) {
+            []([[maybe_unused]] napi_wrappers::Runtime& runtime, const winrt::Windows::Foundation::IInspectable& thisValue, [[maybe_unused]] const napi_wrappers::Value* args) {
                     auto arg0 = convert_value_to_native<winrt::hstring>(runtime, args[0]);
                     auto arg1 = convert_value_to_native<double>(runtime, args[1]);
                     auto result = thisValue.as<winrt::TestComponent::ITest>().ContractDefaultOverloadV2(arg0, arg1);
@@ -2944,7 +2944,7 @@ namespace rnwinrt::interfaces::TestComponent::ITest
                 },
                 2, false },
         { "contractOutParamOverloadV1",
-            []([[maybe_unused]] jsi::Runtime& runtime, const winrt::Windows::Foundation::IInspectable& thisValue, [[maybe_unused]] const jsi::Value* args) {
+            []([[maybe_unused]] napi_wrappers::Runtime& runtime, const winrt::Windows::Foundation::IInspectable& thisValue, [[maybe_unused]] const napi_wrappers::Value* args) {
                     auto arg0 = convert_value_to_native<winrt::hstring>(runtime, args[0]);
                     winrt::hstring arg1;
                     auto result = thisValue.as<winrt::TestComponent::ITest>().ContractOutParamOverloadV1(arg0, arg1);
@@ -2952,7 +2952,7 @@ namespace rnwinrt::interfaces::TestComponent::ITest
                 },
                 1, true },
         { "contractOutParamOverloadV1",
-            []([[maybe_unused]] jsi::Runtime& runtime, const winrt::Windows::Foundation::IInspectable& thisValue, [[maybe_unused]] const jsi::Value* args) {
+            []([[maybe_unused]] napi_wrappers::Runtime& runtime, const winrt::Windows::Foundation::IInspectable& thisValue, [[maybe_unused]] const napi_wrappers::Value* args) {
                     auto arg0 = convert_value_to_native<winrt::hstring>(runtime, args[0]);
                     auto arg1 = convert_value_to_native<winrt::hstring>(runtime, args[1]);
                     auto result = thisValue.as<winrt::TestComponent::ITest>().ContractOutParamOverloadV1(arg0, arg1);
@@ -2960,20 +2960,20 @@ namespace rnwinrt::interfaces::TestComponent::ITest
                 },
                 2, true },
         { "contractOutParamOverloadV2",
-            []([[maybe_unused]] jsi::Runtime& runtime, const winrt::Windows::Foundation::IInspectable& thisValue, [[maybe_unused]] const jsi::Value* args) {
+            []([[maybe_unused]] napi_wrappers::Runtime& runtime, const winrt::Windows::Foundation::IInspectable& thisValue, [[maybe_unused]] const napi_wrappers::Value* args) {
                     auto arg0 = convert_value_to_native<char16_t>(runtime, args[0]);
                     auto result = thisValue.as<winrt::TestComponent::ITest>().ContractOutParamOverloadV2(arg0);
                     return convert_native_to_value(runtime, result);
                 },
                 1, false },
         { "dateTimePropertyCppValue",
-            []([[maybe_unused]] jsi::Runtime& runtime, const winrt::Windows::Foundation::IInspectable& thisValue, [[maybe_unused]] const jsi::Value* args) {
+            []([[maybe_unused]] napi_wrappers::Runtime& runtime, const winrt::Windows::Foundation::IInspectable& thisValue, [[maybe_unused]] const napi_wrappers::Value* args) {
                     auto result = thisValue.as<winrt::TestComponent::ITest>().DateTimePropertyCppValue();
                     return convert_native_to_value(runtime, result);
                 },
                 0, false },
         { "defaultOverload",
-            []([[maybe_unused]] jsi::Runtime& runtime, const winrt::Windows::Foundation::IInspectable& thisValue, [[maybe_unused]] const jsi::Value* args) {
+            []([[maybe_unused]] napi_wrappers::Runtime& runtime, const winrt::Windows::Foundation::IInspectable& thisValue, [[maybe_unused]] const napi_wrappers::Value* args) {
                     auto arg0 = convert_value_to_native<winrt::hstring>(runtime, args[0]);
                     auto arg1 = convert_value_to_native<int32_t>(runtime, args[1]);
                     auto result = thisValue.as<winrt::TestComponent::ITest>().DefaultOverload(arg0, arg1);
@@ -2981,7 +2981,7 @@ namespace rnwinrt::interfaces::TestComponent::ITest
                 },
                 2, true },
         { "enumArrayOutParam",
-            []([[maybe_unused]] jsi::Runtime& runtime, const winrt::Windows::Foundation::IInspectable& thisValue, [[maybe_unused]] const jsi::Value* args) {
+            []([[maybe_unused]] napi_wrappers::Runtime& runtime, const winrt::Windows::Foundation::IInspectable& thisValue, [[maybe_unused]] const napi_wrappers::Value* args) {
                     auto arg0 = convert_value_to_native<winrt::array_view<const winrt::TestComponent::TestEnum>>(runtime, args[0]);
                     winrt::com_array<winrt::TestComponent::TestEnum> arg1;
                     winrt::com_array<winrt::TestComponent::TestEnum> arg2;
@@ -2990,14 +2990,14 @@ namespace rnwinrt::interfaces::TestComponent::ITest
                 },
                 1, false },
         { "enumFillParam",
-            []([[maybe_unused]] jsi::Runtime& runtime, const winrt::Windows::Foundation::IInspectable& thisValue, [[maybe_unused]] const jsi::Value* args) {
+            []([[maybe_unused]] napi_wrappers::Runtime& runtime, const winrt::Windows::Foundation::IInspectable& thisValue, [[maybe_unused]] const napi_wrappers::Value* args) {
                     auto arg0 = convert_value_to_native<winrt::array_view<winrt::TestComponent::TestEnum>>(runtime, args[0]);
                     thisValue.as<winrt::TestComponent::ITest>().EnumFillParam(arg0);
-                    return jsi::Value::undefined();
+                    return napi_wrappers::Value::undefined();
                 },
                 1, false },
         { "enumOutParam",
-            []([[maybe_unused]] jsi::Runtime& runtime, const winrt::Windows::Foundation::IInspectable& thisValue, [[maybe_unused]] const jsi::Value* args) {
+            []([[maybe_unused]] napi_wrappers::Runtime& runtime, const winrt::Windows::Foundation::IInspectable& thisValue, [[maybe_unused]] const napi_wrappers::Value* args) {
                     auto arg0 = convert_value_to_native<winrt::TestComponent::TestEnum>(runtime, args[0]);
                     winrt::TestComponent::TestEnum arg1;
                     winrt::TestComponent::TestEnum arg2;
@@ -3006,7 +3006,7 @@ namespace rnwinrt::interfaces::TestComponent::ITest
                 },
                 1, false },
         { "guidArrayOutParam",
-            []([[maybe_unused]] jsi::Runtime& runtime, const winrt::Windows::Foundation::IInspectable& thisValue, [[maybe_unused]] const jsi::Value* args) {
+            []([[maybe_unused]] napi_wrappers::Runtime& runtime, const winrt::Windows::Foundation::IInspectable& thisValue, [[maybe_unused]] const napi_wrappers::Value* args) {
                     auto arg0 = convert_value_to_native<winrt::array_view<const winrt::guid>>(runtime, args[0]);
                     winrt::com_array<winrt::guid> arg1;
                     winrt::com_array<winrt::guid> arg2;
@@ -3015,14 +3015,14 @@ namespace rnwinrt::interfaces::TestComponent::ITest
                 },
                 1, false },
         { "guidFillParam",
-            []([[maybe_unused]] jsi::Runtime& runtime, const winrt::Windows::Foundation::IInspectable& thisValue, [[maybe_unused]] const jsi::Value* args) {
+            []([[maybe_unused]] napi_wrappers::Runtime& runtime, const winrt::Windows::Foundation::IInspectable& thisValue, [[maybe_unused]] const napi_wrappers::Value* args) {
                     auto arg0 = convert_value_to_native<winrt::array_view<winrt::guid>>(runtime, args[0]);
                     thisValue.as<winrt::TestComponent::ITest>().GuidFillParam(arg0);
-                    return jsi::Value::undefined();
+                    return napi_wrappers::Value::undefined();
                 },
                 1, false },
         { "guidOutParam",
-            []([[maybe_unused]] jsi::Runtime& runtime, const winrt::Windows::Foundation::IInspectable& thisValue, [[maybe_unused]] const jsi::Value* args) {
+            []([[maybe_unused]] napi_wrappers::Runtime& runtime, const winrt::Windows::Foundation::IInspectable& thisValue, [[maybe_unused]] const napi_wrappers::Value* args) {
                     auto arg0 = convert_value_to_native<winrt::guid>(runtime, args[0]);
                     winrt::guid arg1;
                     winrt::guid arg2;
@@ -3031,7 +3031,7 @@ namespace rnwinrt::interfaces::TestComponent::ITest
                 },
                 1, false },
         { "interwovenParams",
-            []([[maybe_unused]] jsi::Runtime& runtime, const winrt::Windows::Foundation::IInspectable& thisValue, [[maybe_unused]] const jsi::Value* args) {
+            []([[maybe_unused]] napi_wrappers::Runtime& runtime, const winrt::Windows::Foundation::IInspectable& thisValue, [[maybe_unused]] const napi_wrappers::Value* args) {
                     auto arg0 = convert_value_to_native<bool>(runtime, args[0]);
                     bool arg1;
                     auto arg2 = convert_value_to_native<int32_t>(runtime, args[1]);
@@ -3044,7 +3044,7 @@ namespace rnwinrt::interfaces::TestComponent::ITest
                 },
                 4, false },
         { "numericArrayOutParam",
-            []([[maybe_unused]] jsi::Runtime& runtime, const winrt::Windows::Foundation::IInspectable& thisValue, [[maybe_unused]] const jsi::Value* args) {
+            []([[maybe_unused]] napi_wrappers::Runtime& runtime, const winrt::Windows::Foundation::IInspectable& thisValue, [[maybe_unused]] const napi_wrappers::Value* args) {
                     auto arg0 = convert_value_to_native<winrt::array_view<const int32_t>>(runtime, args[0]);
                     winrt::com_array<int32_t> arg1;
                     winrt::com_array<int32_t> arg2;
@@ -3053,14 +3053,14 @@ namespace rnwinrt::interfaces::TestComponent::ITest
                 },
                 1, false },
         { "numericFillParam",
-            []([[maybe_unused]] jsi::Runtime& runtime, const winrt::Windows::Foundation::IInspectable& thisValue, [[maybe_unused]] const jsi::Value* args) {
+            []([[maybe_unused]] napi_wrappers::Runtime& runtime, const winrt::Windows::Foundation::IInspectable& thisValue, [[maybe_unused]] const napi_wrappers::Value* args) {
                     auto arg0 = convert_value_to_native<winrt::array_view<int32_t>>(runtime, args[0]);
                     thisValue.as<winrt::TestComponent::ITest>().NumericFillParam(arg0);
-                    return jsi::Value::undefined();
+                    return napi_wrappers::Value::undefined();
                 },
                 1, false },
         { "numericOutParam",
-            []([[maybe_unused]] jsi::Runtime& runtime, const winrt::Windows::Foundation::IInspectable& thisValue, [[maybe_unused]] const jsi::Value* args) {
+            []([[maybe_unused]] napi_wrappers::Runtime& runtime, const winrt::Windows::Foundation::IInspectable& thisValue, [[maybe_unused]] const napi_wrappers::Value* args) {
                     auto arg0 = convert_value_to_native<int32_t>(runtime, args[0]);
                     int32_t arg1;
                     int32_t arg2;
@@ -3069,7 +3069,7 @@ namespace rnwinrt::interfaces::TestComponent::ITest
                 },
                 1, false },
         { "objectArrayOutParam",
-            []([[maybe_unused]] jsi::Runtime& runtime, const winrt::Windows::Foundation::IInspectable& thisValue, [[maybe_unused]] const jsi::Value* args) {
+            []([[maybe_unused]] napi_wrappers::Runtime& runtime, const winrt::Windows::Foundation::IInspectable& thisValue, [[maybe_unused]] const napi_wrappers::Value* args) {
                     auto arg0 = convert_value_to_native<winrt::array_view<const winrt::TestComponent::TestObject>>(runtime, args[0]);
                     winrt::com_array<winrt::TestComponent::TestObject> arg1;
                     winrt::com_array<winrt::TestComponent::TestObject> arg2;
@@ -3078,14 +3078,14 @@ namespace rnwinrt::interfaces::TestComponent::ITest
                 },
                 1, false },
         { "objectFillParam",
-            []([[maybe_unused]] jsi::Runtime& runtime, const winrt::Windows::Foundation::IInspectable& thisValue, [[maybe_unused]] const jsi::Value* args) {
+            []([[maybe_unused]] napi_wrappers::Runtime& runtime, const winrt::Windows::Foundation::IInspectable& thisValue, [[maybe_unused]] const napi_wrappers::Value* args) {
                     auto arg0 = convert_value_to_native<winrt::array_view<winrt::TestComponent::TestObject>>(runtime, args[0]);
                     thisValue.as<winrt::TestComponent::ITest>().ObjectFillParam(arg0);
-                    return jsi::Value::undefined();
+                    return napi_wrappers::Value::undefined();
                 },
                 1, false },
         { "objectOutParam",
-            []([[maybe_unused]] jsi::Runtime& runtime, const winrt::Windows::Foundation::IInspectable& thisValue, [[maybe_unused]] const jsi::Value* args) {
+            []([[maybe_unused]] napi_wrappers::Runtime& runtime, const winrt::Windows::Foundation::IInspectable& thisValue, [[maybe_unused]] const napi_wrappers::Value* args) {
                     auto arg0 = convert_value_to_native<winrt::TestComponent::TestObject>(runtime, args[0]);
                     winrt::TestComponent::TestObject arg1{ nullptr };
                     winrt::TestComponent::TestObject arg2{ nullptr };
@@ -3094,7 +3094,7 @@ namespace rnwinrt::interfaces::TestComponent::ITest
                 },
                 1, false },
         { "or",
-            []([[maybe_unused]] jsi::Runtime& runtime, const winrt::Windows::Foundation::IInspectable& thisValue, [[maybe_unused]] const jsi::Value* args) {
+            []([[maybe_unused]] napi_wrappers::Runtime& runtime, const winrt::Windows::Foundation::IInspectable& thisValue, [[maybe_unused]] const napi_wrappers::Value* args) {
                     auto arg0 = convert_value_to_native<bool>(runtime, args[0]);
                     auto arg1 = convert_value_to_native<bool>(runtime, args[1]);
                     auto result = thisValue.as<winrt::TestComponent::ITest>().Or(arg0, arg1);
@@ -3102,14 +3102,14 @@ namespace rnwinrt::interfaces::TestComponent::ITest
                 },
                 2, false },
         { "orAll",
-            []([[maybe_unused]] jsi::Runtime& runtime, const winrt::Windows::Foundation::IInspectable& thisValue, [[maybe_unused]] const jsi::Value* args) {
+            []([[maybe_unused]] napi_wrappers::Runtime& runtime, const winrt::Windows::Foundation::IInspectable& thisValue, [[maybe_unused]] const napi_wrappers::Value* args) {
                     auto arg0 = convert_value_to_native<winrt::array_view<const bool>>(runtime, args[0]);
                     auto result = thisValue.as<winrt::TestComponent::ITest>().OrAll(arg0);
                     return convert_native_to_value(runtime, result);
                 },
                 1, false },
         { "outParamOverload",
-            []([[maybe_unused]] jsi::Runtime& runtime, const winrt::Windows::Foundation::IInspectable& thisValue, [[maybe_unused]] const jsi::Value* args) {
+            []([[maybe_unused]] napi_wrappers::Runtime& runtime, const winrt::Windows::Foundation::IInspectable& thisValue, [[maybe_unused]] const napi_wrappers::Value* args) {
                     auto arg0 = convert_value_to_native<winrt::hstring>(runtime, args[0]);
                     winrt::hstring arg1;
                     auto result = thisValue.as<winrt::TestComponent::ITest>().OutParamOverload(arg0, arg1);
@@ -3117,7 +3117,7 @@ namespace rnwinrt::interfaces::TestComponent::ITest
                 },
                 1, true },
         { "outParamOverload",
-            []([[maybe_unused]] jsi::Runtime& runtime, const winrt::Windows::Foundation::IInspectable& thisValue, [[maybe_unused]] const jsi::Value* args) {
+            []([[maybe_unused]] napi_wrappers::Runtime& runtime, const winrt::Windows::Foundation::IInspectable& thisValue, [[maybe_unused]] const napi_wrappers::Value* args) {
                     auto arg0 = convert_value_to_native<winrt::hstring>(runtime, args[0]);
                     auto arg1 = convert_value_to_native<winrt::hstring>(runtime, args[1]);
                     auto result = thisValue.as<winrt::TestComponent::ITest>().OutParamOverload(arg0, arg1);
@@ -3125,70 +3125,70 @@ namespace rnwinrt::interfaces::TestComponent::ITest
                 },
                 2, true },
         { "raiseBoolEvent",
-            []([[maybe_unused]] jsi::Runtime& runtime, const winrt::Windows::Foundation::IInspectable& thisValue, [[maybe_unused]] const jsi::Value* args) {
+            []([[maybe_unused]] napi_wrappers::Runtime& runtime, const winrt::Windows::Foundation::IInspectable& thisValue, [[maybe_unused]] const napi_wrappers::Value* args) {
                     auto arg0 = convert_value_to_native<bool>(runtime, args[0]);
                     thisValue.as<winrt::TestComponent::ITest>().RaiseBoolEvent(arg0);
-                    return jsi::Value::undefined();
+                    return napi_wrappers::Value::undefined();
                 },
                 1, false },
         { "raiseCharEvent",
-            []([[maybe_unused]] jsi::Runtime& runtime, const winrt::Windows::Foundation::IInspectable& thisValue, [[maybe_unused]] const jsi::Value* args) {
+            []([[maybe_unused]] napi_wrappers::Runtime& runtime, const winrt::Windows::Foundation::IInspectable& thisValue, [[maybe_unused]] const napi_wrappers::Value* args) {
                     auto arg0 = convert_value_to_native<char16_t>(runtime, args[0]);
                     thisValue.as<winrt::TestComponent::ITest>().RaiseCharEvent(arg0);
-                    return jsi::Value::undefined();
+                    return napi_wrappers::Value::undefined();
                 },
                 1, false },
         { "raiseCompositeStructEvent",
-            []([[maybe_unused]] jsi::Runtime& runtime, const winrt::Windows::Foundation::IInspectable& thisValue, [[maybe_unused]] const jsi::Value* args) {
+            []([[maybe_unused]] napi_wrappers::Runtime& runtime, const winrt::Windows::Foundation::IInspectable& thisValue, [[maybe_unused]] const napi_wrappers::Value* args) {
                     auto arg0 = convert_value_to_native<winrt::TestComponent::CompositeType>(runtime, args[0]);
                     thisValue.as<winrt::TestComponent::ITest>().RaiseCompositeStructEvent(arg0);
-                    return jsi::Value::undefined();
+                    return napi_wrappers::Value::undefined();
                 },
                 1, false },
         { "raiseEnumEvent",
-            []([[maybe_unused]] jsi::Runtime& runtime, const winrt::Windows::Foundation::IInspectable& thisValue, [[maybe_unused]] const jsi::Value* args) {
+            []([[maybe_unused]] napi_wrappers::Runtime& runtime, const winrt::Windows::Foundation::IInspectable& thisValue, [[maybe_unused]] const napi_wrappers::Value* args) {
                     auto arg0 = convert_value_to_native<winrt::TestComponent::TestEnum>(runtime, args[0]);
                     thisValue.as<winrt::TestComponent::ITest>().RaiseEnumEvent(arg0);
-                    return jsi::Value::undefined();
+                    return napi_wrappers::Value::undefined();
                 },
                 1, false },
         { "raiseGuidEvent",
-            []([[maybe_unused]] jsi::Runtime& runtime, const winrt::Windows::Foundation::IInspectable& thisValue, [[maybe_unused]] const jsi::Value* args) {
+            []([[maybe_unused]] napi_wrappers::Runtime& runtime, const winrt::Windows::Foundation::IInspectable& thisValue, [[maybe_unused]] const napi_wrappers::Value* args) {
                     auto arg0 = convert_value_to_native<winrt::guid>(runtime, args[0]);
                     thisValue.as<winrt::TestComponent::ITest>().RaiseGuidEvent(arg0);
-                    return jsi::Value::undefined();
+                    return napi_wrappers::Value::undefined();
                 },
                 1, false },
         { "raiseNumericEvent",
-            []([[maybe_unused]] jsi::Runtime& runtime, const winrt::Windows::Foundation::IInspectable& thisValue, [[maybe_unused]] const jsi::Value* args) {
+            []([[maybe_unused]] napi_wrappers::Runtime& runtime, const winrt::Windows::Foundation::IInspectable& thisValue, [[maybe_unused]] const napi_wrappers::Value* args) {
                     auto arg0 = convert_value_to_native<int32_t>(runtime, args[0]);
                     thisValue.as<winrt::TestComponent::ITest>().RaiseNumericEvent(arg0);
-                    return jsi::Value::undefined();
+                    return napi_wrappers::Value::undefined();
                 },
                 1, false },
         { "raiseObjectEvent",
-            []([[maybe_unused]] jsi::Runtime& runtime, const winrt::Windows::Foundation::IInspectable& thisValue, [[maybe_unused]] const jsi::Value* args) {
+            []([[maybe_unused]] napi_wrappers::Runtime& runtime, const winrt::Windows::Foundation::IInspectable& thisValue, [[maybe_unused]] const napi_wrappers::Value* args) {
                     auto arg0 = convert_value_to_native<winrt::TestComponent::TestObject>(runtime, args[0]);
                     thisValue.as<winrt::TestComponent::ITest>().RaiseObjectEvent(arg0);
-                    return jsi::Value::undefined();
+                    return napi_wrappers::Value::undefined();
                 },
                 1, false },
         { "raiseRefEvent",
-            []([[maybe_unused]] jsi::Runtime& runtime, const winrt::Windows::Foundation::IInspectable& thisValue, [[maybe_unused]] const jsi::Value* args) {
+            []([[maybe_unused]] napi_wrappers::Runtime& runtime, const winrt::Windows::Foundation::IInspectable& thisValue, [[maybe_unused]] const napi_wrappers::Value* args) {
                     auto arg0 = convert_value_to_native<winrt::Windows::Foundation::IReference<int32_t>>(runtime, args[0]);
                     thisValue.as<winrt::TestComponent::ITest>().RaiseRefEvent(arg0);
-                    return jsi::Value::undefined();
+                    return napi_wrappers::Value::undefined();
                 },
                 1, false },
         { "raiseStringEvent",
-            []([[maybe_unused]] jsi::Runtime& runtime, const winrt::Windows::Foundation::IInspectable& thisValue, [[maybe_unused]] const jsi::Value* args) {
+            []([[maybe_unused]] napi_wrappers::Runtime& runtime, const winrt::Windows::Foundation::IInspectable& thisValue, [[maybe_unused]] const napi_wrappers::Value* args) {
                     auto arg0 = convert_value_to_native<winrt::hstring>(runtime, args[0]);
                     thisValue.as<winrt::TestComponent::ITest>().RaiseStringEvent(arg0);
-                    return jsi::Value::undefined();
+                    return napi_wrappers::Value::undefined();
                 },
                 1, false },
         { "refArrayOutParam",
-            []([[maybe_unused]] jsi::Runtime& runtime, const winrt::Windows::Foundation::IInspectable& thisValue, [[maybe_unused]] const jsi::Value* args) {
+            []([[maybe_unused]] napi_wrappers::Runtime& runtime, const winrt::Windows::Foundation::IInspectable& thisValue, [[maybe_unused]] const napi_wrappers::Value* args) {
                     auto arg0 = convert_value_to_native<winrt::array_view<const winrt::Windows::Foundation::IReference<int32_t>>>(runtime, args[0]);
                     winrt::com_array<winrt::Windows::Foundation::IReference<int32_t>> arg1;
                     winrt::com_array<winrt::Windows::Foundation::IReference<int32_t>> arg2;
@@ -3197,14 +3197,14 @@ namespace rnwinrt::interfaces::TestComponent::ITest
                 },
                 1, false },
         { "refFillParam",
-            []([[maybe_unused]] jsi::Runtime& runtime, const winrt::Windows::Foundation::IInspectable& thisValue, [[maybe_unused]] const jsi::Value* args) {
+            []([[maybe_unused]] napi_wrappers::Runtime& runtime, const winrt::Windows::Foundation::IInspectable& thisValue, [[maybe_unused]] const napi_wrappers::Value* args) {
                     auto arg0 = convert_value_to_native<winrt::array_view<winrt::Windows::Foundation::IReference<int32_t>>>(runtime, args[0]);
                     thisValue.as<winrt::TestComponent::ITest>().RefFillParam(arg0);
-                    return jsi::Value::undefined();
+                    return napi_wrappers::Value::undefined();
                 },
                 1, false },
         { "refOutParam",
-            []([[maybe_unused]] jsi::Runtime& runtime, const winrt::Windows::Foundation::IInspectable& thisValue, [[maybe_unused]] const jsi::Value* args) {
+            []([[maybe_unused]] napi_wrappers::Runtime& runtime, const winrt::Windows::Foundation::IInspectable& thisValue, [[maybe_unused]] const napi_wrappers::Value* args) {
                     auto arg0 = convert_value_to_native<winrt::Windows::Foundation::IReference<int32_t>>(runtime, args[0]);
                     winrt::Windows::Foundation::IReference<int32_t> arg1;
                     winrt::Windows::Foundation::IReference<int32_t> arg2;
@@ -3213,7 +3213,7 @@ namespace rnwinrt::interfaces::TestComponent::ITest
                 },
                 1, false },
         { "stringArrayOutParam",
-            []([[maybe_unused]] jsi::Runtime& runtime, const winrt::Windows::Foundation::IInspectable& thisValue, [[maybe_unused]] const jsi::Value* args) {
+            []([[maybe_unused]] napi_wrappers::Runtime& runtime, const winrt::Windows::Foundation::IInspectable& thisValue, [[maybe_unused]] const napi_wrappers::Value* args) {
                     auto arg0 = convert_value_to_native<winrt::array_view<const winrt::hstring>>(runtime, args[0]);
                     winrt::com_array<winrt::hstring> arg1;
                     winrt::com_array<winrt::hstring> arg2;
@@ -3222,14 +3222,14 @@ namespace rnwinrt::interfaces::TestComponent::ITest
                 },
                 1, false },
         { "stringFillParam",
-            []([[maybe_unused]] jsi::Runtime& runtime, const winrt::Windows::Foundation::IInspectable& thisValue, [[maybe_unused]] const jsi::Value* args) {
+            []([[maybe_unused]] napi_wrappers::Runtime& runtime, const winrt::Windows::Foundation::IInspectable& thisValue, [[maybe_unused]] const napi_wrappers::Value* args) {
                     auto arg0 = convert_value_to_native<winrt::array_view<winrt::hstring>>(runtime, args[0]);
                     thisValue.as<winrt::TestComponent::ITest>().StringFillParam(arg0);
-                    return jsi::Value::undefined();
+                    return napi_wrappers::Value::undefined();
                 },
                 1, false },
         { "stringOutParam",
-            []([[maybe_unused]] jsi::Runtime& runtime, const winrt::Windows::Foundation::IInspectable& thisValue, [[maybe_unused]] const jsi::Value* args) {
+            []([[maybe_unused]] napi_wrappers::Runtime& runtime, const winrt::Windows::Foundation::IInspectable& thisValue, [[maybe_unused]] const napi_wrappers::Value* args) {
                     auto arg0 = convert_value_to_native<winrt::hstring>(runtime, args[0]);
                     winrt::hstring arg1;
                     winrt::hstring arg2;
@@ -3238,7 +3238,7 @@ namespace rnwinrt::interfaces::TestComponent::ITest
                 },
                 1, false },
         { "timeSpanPropertyCppValue",
-            []([[maybe_unused]] jsi::Runtime& runtime, const winrt::Windows::Foundation::IInspectable& thisValue, [[maybe_unused]] const jsi::Value* args) {
+            []([[maybe_unused]] napi_wrappers::Runtime& runtime, const winrt::Windows::Foundation::IInspectable& thisValue, [[maybe_unused]] const napi_wrappers::Value* args) {
                     auto result = thisValue.as<winrt::TestComponent::ITest>().TimeSpanPropertyCppValue();
                     return convert_native_to_value(runtime, result);
                 },
@@ -3253,21 +3253,21 @@ namespace rnwinrt::interfaces::TestComponent::ITest2
     static constexpr const static_interface_data::property_mapping property_data[] = {
         { "boolProperty",
             nullptr,
-            [](jsi::Runtime& runtime, const winrt::Windows::Foundation::IInspectable& thisValue, const jsi::Value& value) {
+            [](napi_wrappers::Runtime& runtime, const winrt::Windows::Foundation::IInspectable& thisValue, const napi_wrappers::Value& value) {
                 thisValue.as<winrt::TestComponent::ITest2>().BoolProperty(convert_value_to_native<bool>(runtime, value));
             },
         },
     };
     static constexpr const static_interface_data::function_mapping function_data[] = {
         { "contractArityOverload",
-            []([[maybe_unused]] jsi::Runtime& runtime, const winrt::Windows::Foundation::IInspectable& thisValue, [[maybe_unused]] const jsi::Value* args) {
+            []([[maybe_unused]] napi_wrappers::Runtime& runtime, const winrt::Windows::Foundation::IInspectable& thisValue, [[maybe_unused]] const napi_wrappers::Value* args) {
                     auto arg0 = convert_value_to_native<winrt::hstring>(runtime, args[0]);
                     auto result = thisValue.as<winrt::TestComponent::ITest2>().ContractArityOverload(arg0);
                     return convert_native_to_value(runtime, result);
                 },
                 1, false },
         { "contractDefaultOverloadV1",
-            []([[maybe_unused]] jsi::Runtime& runtime, const winrt::Windows::Foundation::IInspectable& thisValue, [[maybe_unused]] const jsi::Value* args) {
+            []([[maybe_unused]] napi_wrappers::Runtime& runtime, const winrt::Windows::Foundation::IInspectable& thisValue, [[maybe_unused]] const napi_wrappers::Value* args) {
                     auto arg0 = convert_value_to_native<winrt::hstring>(runtime, args[0]);
                     auto arg1 = convert_value_to_native<double>(runtime, args[1]);
                     auto result = thisValue.as<winrt::TestComponent::ITest2>().ContractDefaultOverloadV1(arg0, arg1);
@@ -3275,7 +3275,7 @@ namespace rnwinrt::interfaces::TestComponent::ITest2
                 },
                 2, false },
         { "contractDefaultOverloadV2",
-            []([[maybe_unused]] jsi::Runtime& runtime, const winrt::Windows::Foundation::IInspectable& thisValue, [[maybe_unused]] const jsi::Value* args) {
+            []([[maybe_unused]] napi_wrappers::Runtime& runtime, const winrt::Windows::Foundation::IInspectable& thisValue, [[maybe_unused]] const napi_wrappers::Value* args) {
                     auto arg0 = convert_value_to_native<winrt::hstring>(runtime, args[0]);
                     auto arg1 = convert_value_to_native<int32_t>(runtime, args[1]);
                     auto result = thisValue.as<winrt::TestComponent::ITest2>().ContractDefaultOverloadV2(arg0, arg1);
@@ -3283,14 +3283,14 @@ namespace rnwinrt::interfaces::TestComponent::ITest2
                 },
                 2, true },
         { "contractOutParamOverloadV1",
-            []([[maybe_unused]] jsi::Runtime& runtime, const winrt::Windows::Foundation::IInspectable& thisValue, [[maybe_unused]] const jsi::Value* args) {
+            []([[maybe_unused]] napi_wrappers::Runtime& runtime, const winrt::Windows::Foundation::IInspectable& thisValue, [[maybe_unused]] const napi_wrappers::Value* args) {
                     auto arg0 = convert_value_to_native<char16_t>(runtime, args[0]);
                     auto result = thisValue.as<winrt::TestComponent::ITest2>().ContractOutParamOverloadV1(arg0);
                     return convert_native_to_value(runtime, result);
                 },
                 1, false },
         { "contractOutParamOverloadV2",
-            []([[maybe_unused]] jsi::Runtime& runtime, const winrt::Windows::Foundation::IInspectable& thisValue, [[maybe_unused]] const jsi::Value* args) {
+            []([[maybe_unused]] napi_wrappers::Runtime& runtime, const winrt::Windows::Foundation::IInspectable& thisValue, [[maybe_unused]] const napi_wrappers::Value* args) {
                     auto arg0 = convert_value_to_native<winrt::hstring>(runtime, args[0]);
                     winrt::hstring arg1;
                     auto result = thisValue.as<winrt::TestComponent::ITest2>().ContractOutParamOverloadV2(arg0, arg1);
@@ -3298,7 +3298,7 @@ namespace rnwinrt::interfaces::TestComponent::ITest2
                 },
                 1, true },
         { "contractOutParamOverloadV2",
-            []([[maybe_unused]] jsi::Runtime& runtime, const winrt::Windows::Foundation::IInspectable& thisValue, [[maybe_unused]] const jsi::Value* args) {
+            []([[maybe_unused]] napi_wrappers::Runtime& runtime, const winrt::Windows::Foundation::IInspectable& thisValue, [[maybe_unused]] const napi_wrappers::Value* args) {
                     auto arg0 = convert_value_to_native<winrt::hstring>(runtime, args[0]);
                     auto arg1 = convert_value_to_native<winrt::hstring>(runtime, args[1]);
                     auto result = thisValue.as<winrt::TestComponent::ITest2>().ContractOutParamOverloadV2(arg0, arg1);
@@ -3314,7 +3314,7 @@ namespace rnwinrt::interfaces::TestComponent::ITestInterface
 {
     static constexpr const static_interface_data::property_mapping property_data[] = {
         { "magicValue",
-            [](jsi::Runtime& runtime, const winrt::Windows::Foundation::IInspectable& thisValue) {
+            [](napi_wrappers::Runtime& runtime, const winrt::Windows::Foundation::IInspectable& thisValue) {
                 return convert_native_to_value(runtime, thisValue.as<winrt::TestComponent::ITestInterface>().MagicValue());
             },
             nullptr
@@ -3327,7 +3327,7 @@ namespace rnwinrt::interfaces::TestComponent::ITestObject
 {
     static constexpr const static_interface_data::property_mapping property_data[] = {
         { "value",
-            [](jsi::Runtime& runtime, const winrt::Windows::Foundation::IInspectable& thisValue) {
+            [](napi_wrappers::Runtime& runtime, const winrt::Windows::Foundation::IInspectable& thisValue) {
                 return convert_native_to_value(runtime, thisValue.as<winrt::TestComponent::ITestObject>().Value());
             },
             nullptr
@@ -3338,14 +3338,14 @@ namespace rnwinrt::interfaces::TestComponent::ITestObject
 
 namespace rnwinrt
 {
-    jsi::Value projected_value_traits<winrt::TestComponent::BooleanTypes>::as_value(jsi::Runtime& runtime, const winrt::TestComponent::BooleanTypes& value)
+    napi_wrappers::Value projected_value_traits<winrt::TestComponent::BooleanTypes>::as_value(napi_wrappers::Runtime& runtime, const winrt::TestComponent::BooleanTypes& value)
     {
-        jsi::Object result(runtime);
+        napi_wrappers::Object result(runtime);
         result.setProperty(runtime, "value", convert_native_to_value(runtime, value.Value));
         return result;
     }
 
-    winrt::TestComponent::BooleanTypes projected_value_traits<winrt::TestComponent::BooleanTypes>::as_native(jsi::Runtime& runtime, const jsi::Value& value)
+    winrt::TestComponent::BooleanTypes projected_value_traits<winrt::TestComponent::BooleanTypes>::as_native(napi_wrappers::Runtime& runtime, const napi_wrappers::Value& value)
     {
         winrt::TestComponent::BooleanTypes result{};
         auto obj = value.asObject(runtime);
@@ -3354,16 +3354,16 @@ namespace rnwinrt
         return result;
     }
 
-    jsi::Value projected_value_traits<winrt::TestComponent::CompositeType>::as_value(jsi::Runtime& runtime, const winrt::TestComponent::CompositeType& value)
+    napi_wrappers::Value projected_value_traits<winrt::TestComponent::CompositeType>::as_value(napi_wrappers::Runtime& runtime, const winrt::TestComponent::CompositeType& value)
     {
-        jsi::Object result(runtime);
+        napi_wrappers::Object result(runtime);
         result.setProperty(runtime, "numerics", convert_native_to_value(runtime, value.Numerics));
         result.setProperty(runtime, "strings", convert_native_to_value(runtime, value.Strings));
         result.setProperty(runtime, "bools", convert_native_to_value(runtime, value.Bools));
         return result;
     }
 
-    winrt::TestComponent::CompositeType projected_value_traits<winrt::TestComponent::CompositeType>::as_native(jsi::Runtime& runtime, const jsi::Value& value)
+    winrt::TestComponent::CompositeType projected_value_traits<winrt::TestComponent::CompositeType>::as_native(napi_wrappers::Runtime& runtime, const napi_wrappers::Value& value)
     {
         winrt::TestComponent::CompositeType result{};
         auto obj = value.asObject(runtime);
@@ -3376,9 +3376,9 @@ namespace rnwinrt
         return result;
     }
 
-    jsi::Value projected_value_traits<winrt::TestComponent::NumericTypes>::as_value(jsi::Runtime& runtime, const winrt::TestComponent::NumericTypes& value)
+    napi_wrappers::Value projected_value_traits<winrt::TestComponent::NumericTypes>::as_value(napi_wrappers::Runtime& runtime, const winrt::TestComponent::NumericTypes& value)
     {
-        jsi::Object result(runtime);
+        napi_wrappers::Object result(runtime);
         result.setProperty(runtime, "u8", convert_native_to_value(runtime, value.U8));
         result.setProperty(runtime, "u16", convert_native_to_value(runtime, value.U16));
         result.setProperty(runtime, "u32", convert_native_to_value(runtime, value.U32));
@@ -3392,7 +3392,7 @@ namespace rnwinrt
         return result;
     }
 
-    winrt::TestComponent::NumericTypes projected_value_traits<winrt::TestComponent::NumericTypes>::as_native(jsi::Runtime& runtime, const jsi::Value& value)
+    winrt::TestComponent::NumericTypes projected_value_traits<winrt::TestComponent::NumericTypes>::as_native(napi_wrappers::Runtime& runtime, const napi_wrappers::Value& value)
     {
         winrt::TestComponent::NumericTypes result{};
         auto obj = value.asObject(runtime);
@@ -3419,16 +3419,16 @@ namespace rnwinrt
         return result;
     }
 
-    jsi::Value projected_value_traits<winrt::TestComponent::StringTypes>::as_value(jsi::Runtime& runtime, const winrt::TestComponent::StringTypes& value)
+    napi_wrappers::Value projected_value_traits<winrt::TestComponent::StringTypes>::as_value(napi_wrappers::Runtime& runtime, const winrt::TestComponent::StringTypes& value)
     {
-        jsi::Object result(runtime);
+        napi_wrappers::Object result(runtime);
         result.setProperty(runtime, "char", convert_native_to_value(runtime, value.Char));
         result.setProperty(runtime, "string", convert_native_to_value(runtime, value.String));
         result.setProperty(runtime, "guid", convert_native_to_value(runtime, value.Guid));
         return result;
     }
 
-    winrt::TestComponent::StringTypes projected_value_traits<winrt::TestComponent::StringTypes>::as_native(jsi::Runtime& runtime, const jsi::Value& value)
+    winrt::TestComponent::StringTypes projected_value_traits<winrt::TestComponent::StringTypes>::as_native(napi_wrappers::Runtime& runtime, const napi_wrappers::Value& value)
     {
         winrt::TestComponent::StringTypes result{};
         auto obj = value.asObject(runtime);
@@ -3441,10 +3441,10 @@ namespace rnwinrt
         return result;
     }
 
-    jsi::Value projected_value_traits<winrt::TestComponent::BoolArrayDelegate>::as_value(jsi::Runtime& runtime, const winrt::TestComponent::BoolArrayDelegate& value)
+    napi_wrappers::Value projected_value_traits<winrt::TestComponent::BoolArrayDelegate>::as_value(napi_wrappers::Runtime& runtime, const winrt::TestComponent::BoolArrayDelegate& value)
     {
-        return jsi::Function::createFromHostFunction(runtime, make_propid(runtime, "BoolArrayDelegate"), 2,
-            [value](jsi::Runtime& runtime, const jsi::Value&, [[maybe_unused]] const jsi::Value* args, size_t count) {
+        return napi_wrappers::Function::createFromHostFunction(runtime, make_propid(runtime, "BoolArrayDelegate"), 2,
+            [value](napi_wrappers::Runtime& runtime, const napi_wrappers::Value&, [[maybe_unused]] const napi_wrappers::Value* args, size_t count) {
                 if (count != 2)
                 {
                     throw_invalid_delegate_arg_count(runtime, "TestComponent"sv, "BoolArrayDelegate"sv);
@@ -3458,7 +3458,7 @@ namespace rnwinrt
             });
     }
 
-    winrt::TestComponent::BoolArrayDelegate projected_value_traits<winrt::TestComponent::BoolArrayDelegate>::as_native(jsi::Runtime& runtime, const jsi::Value& value)
+    winrt::TestComponent::BoolArrayDelegate projected_value_traits<winrt::TestComponent::BoolArrayDelegate>::as_native(napi_wrappers::Runtime& runtime, const napi_wrappers::Value& value)
     {
         return [ctxt = current_runtime_context()->add_reference(),
                    fn = value.asObject(runtime).asFunction(runtime)](winrt::array_view<const bool> param0, winrt::array_view<bool> param1, winrt::com_array<bool>& param2) {
@@ -3476,10 +3476,10 @@ namespace rnwinrt
         };
     }
 
-    jsi::Value projected_value_traits<winrt::TestComponent::BoolDelegate>::as_value(jsi::Runtime& runtime, const winrt::TestComponent::BoolDelegate& value)
+    napi_wrappers::Value projected_value_traits<winrt::TestComponent::BoolDelegate>::as_value(napi_wrappers::Runtime& runtime, const winrt::TestComponent::BoolDelegate& value)
     {
-        return jsi::Function::createFromHostFunction(runtime, make_propid(runtime, "BoolDelegate"), 1,
-            [value](jsi::Runtime& runtime, const jsi::Value&, [[maybe_unused]] const jsi::Value* args, size_t count) {
+        return napi_wrappers::Function::createFromHostFunction(runtime, make_propid(runtime, "BoolDelegate"), 1,
+            [value](napi_wrappers::Runtime& runtime, const napi_wrappers::Value&, [[maybe_unused]] const napi_wrappers::Value* args, size_t count) {
                 if (count != 1)
                 {
                     throw_invalid_delegate_arg_count(runtime, "TestComponent"sv, "BoolDelegate"sv);
@@ -3491,7 +3491,7 @@ namespace rnwinrt
             });
     }
 
-    winrt::TestComponent::BoolDelegate projected_value_traits<winrt::TestComponent::BoolDelegate>::as_native(jsi::Runtime& runtime, const jsi::Value& value)
+    winrt::TestComponent::BoolDelegate projected_value_traits<winrt::TestComponent::BoolDelegate>::as_native(napi_wrappers::Runtime& runtime, const napi_wrappers::Value& value)
     {
         return [ctxt = current_runtime_context()->add_reference(),
                    fn = value.asObject(runtime).asFunction(runtime)](bool param0) {
@@ -3506,10 +3506,10 @@ namespace rnwinrt
         };
     }
 
-    jsi::Value projected_value_traits<winrt::TestComponent::BoolDelegateWithOutParam>::as_value(jsi::Runtime& runtime, const winrt::TestComponent::BoolDelegateWithOutParam& value)
+    napi_wrappers::Value projected_value_traits<winrt::TestComponent::BoolDelegateWithOutParam>::as_value(napi_wrappers::Runtime& runtime, const winrt::TestComponent::BoolDelegateWithOutParam& value)
     {
-        return jsi::Function::createFromHostFunction(runtime, make_propid(runtime, "BoolDelegateWithOutParam"), 1,
-            [value](jsi::Runtime& runtime, const jsi::Value&, [[maybe_unused]] const jsi::Value* args, size_t count) {
+        return napi_wrappers::Function::createFromHostFunction(runtime, make_propid(runtime, "BoolDelegateWithOutParam"), 1,
+            [value](napi_wrappers::Runtime& runtime, const napi_wrappers::Value&, [[maybe_unused]] const napi_wrappers::Value* args, size_t count) {
                 if (count != 1)
                 {
                     throw_invalid_delegate_arg_count(runtime, "TestComponent"sv, "BoolDelegateWithOutParam"sv);
@@ -3522,7 +3522,7 @@ namespace rnwinrt
             });
     }
 
-    winrt::TestComponent::BoolDelegateWithOutParam projected_value_traits<winrt::TestComponent::BoolDelegateWithOutParam>::as_native(jsi::Runtime& runtime, const jsi::Value& value)
+    winrt::TestComponent::BoolDelegateWithOutParam projected_value_traits<winrt::TestComponent::BoolDelegateWithOutParam>::as_native(napi_wrappers::Runtime& runtime, const napi_wrappers::Value& value)
     {
         return [ctxt = current_runtime_context()->add_reference(),
                    fn = value.asObject(runtime).asFunction(runtime)](bool param0, bool& param1) {
@@ -3536,10 +3536,10 @@ namespace rnwinrt
         };
     }
 
-    jsi::Value projected_value_traits<winrt::TestComponent::CharArrayDelegate>::as_value(jsi::Runtime& runtime, const winrt::TestComponent::CharArrayDelegate& value)
+    napi_wrappers::Value projected_value_traits<winrt::TestComponent::CharArrayDelegate>::as_value(napi_wrappers::Runtime& runtime, const winrt::TestComponent::CharArrayDelegate& value)
     {
-        return jsi::Function::createFromHostFunction(runtime, make_propid(runtime, "CharArrayDelegate"), 2,
-            [value](jsi::Runtime& runtime, const jsi::Value&, [[maybe_unused]] const jsi::Value* args, size_t count) {
+        return napi_wrappers::Function::createFromHostFunction(runtime, make_propid(runtime, "CharArrayDelegate"), 2,
+            [value](napi_wrappers::Runtime& runtime, const napi_wrappers::Value&, [[maybe_unused]] const napi_wrappers::Value* args, size_t count) {
                 if (count != 2)
                 {
                     throw_invalid_delegate_arg_count(runtime, "TestComponent"sv, "CharArrayDelegate"sv);
@@ -3553,7 +3553,7 @@ namespace rnwinrt
             });
     }
 
-    winrt::TestComponent::CharArrayDelegate projected_value_traits<winrt::TestComponent::CharArrayDelegate>::as_native(jsi::Runtime& runtime, const jsi::Value& value)
+    winrt::TestComponent::CharArrayDelegate projected_value_traits<winrt::TestComponent::CharArrayDelegate>::as_native(napi_wrappers::Runtime& runtime, const napi_wrappers::Value& value)
     {
         return [ctxt = current_runtime_context()->add_reference(),
                    fn = value.asObject(runtime).asFunction(runtime)](winrt::array_view<const char16_t> param0, winrt::array_view<char16_t> param1, winrt::com_array<char16_t>& param2) {
@@ -3571,10 +3571,10 @@ namespace rnwinrt
         };
     }
 
-    jsi::Value projected_value_traits<winrt::TestComponent::CharDelegate>::as_value(jsi::Runtime& runtime, const winrt::TestComponent::CharDelegate& value)
+    napi_wrappers::Value projected_value_traits<winrt::TestComponent::CharDelegate>::as_value(napi_wrappers::Runtime& runtime, const winrt::TestComponent::CharDelegate& value)
     {
-        return jsi::Function::createFromHostFunction(runtime, make_propid(runtime, "CharDelegate"), 1,
-            [value](jsi::Runtime& runtime, const jsi::Value&, [[maybe_unused]] const jsi::Value* args, size_t count) {
+        return napi_wrappers::Function::createFromHostFunction(runtime, make_propid(runtime, "CharDelegate"), 1,
+            [value](napi_wrappers::Runtime& runtime, const napi_wrappers::Value&, [[maybe_unused]] const napi_wrappers::Value* args, size_t count) {
                 if (count != 1)
                 {
                     throw_invalid_delegate_arg_count(runtime, "TestComponent"sv, "CharDelegate"sv);
@@ -3586,7 +3586,7 @@ namespace rnwinrt
             });
     }
 
-    winrt::TestComponent::CharDelegate projected_value_traits<winrt::TestComponent::CharDelegate>::as_native(jsi::Runtime& runtime, const jsi::Value& value)
+    winrt::TestComponent::CharDelegate projected_value_traits<winrt::TestComponent::CharDelegate>::as_native(napi_wrappers::Runtime& runtime, const napi_wrappers::Value& value)
     {
         return [ctxt = current_runtime_context()->add_reference(),
                    fn = value.asObject(runtime).asFunction(runtime)](char16_t param0) {
@@ -3601,10 +3601,10 @@ namespace rnwinrt
         };
     }
 
-    jsi::Value projected_value_traits<winrt::TestComponent::CharDelegateWithOutParam>::as_value(jsi::Runtime& runtime, const winrt::TestComponent::CharDelegateWithOutParam& value)
+    napi_wrappers::Value projected_value_traits<winrt::TestComponent::CharDelegateWithOutParam>::as_value(napi_wrappers::Runtime& runtime, const winrt::TestComponent::CharDelegateWithOutParam& value)
     {
-        return jsi::Function::createFromHostFunction(runtime, make_propid(runtime, "CharDelegateWithOutParam"), 1,
-            [value](jsi::Runtime& runtime, const jsi::Value&, [[maybe_unused]] const jsi::Value* args, size_t count) {
+        return napi_wrappers::Function::createFromHostFunction(runtime, make_propid(runtime, "CharDelegateWithOutParam"), 1,
+            [value](napi_wrappers::Runtime& runtime, const napi_wrappers::Value&, [[maybe_unused]] const napi_wrappers::Value* args, size_t count) {
                 if (count != 1)
                 {
                     throw_invalid_delegate_arg_count(runtime, "TestComponent"sv, "CharDelegateWithOutParam"sv);
@@ -3617,7 +3617,7 @@ namespace rnwinrt
             });
     }
 
-    winrt::TestComponent::CharDelegateWithOutParam projected_value_traits<winrt::TestComponent::CharDelegateWithOutParam>::as_native(jsi::Runtime& runtime, const jsi::Value& value)
+    winrt::TestComponent::CharDelegateWithOutParam projected_value_traits<winrt::TestComponent::CharDelegateWithOutParam>::as_native(napi_wrappers::Runtime& runtime, const napi_wrappers::Value& value)
     {
         return [ctxt = current_runtime_context()->add_reference(),
                    fn = value.asObject(runtime).asFunction(runtime)](char16_t param0, char16_t& param1) {
@@ -3631,10 +3631,10 @@ namespace rnwinrt
         };
     }
 
-    jsi::Value projected_value_traits<winrt::TestComponent::CompositeStructArrayDelegate>::as_value(jsi::Runtime& runtime, const winrt::TestComponent::CompositeStructArrayDelegate& value)
+    napi_wrappers::Value projected_value_traits<winrt::TestComponent::CompositeStructArrayDelegate>::as_value(napi_wrappers::Runtime& runtime, const winrt::TestComponent::CompositeStructArrayDelegate& value)
     {
-        return jsi::Function::createFromHostFunction(runtime, make_propid(runtime, "CompositeStructArrayDelegate"), 2,
-            [value](jsi::Runtime& runtime, const jsi::Value&, [[maybe_unused]] const jsi::Value* args, size_t count) {
+        return napi_wrappers::Function::createFromHostFunction(runtime, make_propid(runtime, "CompositeStructArrayDelegate"), 2,
+            [value](napi_wrappers::Runtime& runtime, const napi_wrappers::Value&, [[maybe_unused]] const napi_wrappers::Value* args, size_t count) {
                 if (count != 2)
                 {
                     throw_invalid_delegate_arg_count(runtime, "TestComponent"sv, "CompositeStructArrayDelegate"sv);
@@ -3648,7 +3648,7 @@ namespace rnwinrt
             });
     }
 
-    winrt::TestComponent::CompositeStructArrayDelegate projected_value_traits<winrt::TestComponent::CompositeStructArrayDelegate>::as_native(jsi::Runtime& runtime, const jsi::Value& value)
+    winrt::TestComponent::CompositeStructArrayDelegate projected_value_traits<winrt::TestComponent::CompositeStructArrayDelegate>::as_native(napi_wrappers::Runtime& runtime, const napi_wrappers::Value& value)
     {
         return [ctxt = current_runtime_context()->add_reference(),
                    fn = value.asObject(runtime).asFunction(runtime)](winrt::array_view<const winrt::TestComponent::CompositeType> const& param0, winrt::array_view<winrt::TestComponent::CompositeType> const& param1, winrt::com_array<winrt::TestComponent::CompositeType>& param2) {
@@ -3666,10 +3666,10 @@ namespace rnwinrt
         };
     }
 
-    jsi::Value projected_value_traits<winrt::TestComponent::CompositeStructDelegate>::as_value(jsi::Runtime& runtime, const winrt::TestComponent::CompositeStructDelegate& value)
+    napi_wrappers::Value projected_value_traits<winrt::TestComponent::CompositeStructDelegate>::as_value(napi_wrappers::Runtime& runtime, const winrt::TestComponent::CompositeStructDelegate& value)
     {
-        return jsi::Function::createFromHostFunction(runtime, make_propid(runtime, "CompositeStructDelegate"), 1,
-            [value](jsi::Runtime& runtime, const jsi::Value&, [[maybe_unused]] const jsi::Value* args, size_t count) {
+        return napi_wrappers::Function::createFromHostFunction(runtime, make_propid(runtime, "CompositeStructDelegate"), 1,
+            [value](napi_wrappers::Runtime& runtime, const napi_wrappers::Value&, [[maybe_unused]] const napi_wrappers::Value* args, size_t count) {
                 if (count != 1)
                 {
                     throw_invalid_delegate_arg_count(runtime, "TestComponent"sv, "CompositeStructDelegate"sv);
@@ -3681,7 +3681,7 @@ namespace rnwinrt
             });
     }
 
-    winrt::TestComponent::CompositeStructDelegate projected_value_traits<winrt::TestComponent::CompositeStructDelegate>::as_native(jsi::Runtime& runtime, const jsi::Value& value)
+    winrt::TestComponent::CompositeStructDelegate projected_value_traits<winrt::TestComponent::CompositeStructDelegate>::as_native(napi_wrappers::Runtime& runtime, const napi_wrappers::Value& value)
     {
         return [ctxt = current_runtime_context()->add_reference(),
                    fn = value.asObject(runtime).asFunction(runtime)](winrt::TestComponent::CompositeType const& param0) {
@@ -3696,10 +3696,10 @@ namespace rnwinrt
         };
     }
 
-    jsi::Value projected_value_traits<winrt::TestComponent::CompositeStructDelegateWithOutParam>::as_value(jsi::Runtime& runtime, const winrt::TestComponent::CompositeStructDelegateWithOutParam& value)
+    napi_wrappers::Value projected_value_traits<winrt::TestComponent::CompositeStructDelegateWithOutParam>::as_value(napi_wrappers::Runtime& runtime, const winrt::TestComponent::CompositeStructDelegateWithOutParam& value)
     {
-        return jsi::Function::createFromHostFunction(runtime, make_propid(runtime, "CompositeStructDelegateWithOutParam"), 1,
-            [value](jsi::Runtime& runtime, const jsi::Value&, [[maybe_unused]] const jsi::Value* args, size_t count) {
+        return napi_wrappers::Function::createFromHostFunction(runtime, make_propid(runtime, "CompositeStructDelegateWithOutParam"), 1,
+            [value](napi_wrappers::Runtime& runtime, const napi_wrappers::Value&, [[maybe_unused]] const napi_wrappers::Value* args, size_t count) {
                 if (count != 1)
                 {
                     throw_invalid_delegate_arg_count(runtime, "TestComponent"sv, "CompositeStructDelegateWithOutParam"sv);
@@ -3712,7 +3712,7 @@ namespace rnwinrt
             });
     }
 
-    winrt::TestComponent::CompositeStructDelegateWithOutParam projected_value_traits<winrt::TestComponent::CompositeStructDelegateWithOutParam>::as_native(jsi::Runtime& runtime, const jsi::Value& value)
+    winrt::TestComponent::CompositeStructDelegateWithOutParam projected_value_traits<winrt::TestComponent::CompositeStructDelegateWithOutParam>::as_native(napi_wrappers::Runtime& runtime, const napi_wrappers::Value& value)
     {
         return [ctxt = current_runtime_context()->add_reference(),
                    fn = value.asObject(runtime).asFunction(runtime)](winrt::TestComponent::CompositeType const& param0, winrt::TestComponent::CompositeType& param1) {
@@ -3726,10 +3726,10 @@ namespace rnwinrt
         };
     }
 
-    jsi::Value projected_value_traits<winrt::TestComponent::EnumArrayDelegate>::as_value(jsi::Runtime& runtime, const winrt::TestComponent::EnumArrayDelegate& value)
+    napi_wrappers::Value projected_value_traits<winrt::TestComponent::EnumArrayDelegate>::as_value(napi_wrappers::Runtime& runtime, const winrt::TestComponent::EnumArrayDelegate& value)
     {
-        return jsi::Function::createFromHostFunction(runtime, make_propid(runtime, "EnumArrayDelegate"), 2,
-            [value](jsi::Runtime& runtime, const jsi::Value&, [[maybe_unused]] const jsi::Value* args, size_t count) {
+        return napi_wrappers::Function::createFromHostFunction(runtime, make_propid(runtime, "EnumArrayDelegate"), 2,
+            [value](napi_wrappers::Runtime& runtime, const napi_wrappers::Value&, [[maybe_unused]] const napi_wrappers::Value* args, size_t count) {
                 if (count != 2)
                 {
                     throw_invalid_delegate_arg_count(runtime, "TestComponent"sv, "EnumArrayDelegate"sv);
@@ -3743,7 +3743,7 @@ namespace rnwinrt
             });
     }
 
-    winrt::TestComponent::EnumArrayDelegate projected_value_traits<winrt::TestComponent::EnumArrayDelegate>::as_native(jsi::Runtime& runtime, const jsi::Value& value)
+    winrt::TestComponent::EnumArrayDelegate projected_value_traits<winrt::TestComponent::EnumArrayDelegate>::as_native(napi_wrappers::Runtime& runtime, const napi_wrappers::Value& value)
     {
         return [ctxt = current_runtime_context()->add_reference(),
                    fn = value.asObject(runtime).asFunction(runtime)](winrt::array_view<const winrt::TestComponent::TestEnum> param0, winrt::array_view<winrt::TestComponent::TestEnum> param1, winrt::com_array<winrt::TestComponent::TestEnum>& param2) {
@@ -3761,10 +3761,10 @@ namespace rnwinrt
         };
     }
 
-    jsi::Value projected_value_traits<winrt::TestComponent::EnumDelegate>::as_value(jsi::Runtime& runtime, const winrt::TestComponent::EnumDelegate& value)
+    napi_wrappers::Value projected_value_traits<winrt::TestComponent::EnumDelegate>::as_value(napi_wrappers::Runtime& runtime, const winrt::TestComponent::EnumDelegate& value)
     {
-        return jsi::Function::createFromHostFunction(runtime, make_propid(runtime, "EnumDelegate"), 1,
-            [value](jsi::Runtime& runtime, const jsi::Value&, [[maybe_unused]] const jsi::Value* args, size_t count) {
+        return napi_wrappers::Function::createFromHostFunction(runtime, make_propid(runtime, "EnumDelegate"), 1,
+            [value](napi_wrappers::Runtime& runtime, const napi_wrappers::Value&, [[maybe_unused]] const napi_wrappers::Value* args, size_t count) {
                 if (count != 1)
                 {
                     throw_invalid_delegate_arg_count(runtime, "TestComponent"sv, "EnumDelegate"sv);
@@ -3776,7 +3776,7 @@ namespace rnwinrt
             });
     }
 
-    winrt::TestComponent::EnumDelegate projected_value_traits<winrt::TestComponent::EnumDelegate>::as_native(jsi::Runtime& runtime, const jsi::Value& value)
+    winrt::TestComponent::EnumDelegate projected_value_traits<winrt::TestComponent::EnumDelegate>::as_native(napi_wrappers::Runtime& runtime, const napi_wrappers::Value& value)
     {
         return [ctxt = current_runtime_context()->add_reference(),
                    fn = value.asObject(runtime).asFunction(runtime)](winrt::TestComponent::TestEnum param0) {
@@ -3791,10 +3791,10 @@ namespace rnwinrt
         };
     }
 
-    jsi::Value projected_value_traits<winrt::TestComponent::EnumDelegateWithOutParam>::as_value(jsi::Runtime& runtime, const winrt::TestComponent::EnumDelegateWithOutParam& value)
+    napi_wrappers::Value projected_value_traits<winrt::TestComponent::EnumDelegateWithOutParam>::as_value(napi_wrappers::Runtime& runtime, const winrt::TestComponent::EnumDelegateWithOutParam& value)
     {
-        return jsi::Function::createFromHostFunction(runtime, make_propid(runtime, "EnumDelegateWithOutParam"), 1,
-            [value](jsi::Runtime& runtime, const jsi::Value&, [[maybe_unused]] const jsi::Value* args, size_t count) {
+        return napi_wrappers::Function::createFromHostFunction(runtime, make_propid(runtime, "EnumDelegateWithOutParam"), 1,
+            [value](napi_wrappers::Runtime& runtime, const napi_wrappers::Value&, [[maybe_unused]] const napi_wrappers::Value* args, size_t count) {
                 if (count != 1)
                 {
                     throw_invalid_delegate_arg_count(runtime, "TestComponent"sv, "EnumDelegateWithOutParam"sv);
@@ -3807,7 +3807,7 @@ namespace rnwinrt
             });
     }
 
-    winrt::TestComponent::EnumDelegateWithOutParam projected_value_traits<winrt::TestComponent::EnumDelegateWithOutParam>::as_native(jsi::Runtime& runtime, const jsi::Value& value)
+    winrt::TestComponent::EnumDelegateWithOutParam projected_value_traits<winrt::TestComponent::EnumDelegateWithOutParam>::as_native(napi_wrappers::Runtime& runtime, const napi_wrappers::Value& value)
     {
         return [ctxt = current_runtime_context()->add_reference(),
                    fn = value.asObject(runtime).asFunction(runtime)](winrt::TestComponent::TestEnum param0, winrt::TestComponent::TestEnum& param1) {
@@ -3821,10 +3821,10 @@ namespace rnwinrt
         };
     }
 
-    jsi::Value projected_value_traits<winrt::TestComponent::GuidArrayDelegate>::as_value(jsi::Runtime& runtime, const winrt::TestComponent::GuidArrayDelegate& value)
+    napi_wrappers::Value projected_value_traits<winrt::TestComponent::GuidArrayDelegate>::as_value(napi_wrappers::Runtime& runtime, const winrt::TestComponent::GuidArrayDelegate& value)
     {
-        return jsi::Function::createFromHostFunction(runtime, make_propid(runtime, "GuidArrayDelegate"), 2,
-            [value](jsi::Runtime& runtime, const jsi::Value&, [[maybe_unused]] const jsi::Value* args, size_t count) {
+        return napi_wrappers::Function::createFromHostFunction(runtime, make_propid(runtime, "GuidArrayDelegate"), 2,
+            [value](napi_wrappers::Runtime& runtime, const napi_wrappers::Value&, [[maybe_unused]] const napi_wrappers::Value* args, size_t count) {
                 if (count != 2)
                 {
                     throw_invalid_delegate_arg_count(runtime, "TestComponent"sv, "GuidArrayDelegate"sv);
@@ -3838,7 +3838,7 @@ namespace rnwinrt
             });
     }
 
-    winrt::TestComponent::GuidArrayDelegate projected_value_traits<winrt::TestComponent::GuidArrayDelegate>::as_native(jsi::Runtime& runtime, const jsi::Value& value)
+    winrt::TestComponent::GuidArrayDelegate projected_value_traits<winrt::TestComponent::GuidArrayDelegate>::as_native(napi_wrappers::Runtime& runtime, const napi_wrappers::Value& value)
     {
         return [ctxt = current_runtime_context()->add_reference(),
                    fn = value.asObject(runtime).asFunction(runtime)](winrt::array_view<const winrt::guid> param0, winrt::array_view<winrt::guid> param1, winrt::com_array<winrt::guid>& param2) {
@@ -3856,10 +3856,10 @@ namespace rnwinrt
         };
     }
 
-    jsi::Value projected_value_traits<winrt::TestComponent::GuidDelegate>::as_value(jsi::Runtime& runtime, const winrt::TestComponent::GuidDelegate& value)
+    napi_wrappers::Value projected_value_traits<winrt::TestComponent::GuidDelegate>::as_value(napi_wrappers::Runtime& runtime, const winrt::TestComponent::GuidDelegate& value)
     {
-        return jsi::Function::createFromHostFunction(runtime, make_propid(runtime, "GuidDelegate"), 1,
-            [value](jsi::Runtime& runtime, const jsi::Value&, [[maybe_unused]] const jsi::Value* args, size_t count) {
+        return napi_wrappers::Function::createFromHostFunction(runtime, make_propid(runtime, "GuidDelegate"), 1,
+            [value](napi_wrappers::Runtime& runtime, const napi_wrappers::Value&, [[maybe_unused]] const napi_wrappers::Value* args, size_t count) {
                 if (count != 1)
                 {
                     throw_invalid_delegate_arg_count(runtime, "TestComponent"sv, "GuidDelegate"sv);
@@ -3871,7 +3871,7 @@ namespace rnwinrt
             });
     }
 
-    winrt::TestComponent::GuidDelegate projected_value_traits<winrt::TestComponent::GuidDelegate>::as_native(jsi::Runtime& runtime, const jsi::Value& value)
+    winrt::TestComponent::GuidDelegate projected_value_traits<winrt::TestComponent::GuidDelegate>::as_native(napi_wrappers::Runtime& runtime, const napi_wrappers::Value& value)
     {
         return [ctxt = current_runtime_context()->add_reference(),
                    fn = value.asObject(runtime).asFunction(runtime)](winrt::guid param0) {
@@ -3886,10 +3886,10 @@ namespace rnwinrt
         };
     }
 
-    jsi::Value projected_value_traits<winrt::TestComponent::GuidDelegateWithOutParam>::as_value(jsi::Runtime& runtime, const winrt::TestComponent::GuidDelegateWithOutParam& value)
+    napi_wrappers::Value projected_value_traits<winrt::TestComponent::GuidDelegateWithOutParam>::as_value(napi_wrappers::Runtime& runtime, const winrt::TestComponent::GuidDelegateWithOutParam& value)
     {
-        return jsi::Function::createFromHostFunction(runtime, make_propid(runtime, "GuidDelegateWithOutParam"), 1,
-            [value](jsi::Runtime& runtime, const jsi::Value&, [[maybe_unused]] const jsi::Value* args, size_t count) {
+        return napi_wrappers::Function::createFromHostFunction(runtime, make_propid(runtime, "GuidDelegateWithOutParam"), 1,
+            [value](napi_wrappers::Runtime& runtime, const napi_wrappers::Value&, [[maybe_unused]] const napi_wrappers::Value* args, size_t count) {
                 if (count != 1)
                 {
                     throw_invalid_delegate_arg_count(runtime, "TestComponent"sv, "GuidDelegateWithOutParam"sv);
@@ -3902,7 +3902,7 @@ namespace rnwinrt
             });
     }
 
-    winrt::TestComponent::GuidDelegateWithOutParam projected_value_traits<winrt::TestComponent::GuidDelegateWithOutParam>::as_native(jsi::Runtime& runtime, const jsi::Value& value)
+    winrt::TestComponent::GuidDelegateWithOutParam projected_value_traits<winrt::TestComponent::GuidDelegateWithOutParam>::as_native(napi_wrappers::Runtime& runtime, const napi_wrappers::Value& value)
     {
         return [ctxt = current_runtime_context()->add_reference(),
                    fn = value.asObject(runtime).asFunction(runtime)](winrt::guid param0, winrt::guid& param1) {
@@ -3916,10 +3916,10 @@ namespace rnwinrt
         };
     }
 
-    jsi::Value projected_value_traits<winrt::TestComponent::InterwovenDelegate>::as_value(jsi::Runtime& runtime, const winrt::TestComponent::InterwovenDelegate& value)
+    napi_wrappers::Value projected_value_traits<winrt::TestComponent::InterwovenDelegate>::as_value(napi_wrappers::Runtime& runtime, const winrt::TestComponent::InterwovenDelegate& value)
     {
-        return jsi::Function::createFromHostFunction(runtime, make_propid(runtime, "InterwovenDelegate"), 4,
-            [value](jsi::Runtime& runtime, const jsi::Value&, [[maybe_unused]] const jsi::Value* args, size_t count) {
+        return napi_wrappers::Function::createFromHostFunction(runtime, make_propid(runtime, "InterwovenDelegate"), 4,
+            [value](napi_wrappers::Runtime& runtime, const napi_wrappers::Value&, [[maybe_unused]] const napi_wrappers::Value* args, size_t count) {
                 if (count != 4)
                 {
                     throw_invalid_delegate_arg_count(runtime, "TestComponent"sv, "InterwovenDelegate"sv);
@@ -3937,7 +3937,7 @@ namespace rnwinrt
             });
     }
 
-    winrt::TestComponent::InterwovenDelegate projected_value_traits<winrt::TestComponent::InterwovenDelegate>::as_native(jsi::Runtime& runtime, const jsi::Value& value)
+    winrt::TestComponent::InterwovenDelegate projected_value_traits<winrt::TestComponent::InterwovenDelegate>::as_native(napi_wrappers::Runtime& runtime, const napi_wrappers::Value& value)
     {
         return [ctxt = current_runtime_context()->add_reference(),
                    fn = value.asObject(runtime).asFunction(runtime)](bool param0, bool& param1, int32_t param2, int32_t& param3, winrt::array_view<const int32_t> param4, winrt::com_array<int32_t>& param5, winrt::array_view<int32_t> param6) {
@@ -3959,10 +3959,10 @@ namespace rnwinrt
         };
     }
 
-    jsi::Value projected_value_traits<winrt::TestComponent::NumericArrayDelegate>::as_value(jsi::Runtime& runtime, const winrt::TestComponent::NumericArrayDelegate& value)
+    napi_wrappers::Value projected_value_traits<winrt::TestComponent::NumericArrayDelegate>::as_value(napi_wrappers::Runtime& runtime, const winrt::TestComponent::NumericArrayDelegate& value)
     {
-        return jsi::Function::createFromHostFunction(runtime, make_propid(runtime, "NumericArrayDelegate"), 2,
-            [value](jsi::Runtime& runtime, const jsi::Value&, [[maybe_unused]] const jsi::Value* args, size_t count) {
+        return napi_wrappers::Function::createFromHostFunction(runtime, make_propid(runtime, "NumericArrayDelegate"), 2,
+            [value](napi_wrappers::Runtime& runtime, const napi_wrappers::Value&, [[maybe_unused]] const napi_wrappers::Value* args, size_t count) {
                 if (count != 2)
                 {
                     throw_invalid_delegate_arg_count(runtime, "TestComponent"sv, "NumericArrayDelegate"sv);
@@ -3976,7 +3976,7 @@ namespace rnwinrt
             });
     }
 
-    winrt::TestComponent::NumericArrayDelegate projected_value_traits<winrt::TestComponent::NumericArrayDelegate>::as_native(jsi::Runtime& runtime, const jsi::Value& value)
+    winrt::TestComponent::NumericArrayDelegate projected_value_traits<winrt::TestComponent::NumericArrayDelegate>::as_native(napi_wrappers::Runtime& runtime, const napi_wrappers::Value& value)
     {
         return [ctxt = current_runtime_context()->add_reference(),
                    fn = value.asObject(runtime).asFunction(runtime)](winrt::array_view<const int32_t> param0, winrt::array_view<int32_t> param1, winrt::com_array<int32_t>& param2) {
@@ -3994,10 +3994,10 @@ namespace rnwinrt
         };
     }
 
-    jsi::Value projected_value_traits<winrt::TestComponent::NumericDelegate>::as_value(jsi::Runtime& runtime, const winrt::TestComponent::NumericDelegate& value)
+    napi_wrappers::Value projected_value_traits<winrt::TestComponent::NumericDelegate>::as_value(napi_wrappers::Runtime& runtime, const winrt::TestComponent::NumericDelegate& value)
     {
-        return jsi::Function::createFromHostFunction(runtime, make_propid(runtime, "NumericDelegate"), 1,
-            [value](jsi::Runtime& runtime, const jsi::Value&, [[maybe_unused]] const jsi::Value* args, size_t count) {
+        return napi_wrappers::Function::createFromHostFunction(runtime, make_propid(runtime, "NumericDelegate"), 1,
+            [value](napi_wrappers::Runtime& runtime, const napi_wrappers::Value&, [[maybe_unused]] const napi_wrappers::Value* args, size_t count) {
                 if (count != 1)
                 {
                     throw_invalid_delegate_arg_count(runtime, "TestComponent"sv, "NumericDelegate"sv);
@@ -4009,7 +4009,7 @@ namespace rnwinrt
             });
     }
 
-    winrt::TestComponent::NumericDelegate projected_value_traits<winrt::TestComponent::NumericDelegate>::as_native(jsi::Runtime& runtime, const jsi::Value& value)
+    winrt::TestComponent::NumericDelegate projected_value_traits<winrt::TestComponent::NumericDelegate>::as_native(napi_wrappers::Runtime& runtime, const napi_wrappers::Value& value)
     {
         return [ctxt = current_runtime_context()->add_reference(),
                    fn = value.asObject(runtime).asFunction(runtime)](int32_t param0) {
@@ -4024,10 +4024,10 @@ namespace rnwinrt
         };
     }
 
-    jsi::Value projected_value_traits<winrt::TestComponent::NumericDelegateWithOutParam>::as_value(jsi::Runtime& runtime, const winrt::TestComponent::NumericDelegateWithOutParam& value)
+    napi_wrappers::Value projected_value_traits<winrt::TestComponent::NumericDelegateWithOutParam>::as_value(napi_wrappers::Runtime& runtime, const winrt::TestComponent::NumericDelegateWithOutParam& value)
     {
-        return jsi::Function::createFromHostFunction(runtime, make_propid(runtime, "NumericDelegateWithOutParam"), 1,
-            [value](jsi::Runtime& runtime, const jsi::Value&, [[maybe_unused]] const jsi::Value* args, size_t count) {
+        return napi_wrappers::Function::createFromHostFunction(runtime, make_propid(runtime, "NumericDelegateWithOutParam"), 1,
+            [value](napi_wrappers::Runtime& runtime, const napi_wrappers::Value&, [[maybe_unused]] const napi_wrappers::Value* args, size_t count) {
                 if (count != 1)
                 {
                     throw_invalid_delegate_arg_count(runtime, "TestComponent"sv, "NumericDelegateWithOutParam"sv);
@@ -4040,7 +4040,7 @@ namespace rnwinrt
             });
     }
 
-    winrt::TestComponent::NumericDelegateWithOutParam projected_value_traits<winrt::TestComponent::NumericDelegateWithOutParam>::as_native(jsi::Runtime& runtime, const jsi::Value& value)
+    winrt::TestComponent::NumericDelegateWithOutParam projected_value_traits<winrt::TestComponent::NumericDelegateWithOutParam>::as_native(napi_wrappers::Runtime& runtime, const napi_wrappers::Value& value)
     {
         return [ctxt = current_runtime_context()->add_reference(),
                    fn = value.asObject(runtime).asFunction(runtime)](int32_t param0, int32_t& param1) {
@@ -4054,10 +4054,10 @@ namespace rnwinrt
         };
     }
 
-    jsi::Value projected_value_traits<winrt::TestComponent::ObjectArrayDelegate>::as_value(jsi::Runtime& runtime, const winrt::TestComponent::ObjectArrayDelegate& value)
+    napi_wrappers::Value projected_value_traits<winrt::TestComponent::ObjectArrayDelegate>::as_value(napi_wrappers::Runtime& runtime, const winrt::TestComponent::ObjectArrayDelegate& value)
     {
-        return jsi::Function::createFromHostFunction(runtime, make_propid(runtime, "ObjectArrayDelegate"), 2,
-            [value](jsi::Runtime& runtime, const jsi::Value&, [[maybe_unused]] const jsi::Value* args, size_t count) {
+        return napi_wrappers::Function::createFromHostFunction(runtime, make_propid(runtime, "ObjectArrayDelegate"), 2,
+            [value](napi_wrappers::Runtime& runtime, const napi_wrappers::Value&, [[maybe_unused]] const napi_wrappers::Value* args, size_t count) {
                 if (count != 2)
                 {
                     throw_invalid_delegate_arg_count(runtime, "TestComponent"sv, "ObjectArrayDelegate"sv);
@@ -4071,7 +4071,7 @@ namespace rnwinrt
             });
     }
 
-    winrt::TestComponent::ObjectArrayDelegate projected_value_traits<winrt::TestComponent::ObjectArrayDelegate>::as_native(jsi::Runtime& runtime, const jsi::Value& value)
+    winrt::TestComponent::ObjectArrayDelegate projected_value_traits<winrt::TestComponent::ObjectArrayDelegate>::as_native(napi_wrappers::Runtime& runtime, const napi_wrappers::Value& value)
     {
         return [ctxt = current_runtime_context()->add_reference(),
                    fn = value.asObject(runtime).asFunction(runtime)](winrt::array_view<const winrt::TestComponent::TestObject> const& param0, winrt::array_view<winrt::TestComponent::TestObject> const& param1, winrt::com_array<winrt::TestComponent::TestObject>& param2) {
@@ -4089,10 +4089,10 @@ namespace rnwinrt
         };
     }
 
-    jsi::Value projected_value_traits<winrt::TestComponent::ObjectDelegate>::as_value(jsi::Runtime& runtime, const winrt::TestComponent::ObjectDelegate& value)
+    napi_wrappers::Value projected_value_traits<winrt::TestComponent::ObjectDelegate>::as_value(napi_wrappers::Runtime& runtime, const winrt::TestComponent::ObjectDelegate& value)
     {
-        return jsi::Function::createFromHostFunction(runtime, make_propid(runtime, "ObjectDelegate"), 1,
-            [value](jsi::Runtime& runtime, const jsi::Value&, [[maybe_unused]] const jsi::Value* args, size_t count) {
+        return napi_wrappers::Function::createFromHostFunction(runtime, make_propid(runtime, "ObjectDelegate"), 1,
+            [value](napi_wrappers::Runtime& runtime, const napi_wrappers::Value&, [[maybe_unused]] const napi_wrappers::Value* args, size_t count) {
                 if (count != 1)
                 {
                     throw_invalid_delegate_arg_count(runtime, "TestComponent"sv, "ObjectDelegate"sv);
@@ -4104,7 +4104,7 @@ namespace rnwinrt
             });
     }
 
-    winrt::TestComponent::ObjectDelegate projected_value_traits<winrt::TestComponent::ObjectDelegate>::as_native(jsi::Runtime& runtime, const jsi::Value& value)
+    winrt::TestComponent::ObjectDelegate projected_value_traits<winrt::TestComponent::ObjectDelegate>::as_native(napi_wrappers::Runtime& runtime, const napi_wrappers::Value& value)
     {
         return [ctxt = current_runtime_context()->add_reference(),
                    fn = value.asObject(runtime).asFunction(runtime)](winrt::TestComponent::TestObject const& param0) {
@@ -4119,10 +4119,10 @@ namespace rnwinrt
         };
     }
 
-    jsi::Value projected_value_traits<winrt::TestComponent::ObjectDelegateWithOutParam>::as_value(jsi::Runtime& runtime, const winrt::TestComponent::ObjectDelegateWithOutParam& value)
+    napi_wrappers::Value projected_value_traits<winrt::TestComponent::ObjectDelegateWithOutParam>::as_value(napi_wrappers::Runtime& runtime, const winrt::TestComponent::ObjectDelegateWithOutParam& value)
     {
-        return jsi::Function::createFromHostFunction(runtime, make_propid(runtime, "ObjectDelegateWithOutParam"), 1,
-            [value](jsi::Runtime& runtime, const jsi::Value&, [[maybe_unused]] const jsi::Value* args, size_t count) {
+        return napi_wrappers::Function::createFromHostFunction(runtime, make_propid(runtime, "ObjectDelegateWithOutParam"), 1,
+            [value](napi_wrappers::Runtime& runtime, const napi_wrappers::Value&, [[maybe_unused]] const napi_wrappers::Value* args, size_t count) {
                 if (count != 1)
                 {
                     throw_invalid_delegate_arg_count(runtime, "TestComponent"sv, "ObjectDelegateWithOutParam"sv);
@@ -4135,7 +4135,7 @@ namespace rnwinrt
             });
     }
 
-    winrt::TestComponent::ObjectDelegateWithOutParam projected_value_traits<winrt::TestComponent::ObjectDelegateWithOutParam>::as_native(jsi::Runtime& runtime, const jsi::Value& value)
+    winrt::TestComponent::ObjectDelegateWithOutParam projected_value_traits<winrt::TestComponent::ObjectDelegateWithOutParam>::as_native(napi_wrappers::Runtime& runtime, const napi_wrappers::Value& value)
     {
         return [ctxt = current_runtime_context()->add_reference(),
                    fn = value.asObject(runtime).asFunction(runtime)](winrt::TestComponent::TestObject const& param0, winrt::TestComponent::TestObject& param1) {
@@ -4149,10 +4149,10 @@ namespace rnwinrt
         };
     }
 
-    jsi::Value projected_value_traits<winrt::TestComponent::RefArrayDelegate>::as_value(jsi::Runtime& runtime, const winrt::TestComponent::RefArrayDelegate& value)
+    napi_wrappers::Value projected_value_traits<winrt::TestComponent::RefArrayDelegate>::as_value(napi_wrappers::Runtime& runtime, const winrt::TestComponent::RefArrayDelegate& value)
     {
-        return jsi::Function::createFromHostFunction(runtime, make_propid(runtime, "RefArrayDelegate"), 2,
-            [value](jsi::Runtime& runtime, const jsi::Value&, [[maybe_unused]] const jsi::Value* args, size_t count) {
+        return napi_wrappers::Function::createFromHostFunction(runtime, make_propid(runtime, "RefArrayDelegate"), 2,
+            [value](napi_wrappers::Runtime& runtime, const napi_wrappers::Value&, [[maybe_unused]] const napi_wrappers::Value* args, size_t count) {
                 if (count != 2)
                 {
                     throw_invalid_delegate_arg_count(runtime, "TestComponent"sv, "RefArrayDelegate"sv);
@@ -4166,7 +4166,7 @@ namespace rnwinrt
             });
     }
 
-    winrt::TestComponent::RefArrayDelegate projected_value_traits<winrt::TestComponent::RefArrayDelegate>::as_native(jsi::Runtime& runtime, const jsi::Value& value)
+    winrt::TestComponent::RefArrayDelegate projected_value_traits<winrt::TestComponent::RefArrayDelegate>::as_native(napi_wrappers::Runtime& runtime, const napi_wrappers::Value& value)
     {
         return [ctxt = current_runtime_context()->add_reference(),
                    fn = value.asObject(runtime).asFunction(runtime)](winrt::array_view<const winrt::Windows::Foundation::IReference<int32_t>> const& param0, winrt::array_view<winrt::Windows::Foundation::IReference<int32_t>> const& param1, winrt::com_array<winrt::Windows::Foundation::IReference<int32_t>>& param2) {
@@ -4184,10 +4184,10 @@ namespace rnwinrt
         };
     }
 
-    jsi::Value projected_value_traits<winrt::TestComponent::RefDelegate>::as_value(jsi::Runtime& runtime, const winrt::TestComponent::RefDelegate& value)
+    napi_wrappers::Value projected_value_traits<winrt::TestComponent::RefDelegate>::as_value(napi_wrappers::Runtime& runtime, const winrt::TestComponent::RefDelegate& value)
     {
-        return jsi::Function::createFromHostFunction(runtime, make_propid(runtime, "RefDelegate"), 1,
-            [value](jsi::Runtime& runtime, const jsi::Value&, [[maybe_unused]] const jsi::Value* args, size_t count) {
+        return napi_wrappers::Function::createFromHostFunction(runtime, make_propid(runtime, "RefDelegate"), 1,
+            [value](napi_wrappers::Runtime& runtime, const napi_wrappers::Value&, [[maybe_unused]] const napi_wrappers::Value* args, size_t count) {
                 if (count != 1)
                 {
                     throw_invalid_delegate_arg_count(runtime, "TestComponent"sv, "RefDelegate"sv);
@@ -4199,7 +4199,7 @@ namespace rnwinrt
             });
     }
 
-    winrt::TestComponent::RefDelegate projected_value_traits<winrt::TestComponent::RefDelegate>::as_native(jsi::Runtime& runtime, const jsi::Value& value)
+    winrt::TestComponent::RefDelegate projected_value_traits<winrt::TestComponent::RefDelegate>::as_native(napi_wrappers::Runtime& runtime, const napi_wrappers::Value& value)
     {
         return [ctxt = current_runtime_context()->add_reference(),
                    fn = value.asObject(runtime).asFunction(runtime)](winrt::Windows::Foundation::IReference<int32_t> const& param0) {
@@ -4214,10 +4214,10 @@ namespace rnwinrt
         };
     }
 
-    jsi::Value projected_value_traits<winrt::TestComponent::RefDelegateWithOutParam>::as_value(jsi::Runtime& runtime, const winrt::TestComponent::RefDelegateWithOutParam& value)
+    napi_wrappers::Value projected_value_traits<winrt::TestComponent::RefDelegateWithOutParam>::as_value(napi_wrappers::Runtime& runtime, const winrt::TestComponent::RefDelegateWithOutParam& value)
     {
-        return jsi::Function::createFromHostFunction(runtime, make_propid(runtime, "RefDelegateWithOutParam"), 1,
-            [value](jsi::Runtime& runtime, const jsi::Value&, [[maybe_unused]] const jsi::Value* args, size_t count) {
+        return napi_wrappers::Function::createFromHostFunction(runtime, make_propid(runtime, "RefDelegateWithOutParam"), 1,
+            [value](napi_wrappers::Runtime& runtime, const napi_wrappers::Value&, [[maybe_unused]] const napi_wrappers::Value* args, size_t count) {
                 if (count != 1)
                 {
                     throw_invalid_delegate_arg_count(runtime, "TestComponent"sv, "RefDelegateWithOutParam"sv);
@@ -4230,7 +4230,7 @@ namespace rnwinrt
             });
     }
 
-    winrt::TestComponent::RefDelegateWithOutParam projected_value_traits<winrt::TestComponent::RefDelegateWithOutParam>::as_native(jsi::Runtime& runtime, const jsi::Value& value)
+    winrt::TestComponent::RefDelegateWithOutParam projected_value_traits<winrt::TestComponent::RefDelegateWithOutParam>::as_native(napi_wrappers::Runtime& runtime, const napi_wrappers::Value& value)
     {
         return [ctxt = current_runtime_context()->add_reference(),
                    fn = value.asObject(runtime).asFunction(runtime)](winrt::Windows::Foundation::IReference<int32_t> const& param0, winrt::Windows::Foundation::IReference<int32_t>& param1) {
@@ -4244,10 +4244,10 @@ namespace rnwinrt
         };
     }
 
-    jsi::Value projected_value_traits<winrt::TestComponent::StringArrayDelegate>::as_value(jsi::Runtime& runtime, const winrt::TestComponent::StringArrayDelegate& value)
+    napi_wrappers::Value projected_value_traits<winrt::TestComponent::StringArrayDelegate>::as_value(napi_wrappers::Runtime& runtime, const winrt::TestComponent::StringArrayDelegate& value)
     {
-        return jsi::Function::createFromHostFunction(runtime, make_propid(runtime, "StringArrayDelegate"), 2,
-            [value](jsi::Runtime& runtime, const jsi::Value&, [[maybe_unused]] const jsi::Value* args, size_t count) {
+        return napi_wrappers::Function::createFromHostFunction(runtime, make_propid(runtime, "StringArrayDelegate"), 2,
+            [value](napi_wrappers::Runtime& runtime, const napi_wrappers::Value&, [[maybe_unused]] const napi_wrappers::Value* args, size_t count) {
                 if (count != 2)
                 {
                     throw_invalid_delegate_arg_count(runtime, "TestComponent"sv, "StringArrayDelegate"sv);
@@ -4261,7 +4261,7 @@ namespace rnwinrt
             });
     }
 
-    winrt::TestComponent::StringArrayDelegate projected_value_traits<winrt::TestComponent::StringArrayDelegate>::as_native(jsi::Runtime& runtime, const jsi::Value& value)
+    winrt::TestComponent::StringArrayDelegate projected_value_traits<winrt::TestComponent::StringArrayDelegate>::as_native(napi_wrappers::Runtime& runtime, const napi_wrappers::Value& value)
     {
         return [ctxt = current_runtime_context()->add_reference(),
                    fn = value.asObject(runtime).asFunction(runtime)](winrt::array_view<const winrt::hstring> const& param0, winrt::array_view<winrt::hstring> const& param1, winrt::com_array<winrt::hstring>& param2) {
@@ -4279,10 +4279,10 @@ namespace rnwinrt
         };
     }
 
-    jsi::Value projected_value_traits<winrt::TestComponent::StringDelegate>::as_value(jsi::Runtime& runtime, const winrt::TestComponent::StringDelegate& value)
+    napi_wrappers::Value projected_value_traits<winrt::TestComponent::StringDelegate>::as_value(napi_wrappers::Runtime& runtime, const winrt::TestComponent::StringDelegate& value)
     {
-        return jsi::Function::createFromHostFunction(runtime, make_propid(runtime, "StringDelegate"), 1,
-            [value](jsi::Runtime& runtime, const jsi::Value&, [[maybe_unused]] const jsi::Value* args, size_t count) {
+        return napi_wrappers::Function::createFromHostFunction(runtime, make_propid(runtime, "StringDelegate"), 1,
+            [value](napi_wrappers::Runtime& runtime, const napi_wrappers::Value&, [[maybe_unused]] const napi_wrappers::Value* args, size_t count) {
                 if (count != 1)
                 {
                     throw_invalid_delegate_arg_count(runtime, "TestComponent"sv, "StringDelegate"sv);
@@ -4294,7 +4294,7 @@ namespace rnwinrt
             });
     }
 
-    winrt::TestComponent::StringDelegate projected_value_traits<winrt::TestComponent::StringDelegate>::as_native(jsi::Runtime& runtime, const jsi::Value& value)
+    winrt::TestComponent::StringDelegate projected_value_traits<winrt::TestComponent::StringDelegate>::as_native(napi_wrappers::Runtime& runtime, const napi_wrappers::Value& value)
     {
         return [ctxt = current_runtime_context()->add_reference(),
                    fn = value.asObject(runtime).asFunction(runtime)](winrt::hstring const& param0) {
@@ -4309,10 +4309,10 @@ namespace rnwinrt
         };
     }
 
-    jsi::Value projected_value_traits<winrt::TestComponent::StringDelegateWithOutParam>::as_value(jsi::Runtime& runtime, const winrt::TestComponent::StringDelegateWithOutParam& value)
+    napi_wrappers::Value projected_value_traits<winrt::TestComponent::StringDelegateWithOutParam>::as_value(napi_wrappers::Runtime& runtime, const winrt::TestComponent::StringDelegateWithOutParam& value)
     {
-        return jsi::Function::createFromHostFunction(runtime, make_propid(runtime, "StringDelegateWithOutParam"), 1,
-            [value](jsi::Runtime& runtime, const jsi::Value&, [[maybe_unused]] const jsi::Value* args, size_t count) {
+        return napi_wrappers::Function::createFromHostFunction(runtime, make_propid(runtime, "StringDelegateWithOutParam"), 1,
+            [value](napi_wrappers::Runtime& runtime, const napi_wrappers::Value&, [[maybe_unused]] const napi_wrappers::Value* args, size_t count) {
                 if (count != 1)
                 {
                     throw_invalid_delegate_arg_count(runtime, "TestComponent"sv, "StringDelegateWithOutParam"sv);
@@ -4325,7 +4325,7 @@ namespace rnwinrt
             });
     }
 
-    winrt::TestComponent::StringDelegateWithOutParam projected_value_traits<winrt::TestComponent::StringDelegateWithOutParam>::as_native(jsi::Runtime& runtime, const jsi::Value& value)
+    winrt::TestComponent::StringDelegateWithOutParam projected_value_traits<winrt::TestComponent::StringDelegateWithOutParam>::as_native(napi_wrappers::Runtime& runtime, const napi_wrappers::Value& value)
     {
         return [ctxt = current_runtime_context()->add_reference(),
                    fn = value.asObject(runtime).asFunction(runtime)](winrt::hstring const& param0, winrt::hstring& param1) {
