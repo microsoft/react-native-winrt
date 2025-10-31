@@ -28,6 +28,7 @@ namespace
         { "deprecatedincluded", Option::NoMinArgs, 0, {}, "Includes types and methods that are marked deprecated." },
         { "webhosthiddenincluded", Option::NoMinArgs, 0, {},
             "Includes types annotated with WebHostHidden that are intended to be hidden from JS callers." },
+        { "node", Option::NoMinArgs, 0, {}, "Enable Node.js addon projection mode (experimental)" },
         { "verbose", Option::NoMinArgs, 0, {}, "Enables verbose logging" },
     };
 
@@ -63,6 +64,9 @@ namespace
         std::cout << R"(  local               Local %WinDir%\System32\WinMetadata folder)" << std::endl;
         std::cout << R"(  sdk[+]              Current version of Windows SDK [with extensions])" << std::endl;
         std::cout << R"(  10.0.12345.0[+]     Specific version of Windows SDK [with extensions])" << std::endl;
+        std::cout << std::endl;
+        std::cout << R"(Experimental:)" << std::endl;
+        std::cout << R"(  -node               Generate projection assets suitable for a Node.js addon)" << std::endl;
     }
 }
 

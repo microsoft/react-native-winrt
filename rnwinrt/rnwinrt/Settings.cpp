@@ -57,7 +57,8 @@ Settings::Settings(const CommandReader& commandReader) :
     Filter(GetInclude(commandReader), GetExclude(commandReader)), PchFileName(commandReader.Value("pch"sv, "pch.h"sv)),
     FilterToAllowForWeb(commandReader.Exists("allowforwebexclusively"sv)),
     IncludeDeprecated(commandReader.Exists("deprecatedincluded"sv)),
-    IncludeWebHostHidden(commandReader.Exists("webhosthiddenincluded"sv)), Verbose(commandReader.Exists("verbose"sv))
+    IncludeWebHostHidden(commandReader.Exists("webhosthiddenincluded"sv)), Verbose(commandReader.Exists("verbose"sv)),
+    Mode(commandReader.Exists("node"sv) ? RuntimeMode::Node : RuntimeMode::ReactNative)
 {
     std::filesystem::create_directories(OutputFolder);
 }

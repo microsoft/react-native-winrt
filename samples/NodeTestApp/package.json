@@ -1,0 +1,18 @@
+{
+  "name": "node-test-app",
+  "version": "0.1.0",
+  "private": true,
+  "scripts": {
+    "build:addon": "node-gyp rebuild",
+  "generate:winrt": "..\\..\\rnwinrt\\x64\\Debug\\rnwinrt.exe -node -input d:\\react-native-winrt\\tests\\RnWinRTTests\\windows\\TestComponent\\x64\\Debug\\TestComponent\\TestComponent.winmd -input \"C:\\Program Files (x86)\\Windows Kits\\10\\References\\10.0.19041.0\\Windows.Foundation.FoundationContract\\4.0.0.0\\Windows.Foundation.FoundationContract.winmd\" -include TestComponent -include Windows.Foundation -output ./generated",
+    "build": "npm run generate:winrt && npm run build:addon",
+    "start": "node index.js",
+    "test": "node index.js | findstr /C:\"Hello from WinRT placeholder addon\""
+  },
+  "gypfile": true,
+  "devDependencies": {
+    "node-gyp": "^10.0.0",
+    "bindings": "^1.5.0",
+    "node-addon-api": "^7.0.0"
+  }
+}

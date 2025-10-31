@@ -32,3 +32,7 @@ BEGIN
         VALUE "Translation", 0x409, 1200
     END
 END
+
+// Node base template resources for -node mode
+NODE_BASE_H RCDATA "node\\node_base.h"
+NODE_BASE_CPP RCDATA "node\\node_base.cpp"

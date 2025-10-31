@@ -9,6 +9,12 @@ struct Settings
 {
     Settings(const CommandReader& commandReader);
 
+    enum class RuntimeMode
+    {
+        ReactNative,
+        Node
+    };
+
     const std::filesystem::path OutputFolder;
     const std::filesystem::path TypescriptOutputFolder;
     winmd::reader::cache Cache;
@@ -18,6 +24,7 @@ struct Settings
     const bool IncludeDeprecated;
     const bool IncludeWebHostHidden;
     const bool Verbose;
+    const RuntimeMode Mode; // ReactNative by default unless -node supplied
 };
 
 bool is_type_allowed(const Settings& settings, const winmd::reader::TypeDef& typeDef);

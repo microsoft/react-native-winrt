@@ -1085,6 +1085,28 @@ static void write_rnwinrt_base_files(const Settings& settings)
     }
 }
 
+// Node runtime: emit placeholder base.h/base.cpp instead of React Native JSI implementation.
+static void write_node_base_files(const Settings& settings)
+{
+    auto write_from_resource = [&](LPCWSTR resName, const char* outName)
+    {
+        HMODULE hModule = GetModuleHandleW(nullptr);
+        if (!hModule) throw std::runtime_error("Failed to get module handle for node base resource.");
+        auto hRes = FindResourceW(hModule, resName, RT_RCDATA);
+        if (!hRes) throw std::runtime_error("Missing embedded node base resource: " + std::string(outName));
+        auto size = SizeofResource(hModule, hRes);
+        auto hData = LoadResource(hModule, hRes);
+        if (!hData) throw std::runtime_error("Failed to load node base resource: " + std::string(outName));
+        auto ptr = static_cast<const char*>(LockResource(hData));
+        if (!ptr || size == 0) throw std::runtime_error("Empty node base resource: " + std::string(outName));
+        rnwinrt::file_writer writer(settings.OutputFolder / outName);
+        writer.write(std::string(ptr, ptr + size));
+    };
+
+    write_from_resource(L"NODE_BASE_H", "base.h");
+    write_from_resource(L"NODE_BASE_CPP", "base.cpp");
+}
+
 void write_rnwinrt_files(const Settings& settings, const projection_data& data)
 {
     // Projections.g.cpp
@@ -1097,5 +1119,12 @@ void write_rnwinrt_files(const Settings& settings, const projection_data& data)
     write_rnwinrt_namespace_cpp_files(settings, data);
 
     // base.h/base.cpp
-    write_rnwinrt_base_files(settings);
+    if (settings.Mode == Settings::RuntimeMode::ReactNative)
+    {
+        write_rnwinrt_base_files(settings);
+    }
+    else
+    {
+        write_node_base_files(settings);
+    }
 }
