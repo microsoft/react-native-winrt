@@ -300,7 +300,7 @@ namespace rnwinrt::classes::TestComponent::StaticOnlyTest
                 {
                     auto arg0 = convert_value_to_native<winrt::TestComponent::TestObject>(runtime, args[0]);
                     winrt::TestComponent::StaticOnlyTest::RaiseObjectEvent(arg0);
-                    return napi_wrappers::Value::undefined();
+                    return napi_wrappers::Value::undefined(runtime);
                 }
                 throw_no_function_overload(runtime, "TestComponent"sv, "StaticOnlyTest"sv, "raiseObjectEvent"sv, count);
             }
@@ -927,7 +927,7 @@ namespace rnwinrt::classes::TestComponent::Test
                 {
                     auto arg0 = convert_value_to_native<winrt::hstring>(runtime, args[0]);
                     winrt::TestComponent::Test::LogFailures(arg0);
-                    return napi_wrappers::Value::undefined();
+                    return napi_wrappers::Value::undefined(runtime);
                 }
                 throw_no_function_overload(runtime, "TestComponent"sv, "Test"sv, "logFailures"sv, count);
             }
@@ -969,7 +969,7 @@ namespace rnwinrt::classes::TestComponent::Test
                 {
                     auto arg0 = convert_value_to_native<bool>(runtime, args[0]);
                     winrt::TestComponent::Test::RaiseStaticBoolEvent(arg0);
-                    return napi_wrappers::Value::undefined();
+                    return napi_wrappers::Value::undefined(runtime);
                 }
                 throw_no_function_overload(runtime, "TestComponent"sv, "Test"sv, "raiseStaticBoolEvent"sv, count);
             }
@@ -980,7 +980,7 @@ namespace rnwinrt::classes::TestComponent::Test
                 {
                     auto arg0 = convert_value_to_native<char16_t>(runtime, args[0]);
                     winrt::TestComponent::Test::RaiseStaticCharEvent(arg0);
-                    return napi_wrappers::Value::undefined();
+                    return napi_wrappers::Value::undefined(runtime);
                 }
                 throw_no_function_overload(runtime, "TestComponent"sv, "Test"sv, "raiseStaticCharEvent"sv, count);
             }
@@ -991,7 +991,7 @@ namespace rnwinrt::classes::TestComponent::Test
                 {
                     auto arg0 = convert_value_to_native<winrt::TestComponent::CompositeType>(runtime, args[0]);
                     winrt::TestComponent::Test::RaiseStaticCompositeStructEvent(arg0);
-                    return napi_wrappers::Value::undefined();
+                    return napi_wrappers::Value::undefined(runtime);
                 }
                 throw_no_function_overload(runtime, "TestComponent"sv, "Test"sv, "raiseStaticCompositeStructEvent"sv, count);
             }
@@ -1002,7 +1002,7 @@ namespace rnwinrt::classes::TestComponent::Test
                 {
                     auto arg0 = convert_value_to_native<winrt::TestComponent::TestEnum>(runtime, args[0]);
                     winrt::TestComponent::Test::RaiseStaticEnumEvent(arg0);
-                    return napi_wrappers::Value::undefined();
+                    return napi_wrappers::Value::undefined(runtime);
                 }
                 throw_no_function_overload(runtime, "TestComponent"sv, "Test"sv, "raiseStaticEnumEvent"sv, count);
             }
@@ -1013,7 +1013,7 @@ namespace rnwinrt::classes::TestComponent::Test
                 {
                     auto arg0 = convert_value_to_native<winrt::guid>(runtime, args[0]);
                     winrt::TestComponent::Test::RaiseStaticGuidEvent(arg0);
-                    return napi_wrappers::Value::undefined();
+                    return napi_wrappers::Value::undefined(runtime);
                 }
                 throw_no_function_overload(runtime, "TestComponent"sv, "Test"sv, "raiseStaticGuidEvent"sv, count);
             }
@@ -1024,7 +1024,7 @@ namespace rnwinrt::classes::TestComponent::Test
                 {
                     auto arg0 = convert_value_to_native<int32_t>(runtime, args[0]);
                     winrt::TestComponent::Test::RaiseStaticNumericEvent(arg0);
-                    return napi_wrappers::Value::undefined();
+                    return napi_wrappers::Value::undefined(runtime);
                 }
                 throw_no_function_overload(runtime, "TestComponent"sv, "Test"sv, "raiseStaticNumericEvent"sv, count);
             }
@@ -1046,7 +1046,7 @@ namespace rnwinrt::classes::TestComponent::Test
                 {
                     auto arg0 = convert_value_to_native<winrt::TestComponent::TestObject>(runtime, args[0]);
                     winrt::TestComponent::Test::RaiseStaticObjectEvent(arg0);
-                    return napi_wrappers::Value::undefined();
+                    return napi_wrappers::Value::undefined(runtime);
                 }
                 throw_no_function_overload(runtime, "TestComponent"sv, "Test"sv, "raiseStaticObjectEvent"sv, count);
             }
@@ -1057,7 +1057,7 @@ namespace rnwinrt::classes::TestComponent::Test
                 {
                     auto arg0 = convert_value_to_native<winrt::Windows::Foundation::IReference<int32_t>>(runtime, args[0]);
                     winrt::TestComponent::Test::RaiseStaticRefEvent(arg0);
-                    return napi_wrappers::Value::undefined();
+                    return napi_wrappers::Value::undefined(runtime);
                 }
                 throw_no_function_overload(runtime, "TestComponent"sv, "Test"sv, "raiseStaticRefEvent"sv, count);
             }
@@ -1068,7 +1068,7 @@ namespace rnwinrt::classes::TestComponent::Test
                 {
                     auto arg0 = convert_value_to_native<winrt::hstring>(runtime, args[0]);
                     winrt::TestComponent::Test::RaiseStaticStringEvent(arg0);
-                    return napi_wrappers::Value::undefined();
+                    return napi_wrappers::Value::undefined(runtime);
                 }
                 throw_no_function_overload(runtime, "TestComponent"sv, "Test"sv, "raiseStaticStringEvent"sv, count);
             }
@@ -1459,7 +1459,7 @@ namespace rnwinrt::classes::TestComponent::Test
                 {
                     auto arg0 = convert_value_to_native<winrt::array_view<bool>>(runtime, args[0]);
                     winrt::TestComponent::Test::StaticBoolFillParam(arg0);
-                    return napi_wrappers::Value::undefined();
+                    return napi_wrappers::Value::undefined(runtime);
                 }
                 throw_no_function_overload(runtime, "TestComponent"sv, "Test"sv, "staticBoolFillParam"sv, count);
             }
@@ -1497,7 +1497,7 @@ namespace rnwinrt::classes::TestComponent::Test
                 {
                     auto arg0 = convert_value_to_native<winrt::array_view<char16_t>>(runtime, args[0]);
                     winrt::TestComponent::Test::StaticCharFillParam(arg0);
-                    return napi_wrappers::Value::undefined();
+                    return napi_wrappers::Value::undefined(runtime);
                 }
                 throw_no_function_overload(runtime, "TestComponent"sv, "Test"sv, "staticCharFillParam"sv, count);
             }
@@ -1534,7 +1534,7 @@ namespace rnwinrt::classes::TestComponent::Test
                 {
                     auto arg0 = convert_value_to_native<winrt::array_view<winrt::TestComponent::CompositeType>>(runtime, args[0]);
                     winrt::TestComponent::Test::StaticCompositeStructFillParam(arg0);
-                    return napi_wrappers::Value::undefined();
+                    return napi_wrappers::Value::undefined(runtime);
                 }
                 throw_no_function_overload(runtime, "TestComponent"sv, "Test"sv, "staticCompositeStructFillParam"sv, count);
             }
@@ -1661,7 +1661,7 @@ namespace rnwinrt::classes::TestComponent::Test
                 {
                     auto arg0 = convert_value_to_native<winrt::array_view<winrt::TestComponent::TestEnum>>(runtime, args[0]);
                     winrt::TestComponent::Test::StaticEnumFillParam(arg0);
-                    return napi_wrappers::Value::undefined();
+                    return napi_wrappers::Value::undefined(runtime);
                 }
                 throw_no_function_overload(runtime, "TestComponent"sv, "Test"sv, "staticEnumFillParam"sv, count);
             }
@@ -1698,7 +1698,7 @@ namespace rnwinrt::classes::TestComponent::Test
                 {
                     auto arg0 = convert_value_to_native<winrt::array_view<winrt::guid>>(runtime, args[0]);
                     winrt::TestComponent::Test::StaticGuidFillParam(arg0);
-                    return napi_wrappers::Value::undefined();
+                    return napi_wrappers::Value::undefined(runtime);
                 }
                 throw_no_function_overload(runtime, "TestComponent"sv, "Test"sv, "staticGuidFillParam"sv, count);
             }
@@ -2090,7 +2090,7 @@ namespace rnwinrt::classes::TestComponent::Test
                 {
                     auto arg0 = convert_value_to_native<winrt::array_view<int32_t>>(runtime, args[0]);
                     winrt::TestComponent::Test::StaticNumericFillParam(arg0);
-                    return napi_wrappers::Value::undefined();
+                    return napi_wrappers::Value::undefined(runtime);
                 }
                 throw_no_function_overload(runtime, "TestComponent"sv, "Test"sv, "staticNumericFillParam"sv, count);
             }
@@ -2127,7 +2127,7 @@ namespace rnwinrt::classes::TestComponent::Test
                 {
                     auto arg0 = convert_value_to_native<winrt::array_view<winrt::TestComponent::TestObject>>(runtime, args[0]);
                     winrt::TestComponent::Test::StaticObjectFillParam(arg0);
-                    return napi_wrappers::Value::undefined();
+                    return napi_wrappers::Value::undefined(runtime);
                 }
                 throw_no_function_overload(runtime, "TestComponent"sv, "Test"sv, "staticObjectFillParam"sv, count);
             }
@@ -2206,7 +2206,7 @@ namespace rnwinrt::classes::TestComponent::Test
                 {
                     auto arg0 = convert_value_to_native<winrt::array_view<winrt::Windows::Foundation::IReference<int32_t>>>(runtime, args[0]);
                     winrt::TestComponent::Test::StaticRefFillParam(arg0);
-                    return napi_wrappers::Value::undefined();
+                    return napi_wrappers::Value::undefined(runtime);
                 }
                 throw_no_function_overload(runtime, "TestComponent"sv, "Test"sv, "staticRefFillParam"sv, count);
             }
@@ -2243,7 +2243,7 @@ namespace rnwinrt::classes::TestComponent::Test
                 {
                     auto arg0 = convert_value_to_native<winrt::array_view<winrt::hstring>>(runtime, args[0]);
                     winrt::TestComponent::Test::StaticStringFillParam(arg0);
-                    return napi_wrappers::Value::undefined();
+                    return napi_wrappers::Value::undefined(runtime);
                 }
                 throw_no_function_overload(runtime, "TestComponent"sv, "Test"sv, "staticStringFillParam"sv, count);
             }
@@ -2842,7 +2842,7 @@ namespace rnwinrt::interfaces::TestComponent::ITest
                     auto arg0 = convert_value_to_native<winrt::Windows::Foundation::IPropertyValue>(runtime, args[0]);
                     auto arg1 = convert_value_to_native<winrt::hstring>(runtime, args[1]);
                     thisValue.as<winrt::TestComponent::ITest>().AssignPropertyValueAsType(arg0, arg1);
-                    return napi_wrappers::Value::undefined();
+                    return napi_wrappers::Value::undefined(runtime);
                 },
                 2, false },
         { "boolArrayOutParam",
@@ -2858,7 +2858,7 @@ namespace rnwinrt::interfaces::TestComponent::ITest
             []([[maybe_unused]] napi_wrappers::Runtime& runtime, const winrt::Windows::Foundation::IInspectable& thisValue, [[maybe_unused]] const napi_wrappers::Value* args) {
                     auto arg0 = convert_value_to_native<winrt::array_view<bool>>(runtime, args[0]);
                     thisValue.as<winrt::TestComponent::ITest>().BoolFillParam(arg0);
-                    return napi_wrappers::Value::undefined();
+                    return napi_wrappers::Value::undefined(runtime);
                 },
                 1, false },
         { "boolOutParam",
@@ -2884,7 +2884,7 @@ namespace rnwinrt::interfaces::TestComponent::ITest
             []([[maybe_unused]] napi_wrappers::Runtime& runtime, const winrt::Windows::Foundation::IInspectable& thisValue, [[maybe_unused]] const napi_wrappers::Value* args) {
                     auto arg0 = convert_value_to_native<winrt::array_view<char16_t>>(runtime, args[0]);
                     thisValue.as<winrt::TestComponent::ITest>().CharFillParam(arg0);
-                    return napi_wrappers::Value::undefined();
+                    return napi_wrappers::Value::undefined(runtime);
                 },
                 1, false },
         { "charOutParam",
@@ -2909,7 +2909,7 @@ namespace rnwinrt::interfaces::TestComponent::ITest
             []([[maybe_unused]] napi_wrappers::Runtime& runtime, const winrt::Windows::Foundation::IInspectable& thisValue, [[maybe_unused]] const napi_wrappers::Value* args) {
                     auto arg0 = convert_value_to_native<winrt::array_view<winrt::TestComponent::CompositeType>>(runtime, args[0]);
                     thisValue.as<winrt::TestComponent::ITest>().CompositeStructFillParam(arg0);
-                    return napi_wrappers::Value::undefined();
+                    return napi_wrappers::Value::undefined(runtime);
                 },
                 1, false },
         { "compositeStructOutParam",
@@ -2993,7 +2993,7 @@ namespace rnwinrt::interfaces::TestComponent::ITest
             []([[maybe_unused]] napi_wrappers::Runtime& runtime, const winrt::Windows::Foundation::IInspectable& thisValue, [[maybe_unused]] const napi_wrappers::Value* args) {
                     auto arg0 = convert_value_to_native<winrt::array_view<winrt::TestComponent::TestEnum>>(runtime, args[0]);
                     thisValue.as<winrt::TestComponent::ITest>().EnumFillParam(arg0);
-                    return napi_wrappers::Value::undefined();
+                    return napi_wrappers::Value::undefined(runtime);
                 },
                 1, false },
         { "enumOutParam",
@@ -3018,7 +3018,7 @@ namespace rnwinrt::interfaces::TestComponent::ITest
             []([[maybe_unused]] napi_wrappers::Runtime& runtime, const winrt::Windows::Foundation::IInspectable& thisValue, [[maybe_unused]] const napi_wrappers::Value* args) {
                     auto arg0 = convert_value_to_native<winrt::array_view<winrt::guid>>(runtime, args[0]);
                     thisValue.as<winrt::TestComponent::ITest>().GuidFillParam(arg0);
-                    return napi_wrappers::Value::undefined();
+                    return napi_wrappers::Value::undefined(runtime);
                 },
                 1, false },
         { "guidOutParam",
@@ -3056,7 +3056,7 @@ namespace rnwinrt::interfaces::TestComponent::ITest
             []([[maybe_unused]] napi_wrappers::Runtime& runtime, const winrt::Windows::Foundation::IInspectable& thisValue, [[maybe_unused]] const napi_wrappers::Value* args) {
                     auto arg0 = convert_value_to_native<winrt::array_view<int32_t>>(runtime, args[0]);
                     thisValue.as<winrt::TestComponent::ITest>().NumericFillParam(arg0);
-                    return napi_wrappers::Value::undefined();
+                    return napi_wrappers::Value::undefined(runtime);
                 },
                 1, false },
         { "numericOutParam",
@@ -3081,7 +3081,7 @@ namespace rnwinrt::interfaces::TestComponent::ITest
             []([[maybe_unused]] napi_wrappers::Runtime& runtime, const winrt::Windows::Foundation::IInspectable& thisValue, [[maybe_unused]] const napi_wrappers::Value* args) {
                     auto arg0 = convert_value_to_native<winrt::array_view<winrt::TestComponent::TestObject>>(runtime, args[0]);
                     thisValue.as<winrt::TestComponent::ITest>().ObjectFillParam(arg0);
-                    return napi_wrappers::Value::undefined();
+                    return napi_wrappers::Value::undefined(runtime);
                 },
                 1, false },
         { "objectOutParam",
@@ -3128,63 +3128,63 @@ namespace rnwinrt::interfaces::TestComponent::ITest
             []([[maybe_unused]] napi_wrappers::Runtime& runtime, const winrt::Windows::Foundation::IInspectable& thisValue, [[maybe_unused]] const napi_wrappers::Value* args) {
                     auto arg0 = convert_value_to_native<bool>(runtime, args[0]);
                     thisValue.as<winrt::TestComponent::ITest>().RaiseBoolEvent(arg0);
-                    return napi_wrappers::Value::undefined();
+                    return napi_wrappers::Value::undefined(runtime);
                 },
                 1, false },
         { "raiseCharEvent",
             []([[maybe_unused]] napi_wrappers::Runtime& runtime, const winrt::Windows::Foundation::IInspectable& thisValue, [[maybe_unused]] const napi_wrappers::Value* args) {
                     auto arg0 = convert_value_to_native<char16_t>(runtime, args[0]);
                     thisValue.as<winrt::TestComponent::ITest>().RaiseCharEvent(arg0);
-                    return napi_wrappers::Value::undefined();
+                    return napi_wrappers::Value::undefined(runtime);
                 },
                 1, false },
         { "raiseCompositeStructEvent",
             []([[maybe_unused]] napi_wrappers::Runtime& runtime, const winrt::Windows::Foundation::IInspectable& thisValue, [[maybe_unused]] const napi_wrappers::Value* args) {
                     auto arg0 = convert_value_to_native<winrt::TestComponent::CompositeType>(runtime, args[0]);
                     thisValue.as<winrt::TestComponent::ITest>().RaiseCompositeStructEvent(arg0);
-                    return napi_wrappers::Value::undefined();
+                    return napi_wrappers::Value::undefined(runtime);
                 },
                 1, false },
         { "raiseEnumEvent",
             []([[maybe_unused]] napi_wrappers::Runtime& runtime, const winrt::Windows::Foundation::IInspectable& thisValue, [[maybe_unused]] const napi_wrappers::Value* args) {
                     auto arg0 = convert_value_to_native<winrt::TestComponent::TestEnum>(runtime, args[0]);
                     thisValue.as<winrt::TestComponent::ITest>().RaiseEnumEvent(arg0);
-                    return napi_wrappers::Value::undefined();
+                    return napi_wrappers::Value::undefined(runtime);
                 },
                 1, false },
         { "raiseGuidEvent",
             []([[maybe_unused]] napi_wrappers::Runtime& runtime, const winrt::Windows::Foundation::IInspectable& thisValue, [[maybe_unused]] const napi_wrappers::Value* args) {
                     auto arg0 = convert_value_to_native<winrt::guid>(runtime, args[0]);
                     thisValue.as<winrt::TestComponent::ITest>().RaiseGuidEvent(arg0);
-                    return napi_wrappers::Value::undefined();
+                    return napi_wrappers::Value::undefined(runtime);
                 },
                 1, false },
         { "raiseNumericEvent",
             []([[maybe_unused]] napi_wrappers::Runtime& runtime, const winrt::Windows::Foundation::IInspectable& thisValue, [[maybe_unused]] const napi_wrappers::Value* args) {
                     auto arg0 = convert_value_to_native<int32_t>(runtime, args[0]);
                     thisValue.as<winrt::TestComponent::ITest>().RaiseNumericEvent(arg0);
-                    return napi_wrappers::Value::undefined();
+                    return napi_wrappers::Value::undefined(runtime);
                 },
                 1, false },
         { "raiseObjectEvent",
             []([[maybe_unused]] napi_wrappers::Runtime& runtime, const winrt::Windows::Foundation::IInspectable& thisValue, [[maybe_unused]] const napi_wrappers::Value* args) {
                     auto arg0 = convert_value_to_native<winrt::TestComponent::TestObject>(runtime, args[0]);
                     thisValue.as<winrt::TestComponent::ITest>().RaiseObjectEvent(arg0);
-                    return napi_wrappers::Value::undefined();
+                    return napi_wrappers::Value::undefined(runtime);
                 },
                 1, false },
         { "raiseRefEvent",
             []([[maybe_unused]] napi_wrappers::Runtime& runtime, const winrt::Windows::Foundation::IInspectable& thisValue, [[maybe_unused]] const napi_wrappers::Value* args) {
                     auto arg0 = convert_value_to_native<winrt::Windows::Foundation::IReference<int32_t>>(runtime, args[0]);
                     thisValue.as<winrt::TestComponent::ITest>().RaiseRefEvent(arg0);
-                    return napi_wrappers::Value::undefined();
+                    return napi_wrappers::Value::undefined(runtime);
                 },
                 1, false },
         { "raiseStringEvent",
             []([[maybe_unused]] napi_wrappers::Runtime& runtime, const winrt::Windows::Foundation::IInspectable& thisValue, [[maybe_unused]] const napi_wrappers::Value* args) {
                     auto arg0 = convert_value_to_native<winrt::hstring>(runtime, args[0]);
                     thisValue.as<winrt::TestComponent::ITest>().RaiseStringEvent(arg0);
-                    return napi_wrappers::Value::undefined();
+                    return napi_wrappers::Value::undefined(runtime);
                 },
                 1, false },
         { "refArrayOutParam",
@@ -3200,7 +3200,7 @@ namespace rnwinrt::interfaces::TestComponent::ITest
             []([[maybe_unused]] napi_wrappers::Runtime& runtime, const winrt::Windows::Foundation::IInspectable& thisValue, [[maybe_unused]] const napi_wrappers::Value* args) {
                     auto arg0 = convert_value_to_native<winrt::array_view<winrt::Windows::Foundation::IReference<int32_t>>>(runtime, args[0]);
                     thisValue.as<winrt::TestComponent::ITest>().RefFillParam(arg0);
-                    return napi_wrappers::Value::undefined();
+                    return napi_wrappers::Value::undefined(runtime);
                 },
                 1, false },
         { "refOutParam",
@@ -3225,7 +3225,7 @@ namespace rnwinrt::interfaces::TestComponent::ITest
             []([[maybe_unused]] napi_wrappers::Runtime& runtime, const winrt::Windows::Foundation::IInspectable& thisValue, [[maybe_unused]] const napi_wrappers::Value* args) {
                     auto arg0 = convert_value_to_native<winrt::array_view<winrt::hstring>>(runtime, args[0]);
                     thisValue.as<winrt::TestComponent::ITest>().StringFillParam(arg0);
-                    return napi_wrappers::Value::undefined();
+                    return napi_wrappers::Value::undefined(runtime);
                 },
                 1, false },
         { "stringOutParam",

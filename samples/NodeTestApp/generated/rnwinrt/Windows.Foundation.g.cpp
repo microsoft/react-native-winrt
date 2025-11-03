@@ -560,13 +560,13 @@ namespace rnwinrt::interfaces::Windows::Foundation::IAsyncInfo
         { "cancel",
             []([[maybe_unused]] napi_wrappers::Runtime& runtime, const winrt::Windows::Foundation::IInspectable& thisValue, [[maybe_unused]] const napi_wrappers::Value* args) {
                     thisValue.as<winrt::Windows::Foundation::IAsyncInfo>().Cancel();
-                    return napi_wrappers::Value::undefined();
+                    return napi_wrappers::Value::undefined(runtime);
                 },
                 0, false },
         { "close",
             []([[maybe_unused]] napi_wrappers::Runtime& runtime, const winrt::Windows::Foundation::IInspectable& thisValue, [[maybe_unused]] const napi_wrappers::Value* args) {
                     thisValue.as<winrt::Windows::Foundation::IAsyncInfo>().Close();
-                    return napi_wrappers::Value::undefined();
+                    return napi_wrappers::Value::undefined(runtime);
                 },
                 0, false },
     };
@@ -580,7 +580,7 @@ namespace rnwinrt::interfaces::Windows::Foundation::IClosable
         { "close",
             []([[maybe_unused]] napi_wrappers::Runtime& runtime, const winrt::Windows::Foundation::IInspectable& thisValue, [[maybe_unused]] const napi_wrappers::Value* args) {
                     thisValue.as<winrt::Windows::Foundation::IClosable>().Close();
-                    return napi_wrappers::Value::undefined();
+                    return napi_wrappers::Value::undefined(runtime);
                 },
                 0, false },
     };
@@ -594,7 +594,7 @@ namespace rnwinrt::interfaces::Windows::Foundation::IDeferral
         { "complete",
             []([[maybe_unused]] napi_wrappers::Runtime& runtime, const winrt::Windows::Foundation::IInspectable& thisValue, [[maybe_unused]] const napi_wrappers::Value* args) {
                     thisValue.as<winrt::Windows::Foundation::IDeferral>().Complete();
-                    return napi_wrappers::Value::undefined();
+                    return napi_wrappers::Value::undefined(runtime);
                 },
                 0, false },
     };
@@ -956,7 +956,7 @@ namespace rnwinrt
                 auto arg0 = convert_value_to_native<winrt::Windows::Foundation::IAsyncAction>(runtime, args[0]);
                 auto arg1 = convert_value_to_native<winrt::Windows::Foundation::AsyncStatus>(runtime, args[1]);
                 value(arg0, arg1);
-                return napi_wrappers::Value::undefined();
+                return napi_wrappers::Value::undefined(runtime);
             });
     }
 
@@ -983,7 +983,7 @@ namespace rnwinrt
                 }
 
                 value();
-                return napi_wrappers::Value::undefined();
+                return napi_wrappers::Value::undefined(runtime);
             });
     }
 

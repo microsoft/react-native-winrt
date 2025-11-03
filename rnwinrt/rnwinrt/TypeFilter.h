@@ -36,9 +36,17 @@ struct TypeFilter
             m_rules.push_back({ exclude, false });
         }
 
-        std::sort(m_rules.begin(), m_rules.end(), [](auto const& lhs, auto const& rhs) {
-            auto size_compare = int(lhs.first.size()) - int(rhs.first.size());
-            return (size_compare > 0) || ((size_compare == 0) && !lhs.second);
+        // Sort rules so that:
+        // 1. All exclude (false) rules come before include (true) rules.
+        // 2. Within each group (false or true), rules are ordered alphabetically by their string.
+        // This groups exclusion patterns first (for early rejection) while keeping deterministic order.
+        std::sort(m_rules.begin(), m_rules.end(), [](auto const& lhs, auto const& rhs) noexcept {
+            if (lhs.second != rhs.second)
+            {
+                // false (exclude) before true (include)
+                return lhs.second == false && rhs.second == true;
+            }
+            return lhs.first < rhs.first; // alphabetical within same include/exclude group
         });
     }
 

@@ -12,7 +12,19 @@
         "int/inc",
         "int/nuget-packages/Microsoft.WindowsAppSDK.Foundation.1.8.250906002/include"
       ],
-      "defines": [ "NAPI_DISABLE_CPP_EXCEPTIONS" ]
+      "defines": [ "NAPI_DISABLE_CPP_EXCEPTIONS" ],
+      "msvs_settings": {
+        "VCCLCompilerTool": {
+          "ExceptionHandling": "1",
+          "AdditionalOptions": [ "/GR" ]
+        },
+        "VCLinkerTool": {
+          "AdditionalDependencies": [
+            "windowsapp.lib",
+            "rpcrt4.lib"
+          ]
+        }
+      }
     }
   ]
 }

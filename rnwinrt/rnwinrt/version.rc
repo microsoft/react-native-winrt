@@ -36,3 +36,5 @@ END
 // Node base template resources for -node mode
 NODE_BASE_H RCDATA "node\\node_base.h"
 NODE_BASE_CPP RCDATA "node\\node_base.cpp"
+NAPI_WRAPPERS_H RCDATA "node\\napi_wrappers.h"
+NAPI_WRAPPERS_CPP RCDATA "node\\napi_wrappers.cpp"
