@@ -50,6 +50,11 @@ namespace napi_wrappers
         virtual Value get(Runtime& runtime, const PropNameID& name) = 0;
         virtual void set(Runtime& runtime, const PropNameID& name, const Value& value) = 0;
         virtual std::vector<PropNameID> getPropertyNames(Runtime& runtime) = 0;
+        
+        // Virtual method to check if this is a projected WinRT object instance
+        // Returns true for projected_object_instance, false for other HostObject types
+        // TODO: This is probably more complex than we need.
+        virtual bool isProjectedObjectInstance() const { return false; }
     };
     
     // Value wrapper
@@ -365,8 +370,9 @@ namespace napi_wrappers
                     // Dereference to get the actual shared_ptr<HostObject>
                     auto hostObjectPtr = *hostObjectPtrPtr;
                     
-                    // Cast to the requested type T using dynamic_pointer_cast for safety
-                    return std::dynamic_pointer_cast<T>(hostObjectPtr);
+                    // Cast to the requested type T using static_pointer_cast
+                    // This is safe because the caller knows the expected type
+                    return std::static_pointer_cast<T>(hostObjectPtr);
                 }
             }
             

@@ -20,9 +20,10 @@ namespace napi_wrappers {
     Object Object::createFromHostObject(Runtime& env, std::shared_ptr<HostObject> hostObj) 
     {
         // Check if this is a projected_object_instance - if so, use WinRTObjectWrapper for better performance
-        // TODO: Get rid of this dynamic_pointer_cast and use WinRTObjectWrapper for all projected objects (?)
-        if (auto projectedInstance = std::dynamic_pointer_cast<rnwinrt::projected_object_instance>(hostObj))
+        if (hostObj->isProjectedObjectInstance())
         {
+            // Safe to static_cast since isProjectedObjectInstance() returned true
+            auto projectedInstance = std::static_pointer_cast<rnwinrt::projected_object_instance>(hostObj);
             return Object(WinRTObjectWrapper::Create(env.env(), projectedInstance));
         }
         

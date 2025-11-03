@@ -20,9 +20,10 @@ namespace napi_wrappers {
     Object Object::createFromHostObject(Runtime& env, std::shared_ptr<HostObject> hostObj) 
     {
         // Check if this is a projected_object_instance - if so, use WinRTObjectWrapper for better performance
-        // TODO: Get rid of this dynamic_pointer_cast and use WinRTObjectWrapper for all projected objects (?)
-        if (auto projectedInstance = std::dynamic_pointer_cast<rnwinrt::projected_object_instance>(hostObj))
+        if (hostObj->isProjectedObjectInstance())
         {
+            // Safe to static_cast since isProjectedObjectInstance() returned true
+            auto projectedInstance = std::static_pointer_cast<rnwinrt::projected_object_instance>(hostObj);
             return Object(WinRTObjectWrapper::Create(env.env(), projectedInstance));
         }
         
@@ -54,10 +55,37 @@ namespace napi_wrappers {
                     }
                 };
                 
-                obj.DefineProperty(Napi::PropertyDescriptor::Accessor(
-                    propNameStr,
-                    getter
-                ));
+                // Create a raw N-API property descriptor with enumerable flag
+                auto getterCallback = [](napi_env env, napi_callback_info info) -> napi_value {
+                    size_t argc = 0;
+                    void* data = nullptr;
+                    napi_get_cb_info(env, info, &argc, nullptr, nullptr, &data);
+                    
+                    auto* capturedData = static_cast<std::pair<std::shared_ptr<HostObject>, std::string>*>(data);
+                    try {
+                        napi_wrappers::Runtime runtime(env);
+                        auto propId = napi_wrappers::PropNameID::forAscii(runtime, capturedData->second.c_str());
+                        auto result = capturedData->first->get(runtime, propId);
+                        return result.m_value;
+                    } catch (...) {
+                        napi_value undefined;
+                        napi_get_undefined(env, &undefined);
+                        return undefined;
+                    }
+                };
+                
+                auto* callbackData = new std::pair<std::shared_ptr<HostObject>, std::string>(hostObj, propNameStr);
+                
+                napi_property_descriptor raw_desc;
+                raw_desc.utf8name = callbackData->second.c_str();
+                raw_desc.name = nullptr;
+                raw_desc.method = nullptr;
+                raw_desc.getter = getterCallback;
+                raw_desc.setter = nullptr;
+                raw_desc.value = nullptr;
+                raw_desc.attributes = static_cast<napi_property_attributes>(napi_enumerable | napi_configurable);
+                raw_desc.data = callbackData;
+                napi_define_properties(env.env(), obj, 1, &raw_desc);
             }
         } catch (...) {
             // If we can't get property names, just return the object with _hostObject_
@@ -195,6 +223,9 @@ namespace napi_wrappers {
                 return info.Env().Undefined();
             } catch (const std::exception& e) {
                 Napi::Error::New(info.Env(), e.what()).ThrowAsJavaScriptException();
+                return info.Env().Undefined();
+            } catch (const char* e) {
+                Napi::Error::New(info.Env(), e).ThrowAsJavaScriptException();
                 return info.Env().Undefined();
             } catch (...) {
                 Napi::Error::New(info.Env(), "Unknown error occurred").ThrowAsJavaScriptException();

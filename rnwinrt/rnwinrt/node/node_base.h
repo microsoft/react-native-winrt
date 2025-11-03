@@ -1781,6 +1781,7 @@ namespace rnwinrt
         virtual napi_wrappers::Value get(napi_wrappers::Runtime& runtime, const napi_wrappers::PropNameID& name) override;
         virtual void set(napi_wrappers::Runtime& runtime, const napi_wrappers::PropNameID& name, const napi_wrappers::Value& value) override;
         virtual std::vector<napi_wrappers::PropNameID> getPropertyNames(napi_wrappers::Runtime& runtime) override;
+        virtual bool isProjectedObjectInstance() const override { return true; }
 
         const winrt::Windows::Foundation::IInspectable& instance() const noexcept
         {
@@ -2668,7 +2669,7 @@ namespace rnwinrt
                 m_data.push_back(convert_value_to_native<T>(runtime, array.getValueAtIndex(runtime, i)));
             }
 #endif // not working yet
-            throw "TODO: not working yet (pass_array_wrapper)";
+            throw "TODO: not working yet (array_to_native_iterator constructor)";
         }
 
         operator winrt::array_view<const T>()
@@ -2707,16 +2708,13 @@ namespace rnwinrt
     {
         static napi_wrappers::Value as_value(napi_wrappers::Runtime& runtime, const winrt::com_array<T>& value)
         {
-#if 0 // not working yet
             auto result = napi_wrappers::Array(runtime, value.size());
             for (std::uint32_t i = 0; i < value.size(); ++i)
             {
                 result.setValueAtIndex(runtime, i, convert_native_to_value(runtime, value[i]));
             }
 
-            return result;
-#endif // not working yet
-            throw "TODO:Not working yet.";
+            return napi_wrappers::Value(runtime, result);
         }
 
         static winrt::com_array<T> as_native(napi_wrappers::Runtime& runtime, const napi_wrappers::Value& value)

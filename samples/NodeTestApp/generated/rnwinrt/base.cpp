@@ -177,8 +177,7 @@ napi_wrappers::Value static_namespace_data::create(napi_wrappers::Runtime& runti
 
 napi_wrappers::Value projected_namespace::get(napi_wrappers::Runtime& runtime, const napi_wrappers::PropNameID& name)
 {
-    auto nameStr = name.utf8(runtime);
-    if (auto itr = find_by_name(m_data->children, nameStr); itr != m_data->children.end())
+    if (auto itr = find_by_name(m_data->children, name.utf8(runtime)); itr != m_data->children.end())
     {
         // Don't cache proxy objects - create fresh ones each time to avoid Napi::Value lifecycle issues
         // TODO: Implement proper caching mechanism if performance becomes an issue
@@ -197,7 +196,7 @@ void projected_namespace::set(napi_wrappers::Runtime& runtime, const napi_wrappe
 std::vector<napi_wrappers::PropNameID> projected_namespace::getPropertyNames(napi_wrappers::Runtime& runtime)
 {
     std::vector<napi_wrappers::PropNameID> result;
-    result.reserve(m_data->children.size());
+    result.reserve(m_children.size());
     for (auto ptr : m_data->children)
     {
         result.push_back(make_propid(runtime, ptr->name));

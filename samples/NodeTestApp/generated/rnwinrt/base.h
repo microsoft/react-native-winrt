@@ -1781,6 +1781,7 @@ namespace rnwinrt
         virtual napi_wrappers::Value get(napi_wrappers::Runtime& runtime, const napi_wrappers::PropNameID& name) override;
         virtual void set(napi_wrappers::Runtime& runtime, const napi_wrappers::PropNameID& name, const napi_wrappers::Value& value) override;
         virtual std::vector<napi_wrappers::PropNameID> getPropertyNames(napi_wrappers::Runtime& runtime) override;
+        virtual bool isProjectedObjectInstance() const override { return true; }
 
         const winrt::Windows::Foundation::IInspectable& instance() const noexcept
         {

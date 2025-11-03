@@ -16,7 +16,7 @@
       "msvs_settings": {
         "VCCLCompilerTool": {
           "ExceptionHandling": "1",
-          "AdditionalOptions": [ "/GR" ]
+          "AdditionalOptions": [ "/GR-" ]
         },
         "VCLinkerTool": {
           "AdditionalDependencies": [
