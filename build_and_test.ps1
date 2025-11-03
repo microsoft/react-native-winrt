@@ -35,8 +35,7 @@ Write-Host "Building NodeTestApp" -ForegroundColor Cyan
 pushd samples\NodeTestApp
 npm i
 npm run rebuild
-popd
-
 npm test
+popd
 
 popd
