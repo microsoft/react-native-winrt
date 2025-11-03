@@ -37,5 +37,6 @@ npm i
 npm run rebuild
 popd
 
+npm test
 
 popd

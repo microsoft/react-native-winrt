@@ -7,3 +7,8 @@ Thumbs.db
 .vscode/
 int/
 tools/
+
+
+# Ugly, but the test copies some things locally
+node.exe
+TestComponent.dll

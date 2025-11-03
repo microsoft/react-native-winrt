@@ -13,7 +13,17 @@ if (tc === undefined) {
     process.exit(1);
 }
 
+console.log("tc:", tc);
+console.log("tc.StaticOnlyTest:", tc.StaticOnlyTest);
+console.log("tc.StaticOnlyTest keys:", Object.keys(tc.StaticOnlyTest));
+console.log("tc.StaticOnlyTest.copyString:", tc.StaticOnlyTest.copyString);
+
 const answer = tc.StaticOnlyTest.copyString("Hello")
+console.log("tc.StaticOnlyTest.copyString(\"Hello\"):", answer);
+if (answer !== "Hello") {
+    console.log("ERROR: answer is not \"Hello\"");
+    process.exit(1);
+}
 
 
 console.log("All tests passed.");
