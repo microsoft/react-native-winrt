@@ -25,6 +25,10 @@ if (answer !== "Hello") {
     process.exit(1);
 }
 
+const t = new tc.Test();
+console.log("t:", t);
+t.f32Property = 3.14;
+console.log("t.f32Property:", t.f32Property);
 
 console.log("All tests passed.");
 process.exit(0);

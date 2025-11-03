@@ -8,6 +8,25 @@ Experimental sample exercising rnwinrt Node.js projection mode.
 - `npm run build:addon` builds the native Node addon.
 - `npm run build` runs generation then builds.
 - `npm start` runs the sample.
+- `npm test` copies test DLL and runs the comprehensive test suite.
+- `npm run test:basic` runs tests without copying DLL (assumes it's already present).
+
+## Test Suite
+
+This project includes a comprehensive test suite adapted from the React Native WinRT tests. The test suite validates that the Node.js addon correctly projects WinRT APIs.
+
+**Current Status**: 78 tests (4 enum tests + 74 basic function tests)
+
+To run tests:
+```bash
+npm run test:basic
+```
+
+For more information, see:
+- [Test Suite README](test/README.md) - Guide to running and porting tests
+- [Test Migration Summary](TEST_MIGRATION.md) - Overview of what was ported
+- [Porting Guide](PORTING_GUIDE.md) - Quick reference for porting more tests
+- [Architecture](ARCHITECTURE.md) - Visual diagrams of test architecture
 
 ## Status
 
