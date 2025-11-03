@@ -2668,7 +2668,7 @@ namespace rnwinrt
                 m_data.push_back(convert_value_to_native<T>(runtime, array.getValueAtIndex(runtime, i)));
             }
 #endif // not working yet
-            throw "TODO: not working yet.";
+            throw "TODO: not working yet (array_to_native_iterator constructor)";
         }
 
         operator winrt::array_view<const T>()
@@ -2707,16 +2707,13 @@ namespace rnwinrt
     {
         static napi_wrappers::Value as_value(napi_wrappers::Runtime& runtime, const winrt::com_array<T>& value)
         {
-#if 0 // not working yet
             auto result = napi_wrappers::Array(runtime, value.size());
             for (std::uint32_t i = 0; i < value.size(); ++i)
             {
                 result.setValueAtIndex(runtime, i, convert_native_to_value(runtime, value[i]));
             }
 
-            return result;
-#endif // not working yet
-            throw "TODO:Not working yet.";
+            return napi_wrappers::Value(runtime, result);
         }
 
         static winrt::com_array<T> as_native(napi_wrappers::Runtime& runtime, const napi_wrappers::Value& value)

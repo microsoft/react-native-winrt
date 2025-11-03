@@ -10,7 +10,7 @@
     "rebuild": "node-gyp configure && node-gyp rebuild",
     "start": "node index.js",
     "test": "npm run copy:testdll && copy \"C:\\Program Files\\nodejs\\node.exe\" . && .\\node test.js",
-    "test:basic": "node test.js"
+    "test:basic": ".\\node test.js"
   },
   "gypfile": true,
   "devDependencies": {

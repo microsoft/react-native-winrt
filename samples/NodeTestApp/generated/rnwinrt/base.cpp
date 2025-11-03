@@ -177,7 +177,8 @@ napi_wrappers::Value static_namespace_data::create(napi_wrappers::Runtime& runti
 
 napi_wrappers::Value projected_namespace::get(napi_wrappers::Runtime& runtime, const napi_wrappers::PropNameID& name)
 {
-    if (auto itr = find_by_name(m_data->children, name.utf8(runtime)); itr != m_data->children.end())
+    auto nameStr = name.utf8(runtime);
+    if (auto itr = find_by_name(m_data->children, nameStr); itr != m_data->children.end())
     {
         // Don't cache proxy objects - create fresh ones each time to avoid Napi::Value lifecycle issues
         // TODO: Implement proper caching mechanism if performance becomes an issue
@@ -196,7 +197,7 @@ void projected_namespace::set(napi_wrappers::Runtime& runtime, const napi_wrappe
 std::vector<napi_wrappers::PropNameID> projected_namespace::getPropertyNames(napi_wrappers::Runtime& runtime)
 {
     std::vector<napi_wrappers::PropNameID> result;
-    result.reserve(m_children.size());
+    result.reserve(m_data->children.size());
     for (auto ptr : m_data->children)
     {
         result.push_back(make_propid(runtime, ptr->name));
@@ -392,6 +393,27 @@ napi_wrappers::Value static_activatable_class_data::create(napi_wrappers::Runtim
 {
     auto propId = make_propid(runtime, name);
     auto fn = napi_wrappers::Function::createFromHostFunction(runtime, propId, 0, constructor);
+    
+    // Attach static members to the constructor function
+    // Add static functions
+    for (const auto& func : functions)
+    {
+        auto funcName = make_propid(runtime, func.name);
+        auto funcObj = napi_wrappers::Function::createFromHostFunction(runtime, funcName, 0, func.function);
+        fn.setProperty(runtime, funcName, napi_wrappers::Value(runtime, std::move(funcObj)));
+    }
+    
+    // Add static properties - wrap in try-catch since some getters may throw
+    for (const auto& prop : properties)
+    {
+        try {
+            auto propName = make_propid(runtime, prop.name);
+            fn.setProperty(runtime, propName, prop.getter(runtime));
+        } catch (...) {
+            // Skip properties that throw exceptions when accessed
+        }
+    }
+    
     return napi_wrappers::Value(runtime, std::move(fn));
 }
 

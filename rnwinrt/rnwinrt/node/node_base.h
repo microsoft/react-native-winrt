@@ -2668,7 +2668,7 @@ namespace rnwinrt
                 m_data.push_back(convert_value_to_native<T>(runtime, array.getValueAtIndex(runtime, i)));
             }
 #endif // not working yet
-            throw "TODO: not working yet.";
+            throw "TODO: not working yet (pass_array_wrapper)";
         }
 
         operator winrt::array_view<const T>()
