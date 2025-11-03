@@ -9,8 +9,9 @@
 const { TestResult } = require('./TestCommon');
 
 class TestRunner {
-    constructor(testSuites) {
+    constructor(testSuites, ignoredCount = 0) {
         this.testSuites = testSuites;
+        this.ignoredCount = ignoredCount;
         this.completedCount = 0;
         this.passCount = 0;
         this.failures = [];
@@ -75,6 +76,9 @@ class TestRunner {
         console.log(`Total: ${this.completedCount}`);
         console.log(`Passed: ${this.passCount}`);
         console.log(`Failed: ${this.completedCount - this.passCount}`);
+        if (this.ignoredCount > 0) {
+            console.log(`Ignored: ${this.ignoredCount}`);
+        }
         console.log(`Pass Rate: ${((this.passCount / this.completedCount) * 100).toFixed(2)}%`);
 
         if (this.failures.length > 0) {
