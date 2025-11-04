@@ -1762,7 +1762,9 @@ namespace rnwinrt
         napi_wrappers::Value remove_event_listener(napi_wrappers::Runtime& runtime, const napi_wrappers::Value* args, size_t count);
 
         const static_class_data* m_data;
-        std::unordered_map<std::string_view, napi_wrappers::Value> m_functions;
+        // We need to use a Napi::FunctionReference here to keep a ref alive to the function object
+        // so it doesn't get cleaned up.
+        std::unordered_map<std::string_view, Napi::FunctionReference> m_functions;
         event_registration_array m_events;
     };
 
@@ -1795,7 +1797,9 @@ namespace rnwinrt
     private:
         winrt::Windows::Foundation::IInspectable m_instance;
         sso_vector<const static_interface_data*> m_interfaces;
-        std::unordered_map<std::string_view, napi_wrappers::Value> m_functions;
+        // We need to use a Napi::FunctionReference here to keep a ref alive to the function object
+        // so it doesn't get cleaned up.
+        std::unordered_map<std::string_view, Napi::FunctionReference> m_functions;
     };
 
     template <typename IFace>

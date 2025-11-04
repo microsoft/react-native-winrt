@@ -313,19 +313,22 @@ napi_wrappers::Value projected_statics_class::get(napi_wrappers::Runtime& runtim
         if (dataItr != m_data->functions.end())
         {
             auto fn = napi_wrappers::Function::createFromHostFunction(runtime, id, 0, dataItr->function);
-            itr = m_functions.emplace(dataItr->name, napi_wrappers::Value(runtime, std::move(fn))).first;
+            auto ref = Napi::Persistent(fn.m_value.As<Napi::Function>());
+            itr = m_functions.emplace(dataItr->name, std::move(ref)).first;
         }
         else if (!m_data->events.empty())
         {
             if (name == add_event_name)
             {
                 auto fn = bind_host_function(runtime, id, 2, &projected_statics_class::add_event_listener);
-                itr = m_functions.emplace(add_event_name, napi_wrappers::Value(runtime, std::move(fn))).first;
+                auto ref = Napi::Persistent(fn.m_value.As<Napi::Function>());
+                itr = m_functions.emplace(add_event_name, std::move(ref)).first;
             }
             else if (name == remove_event_name)
             {
                 auto fn = bind_host_function(runtime, id, 2, &projected_statics_class::remove_event_listener);
-                itr = m_functions.emplace(remove_event_name, napi_wrappers::Value(runtime, std::move(fn))).first;
+                auto ref = Napi::Persistent(fn.m_value.As<Napi::Function>());
+                itr = m_functions.emplace(remove_event_name, std::move(ref)).first;
             }
         }
     }
@@ -335,7 +338,7 @@ napi_wrappers::Value projected_statics_class::get(napi_wrappers::Runtime& runtim
         return napi_wrappers::Value::undefined(runtime);
     }
 
-    return napi_wrappers::Value(runtime, itr->second);
+    return napi_wrappers::Value(runtime, itr->second.Value());
 }
 
 void projected_statics_class::set(napi_wrappers::Runtime& runtime, const napi_wrappers::PropNameID& id, const napi_wrappers::Value& value)
@@ -532,7 +535,7 @@ napi_wrappers::Value projected_object_instance::get(napi_wrappers::Runtime& runt
     auto name = id.utf8(runtime);
     if (auto itr = m_functions.find(name); itr != m_functions.end())
     {
-        return napi_wrappers::Value(runtime, itr->second);
+        return napi_wrappers::Value(runtime, itr->second.Value());
     }
 
     sso_vector<const static_interface_data::function_mapping*> functions;
@@ -595,7 +598,8 @@ napi_wrappers::Value projected_object_instance::get(napi_wrappers::Runtime& runt
         // Non-overloaded function, or at least not overloaded with different arities
         auto fn =
             napi_wrappers::Function::createFromHostFunction(runtime, id, functions[0]->arity, projected_function{ functions[0], this });
-        return napi_wrappers::Value(runtime, m_functions.emplace(functions[0]->name, std::move(fn)).first->second);
+        auto ref = Napi::Persistent(fn.m_value.As<Napi::Function>());
+        return napi_wrappers::Value(runtime, m_functions.emplace(functions[0]->name, std::move(ref)).first->second.Value());
     }
     else if (!functions.empty())
     {
@@ -603,7 +607,8 @@ napi_wrappers::Value projected_object_instance::get(napi_wrappers::Runtime& runt
         auto functionName = functions[0]->name;
         auto fn = napi_wrappers::Function::createFromHostFunction(
             runtime, id, 0, projected_overloaded_function{ std::move(functions), this });
-        return napi_wrappers::Value(runtime, m_functions.emplace(functionName, std::move(fn)).first->second);
+        auto ref = Napi::Persistent(fn.m_value.As<Napi::Function>());
+        return napi_wrappers::Value(runtime, m_functions.emplace(functionName, std::move(ref)).first->second.Value());
     }
 
     if (hasEvents)
@@ -611,12 +616,14 @@ napi_wrappers::Value projected_object_instance::get(napi_wrappers::Runtime& runt
         if (name == add_event_name)
         {
             auto fn = bind_host_function(runtime, id, 2, &projected_object_instance::add_event_listener);
-            return napi_wrappers::Value(runtime, m_functions.emplace(add_event_name, std::move(fn)).first->second);
+            auto ref = Napi::Persistent(fn.m_value.As<Napi::Function>());
+            return napi_wrappers::Value(runtime, m_functions.emplace(add_event_name, std::move(ref)).first->second.Value());
         }
         else if (name == remove_event_name)
         {
             auto fn = bind_host_function(runtime, id, 2, &projected_object_instance::remove_event_listener);
-            return napi_wrappers::Value(runtime, m_functions.emplace(remove_event_name, std::move(fn)).first->second);
+            auto ref = Napi::Persistent(fn.m_value.As<Napi::Function>());
+            return napi_wrappers::Value(runtime, m_functions.emplace(remove_event_name, std::move(ref)).first->second.Value());
         }
     }
 
@@ -890,6 +897,8 @@ winrt::TimeSpan projected_value_traits<winrt::TimeSpan>::as_native(napi_wrappers
     std::chrono::milliseconds ms(convert_value_to_native<int64_t>(runtime, value));
     return std::chrono::duration_cast<winrt::TimeSpan>(ms);
 }
+
+// TODO: Are we cheating on supporting structs here?  Make sure we have proper struct support.
 
 napi_wrappers::Value projected_value_traits<winrt::float3x2>::as_value(napi_wrappers::Runtime& runtime, winrt::float3x2 value)
 {
