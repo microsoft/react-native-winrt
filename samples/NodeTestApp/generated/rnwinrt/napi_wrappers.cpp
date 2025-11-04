@@ -19,7 +19,8 @@ namespace napi_wrappers {
     // Object implementations
     Object Object::createFromHostObject(Runtime& env, std::shared_ptr<HostObject> hostObj) 
     {
-        // Check if this is a projected_object_instance - if so, use WinRTObjectWrapper for better performance
+        // Check if this is a projected_object_instance - if so, use WinRTObjectWrapper
+        // WinRTObjectWrapper provides proper lifetime management for C++ objects via Napi::ObjectWrap
         if (hostObj->isProjectedObjectInstance())
         {
             // Safe to static_cast since isProjectedObjectInstance() returned true
@@ -27,71 +28,145 @@ namespace napi_wrappers {
             return Object(WinRTObjectWrapper::Create(env.env(), projectedInstance));
         }
         
-        // For other HostObjects, create a simple object with property getters that delegate to the HostObject
-        auto obj = Napi::Object::New(env.env());
+        // For other HostObjects (namespaces, enums, statics), use unified Proxy-based wrapper
+        // This provides consistent behavior and lazy property resolution
+        return Object(createProxyForHostObject(env, hostObj));
+    }
+    
+    Napi::Object Object::createProxyForHostObject(Runtime& env, std::shared_ptr<HostObject> hostObj)
+    {
+        // Create a plain object to serve as the Proxy target
+        auto target = Napi::Object::New(env.env());
         
-        // Store the HostObject in an External
+        // Store the HostObject in an External for access from trap handlers
         using HostObjectPtr = std::shared_ptr<HostObject>;
         auto hostObjectPtr = new HostObjectPtr(hostObj);
         auto external = Napi::External<HostObjectPtr>::New(env.env(), hostObjectPtr,
             [](Napi::Env, HostObjectPtr* ptr) { delete ptr; });
-        obj.Set("_hostObject_", external);
+        target.Set("_hostObject_", external);
         
-        // Get all property names from the HostObject and define getters for them
-        try {
-            auto propNames = hostObj->getPropertyNames(env);
-            for (const auto& propName : propNames) {
-                auto propNameStr = propName.utf8(env);
+        // Create Proxy handler with get/set/ownKeys traps
+        auto handler = Napi::Object::New(env.env());
+        
+        // GET trap - called when accessing properties
+        auto getTrap = Napi::Function::New(env.env(), [](const Napi::CallbackInfo& info) -> Napi::Value {
+            auto target = info[0].As<Napi::Object>();
+            auto prop = info[1];
+            
+            // Get the HostObject from the target
+            auto external = target.Get("_hostObject_").As<Napi::External<HostObjectPtr>>();
+            auto hostObj = *external.Data();
+            
+            try {
+                napi_wrappers::Runtime runtime(info.Env());
                 
-                // Define a getter that calls HostObject::get
-                auto getter = [hostObj, propNameStr](const Napi::CallbackInfo& info) -> Napi::Value {
-                    try {
-                        napi_wrappers::Runtime runtime(info.Env());
-                        auto propId = napi_wrappers::PropNameID::forAscii(runtime, propNameStr.c_str());
-                        auto result = hostObj->get(runtime, propId);
-                        return result.m_value;
-                    } catch (...) {
-                        return info.Env().Undefined();
-                    }
-                };
+                // Convert property to PropNameID
+                napi_wrappers::PropNameID propId = napi_wrappers::PropNameID::forUtf8(runtime, "");
+                if (prop.IsString()) {
+                    auto propStr = prop.As<Napi::String>().Utf8Value();
+                    propId = napi_wrappers::PropNameID::forUtf8(runtime, propStr);
+                } else if (prop.IsNumber()) {
+                    auto propStr = std::to_string(prop.As<Napi::Number>().Uint32Value());
+                    propId = napi_wrappers::PropNameID::forUtf8(runtime, propStr);
+                } else {
+                    // Symbols, etc. - use default behavior
+                    return target.Get(prop);
+                }
                 
-                // Create a raw N-API property descriptor with enumerable flag
-                auto getterCallback = [](napi_env env, napi_callback_info info) -> napi_value {
-                    size_t argc = 0;
-                    void* data = nullptr;
-                    napi_get_cb_info(env, info, &argc, nullptr, nullptr, &data);
-                    
-                    auto* capturedData = static_cast<std::pair<std::shared_ptr<HostObject>, std::string>*>(data);
-                    try {
-                        napi_wrappers::Runtime runtime(env);
-                        auto propId = napi_wrappers::PropNameID::forAscii(runtime, capturedData->second.c_str());
-                        auto result = capturedData->first->get(runtime, propId);
-                        return result.m_value;
-                    } catch (...) {
-                        napi_value undefined;
-                        napi_get_undefined(env, &undefined);
-                        return undefined;
-                    }
-                };
-                
-                auto* callbackData = new std::pair<std::shared_ptr<HostObject>, std::string>(hostObj, propNameStr);
-                
-                napi_property_descriptor raw_desc;
-                raw_desc.utf8name = callbackData->second.c_str();
-                raw_desc.name = nullptr;
-                raw_desc.method = nullptr;
-                raw_desc.getter = getterCallback;
-                raw_desc.setter = nullptr;
-                raw_desc.value = nullptr;
-                raw_desc.attributes = static_cast<napi_property_attributes>(napi_enumerable | napi_configurable);
-                raw_desc.data = callbackData;
-                napi_define_properties(env.env(), obj, 1, &raw_desc);
+                // Delegate to HostObject::get()
+                auto result = hostObj->get(runtime, propId);
+                return result.m_value;
+            } catch (const char* e) {
+                Napi::Error::New(info.Env(), e).ThrowAsJavaScriptException();
+                return info.Env().Undefined();
+            } catch (const std::exception& e) {
+                Napi::Error::New(info.Env(), e.what()).ThrowAsJavaScriptException();
+                return info.Env().Undefined();
+            } catch (...) {
+                Napi::Error::New(info.Env(), "Unknown error occurred").ThrowAsJavaScriptException();
+                return info.Env().Undefined();
             }
-        } catch (...) {
-            // If we can't get property names, just return the object with _hostObject_
-        }
+        });
         
-        return Object(obj);
+        // SET trap - called when setting properties
+        auto setTrap = Napi::Function::New(env.env(), [](const Napi::CallbackInfo& info) -> Napi::Value {
+            auto target = info[0].As<Napi::Object>();
+            auto prop = info[1];
+            auto value = info[2];
+            
+            auto external = target.Get("_hostObject_").As<Napi::External<HostObjectPtr>>();
+            auto hostObj = *external.Data();
+            
+            try {
+                napi_wrappers::Runtime runtime(info.Env());
+                
+                napi_wrappers::PropNameID propId = napi_wrappers::PropNameID::forUtf8(runtime, "");
+                if (prop.IsString()) {
+                    auto propStr = prop.As<Napi::String>().Utf8Value();
+                    propId = napi_wrappers::PropNameID::forUtf8(runtime, propStr);
+                } else if (prop.IsNumber()) {
+                    auto propStr = std::to_string(prop.As<Napi::Number>().Uint32Value());
+                    propId = napi_wrappers::PropNameID::forUtf8(runtime, propStr);
+                }
+                
+                hostObj->set(runtime, propId, napi_wrappers::Value(value));
+                return Napi::Boolean::New(info.Env(), true); // Indicate success
+            } catch (...) {
+                return Napi::Boolean::New(info.Env(), false);
+            }
+        });
+        
+        // OWNKEYS trap - called by Object.keys(), for...in, etc.
+        auto ownKeysTrap = Napi::Function::New(env.env(), [](const Napi::CallbackInfo& info) -> Napi::Value {
+            auto target = info[0].As<Napi::Object>();
+            
+            auto external = target.Get("_hostObject_").As<Napi::External<HostObjectPtr>>();
+            auto hostObj = *external.Data();
+            
+            try {
+                napi_wrappers::Runtime runtime(info.Env());
+                auto propNames = hostObj->getPropertyNames(runtime);
+                
+                // Deduplicate property names (can happen with inherited interface members)
+                std::unordered_set<std::string> uniqueNames;
+                std::vector<std::string> orderedUniqueNames;
+                for (const auto& propName : propNames) {
+                    auto nameStr = propName.utf8(runtime);
+                    if (uniqueNames.insert(nameStr).second) {
+                        orderedUniqueNames.push_back(std::move(nameStr));
+                    }
+                }
+                
+                auto result = Napi::Array::New(info.Env(), orderedUniqueNames.size());
+                for (size_t i = 0; i < orderedUniqueNames.size(); ++i) {
+                    result.Set(static_cast<uint32_t>(i), 
+                        Napi::String::New(info.Env(), orderedUniqueNames[i]));
+                }
+                return result;
+            } catch (...) {
+                return Napi::Array::New(info.Env(), 0);
+            }
+        });
+        
+        // GETOWNPROPERTYDESCRIPTOR trap - required for ownKeys to work with Object.keys()
+        auto getOwnPropertyDescriptorTrap = Napi::Function::New(env.env(), [](const Napi::CallbackInfo& info) -> Napi::Value {
+            // Return a descriptor that makes the property enumerable
+            auto desc = Napi::Object::New(info.Env());
+            desc.Set("enumerable", Napi::Boolean::New(info.Env(), true));
+            desc.Set("configurable", Napi::Boolean::New(info.Env(), true));
+            return desc;
+        });
+        
+        handler.Set("get", getTrap);
+        handler.Set("set", setTrap);
+        handler.Set("ownKeys", ownKeysTrap);
+        handler.Set("getOwnPropertyDescriptor", getOwnPropertyDescriptorTrap);
+        
+        // Create the Proxy
+        auto proxyConstructor = env.env().Global().Get("Proxy").As<Napi::Function>();
+        auto proxy = proxyConstructor.New({ target, handler });
+        
+        return proxy.As<Napi::Object>();
     }
 
     Value Object::getProperty(Runtime& env, const char* name) const 
