@@ -160,7 +160,6 @@ namespace napi_wrappers
         Object(Runtime& env) : Value(Napi::Object::New(env.env())) {}
         
         static Object createFromHostObject(Runtime& env, std::shared_ptr<HostObject> hostObj);
-        static Napi::Object createProxyForHostObject(Runtime& env, std::shared_ptr<HostObject> hostObj);
         
         template<typename T>
         std::shared_ptr<T> asHostObject(Runtime& env) const;

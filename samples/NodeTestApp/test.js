@@ -3,6 +3,17 @@
 
 /**
  * Node.js WinRT Projection Test Suite
+ * 
+ * Usage:
+ *   node test.js                    - Run all passing tests (default)
+ *   node test.js --all              - Run all tests including known failures
+ *   node test.js --test <name>      - Run a single test by name
+ *   node test.js -t <name>          - Run a single test by name (short form)
+ * 
+ * Examples:
+ *   node test.js --test "Enum keys"
+ *   node test.js -t "Test::Or"
+ * 
  * @format
  */
 
@@ -51,7 +62,7 @@ const testSuites = [
 
 // List of failing test scenario names (from user)
 const failingScenarios = [
-    'Enum keys',
+    'Enum keys',                            // Fails because we have _HostObject_ in the list.
     'Test::StaticOrAll',
     'Test::StaticAddAll',
     'Test::StaticAppendAll',
@@ -85,12 +96,42 @@ const failingScenarios = [
     'Test::InterwovenParams',
 ];
 
-// By default, only run passing tests. Use --bonus-tests to run the full suite including failing tests.
-const runBonusTests = process.argv.includes('--bonus-tests');
+// Parse command line arguments
+const runAllTests = process.argv.includes('--all');
+const testArgIndex = process.argv.findIndex(arg => arg === '--test' || arg === '-t');
+const singleTestName = testArgIndex >= 0 && process.argv[testArgIndex + 1] 
+    ? process.argv[testArgIndex + 1] 
+    : null;
 
 let filteredSuites = testSuites;
 let ignoredCount = 0;
-if (!runBonusTests) {
+
+if (singleTestName) {
+    // Run only the specified test
+    console.log(`Running single test: ${singleTestName}\n`);
+    let foundTest = false;
+    filteredSuites = testSuites.map(suite => {
+        const filtered = suite.scenarios.filter(s => s.name === singleTestName);
+        if (filtered.length > 0) {
+            foundTest = true;
+        }
+        ignoredCount += suite.scenarios.length - filtered.length;
+        return {
+            ...suite,
+            scenarios: filtered,
+        };
+    }).filter(suite => suite.scenarios.length > 0);
+    
+    if (!foundTest) {
+        console.error(`ERROR: Test "${singleTestName}" not found.`);
+        console.error('\nAvailable tests:');
+        testSuites.forEach(suite => {
+            console.error(`\n${suite.name}:`);
+            suite.scenarios.forEach(s => console.error(`  - ${s.name}`));
+        });
+        process.exit(1);
+    }
+} else if (!runAllTests) {
     // Filter out known failing scenarios and count them
     filteredSuites = testSuites.map(suite => {
         const filtered = suite.scenarios.filter(s => !failingScenarios.includes(s.name));
@@ -100,7 +141,7 @@ if (!runBonusTests) {
             scenarios: filtered,
         };
     });
-    console.log('Running passing tests only. Use --bonus-tests to run the full suite.\n');
+    console.log('Running passing tests only. Use --all to run the full suite.\n');
 }
 
 const runner = new TestRunner(filteredSuites, ignoredCount);
