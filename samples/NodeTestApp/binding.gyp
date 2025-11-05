@@ -3,6 +3,7 @@
     {
       "target_name": "winrtaddon",
       "sources": [
+        "src/pch.cpp",
         "src/addon.cpp",
         "<!@(node scripts/list_generated_cpp.js)"
       ],
@@ -16,7 +17,10 @@
       "msvs_settings": {
         "VCCLCompilerTool": {
           "ExceptionHandling": "1",
-          "AdditionalOptions": [ "/GR-" ]
+          "AdditionalOptions": [ "/GR-" ],
+          "PrecompiledHeader": "Use",
+          "PrecompiledHeaderFile": "pch.h",
+          "ForcedIncludeFiles": [ "pch.h" ]
         },
         "VCLinkerTool": {
           "AdditionalDependencies": [
@@ -24,7 +28,9 @@
             "rpcrt4.lib"
           ]
         }
-      }
+      },
+      "msvs_precompiled_header": "src/pch.h",
+      "msvs_precompiled_source": "src/pch.cpp"
     }
   ]
 }

@@ -23,8 +23,19 @@ const { getTestValues } = require('./test/TestCommon');
 const { makeBasicFunctionTestScenarios } = require('./test/BasicFunctionTests');
 const { makeEnumTestScenarios } = require('./test/EnumTests');
 
-// Get TestComponent from the addon
+const { makePropertiesTestScenarios } = require('./test/PropertiesTests');
+
 const TestComponent = addon.TestComponent;
+
+function oneOff()
+{
+    // TODO: This only works if we cache TestComponent.Test in a variable.
+    //       We should fix this in the addon.
+    let t = TestComponent.Test;
+    t.staticU32Property = 42;
+    console.log("prop", t.staticU32Property);
+    process.exit(0);
+}
 
 if (!TestComponent) {
     console.error('ERROR: TestComponent is not available in the addon');
@@ -47,11 +58,10 @@ const testSuites = [
         name: "Basic Function Tests",
         scenarios: makeBasicFunctionTestScenarios(testContext, TestComponent, TestValues),
     },
-    // Add more test suites here as they are ported:
-    // {
-    //     name: "Property Tests",
-    //     scenarios: makePropertiesTestScenarios(testContext, TestComponent, TestValues),
-    // },
+    {
+        name: "Property Tests",
+        scenarios: makePropertiesTestScenarios(testContext, TestComponent, TestValues),
+    },
     // {
     //     name: "Array Tests",
     //     scenarios: makeArrayTestScenarios(testContext, TestComponent, TestValues),
