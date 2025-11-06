@@ -4872,21 +4872,26 @@ inline Napi::FunctionReference& WinRTObjectWrapper::GetConstructor(Napi::Env env
 	// Track unique method names to avoid duplicates
 	std::unordered_set<std::string> methodNames;
 	
+	// Collect properties from all interfaces, merging getters/setters for same property name
+    // (We need to do this because a prop might have a setter on a different interface than the getter)
+	struct PropertyInfo {
+		std::string name;
+		bool hasGetter = false;
+		bool hasSetter = false;
+	};
+	std::unordered_map<std::string, PropertyInfo> propertyMap;
+	
 	for (const auto* iface : interfaces) {
-		// Add all properties
+		// Collect all properties and merge getter/setter info
 		for (const auto& prop : iface->properties) {
+			std::string propName(prop.name.data(), prop.name.size());
+			auto& propInfo = propertyMap[propName];
+			propInfo.name = propName;
 			if (prop.getter) {
-				auto getter = &WinRTObjectWrapper::GenericGetter;
-				auto setter = prop.setter ? &WinRTObjectWrapper::GenericSetter : nullptr;
-				
-				properties.push_back(InstanceAccessor(
-					prop.name.data(),
-					getter,
-					setter,
-					napi_enumerable,
-                    reinterpret_cast<void*>(const_cast<char*>(prop.name.data()))
-					//reinterpret_cast<void*>(const_cast<rnwinrt::static_interface_data::property_mapping*>(&prop))
-				));
+				propInfo.hasGetter = true;
+			}
+			if (prop.setter) {
+				propInfo.hasSetter = true;
 			}
 		}
 		
@@ -4894,6 +4899,25 @@ inline Napi::FunctionReference& WinRTObjectWrapper::GetConstructor(Napi::Env env
 		for (const auto& fn : iface->functions) {
 			std::string methodName(fn.name.data(), fn.name.size());
 			methodNames.insert(methodName);
+		}
+	}
+	
+	// Now create property descriptors with merged getter/setter info
+	for (const auto& [propName, propInfo] : propertyMap) {
+		if (propInfo.hasGetter) {
+			auto getter = &WinRTObjectWrapper::GenericGetter;
+			auto setter = propInfo.hasSetter ? &WinRTObjectWrapper::GenericSetter : nullptr;
+			
+			// Allocate property name on heap (leaked, but only once per class type)
+			auto* propNamePtr = new std::string(propInfo.name);
+			
+			properties.push_back(InstanceAccessor(
+				propNamePtr->c_str(),
+				getter,
+				setter,
+				napi_enumerable,
+				reinterpret_cast<void*>(const_cast<char*>(propNamePtr->c_str()))
+			));
 		}
 	}
 	

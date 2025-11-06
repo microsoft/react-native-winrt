@@ -115,7 +115,6 @@ const failingScenarios = [
     'Test::StaticRefArrayProperty',
     'Test::StaticObjectArrayProperty',
     // Instance array property tests - array handling issues
-    'Test::BoolProperty',
     'Test::BooleanArrayProperty',
     'Test::CharArrayProperty',
     'Test::NumericArrayProperty',
