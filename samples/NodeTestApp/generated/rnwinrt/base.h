@@ -1686,24 +1686,24 @@ namespace rnwinrt
 class WinRTObjectWrapper : public Napi::ObjectWrap<WinRTObjectWrapper>
 {
 public:
-	WinRTObjectWrapper(const Napi::CallbackInfo& info);
-	static Napi::Object Create(Napi::Env env, const winrt::Windows::Foundation::IInspectable& instance);
-	static Napi::Object Create(Napi::Env env, std::shared_ptr<rnwinrt::projected_object_instance> projectedInstance);
-	const winrt::Windows::Foundation::IInspectable& instance() const noexcept;
+    WinRTObjectWrapper(const Napi::CallbackInfo& info);
+    static Napi::Object Create(Napi::Env env, const winrt::Windows::Foundation::IInspectable& instance);
+    static Napi::Object Create(Napi::Env env, std::shared_ptr<rnwinrt::projected_object_instance> projectedInstance);
+    const winrt::Windows::Foundation::IInspectable& instance() const noexcept;
 
 private:
-	static Napi::FunctionReference& GetConstructor(Napi::Env env, const rnwinrt::sso_vector<const rnwinrt::static_interface_data*>& interfaces);
-	Napi::Value GenericGetter(const Napi::CallbackInfo& info);
-	void GenericSetter(const Napi::CallbackInfo& info, const Napi::Value& value);
-	Napi::Value GenericMethod(const Napi::CallbackInfo& info);
-	Napi::Value AddEventListener(const Napi::CallbackInfo& info);
-	Napi::Value RemoveEventListener(const Napi::CallbackInfo& info);
-	
-	// Indexed property access for collections
-	Napi::Value IndexedGetter(const Napi::CallbackInfo& info);
-	void IndexedSetter(const Napi::CallbackInfo& info, const Napi::Value& value);
+    static Napi::FunctionReference& GetConstructor(Napi::Env env, const rnwinrt::sso_vector<const rnwinrt::static_interface_data*>& interfaces);
+    Napi::Value GenericGetter(const Napi::CallbackInfo& info);
+    void GenericSetter(const Napi::CallbackInfo& info, const Napi::Value& value);
+    Napi::Value GenericMethod(const Napi::CallbackInfo& info);
+    Napi::Value AddEventListener(const Napi::CallbackInfo& info);
+    Napi::Value RemoveEventListener(const Napi::CallbackInfo& info);
+    
+    // Indexed property access for collections
+    Napi::Value IndexedGetter(const Napi::CallbackInfo& info);
+    void IndexedSetter(const Napi::CallbackInfo& info, const Napi::Value& value);
 
-	std::shared_ptr<rnwinrt::projected_object_instance> m_projectedInstance;
+    std::shared_ptr<rnwinrt::projected_object_instance> m_projectedInstance;
 };
 
 // Types used for object instances, etc.
@@ -4733,224 +4733,224 @@ namespace rnwinrt
 
 inline const winrt::Windows::Foundation::IInspectable& WinRTObjectWrapper::instance() const noexcept
 {
-	return m_projectedInstance->instance();
+    return m_projectedInstance->instance();
 }
 
 inline WinRTObjectWrapper::WinRTObjectWrapper(const Napi::CallbackInfo& info) : Napi::ObjectWrap<WinRTObjectWrapper>(info)
 {
-	// Constructor called by NAPI - actual initialization done in Create()
+    // Constructor called by NAPI - actual initialization done in Create()
 }
 
 inline Napi::Object WinRTObjectWrapper::Create(Napi::Env env, const winrt::Windows::Foundation::IInspectable& instance)
 {
-	// Create a projected_object_instance to wrap the instance
-	auto projectedInstance = std::make_shared<rnwinrt::projected_object_instance>(instance);
-	
-	// Delegate to the main Create overload
-	return Create(env, projectedInstance);
+    // Create a projected_object_instance to wrap the instance
+    auto projectedInstance = std::make_shared<rnwinrt::projected_object_instance>(instance);
+    
+    // Delegate to the main Create overload
+    return Create(env, projectedInstance);
 }
 
 inline Napi::Object WinRTObjectWrapper::Create(Napi::Env env, std::shared_ptr<rnwinrt::projected_object_instance> projectedInstance)
 {
-	// Get or create the constructor for this interface combination
-	auto& ctor = GetConstructor(env, projectedInstance->m_interfaces);
-	
-	// Create instance
-	auto obj = ctor.New({});
-	
-	// Store the projected instance
-	auto wrapper = Unwrap(obj);
-	wrapper->m_projectedInstance = projectedInstance;
-	
-	// Check if this is a collection by looking for runtime_get_property
-	// (which handles indexed access for collections)
-	bool isCollection = false;
-	for (const auto* iface : projectedInstance->m_interfaces) {
-		if (iface->runtime_get_property) {
-			isCollection = true;
-			break;
-		}
-	}
-	
-	// For collections, set up a Proxy to handle indexed access
-	if (isCollection) {
-		// Create a Proxy handler that intercepts numeric indices
-		auto handler = Napi::Object::New(env);
-		
-		// Create getter trap that delegates to projected_object_instance::get()
-		auto getTrap = Napi::Function::New(env, [](const Napi::CallbackInfo& info) -> Napi::Value {
-			auto target = info[0].As<Napi::Object>();
-			auto prop = info[1];
-			
-			// Get the wrapper
-			auto wrapper = Napi::ObjectWrap<WinRTObjectWrapper>::Unwrap(target);
-			if (!wrapper) {
-				return info.Env().Undefined();
-			}
-			
-			// Delegate all property access to projected_object_instance::get()
-			napi_wrappers::Runtime runtime(info.Env());
-			
-			if (prop.IsString()) {
-				auto propStr = prop.As<Napi::String>().Utf8Value();
-				auto propId = napi_wrappers::PropNameID::forUtf8(runtime, 
-					reinterpret_cast<const uint8_t*>(propStr.c_str()), propStr.size());
-				
-				auto result = wrapper->m_projectedInstance->get(runtime, propId);
-				if (!result.isUndefined()) {
-					return result.m_value;
-				}
-				
-				// Not found via projected_object_instance, use default behavior
-				return target.Get(prop.As<Napi::String>());
-			} else if (prop.IsNumber()) {
-				// Convert number to string for property access
-				auto propStr = std::to_string(prop.As<Napi::Number>().Uint32Value());
-				auto propId = napi_wrappers::PropNameID::forUtf8(runtime,
-					reinterpret_cast<const uint8_t*>(propStr.c_str()), propStr.size());
-				
-				auto result = wrapper->m_projectedInstance->get(runtime, propId);
-				return result.m_value;
-			} else if (prop.IsSymbol()) {
-				// For symbols, use default behavior
-				return target.Get(prop.As<Napi::Symbol>());
-			}
-			
-			return info.Env().Undefined();
-		});
-		
-		handler.Set("get", getTrap);
-		
-		// Create the Proxy
-		auto proxyConstructor = env.Global().Get("Proxy").As<Napi::Function>();
-		auto proxy = proxyConstructor.New({ obj, handler });
-		
-		// Store a reference to the wrapper so we can unwrap from Proxy
-		proxy.As<Napi::Object>().Set("_wrapper_", obj);
-		
-		return proxy.As<Napi::Object>();
-	}
-	
-	return obj;
+    // Get or create the constructor for this interface combination
+    auto& ctor = GetConstructor(env, projectedInstance->m_interfaces);
+    
+    // Create instance
+    auto obj = ctor.New({});
+    
+    // Store the projected instance
+    auto wrapper = Unwrap(obj);
+    wrapper->m_projectedInstance = projectedInstance;
+    
+    // Check if this is a collection by looking for runtime_get_property
+    // (which handles indexed access for collections)
+    bool isCollection = false;
+    for (const auto* iface : projectedInstance->m_interfaces) {
+        if (iface->runtime_get_property) {
+            isCollection = true;
+            break;
+        }
+    }
+    
+    // For collections, set up a Proxy to handle indexed access
+    if (isCollection) {
+        // Create a Proxy handler that intercepts numeric indices
+        auto handler = Napi::Object::New(env);
+        
+        // Create getter trap that delegates to projected_object_instance::get()
+        auto getTrap = Napi::Function::New(env, [](const Napi::CallbackInfo& info) -> Napi::Value {
+            auto target = info[0].As<Napi::Object>();
+            auto prop = info[1];
+            
+            // Get the wrapper
+            auto wrapper = Napi::ObjectWrap<WinRTObjectWrapper>::Unwrap(target);
+            if (!wrapper) {
+                return info.Env().Undefined();
+            }
+            
+            // Delegate all property access to projected_object_instance::get()
+            napi_wrappers::Runtime runtime(info.Env());
+            
+            if (prop.IsString()) {
+                auto propStr = prop.As<Napi::String>().Utf8Value();
+                auto propId = napi_wrappers::PropNameID::forUtf8(runtime, 
+                    reinterpret_cast<const uint8_t*>(propStr.c_str()), propStr.size());
+                
+                auto result = wrapper->m_projectedInstance->get(runtime, propId);
+                if (!result.isUndefined()) {
+                    return result.m_value;
+                }
+                
+                // Not found via projected_object_instance, use default behavior
+                return target.Get(prop.As<Napi::String>());
+            } else if (prop.IsNumber()) {
+                // Convert number to string for property access
+                auto propStr = std::to_string(prop.As<Napi::Number>().Uint32Value());
+                auto propId = napi_wrappers::PropNameID::forUtf8(runtime,
+                    reinterpret_cast<const uint8_t*>(propStr.c_str()), propStr.size());
+                
+                auto result = wrapper->m_projectedInstance->get(runtime, propId);
+                return result.m_value;
+            } else if (prop.IsSymbol()) {
+                // For symbols, use default behavior
+                return target.Get(prop.As<Napi::Symbol>());
+            }
+            
+            return info.Env().Undefined();
+        });
+        
+        handler.Set("get", getTrap);
+        
+        // Create the Proxy
+        auto proxyConstructor = env.Global().Get("Proxy").As<Napi::Function>();
+        auto proxy = proxyConstructor.New({ obj, handler });
+        
+        // Store a reference to the wrapper so we can unwrap from Proxy
+        proxy.As<Napi::Object>().Set("_wrapper_", obj);
+        
+        return proxy.As<Napi::Object>();
+    }
+    
+    return obj;
 }
 
 inline Napi::FunctionReference& WinRTObjectWrapper::GetConstructor(Napi::Env env, const rnwinrt::sso_vector<const rnwinrt::static_interface_data*>& interfaces)
 {
-	// Ensure we have a HandleScope for creating JavaScript objects
-	Napi::HandleScope scope(env);
-	
-	// Create a cache key from the interface GUIDs
-	std::string cacheKey;
-	for (const auto* iface : interfaces) {
-		if (!cacheKey.empty()) cacheKey += ";";
-		// Convert GUID to string for the cache key
-		char guidStr[64];
-		snprintf(guidStr, sizeof(guidStr), "%08lX-%04hX-%04hX-%02hhX%02hhX-%02hhX%02hhX%02hhX%02hhX%02hhX%02hhX",
-			iface->guid.Data1, iface->guid.Data2, iface->guid.Data3,
-			iface->guid.Data4[0], iface->guid.Data4[1], iface->guid.Data4[2], iface->guid.Data4[3],
-			iface->guid.Data4[4], iface->guid.Data4[5], iface->guid.Data4[6], iface->guid.Data4[7]);
-		cacheKey += guidStr;
-	}
-	
-	// Static cache of constructors per interface combination
-	// Use a pointer to avoid destructor issues during DLL unload - the cache
-	// needs to live for the entire addon lifetime anyway
+    // Ensure we have a HandleScope for creating JavaScript objects
+    Napi::HandleScope scope(env);
+    
+    // Create a cache key from the interface GUIDs
+    std::string cacheKey;
+    for (const auto* iface : interfaces) {
+        if (!cacheKey.empty()) cacheKey += ";";
+        // Convert GUID to string for the cache key
+        char guidStr[64];
+        snprintf(guidStr, sizeof(guidStr), "%08lX-%04hX-%04hX-%02hhX%02hhX-%02hhX%02hhX%02hhX%02hhX%02hhX%02hhX",
+            iface->guid.Data1, iface->guid.Data2, iface->guid.Data3,
+            iface->guid.Data4[0], iface->guid.Data4[1], iface->guid.Data4[2], iface->guid.Data4[3],
+            iface->guid.Data4[4], iface->guid.Data4[5], iface->guid.Data4[6], iface->guid.Data4[7]);
+        cacheKey += guidStr;
+    }
+    
+    // Static cache of constructors per interface combination
+    // Use a pointer to avoid destructor issues during DLL unload - the cache
+    // needs to live for the entire addon lifetime anyway
     // TODO: Intentional leak here, do we want to clean this up?
-	static std::unordered_map<std::string, Napi::FunctionReference>* constructorCache = nullptr;
-	if (!constructorCache) {
-		constructorCache = new std::unordered_map<std::string, Napi::FunctionReference>();
-	}
-	
-	auto it = constructorCache->find(cacheKey);
-	if (it != constructorCache->end()) {
-		return it->second;
-	}
-	
-	// Build property descriptors from interface metadata
-	std::vector<Napi::ClassPropertyDescriptor<WinRTObjectWrapper>> properties;
-	
-	// Track unique method names to avoid duplicates
-	std::unordered_set<std::string> methodNames;
-	
-	// Collect properties from all interfaces, merging getters/setters for same property name
+    static std::unordered_map<std::string, Napi::FunctionReference>* constructorCache = nullptr;
+    if (!constructorCache) {
+        constructorCache = new std::unordered_map<std::string, Napi::FunctionReference>();
+    }
+    
+    auto it = constructorCache->find(cacheKey);
+    if (it != constructorCache->end()) {
+        return it->second;
+    }
+    
+    // Build property descriptors from interface metadata
+    std::vector<Napi::ClassPropertyDescriptor<WinRTObjectWrapper>> properties;
+    
+    // Track unique method names to avoid duplicates
+    std::unordered_set<std::string> methodNames;
+    
+    // Collect properties from all interfaces, merging getters/setters for same property name
     // (We need to do this because a prop might have a setter on a different interface than the getter)
-	struct PropertyInfo {
-		std::string name;
-		bool hasGetter = false;
-		bool hasSetter = false;
-	};
-	std::unordered_map<std::string, PropertyInfo> propertyMap;
-	
-	for (const auto* iface : interfaces) {
-		// Collect all properties and merge getter/setter info
-		for (const auto& prop : iface->properties) {
-			std::string propName(prop.name.data(), prop.name.size());
-			auto& propInfo = propertyMap[propName];
-			propInfo.name = propName;
-			if (prop.getter) {
-				propInfo.hasGetter = true;
-			}
-			if (prop.setter) {
-				propInfo.hasSetter = true;
-			}
-		}
-		
-		// Collect all unique method names
-		for (const auto& fn : iface->functions) {
-			std::string methodName(fn.name.data(), fn.name.size());
-			methodNames.insert(methodName);
-		}
-	}
-	
-	// Now create property descriptors with merged getter/setter info
-	for (const auto& [propName, propInfo] : propertyMap) {
-		if (propInfo.hasGetter) {
-			auto getter = &WinRTObjectWrapper::GenericGetter;
-			auto setter = propInfo.hasSetter ? &WinRTObjectWrapper::GenericSetter : nullptr;
-			
-			// Allocate property name on heap (leaked, but only once per class type)
-			auto* propNamePtr = new std::string(propInfo.name);
-			
-			properties.push_back(InstanceAccessor(
-				propNamePtr->c_str(),
-				getter,
-				setter,
-				napi_enumerable,
-				reinterpret_cast<void*>(const_cast<char*>(propNamePtr->c_str()))
-			));
-		}
-	}
-	
-	// Now add one property descriptor per unique method name
-	// Store method names on heap since they need to persist
-	for (const auto& methodName : methodNames) {
-		// Allocate method name on heap (leaked, but only once per class type)
-		auto* methodNamePtr = new std::string(methodName);
-		
-		properties.push_back(InstanceMethod(
-			methodNamePtr->c_str(),
-			&WinRTObjectWrapper::GenericMethod,
-			napi_enumerable,
-			reinterpret_cast<void*>(const_cast<char*>(methodNamePtr->c_str()))
-		));
-	}
-	
-	// Add special methods
-	properties.push_back(InstanceMethod("addEventListener", &WinRTObjectWrapper::AddEventListener));
-	properties.push_back(InstanceMethod("removeEventListener", &WinRTObjectWrapper::RemoveEventListener));
-	
-	// Define the class with all properties
-	auto ctor = DefineClass(env, "WinRTObject", properties);
-	
-	// Store in cache
-	(*constructorCache)[cacheKey] = Napi::Persistent(ctor);
-	
-	return (*constructorCache)[cacheKey];
+    struct PropertyInfo {
+        std::string name;
+        bool hasGetter = false;
+        bool hasSetter = false;
+    };
+    std::unordered_map<std::string, PropertyInfo> propertyMap;
+    
+    for (const auto* iface : interfaces) {
+        // Collect all properties and merge getter/setter info
+        for (const auto& prop : iface->properties) {
+            std::string propName(prop.name.data(), prop.name.size());
+            auto& propInfo = propertyMap[propName];
+            propInfo.name = propName;
+            if (prop.getter) {
+                propInfo.hasGetter = true;
+            }
+            if (prop.setter) {
+                propInfo.hasSetter = true;
+            }
+        }
+        
+        // Collect all unique method names
+        for (const auto& fn : iface->functions) {
+            std::string methodName(fn.name.data(), fn.name.size());
+            methodNames.insert(methodName);
+        }
+    }
+    
+    // Now create property descriptors with merged getter/setter info
+    for (const auto& [propName, propInfo] : propertyMap) {
+        if (propInfo.hasGetter) {
+            auto getter = &WinRTObjectWrapper::GenericGetter;
+            auto setter = propInfo.hasSetter ? &WinRTObjectWrapper::GenericSetter : nullptr;
+            
+            // Allocate property name on heap (leaked, but only once per class type)
+            auto* propNamePtr = new std::string(propInfo.name);
+            
+            properties.push_back(InstanceAccessor(
+                propNamePtr->c_str(),
+                getter,
+                setter,
+                napi_enumerable,
+                reinterpret_cast<void*>(const_cast<char*>(propNamePtr->c_str()))
+            ));
+        }
+    }
+    
+    // Now add one property descriptor per unique method name
+    // Store method names on heap since they need to persist
+    for (const auto& methodName : methodNames) {
+        // Allocate method name on heap (leaked, but only once per class type)
+        auto* methodNamePtr = new std::string(methodName);
+        
+        properties.push_back(InstanceMethod(
+            methodNamePtr->c_str(),
+            &WinRTObjectWrapper::GenericMethod,
+            napi_enumerable,
+            reinterpret_cast<void*>(const_cast<char*>(methodNamePtr->c_str()))
+        ));
+    }
+    
+    // Add special methods
+    properties.push_back(InstanceMethod("addEventListener", &WinRTObjectWrapper::AddEventListener));
+    properties.push_back(InstanceMethod("removeEventListener", &WinRTObjectWrapper::RemoveEventListener));
+    
+    // Define the class with all properties
+    auto ctor = DefineClass(env, "WinRTObject", properties);
+    
+    // Store in cache
+    (*constructorCache)[cacheKey] = Napi::Persistent(ctor);
+    
+    return (*constructorCache)[cacheKey];
 }
 
 inline Napi::Value WinRTObjectWrapper::GenericGetter(const Napi::CallbackInfo& info)
 {	
-	napi_wrappers::Runtime runtime(info.Env());
+    napi_wrappers::Runtime runtime(info.Env());
     auto name = reinterpret_cast<const char*>(info.Data());
     return m_projectedInstance->get(runtime, napi_wrappers::PropNameID::forUtf8(runtime, reinterpret_cast<const uint8_t*>(name), std::strlen(name)));
 }
@@ -4964,100 +4964,100 @@ inline void WinRTObjectWrapper::GenericSetter(const Napi::CallbackInfo& info, co
 
 inline Napi::Value WinRTObjectWrapper::GenericMethod(const Napi::CallbackInfo& info)
 {
-	napi_wrappers::Runtime runtime(info.Env());
-	
-	// Get the method name from Data
-	auto* methodName = reinterpret_cast<const char*>(info.Data());
-	
-	// Delegate to projected_object_instance::get() to get the function (with overload resolution)
-	auto propId = napi_wrappers::PropNameID::forUtf8(runtime, reinterpret_cast<const uint8_t*>(methodName), std::strlen(methodName));
-	auto functionValue = m_projectedInstance->get(runtime, propId);
-	
-	if (functionValue.isUndefined()) {
-		auto msg = std::string("Method '") + methodName + "' not found";
-		throw Napi::Error::New(runtime.env(), msg);
-	}
-	
-	// The function returned is a napi_wrappers::Function which wraps a Napi::Function
-	// We can call it directly using the Napi::Function::Call method
-	auto napiFunction = functionValue.asObject(runtime).asFunction(runtime).m_value.As<Napi::Function>();
-	
-	// Build args vector from CallbackInfo
-	std::vector<napi_value> args;
-	args.reserve(info.Length());
-	for (size_t i = 0; i < info.Length(); ++i) {
-		args.push_back(info[i]);
-	}
-	
-	return napiFunction.Call(info.This(), args);
+    napi_wrappers::Runtime runtime(info.Env());
+    
+    // Get the method name from Data
+    auto* methodName = reinterpret_cast<const char*>(info.Data());
+    
+    // Delegate to projected_object_instance::get() to get the function (with overload resolution)
+    auto propId = napi_wrappers::PropNameID::forUtf8(runtime, reinterpret_cast<const uint8_t*>(methodName), std::strlen(methodName));
+    auto functionValue = m_projectedInstance->get(runtime, propId);
+    
+    if (functionValue.isUndefined()) {
+        auto msg = std::string("Method '") + methodName + "' not found";
+        throw Napi::Error::New(runtime.env(), msg);
+    }
+    
+    // The function returned is a napi_wrappers::Function which wraps a Napi::Function
+    // We can call it directly using the Napi::Function::Call method
+    auto napiFunction = functionValue.asObject(runtime).asFunction(runtime).m_value.As<Napi::Function>();
+    
+    // Build args vector from CallbackInfo
+    std::vector<napi_value> args;
+    args.reserve(info.Length());
+    for (size_t i = 0; i < info.Length(); ++i) {
+        args.push_back(info[i]);
+    }
+    
+    return napiFunction.Call(info.This(), args);
 }
 
 inline Napi::Value WinRTObjectWrapper::AddEventListener(const Napi::CallbackInfo& info)
 {
-	napi_wrappers::Runtime runtime(info.Env());
-	
-	// Expected args: (eventName: string, callback: function)
-	if (info.Length() < 2 || !info[0].IsString() || !info[1].IsFunction()) {
-		throw Napi::Error::New(runtime.env(), "addEventListener requires (eventName: string, callback: function)");
-	}
-	
-	// Delegate to projected_object_instance::add_event_listener
-	napi_wrappers::Value args[] = {
-		napi_wrappers::Value(runtime, info[0]),
-		napi_wrappers::Value(runtime, info[1])
-	};
-	
-	m_projectedInstance->add_event_listener(runtime, args, 2);
-	
-	return info.Env().Undefined();
+    napi_wrappers::Runtime runtime(info.Env());
+    
+    // Expected args: (eventName: string, callback: function)
+    if (info.Length() < 2 || !info[0].IsString() || !info[1].IsFunction()) {
+        throw Napi::Error::New(runtime.env(), "addEventListener requires (eventName: string, callback: function)");
+    }
+    
+    // Delegate to projected_object_instance::add_event_listener
+    napi_wrappers::Value args[] = {
+        napi_wrappers::Value(runtime, info[0]),
+        napi_wrappers::Value(runtime, info[1])
+    };
+    
+    m_projectedInstance->add_event_listener(runtime, args, 2);
+    
+    return info.Env().Undefined();
 }
 
 inline Napi::Value WinRTObjectWrapper::RemoveEventListener(const Napi::CallbackInfo& info)
 {
-	napi_wrappers::Runtime runtime(info.Env());
-	
-	// Expected args: (eventName: string, callback: function)
-	if (info.Length() < 2 || !info[0].IsString() || !info[1].IsFunction()) {
-		throw Napi::Error::New(runtime.env(), "removeEventListener requires (eventName: string, callback: function)");
-	}
-	
-	// Delegate to projected_object_instance::remove_event_listener
-	napi_wrappers::Value args[] = {
-		napi_wrappers::Value(runtime, info[0]),
-		napi_wrappers::Value(runtime, info[1])
-	};
-	
-	m_projectedInstance->remove_event_listener(runtime, args, 2);
-	
-	return info.Env().Undefined();
+    napi_wrappers::Runtime runtime(info.Env());
+    
+    // Expected args: (eventName: string, callback: function)
+    if (info.Length() < 2 || !info[0].IsString() || !info[1].IsFunction()) {
+        throw Napi::Error::New(runtime.env(), "removeEventListener requires (eventName: string, callback: function)");
+    }
+    
+    // Delegate to projected_object_instance::remove_event_listener
+    napi_wrappers::Value args[] = {
+        napi_wrappers::Value(runtime, info[0]),
+        napi_wrappers::Value(runtime, info[1])
+    };
+    
+    m_projectedInstance->remove_event_listener(runtime, args, 2);
+    
+    return info.Env().Undefined();
 }
 
 inline Napi::Value WinRTObjectWrapper::IndexedGetter(const Napi::CallbackInfo& info)
 {
-	// info[0] is the index (as uint32_t passed by NAPI)
-	napi_wrappers::Runtime runtime(info.Env());
-	
-	// Convert index to string for property access (runtime_get_property expects string)
-	auto indexStr = std::to_string(info[0].As<Napi::Number>().Uint32Value());
-	auto propId = napi_wrappers::PropNameID::forUtf8(runtime, 
-		reinterpret_cast<const uint8_t*>(indexStr.c_str()), indexStr.size());
-	
-	// Delegate to projected_object_instance::get()
-	auto result = m_projectedInstance->get(runtime, propId);
-	return result.m_value;
+    // info[0] is the index (as uint32_t passed by NAPI)
+    napi_wrappers::Runtime runtime(info.Env());
+    
+    // Convert index to string for property access (runtime_get_property expects string)
+    auto indexStr = std::to_string(info[0].As<Napi::Number>().Uint32Value());
+    auto propId = napi_wrappers::PropNameID::forUtf8(runtime, 
+        reinterpret_cast<const uint8_t*>(indexStr.c_str()), indexStr.size());
+    
+    // Delegate to projected_object_instance::get()
+    auto result = m_projectedInstance->get(runtime, propId);
+    return result.m_value;
 }
 
 inline void WinRTObjectWrapper::IndexedSetter(const Napi::CallbackInfo& info, const Napi::Value& value)
 {
-	// info[0] is the index, value is the value to set
-	napi_wrappers::Runtime runtime(info.Env());
-	
-	// Convert index to string for property access (runtime_set_property expects string)
-	auto indexStr = std::to_string(info[0].As<Napi::Number>().Uint32Value());
-	auto propId = napi_wrappers::PropNameID::forUtf8(runtime,
-		reinterpret_cast<const uint8_t*>(indexStr.c_str()), indexStr.size());
-	
-	// Delegate to projected_object_instance::set()
-	m_projectedInstance->set(runtime, propId, napi_wrappers::Value(runtime, value));
+    // info[0] is the index, value is the value to set
+    napi_wrappers::Runtime runtime(info.Env());
+    
+    // Convert index to string for property access (runtime_set_property expects string)
+    auto indexStr = std::to_string(info[0].As<Napi::Number>().Uint32Value());
+    auto propId = napi_wrappers::PropNameID::forUtf8(runtime,
+        reinterpret_cast<const uint8_t*>(indexStr.c_str()), indexStr.size());
+    
+    // Delegate to projected_object_instance::set()
+    m_projectedInstance->set(runtime, propId, napi_wrappers::Value(runtime, value));
 }
 
