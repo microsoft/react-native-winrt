@@ -98,8 +98,6 @@ function setterAndGetterOnDifferentVariables(pThis, TestComponent) {
         assert.isTrue(t1 === t2, 'StaticOnlyTest should return the same cached object');
         
         t1.u32Property = 42;
-        console.log('t1.u32Property:', t1.u32Property);
-        console.log('t2.u32Property:', t2.u32Property);
         assert.isTrue(t1.u32Property == 42, 't1.u32Property should be 42');
         assert.isTrue(t2.u32Property == 42, 't2.u32Property should be 42');
     });

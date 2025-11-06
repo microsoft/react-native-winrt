@@ -120,23 +120,19 @@ function makePropertiesTestScenarios(pThis, TestComponent, TestValues) {
 // Helper functions
 function runSyncPropertyTest(pThis, type, vals, invalidVals, get, set) {
     pThis.runSync(null, () => {
-        console.log('Getting initial value');
         var initial = get();
         assert.equal(type, typeof(initial));
 
         for (var val of vals) {
-            console.log('Setting ' + val);
             set(val);
             assert.equal(get(), val);
         }
 
         for (var val of invalidVals) {
-            console.log('Setting ' + val);
             try {
                 set(val);
             }
             catch {
-                console.log('Caught exception');
             }
             assert.notEqual(get(), val);
         }
