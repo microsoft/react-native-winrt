@@ -23,6 +23,7 @@ const { getTestValues } = require('./test/TestCommon');
 const { makeBasicFunctionTestScenarios } = require('./test/BasicFunctionTests');
 const { makeEnumTestScenarios } = require('./test/EnumTests');
 const { makeMiscTestScenarios } = require('./test/MiscTests');
+const { makeArrayTestScenarios } = require('./test/ArrayTests');
 
 const { makePropertiesTestScenarios } = require('./test/PropertiesTests');
 
@@ -67,10 +68,10 @@ const testSuites = [
         name: "Property Tests",
         scenarios: makePropertiesTestScenarios(testContext, TestComponent, TestValues),
     },
-    // {
-    //     name: "Array Tests",
-    //     scenarios: makeArrayTestScenarios(testContext, TestComponent, TestValues),
-    // },
+    {
+        name: "Array Tests",
+        scenarios: makeArrayTestScenarios(testContext, TestComponent, TestValues),
+    },
 ];
 
 // Run tests
@@ -124,6 +125,25 @@ const failingScenarios = [
     'Test::CompositeStructArrayProperty',
     'Test::RefArrayProperty',
     'Test::ObjectArrayProperty',
+    // Array out param and fill param tests - array handling issues
+    'Test::StaticBoolArrayOutParam',
+    'Test::StaticCharArrayOutParam',
+    'Test::StaticNumericArrayOutParam',
+    'Test::StaticStringArrayOutParam',
+    'Test::StaticGuidArrayOutParam',
+    'Test::StaticEnumArrayOutParam',
+    'Test::StaticCompositeStructArrayOutParam',
+    'Test::StaticRefArrayOutParam',
+    'Test::StaticObjectArrayOutParam',
+    'Test::BoolArrayOutParam',
+    'Test::CharArrayOutParam',
+    'Test::NumericArrayOutParam',
+    'Test::StringArrayOutParam',
+    'Test::GuidArrayOutParam',
+    'Test::EnumArrayOutParam',
+    'Test::CompositeStructArrayOutParam',
+    'Test::RefArrayOutParam',
+    'Test::ObjectArrayOutParam',
 ];
 
 // Parse command line arguments
