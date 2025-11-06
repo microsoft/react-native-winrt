@@ -2,6 +2,7 @@
   "name": "node-test-app",
   "version": "0.1.0",
   "private": true,
+  "type": "module",
   "scripts": {
     "preinstall": "node build.js nugetRestore && node build.js runCppWinrt && node-gyp configure && npm run generate:winrt",
     "generate:winrt": "..\\..\\rnwinrt\\x64\\Debug\\rnwinrt.exe -node -input \"C:\\Program Files (x86)\\Windows Kits\\10\\References\\10.0.19041.0\\Windows.Foundation.FoundationContract\\4.0.0.0\\Windows.Foundation.FoundationContract.winmd\" D:\\react-native-winrt\\tests\\RnWinRTTests\\windows\\TestComponent\\x64\\Debug\\TestComponent\\TestComponent.winmd -include TestComponent -include Windows.Foundation -output ./generated",
@@ -9,8 +10,8 @@
     "build": "node-gyp build --debug",
     "rebuild": "node-gyp configure --debug && node-gyp rebuild --debug",
     "start": "node index.js",
-    "test": "npm run copy:testdll && copy \"C:\\Program Files\\nodejs\\node.exe\" . && .\\node test.js",
-    "test:basic": ".\\node test.js"
+    "test": "npm run copy:testdll && copy \"C:\\Program Files\\nodejs\\node.exe\" . && .\\node es6test.js",
+    "test:basic": ".\\node es6test.js"
   },
   "gypfile": true,
   "devDependencies": {

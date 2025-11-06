@@ -6,22 +6,22 @@
  * @format
  */
 
-const { TestScenario, assert } = require('./TestCommon');
+import { TestScenario, assert } from './TestCommon.js';
 
-function makeMiscTestScenarios(pThis, TestComponent) {
+export function makeMiscTestScenarios(pThis) {
     return [
-        new TestScenario('StaticClassCaching', () => runStaticClassCaching(pThis, TestComponent)),
-        new TestScenario('ActivatableClassCaching', () => runActivatableClassCaching(pThis, TestComponent)),
-        new TestScenario('StaticPropertyPersistence', () => runStaticPropertyPersistence(pThis, TestComponent)),
-        new TestScenario('ConstructorCallable', () => runConstructorCallable(pThis, TestComponent)),
-        new TestScenario('StaticPropertiesOnConstructor', () => runStaticPropertiesOnConstructor(pThis, TestComponent)),
-        new TestScenario('NamespaceChildrenCached', () => runNamespaceChildrenCached(pThis, TestComponent)),
-        new TestScenario('SetterAndGetterOnDifferentVariables', () => setterAndGetterOnDifferentVariables(pThis, TestComponent)),
+        new TestScenario('StaticClassCaching', runStaticClassCaching.bind(pThis)),
+        new TestScenario('ActivatableClassCaching', runActivatableClassCaching.bind(pThis)),
+        new TestScenario('StaticPropertyPersistence', runStaticPropertyPersistence.bind(pThis)),
+        new TestScenario('ConstructorCallable', runConstructorCallable.bind(pThis)),
+        new TestScenario('StaticPropertiesOnConstructor', runStaticPropertiesOnConstructor.bind(pThis)),
+        new TestScenario('NamespaceChildrenCached', runNamespaceChildrenCached.bind(pThis)),
+        new TestScenario('SetterAndGetterOnDifferentVariables', setterAndGetterOnDifferentVariables.bind(pThis)),
     ];
 }
 
-function runStaticClassCaching(pThis, TestComponent) {
-    pThis.runSync(null, () => {
+function runStaticClassCaching(scenario) {
+    this.runSync(scenario, () => {
         const t1 = TestComponent.StaticOnlyTest;
         const t2 = TestComponent.StaticOnlyTest;
         
@@ -30,8 +30,8 @@ function runStaticClassCaching(pThis, TestComponent) {
     });
 }
 
-function runActivatableClassCaching(pThis, TestComponent) {
-    pThis.runSync(null, () => {
+function runActivatableClassCaching(scenario) {
+    this.runSync(scenario, () => {
         const t1 = TestComponent.Test;
         const t2 = TestComponent.Test;
         
@@ -40,8 +40,8 @@ function runActivatableClassCaching(pThis, TestComponent) {
     });
 }
 
-function runStaticPropertyPersistence(pThis, TestComponent) {
-    pThis.runSync(null, () => {
+function runStaticPropertyPersistence(scenario) {
+    this.runSync(scenario, () => {
         // Set a value on the static property
         TestComponent.Test.staticU32Property = 12345;
         
@@ -54,8 +54,8 @@ function runStaticPropertyPersistence(pThis, TestComponent) {
     });
 }
 
-function runConstructorCallable(pThis, TestComponent) {
-    pThis.runSync(null, () => {
+function runConstructorCallable(scenario) {
+    this.runSync(scenario, () => {
         // Verify that Test is a function (constructor)
         assert.equal(typeof TestComponent.Test, 'function', 'Test should be a function/constructor');
         
@@ -65,8 +65,8 @@ function runConstructorCallable(pThis, TestComponent) {
     });
 }
 
-function runStaticPropertiesOnConstructor(pThis, TestComponent) {
-    pThis.runSync(null, () => {
+function runStaticPropertiesOnConstructor(scenario) {
+    this.runSync(scenario, () => {
         // Verify that static properties are accessible on the constructor
         const initialValue = TestComponent.Test.staticU32Property;
         assert.equal(typeof initialValue, 'number', 'Static property should be accessible on constructor');
@@ -80,8 +80,8 @@ function runStaticPropertiesOnConstructor(pThis, TestComponent) {
     });
 }
 
-function runNamespaceChildrenCached(pThis, TestComponent) {
-    pThis.runSync(null, () => {
+function runNamespaceChildrenCached(scenario) {
+    this.runSync(scenario, () => {
         const tc1 = TestComponent;
         const tc2 = TestComponent;
         
@@ -91,8 +91,8 @@ function runNamespaceChildrenCached(pThis, TestComponent) {
     });
 }
 
-function setterAndGetterOnDifferentVariables(pThis, TestComponent) {
-    pThis.runSync(null, () => {
+function setterAndGetterOnDifferentVariables(scenario) {
+    this.runSync(scenario, () => {
         const t1 = TestComponent.StaticOnlyTest; 
         const t2 = TestComponent.StaticOnlyTest;
         assert.isTrue(t1 === t2, 'StaticOnlyTest should return the same cached object');
@@ -102,7 +102,3 @@ function setterAndGetterOnDifferentVariables(pThis, TestComponent) {
         assert.isTrue(t2.u32Property == 42, 't2.u32Property should be 42');
     });
 }
-
-module.exports = {
-    makeMiscTestScenarios,
-};

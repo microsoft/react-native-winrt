@@ -1,24 +1,26 @@
-// Copyright (c) Microsoft Corporation.
+// Copyright (c) Microsoft Corporation. 
 // Licensed under the MIT License.
 
 /**
- * Enum Tests - Node.js Adapter
  * @format
  */
 
-const { TestScenario, assert } = require('./TestCommon');
+import {
+    TestScenario,
+    assert,
+} from './TestCommon.js'
 
-function makeEnumTestScenarios(pThis, TestComponent, TestValues) {
+export function makeEnumTestScenarios(pThis) {
     return [
-        new TestScenario('Enum forward mapping', () => runEnumForwardMapping(pThis, TestComponent)),
-        new TestScenario('Enum reverse mapping', () => runEnumReverseMapping(pThis, TestComponent)),
-        new TestScenario('Enum keys', () => runEnumKeys(pThis, TestComponent)),
-        new TestScenario('Enum non-mappings', () => runEnumNonMappings(pThis, TestComponent)),
+        new TestScenario('Enum forward mapping', runEnumForwardMapping.bind(pThis)),
+        new TestScenario('Enum reverse mapping', runEnumReverseMapping.bind(pThis)),
+        new TestScenario('Enum keys', runEnumKeys.bind(pThis)),
+        new TestScenario('Enum non-mappings', runEnumNonMappings.bind(pThis)),
     ];
 }
 
-function runEnumForwardMapping(pThis, TestComponent) {
-    pThis.runSync(null, () => {
+function runEnumForwardMapping(scenario) {
+    this.runSync(scenario, () => {
         assert.equal(TestComponent.TestEnum.first, 1);
         assert.equal(TestComponent.TestEnum.second, 2);
         assert.equal(TestComponent.TestEnum.third, 3);
@@ -26,8 +28,8 @@ function runEnumForwardMapping(pThis, TestComponent) {
     });
 }
 
-function runEnumReverseMapping(pThis, TestComponent) {
-    pThis.runSync(null, () => {
+function runEnumReverseMapping(scenario) {
+    this.runSync(scenario, () => {
         assert.equal(TestComponent.TestEnum[1], "first");
         assert.equal(TestComponent.TestEnum[2], "second");
         assert.equal(TestComponent.TestEnum[3], "third");
@@ -35,15 +37,15 @@ function runEnumReverseMapping(pThis, TestComponent) {
     });
 }
 
-function runEnumKeys(pThis, TestComponent) {
-    pThis.runSync(null, () => {
+function runEnumKeys(scenario) {
+    this.runSync(scenario, () => {
         // keys only includes enum names and values
         assert.equal(Object.keys(TestComponent.TestEnum).sort(), ["1", "2", "3", "4", "first", "fourth", "second", "third"]);
-    });
+    })
 }
 
-function runEnumNonMappings(pThis, TestComponent) {
-    pThis.runSync(null, () => {
+function runEnumNonMappings(scenario) {
+    this.runSync(scenario, () => {
         // case must match
         assert.undefined(TestComponent.TestEnum.First);
         // only enum values match, not other numbers
@@ -52,5 +54,3 @@ function runEnumNonMappings(pThis, TestComponent) {
         assert.undefined(TestComponent.TestEnum["1.0"]);
     });
 }
-
-module.exports = { makeEnumTestScenarios };

@@ -5,58 +5,59 @@
  * @format
  */
 
-const {
+import {
     TestScenario,
+    TestValues,
     assert,
     guidFromString,
     makeGuid
-} = require('./TestCommon');
+} from './TestCommon.js'
 
-function makeArrayTestScenarios(pThis, TestComponent, TestValues) {
+export function makeArrayTestScenarios(pThis) {
     return [
         // Static array out params
-        new TestScenario('Test::StaticBoolArrayOutParam', () => runStaticBoolArrayOutParam(pThis, TestComponent, TestValues)),
-        new TestScenario('Test::StaticCharArrayOutParam', () => runStaticCharArrayOutParam(pThis, TestComponent, TestValues)),
-        new TestScenario('Test::StaticNumericArrayOutParam', () => runStaticNumericArrayOutParam(pThis, TestComponent, TestValues)),
-        new TestScenario('Test::StaticStringArrayOutParam', () => runStaticStringArrayOutParam(pThis, TestComponent, TestValues)),
-        new TestScenario('Test::StaticGuidArrayOutParam', () => runStaticGuidArrayOutParam(pThis, TestComponent, TestValues)),
-        new TestScenario('Test::StaticEnumArrayOutParam', () => runStaticEnumArrayOutParam(pThis, TestComponent, TestValues)),
-        new TestScenario('Test::StaticCompositeStructArrayOutParam', () => runStaticCompositeStructArrayOutParam(pThis, TestComponent, TestValues)),
-        new TestScenario('Test::StaticRefArrayOutParam', () => runStaticRefArrayOutParam(pThis, TestComponent, TestValues)),
-        new TestScenario('Test::StaticObjectArrayOutParam', () => runStaticObjectArrayOutParam(pThis, TestComponent, TestValues)),
+        new TestScenario('Test::StaticBoolArrayOutParam', runStaticBoolArrayOutParam.bind(pThis)),
+        new TestScenario('Test::StaticCharArrayOutParam', runStaticCharArrayOutParam.bind(pThis)),
+        new TestScenario('Test::StaticNumericArrayOutParam', runStaticNumericArrayOutParam.bind(pThis)),
+        new TestScenario('Test::StaticStringArrayOutParam', runStaticStringArrayOutParam.bind(pThis)),
+        new TestScenario('Test::StaticGuidArrayOutParam', runStaticGuidArrayOutParam.bind(pThis)),
+        new TestScenario('Test::StaticEnumArrayOutParam', runStaticEnumArrayOutParam.bind(pThis)),
+        new TestScenario('Test::StaticCompositeStructArrayOutParam', runStaticCompositeStructArrayOutParam.bind(pThis)),
+        new TestScenario('Test::StaticRefArrayOutParam', runStaticRefArrayOutParam.bind(pThis)),
+        new TestScenario('Test::StaticObjectArrayOutParam', runStaticObjectArrayOutParam.bind(pThis)),
 
         // Static array fill params
-        new TestScenario('Test::StaticBoolFillParam', () => runStaticBoolFillParam(pThis, TestComponent, TestValues)),
-        new TestScenario('Test::StaticCharFillParam', () => runStaticCharFillParam(pThis, TestComponent, TestValues)),
-        new TestScenario('Test::StaticNumericFillParam', () => runStaticNumericFillParam(pThis, TestComponent, TestValues)),
-        new TestScenario('Test::StaticStringFillParam', () => runStaticStringFillParam(pThis, TestComponent, TestValues)),
-        new TestScenario('Test::StaticGuidFillParam', () => runStaticGuidFillParam(pThis, TestComponent, TestValues)),
-        new TestScenario('Test::StaticEnumFillParam', () => runStaticEnumFillParam(pThis, TestComponent, TestValues)),
-        new TestScenario('Test::StaticCompositeStructFillParam', () => runStaticCompositeStructFillParam(pThis, TestComponent, TestValues)),
-        new TestScenario('Test::StaticRefFillParam', () => runStaticRefFillParam(pThis, TestComponent, TestValues)),
-        new TestScenario('Test::StaticObjectFillParam', () => runStaticObjectFillParam(pThis, TestComponent, TestValues)),
+        new TestScenario('Test::StaticBoolFillParam', runStaticBoolFillParam.bind(pThis)),
+        new TestScenario('Test::StaticCharFillParam', runStaticCharFillParam.bind(pThis)),
+        new TestScenario('Test::StaticNumericFillParam', runStaticNumericFillParam.bind(pThis)),
+        new TestScenario('Test::StaticStringFillParam', runStaticStringFillParam.bind(pThis)),
+        new TestScenario('Test::StaticGuidFillParam', runStaticGuidFillParam.bind(pThis)),
+        new TestScenario('Test::StaticEnumFillParam', runStaticEnumFillParam.bind(pThis)),
+        new TestScenario('Test::StaticCompositeStructFillParam', runStaticCompositeStructFillParam.bind(pThis)),
+        new TestScenario('Test::StaticRefFillParam', runStaticRefFillParam.bind(pThis)),
+        new TestScenario('Test::StaticObjectFillParam', runStaticObjectFillParam.bind(pThis)),
 
         // Non-static array out params
-        new TestScenario('Test::BoolArrayOutParam', () => runBoolArrayOutParam(pThis, TestComponent, TestValues)),
-        new TestScenario('Test::CharArrayOutParam', () => runCharArrayOutParam(pThis, TestComponent, TestValues)),
-        new TestScenario('Test::NumericArrayOutParam', () => runNumericArrayOutParam(pThis, TestComponent, TestValues)),
-        new TestScenario('Test::StringArrayOutParam', () => runStringArrayOutParam(pThis, TestComponent, TestValues)),
-        new TestScenario('Test::GuidArrayOutParam', () => runGuidArrayOutParam(pThis, TestComponent, TestValues)),
-        new TestScenario('Test::EnumArrayOutParam', () => runEnumArrayOutParam(pThis, TestComponent, TestValues)),
-        new TestScenario('Test::CompositeStructArrayOutParam', () => runCompositeStructArrayOutParam(pThis, TestComponent, TestValues)),
-        new TestScenario('Test::RefArrayOutParam', () => runRefArrayOutParam(pThis, TestComponent, TestValues)),
-        new TestScenario('Test::ObjectArrayOutParam', () => runObjectArrayOutParam(pThis, TestComponent, TestValues)),
+        new TestScenario('Test::BoolArrayOutParam', runBoolArrayOutParam.bind(pThis)),
+        new TestScenario('Test::CharArrayOutParam', runCharArrayOutParam.bind(pThis)),
+        new TestScenario('Test::NumericArrayOutParam', runNumericArrayOutParam.bind(pThis)),
+        new TestScenario('Test::StringArrayOutParam', runStringArrayOutParam.bind(pThis)),
+        new TestScenario('Test::GuidArrayOutParam', runGuidArrayOutParam.bind(pThis)),
+        new TestScenario('Test::EnumArrayOutParam', runEnumArrayOutParam.bind(pThis)),
+        new TestScenario('Test::CompositeStructArrayOutParam', runCompositeStructArrayOutParam.bind(pThis)),
+        new TestScenario('Test::RefArrayOutParam', runRefArrayOutParam.bind(pThis)),
+        new TestScenario('Test::ObjectArrayOutParam', runObjectArrayOutParam.bind(pThis)),
 
         // Non-static array fill params
-        new TestScenario('Test::BoolFillParam', () => runBoolFillParam(pThis, TestComponent, TestValues)),
-        new TestScenario('Test::CharFillParam', () => runCharFillParam(pThis, TestComponent, TestValues)),
-        new TestScenario('Test::NumericFillParam', () => runNumericFillParam(pThis, TestComponent, TestValues)),
-        new TestScenario('Test::StringFillParam', () => runStringFillParam(pThis, TestComponent, TestValues)),
-        new TestScenario('Test::GuidFillParam', () => runGuidFillParam(pThis, TestComponent, TestValues)),
-        new TestScenario('Test::EnumFillParam', () => runEnumFillParam(pThis, TestComponent, TestValues)),
-        new TestScenario('Test::CompositeStructFillParam', () => runCompositeStructFillParam(pThis, TestComponent, TestValues)),
-        new TestScenario('Test::RefFillParam', () => runRefFillParam(pThis, TestComponent, TestValues)),
-        new TestScenario('Test::ObjectFillParam', () => runObjectFillParam(pThis, TestComponent, TestValues)),
+        new TestScenario('Test::BoolFillParam', runBoolFillParam.bind(pThis)),
+        new TestScenario('Test::CharFillParam', runCharFillParam.bind(pThis)),
+        new TestScenario('Test::NumericFillParam', runNumericFillParam.bind(pThis)),
+        new TestScenario('Test::StringFillParam', runStringFillParam.bind(pThis)),
+        new TestScenario('Test::GuidFillParam', runGuidFillParam.bind(pThis)),
+        new TestScenario('Test::EnumFillParam', runEnumFillParam.bind(pThis)),
+        new TestScenario('Test::CompositeStructFillParam', runCompositeStructFillParam.bind(pThis)),
+        new TestScenario('Test::RefFillParam', runRefFillParam.bind(pThis)),
+        new TestScenario('Test::ObjectFillParam', runObjectFillParam.bind(pThis)),
     ];
 }
 
@@ -88,72 +89,72 @@ function validateArrayOutParam(arr, fn) {
     validateReversedArray(arr, returnValue);
 }
 
-function runStaticBoolArrayOutParam(pThis, TestComponent, TestValues) {
-    pThis.runSync(null, () => {
+function runStaticBoolArrayOutParam(scenario) {
+    this.runSync(scenario, () => {
         var fn = (val) => TestComponent.Test.staticBoolArrayOutParam(val);
         validateArrayOutParam([ false, false, true, true, false ], fn);
     });
 }
 
-function runStaticCharArrayOutParam(pThis, TestComponent, TestValues) {
-    pThis.runSync(null, () => {
+function runStaticCharArrayOutParam(scenario) {
+    this.runSync(scenario, () => {
         var fn = (val) => TestComponent.Test.staticCharArrayOutParam(val);
         validateArrayOutParam([ 'A', 'B', 'C', 'D', 'E' ], fn);
     });
 }
 
-function runStaticNumericArrayOutParam(pThis, TestComponent, TestValues) {
-    pThis.runSync(null, () => {
+function runStaticNumericArrayOutParam(scenario) {
+    this.runSync(scenario, () => {
         var fn = (val) => TestComponent.Test.staticNumericArrayOutParam(val);
         validateArrayOutParam([ 0, 1, 2, 3, 4 ], fn);
     });
 }
 
-function runStaticStringArrayOutParam(pThis, TestComponent, TestValues) {
-    pThis.runSync(null, () => {
+function runStaticStringArrayOutParam(scenario) {
+    this.runSync(scenario, () => {
         var fn = (val) => TestComponent.Test.staticStringArrayOutParam(val);
         validateArrayOutParam([ 'foo', 'bar', 'baz', 'foobar', 'foo\0bar' ], fn);
     });
 }
 
-function runStaticGuidArrayOutParam(pThis, TestComponent, TestValues) {
-    pThis.runSync(null, () => {
+function runStaticGuidArrayOutParam(scenario) {
+    this.runSync(scenario, () => {
         var fn = (val) => TestComponent.Test.staticGuidArrayOutParam(val);
         validateArrayOutParam(TestValues.guids.valid, fn);
     });
 }
 
-function runStaticEnumArrayOutParam(pThis, TestComponent, TestValues) {
-    pThis.runSync(null, () => {
+function runStaticEnumArrayOutParam(scenario) {
+    this.runSync(scenario, () => {
         var fn = (val) => TestComponent.Test.staticEnumArrayOutParam(val);
         validateArrayOutParam(TestValues.enums.valid, fn);
     });
 }
 
-function runStaticCompositeStructArrayOutParam(pThis, TestComponent, TestValues) {
-    pThis.runSync(null, () => {
+function runStaticCompositeStructArrayOutParam(scenario) {
+    this.runSync(scenario, () => {
         var fn = (val) => TestComponent.Test.staticCompositeStructArrayOutParam(val);
         validateArrayOutParam(TestValues.composite.valid, fn);
     });
 }
 
-function runStaticRefArrayOutParam(pThis, TestComponent, TestValues) {
-    pThis.runSync(null, () => {
+function runStaticRefArrayOutParam(scenario) {
+    this.runSync(scenario, () => {
         var fn = (val) => TestComponent.Test.staticRefArrayOutParam(val);
         validateArrayOutParam(TestValues.s32.valid, fn);
     });
 }
 
-function runStaticObjectArrayOutParam(pThis, TestComponent, TestValues) {
-    pThis.runSync(null, () => {
+function runStaticObjectArrayOutParam(scenario) {
+    this.runSync(scenario, () => {
         var fn = (val) => TestComponent.Test.staticObjectArrayOutParam(val);
         validateArrayOutParam(TestValues.s32.valid.map(val => new TestComponent.TestObject(val)), fn);
     });
 }
 
 // Static array fill params
-function runStaticBoolFillParam(pThis, TestComponent, TestValues) {
-    pThis.runSync(null, () => {
+function runStaticBoolFillParam(scenario) {
+    this.runSync(scenario, () => {
         var run = (size) => {
             var arr = new Array(size);
             TestComponent.Test.staticBoolFillParam(arr);
@@ -171,8 +172,8 @@ function runStaticBoolFillParam(pThis, TestComponent, TestValues) {
     });
 }
 
-function runStaticCharFillParam(pThis, TestComponent, TestValues) {
-    pThis.runSync(null, () => {
+function runStaticCharFillParam(scenario) {
+    this.runSync(scenario, () => {
         var run = (size) => {
             var arr = new Array(size);
             TestComponent.Test.staticCharFillParam(arr);
@@ -186,11 +187,11 @@ function runStaticCharFillParam(pThis, TestComponent, TestValues) {
         run(1);
         run(2);
         run(100);
-    });
+    })
 }
 
-function runStaticNumericFillParam(pThis, TestComponent, TestValues) {
-    pThis.runSync(null, () => {
+function runStaticNumericFillParam(scenario) {
+    this.runSync(scenario, () => {
         var run = (size) => {
             var arr = new Array(size);
             TestComponent.Test.staticNumericFillParam(arr);
@@ -204,11 +205,11 @@ function runStaticNumericFillParam(pThis, TestComponent, TestValues) {
         run(1);
         run(2);
         run(100);
-    });
+    })
 }
 
-function runStaticStringFillParam(pThis, TestComponent, TestValues) {
-    pThis.runSync(null, () => {
+function runStaticStringFillParam(scenario) {
+    this.runSync(scenario, () => {
         var run = (size) => {
             var arr = new Array(size);
             TestComponent.Test.staticStringFillParam(arr);
@@ -223,11 +224,11 @@ function runStaticStringFillParam(pThis, TestComponent, TestValues) {
         run(1);
         run(2);
         run(100);
-    });
+    })
 }
 
-function runStaticGuidFillParam(pThis, TestComponent, TestValues) {
-    pThis.runSync(null, () => {
+function runStaticGuidFillParam(scenario) {
+    this.runSync(scenario, () => {
         var run = (size) => {
             var arr = new Array(size);
             TestComponent.Test.staticGuidFillParam(arr);
@@ -246,11 +247,11 @@ function runStaticGuidFillParam(pThis, TestComponent, TestValues) {
         run(1);
         run(2);
         // run(100);
-    });
+    })
 }
 
-function runStaticEnumFillParam(pThis, TestComponent, TestValues) {
-    pThis.runSync(null, () => {
+function runStaticEnumFillParam(scenario) {
+    this.runSync(scenario, () => {
         var run = (size) => {
             var arr = new Array(size);
             TestComponent.Test.staticEnumFillParam(arr);
@@ -264,11 +265,11 @@ function runStaticEnumFillParam(pThis, TestComponent, TestValues) {
         run(1);
         run(2);
         run(4);
-    });
+    })
 }
 
-function runStaticCompositeStructFillParam(pThis, TestComponent, TestValues) {
-    pThis.runSync(null, () => {
+function runStaticCompositeStructFillParam(scenario) {
+    this.runSync(scenario, () => {
         var run = (size) => {
             var arr = new Array(size);
             TestComponent.Test.staticCompositeStructFillParam(arr);
@@ -293,11 +294,11 @@ function runStaticCompositeStructFillParam(pThis, TestComponent, TestValues) {
         run(1);
         run(2);
         run(100);
-    });
+    })
 }
 
-function runStaticRefFillParam(pThis, TestComponent, TestValues) {
-    pThis.runSync(null, () => {
+function runStaticRefFillParam(scenario) {
+    this.runSync(scenario, () => {
         var run = (size) => {
             var arr = new Array(size);
             TestComponent.Test.staticRefFillParam(arr);
@@ -311,11 +312,11 @@ function runStaticRefFillParam(pThis, TestComponent, TestValues) {
         run(1);
         run(2);
         run(100);
-    });
+    })
 }
 
-function runStaticObjectFillParam(pThis, TestComponent, TestValues) {
-    pThis.runSync(null, () => {
+function runStaticObjectFillParam(scenario) {
+    this.runSync(scenario, () => {
         var run = (size) => {
             var arr = new Array(size);
             TestComponent.Test.staticObjectFillParam(arr);
@@ -329,89 +330,79 @@ function runStaticObjectFillParam(pThis, TestComponent, TestValues) {
         run(1);
         run(2);
         run(100);
-    });
+    })
 }
 
 // Non-static array out params
-function runBoolArrayOutParam(pThis, TestComponent, TestValues) {
-    pThis.runSync(null, () => {
-        var test = new TestComponent.Test();
-        var fn = (val) => test.boolArrayOutParam(val);
+function runBoolArrayOutParam(scenario) {
+    this.runSync(scenario, () => {
+        var fn = (val) => this.test.boolArrayOutParam(val);
         validateArrayOutParam([ false, false, true, true, false ], fn);
     });
 }
 
-function runCharArrayOutParam(pThis, TestComponent, TestValues) {
-    pThis.runSync(null, () => {
-        var test = new TestComponent.Test();
-        var fn = (val) => test.charArrayOutParam(val);
+function runCharArrayOutParam(scenario) {
+    this.runSync(scenario, () => {
+        var fn = (val) => this.test.charArrayOutParam(val);
         validateArrayOutParam([ 'A', 'B', 'C', 'D', 'E' ], fn);
     });
 }
 
-function runNumericArrayOutParam(pThis, TestComponent, TestValues) {
-    pThis.runSync(null, () => {
-        var test = new TestComponent.Test();
-        var fn = (val) => test.numericArrayOutParam(val);
+function runNumericArrayOutParam(scenario) {
+    this.runSync(scenario, () => {
+        var fn = (val) => this.test.numericArrayOutParam(val);
         validateArrayOutParam([ 0, 1, 2, 3, 4 ], fn);
     });
 }
 
-function runStringArrayOutParam(pThis, TestComponent, TestValues) {
-    pThis.runSync(null, () => {
-        var test = new TestComponent.Test();
-        var fn = (val) => test.stringArrayOutParam(val);
+function runStringArrayOutParam(scenario) {
+    this.runSync(scenario, () => {
+        var fn = (val) => this.test.stringArrayOutParam(val);
         validateArrayOutParam([ 'foo', 'bar', 'baz', 'foobar', 'foo\0bar' ], fn);
     });
 }
 
-function runGuidArrayOutParam(pThis, TestComponent, TestValues) {
-    pThis.runSync(null, () => {
-        var test = new TestComponent.Test();
-        var fn = (val) => test.guidArrayOutParam(val);
+function runGuidArrayOutParam(scenario) {
+    this.runSync(scenario, () => {
+        var fn = (val) => this.test.guidArrayOutParam(val);
         validateArrayOutParam(TestValues.guids.valid, fn);
     });
 }
 
-function runEnumArrayOutParam(pThis, TestComponent, TestValues) {
-    pThis.runSync(null, () => {
-        var test = new TestComponent.Test();
-        var fn = (val) => test.enumArrayOutParam(val);
+function runEnumArrayOutParam(scenario) {
+    this.runSync(scenario, () => {
+        var fn = (val) => this.test.enumArrayOutParam(val);
         validateArrayOutParam(TestValues.enums.valid, fn);
     });
 }
 
-function runCompositeStructArrayOutParam(pThis, TestComponent, TestValues) {
-    pThis.runSync(null, () => {
-        var test = new TestComponent.Test();
-        var fn = (val) => test.compositeStructArrayOutParam(val);
+function runCompositeStructArrayOutParam(scenario) {
+    this.runSync(scenario, () => {
+        var fn = (val) => this.test.compositeStructArrayOutParam(val);
         validateArrayOutParam(TestValues.composite.valid, fn);
     });
 }
 
-function runRefArrayOutParam(pThis, TestComponent, TestValues) {
-    pThis.runSync(null, () => {
-        var test = new TestComponent.Test();
-        var fn = (val) => test.refArrayOutParam(val);
+function runRefArrayOutParam(scenario) {
+    this.runSync(scenario, () => {
+        var fn = (val) => this.test.refArrayOutParam(val);
         validateArrayOutParam([ 0, 1, 2, 3, 4 ], fn);
     });
 }
 
-function runObjectArrayOutParam(pThis, TestComponent, TestValues) {
-    pThis.runSync(null, () => {
-        var test = new TestComponent.Test();
-        var fn = (val) => test.objectArrayOutParam(val);
+function runObjectArrayOutParam(scenario) {
+    this.runSync(scenario, () => {
+        var fn = (val) => this.test.objectArrayOutParam(val);
         validateArrayOutParam(TestValues.s32.valid.map(val => new TestComponent.TestObject(val)), fn);
     });
 }
 
 // Non-static array fill params
-function runBoolFillParam(pThis, TestComponent, TestValues) {
-    pThis.runSync(null, () => {
-        var test = new TestComponent.Test();
+function runBoolFillParam(scenario) {
+    this.runSync(scenario, () => {
         var run = (size) => {
             var arr = new Array(size);
-            test.boolFillParam(arr);
+            this.test.boolFillParam(arr);
 
             var expect = false;
             for (var val of arr) {
@@ -426,12 +417,11 @@ function runBoolFillParam(pThis, TestComponent, TestValues) {
     });
 }
 
-function runCharFillParam(pThis, TestComponent, TestValues) {
-    pThis.runSync(null, () => {
-        var test = new TestComponent.Test();
+function runCharFillParam(scenario) {
+    this.runSync(scenario, () => {
         var run = (size) => {
             var arr = new Array(size);
-            test.charFillParam(arr);
+            this.test.charFillParam(arr);
 
             var expect = 'a'.charCodeAt(0);
             for (var val of arr) {
@@ -442,15 +432,14 @@ function runCharFillParam(pThis, TestComponent, TestValues) {
         run(1);
         run(2);
         run(100);
-    });
+    })
 }
 
-function runNumericFillParam(pThis, TestComponent, TestValues) {
-    pThis.runSync(null, () => {
-        var test = new TestComponent.Test();
+function runNumericFillParam(scenario) {
+    this.runSync(scenario, () => {
         var run = (size) => {
             var arr = new Array(size);
-            test.numericFillParam(arr);
+            this.test.numericFillParam(arr);
 
             var expect = 0;
             for (var val of arr) {
@@ -461,15 +450,14 @@ function runNumericFillParam(pThis, TestComponent, TestValues) {
         run(1);
         run(2);
         run(100);
-    });
+    })
 }
 
-function runStringFillParam(pThis, TestComponent, TestValues) {
-    pThis.runSync(null, () => {
-        var test = new TestComponent.Test();
+function runStringFillParam(scenario) {
+    this.runSync(scenario, () => {
         var run = (size) => {
             var arr = new Array(size);
-            test.stringFillParam(arr);
+            this.test.stringFillParam(arr);
 
             var expect = '';
             for (var val of arr) {
@@ -481,15 +469,14 @@ function runStringFillParam(pThis, TestComponent, TestValues) {
         run(1);
         run(2);
         run(100);
-    });
+    })
 }
 
-function runGuidFillParam(pThis, TestComponent, TestValues) {
-    pThis.runSync(null, () => {
-        var test = new TestComponent.Test();
+function runGuidFillParam(scenario) {
+    this.runSync(scenario, () => {
         var run = (size) => {
             var arr = new Array(size);
-            test.guidFillParam(arr);
+            this.test.guidFillParam(arr);
 
             var expect = 0;
             for (var val of arr) {
@@ -505,15 +492,14 @@ function runGuidFillParam(pThis, TestComponent, TestValues) {
         run(1);
         run(2);
         run(100);
-    });
+    })
 }
 
-function runEnumFillParam(pThis, TestComponent, TestValues) {
-    pThis.runSync(null, () => {
-        var test = new TestComponent.Test();
+function runEnumFillParam(scenario) {
+    this.runSync(scenario, () => {
         var run = (size) => {
             var arr = new Array(size);
-            test.enumFillParam(arr);
+            this.test.enumFillParam(arr);
 
             var expect = TestComponent.TestEnum.first;
             for (var val of arr) {
@@ -524,15 +510,14 @@ function runEnumFillParam(pThis, TestComponent, TestValues) {
         run(1);
         run(2);
         run(4);
-    });
+    })
 }
 
-function runCompositeStructFillParam(pThis, TestComponent, TestValues) {
-    pThis.runSync(null, () => {
-        var test = new TestComponent.Test();
+function runCompositeStructFillParam(scenario) {
+    this.runSync(scenario, () => {
         var run = (size) => {
             var arr = new Array(size);
-            test.compositeStructFillParam(arr);
+            this.test.compositeStructFillParam(arr);
 
             var expectNumeric = 0;
             var expectString = '';
@@ -554,15 +539,14 @@ function runCompositeStructFillParam(pThis, TestComponent, TestValues) {
         run(1);
         run(2);
         run(100);
-    });
+    })
 }
 
-function runRefFillParam(pThis, TestComponent, TestValues) {
-    pThis.runSync(null, () => {
-        var test = new TestComponent.Test();
+function runRefFillParam(scenario) {
+    this.runSync(scenario, () => {
         var run = (size) => {
             var arr = new Array(size);
-            test.refFillParam(arr);
+            this.test.refFillParam(arr);
 
             var expect = 0;
             for (var val of arr) {
@@ -573,15 +557,14 @@ function runRefFillParam(pThis, TestComponent, TestValues) {
         run(1);
         run(2);
         run(100);
-    });
+    })
 }
 
-function runObjectFillParam(pThis, TestComponent, TestValues) {
-    pThis.runSync(null, () => {
-        var test = new TestComponent.Test();
+function runObjectFillParam(scenario) {
+    this.runSync(scenario, () => {
         var run = (size) => {
             var arr = new Array(size);
-            test.objectFillParam(arr);
+            this.test.objectFillParam(arr);
 
             var expect = 0;
             for (var val of arr) {
@@ -592,7 +575,5 @@ function runObjectFillParam(pThis, TestComponent, TestValues) {
         run(1);
         run(2);
         run(100);
-    });
+    })
 }
-
-module.exports = { makeArrayTestScenarios };
