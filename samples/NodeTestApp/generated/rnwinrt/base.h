@@ -658,8 +658,7 @@ namespace rnwinrt
             {
                 auto msg = "TypeError: Conversion from native to JS not implemented for type '"s + typeid(T).name() +
                     "'. This is likely caused by the type being in a non-projected namespace";
-                Napi::Error::New(runtime.env(), msg).ThrowAsJavaScriptException();
-                return napi_wrappers::Value::undefined(runtime);
+                throw Napi::Error::New(runtime.env(), msg);
             }
         }
 
@@ -673,8 +672,7 @@ namespace rnwinrt
             {
                 auto msg = "TypeError: Conversion from JS to native not implemented for type '"s + typeid(T).name() +
                     "'. This is likely caused by the type being in a non-projected namespace";
-                Napi::Error::New(runtime.env(), msg).ThrowAsJavaScriptException();
-                return T{};                                 
+                throw Napi::Error::New(runtime.env(), msg);
             }
         }
     };
@@ -937,7 +935,7 @@ namespace rnwinrt
                 [&](napi_wrappers::Runtime& runtime, const napi_wrappers::Value&, const napi_wrappers::Value* args, size_t count) {
                     if (count < 2)
                     {
-                        Napi::Error::New(runtime.env(), "Promise callback unexpectedly called with insufficient arguments").ThrowAsJavaScriptException();
+                        throw Napi::Error::New(runtime.env(), "Promise callback unexpectedly called with insufficient arguments");
                     }
 
                     resolveFn = args[0].asObject(runtime).asFunction(runtime);
@@ -1022,8 +1020,7 @@ namespace rnwinrt
         }
 
         // Symbol & Object (TODO: Object shouldn't be included here)
-        Napi::Error::New(runtime.env(), "TypeError: Cannot convert value to number").ThrowAsJavaScriptException();
-        return std::numeric_limits<double>::quiet_NaN(); // Never reached
+        throw Napi::Error::New(runtime.env(), "TypeError: Cannot convert value to number");
     }
 
     inline double to_integer_or_infinity(napi_wrappers::Runtime& runtime, const napi_wrappers::Value& value)
@@ -1858,7 +1855,7 @@ namespace rnwinrt
         {
             auto msg = "TypeError: Cannot assign to property '" + name.utf8(runtime) +
                        "' of a projected WinRT AsyncOperation";
-            Napi::Error::New(runtime.env(), msg).ThrowAsJavaScriptException();
+            throw Napi::Error::New(runtime.env(), msg);
         }
 
         virtual std::vector<napi_wrappers::PropNameID> getPropertyNames(napi_wrappers::Runtime& runtime) override
@@ -2167,7 +2164,7 @@ namespace rnwinrt
             {
                 // Failure in 'done' scenario - throw unhandled errors instead of swallowing
                 //throw napi_wrappers::JSError(runtime, napi_wrappers::Value(runtime, effectiveResult));
-                Napi::Error::New(runtime.env(), "TODO: not working yet").ThrowAsJavaScriptException();
+                throw Napi::Error::New(runtime.env(), "TODO: not working yet");
             }
         }
 
@@ -2436,12 +2433,14 @@ namespace rnwinrt
         {
             double num = value.asNumber();
             // Reject Infinity and NaN for numeric types
+            /*
             if (!std::isfinite(num))
             {
                 auto msg = std::string("TypeError: Cannot convert Infinity or NaN to a numeric type (value=") + std::to_string(num) + ")";
-                Napi::Error::New(runtime.env(), msg).ThrowAsJavaScriptException();
-                throw std::runtime_error(msg);
+                throw Napi::Error::New(runtime.env(), msg);
+                //throw std::runtime_error(msg);
             }
+                */
             return static_cast<T>(num);
         }
     };
@@ -2680,7 +2679,7 @@ namespace rnwinrt
                 m_data.push_back(convert_value_to_native<T>(runtime, array.getValueAtIndex(runtime, i)));
             }
 #endif // not working yet
-            Napi::Error::New(runtime.env(), "TODO: not working yet (array_to_native_iterator constructor)").ThrowAsJavaScriptException();
+            throw Napi::Error::New(runtime.env(), "TODO: not working yet (array_to_native_iterator constructor)");
         }
 
         operator winrt::array_view<const T>()
@@ -2875,8 +2874,7 @@ namespace rnwinrt
 
         // TODO: Also IMap/IMapView?
 
-        Napi::Error::New(runtime.env(), "TypeError: Cannot derive a WinRT interface for the JS value").ThrowAsJavaScriptException();
-        return nullptr; // Never reached
+        throw Napi::Error::New(runtime.env(), "TypeError: Cannot derive a WinRT interface for the JS value");
     }
 
     template <typename T>
@@ -2929,7 +2927,7 @@ namespace rnwinrt
             // It can be done but since the public SDK doesn't actually make use of it, perhaps it it is not necessary
             // to implement.
             auto msg = "TypeError: Conversion to native reference array to JS not implemented for "s + typeid(T).name();
-            Napi::Error::New(runtime.env(), msg).ThrowAsJavaScriptException();
+            throw Napi::Error::New(runtime.env(), msg);
         }
     };
 
@@ -3579,7 +3577,7 @@ namespace rnwinrt
         {
             if (index >= count)
             {
-                Napi::Error::New(runtime.env(), "TypeError: undefined is not a function").ThrowAsJavaScriptException();
+                throw Napi::Error::New(runtime.env(), "TypeError: undefined is not a function");
             }
 
             return args[index].asObject(runtime).asFunction(runtime);
@@ -3905,7 +3903,7 @@ namespace rnwinrt
 
             if ((size == 0) && (count < 2))
             {
-                Napi::Error::New(runtime.env(), "TypeError: Reduce of empty vector with no initial value").ThrowAsJavaScriptException();
+                throw Napi::Error::New(runtime.env(), "TypeError: Reduce of empty vector with no initial value");
             }
 
             napi_wrappers::Value accum;
@@ -3948,7 +3946,7 @@ namespace rnwinrt
 
             if ((size == 0) && (count < 2))
             {
-                Napi::Error::New(runtime.env(), "TypeError: Reduce of empty vector with no initial value").ThrowAsJavaScriptException();
+                throw Napi::Error::New(runtime.env(), "TypeError: Reduce of empty vector with no initial value");
             }
 
             napi_wrappers::Value accum;
@@ -4069,8 +4067,8 @@ namespace rnwinrt
                             auto newLen = convert_value_to_native<uint32_t>(runtime, value);
                             if (newLen > currLen)
                             {
-                                Napi::Error::New(runtime.env(), "TypeError: Cannot assign 'length' to IVector that is "
-                                                 "greater than its current length").ThrowAsJavaScriptException();
+                                throw Napi::Error::New(runtime.env(), "TypeError: Cannot assign 'length' to IVector that is "
+                                                 "greater than its current length");
                             }
                             else if (newLen == 0)
                             {
@@ -4953,7 +4951,7 @@ inline Napi::Value WinRTObjectWrapper::GenericMethod(const Napi::CallbackInfo& i
 	
 	if (functionValue.isUndefined()) {
 		auto msg = std::string("Method '") + methodName + "' not found";
-		Napi::Error::New(runtime.env(), msg).ThrowAsJavaScriptException();
+		throw Napi::Error::New(runtime.env(), msg);
 	}
 	
 	// The function returned is a napi_wrappers::Function which wraps a Napi::Function
@@ -4976,7 +4974,7 @@ inline Napi::Value WinRTObjectWrapper::AddEventListener(const Napi::CallbackInfo
 	
 	// Expected args: (eventName: string, callback: function)
 	if (info.Length() < 2 || !info[0].IsString() || !info[1].IsFunction()) {
-		Napi::Error::New(runtime.env(), "addEventListener requires (eventName: string, callback: function)").ThrowAsJavaScriptException();
+		throw Napi::Error::New(runtime.env(), "addEventListener requires (eventName: string, callback: function)");
 	}
 	
 	// Delegate to projected_object_instance::add_event_listener
@@ -4996,7 +4994,7 @@ inline Napi::Value WinRTObjectWrapper::RemoveEventListener(const Napi::CallbackI
 	
 	// Expected args: (eventName: string, callback: function)
 	if (info.Length() < 2 || !info[0].IsString() || !info[1].IsFunction()) {
-		Napi::Error::New(runtime.env(), "removeEventListener requires (eventName: string, callback: function)").ThrowAsJavaScriptException();
+		throw Napi::Error::New(runtime.env(), "removeEventListener requires (eventName: string, callback: function)");
 	}
 	
 	// Delegate to projected_object_instance::remove_event_listener

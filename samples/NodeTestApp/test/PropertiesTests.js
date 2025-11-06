@@ -135,7 +135,9 @@ function runSyncPropertyTest(pThis, type, vals, invalidVals, get, set) {
             try {
                 set(val);
             }
-            catch {}
+            catch {
+                console.log('Caught exception');
+            }
             assert.notEqual(get(), val);
         }
     });

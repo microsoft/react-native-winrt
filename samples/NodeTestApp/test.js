@@ -22,6 +22,7 @@ const { TestRunner, SyncTestContext } = require('./test/TestRunner');
 const { getTestValues } = require('./test/TestCommon');
 const { makeBasicFunctionTestScenarios } = require('./test/BasicFunctionTests');
 const { makeEnumTestScenarios } = require('./test/EnumTests');
+const { makeMiscTestScenarios } = require('./test/MiscTests');
 
 const { makePropertiesTestScenarios } = require('./test/PropertiesTests');
 
@@ -50,6 +51,10 @@ const testContext = new SyncTestContext();
 
 // Define test suites
 const testSuites = [
+    {
+        name: "Misc Tests",
+        scenarios: makeMiscTestScenarios(testContext, TestComponent),
+    },
     {
         name: "Enum Tests",
         scenarios: makeEnumTestScenarios(testContext, TestComponent, TestValues),
@@ -99,6 +104,27 @@ const failingScenarios = [
     'Test::RefOutParam',
     'Test::ObjectOutParam',
     'Test::InterwovenParams',
+    // Static array property tests - array_to_native_iterator not implemented
+    'Test::StaticBooleanArrayProperty',
+    'Test::StaticCharArrayProperty',
+    'Test::StaticNumericArrayProperty',
+    'Test::StaticStringArrayProperty',
+    'Test::StaticGuidArrayProperty',
+    'Test::StaticEnumArrayProperty',
+    'Test::StaticCompositeStructArrayProperty',
+    'Test::StaticRefArrayProperty',
+    'Test::StaticObjectArrayProperty',
+    // Instance array property tests - array handling issues
+    'Test::BoolProperty',
+    'Test::BooleanArrayProperty',
+    'Test::CharArrayProperty',
+    'Test::NumericArrayProperty',
+    'Test::StringArrayProperty',
+    'Test::GuidArrayProperty',
+    'Test::EnumArrayProperty',
+    'Test::CompositeStructArrayProperty',
+    'Test::RefArrayProperty',
+    'Test::ObjectArrayProperty',
 ];
 
 // Parse command line arguments

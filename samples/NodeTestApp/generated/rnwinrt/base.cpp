@@ -62,7 +62,7 @@ std::u16string rnwinrt::string_to_utf16(napi_wrappers::Runtime& runtime, const n
     msg += ".";
     msg.append(typeName);
     msg = msg + " with " + std::to_string(argCount) + " args";
-    Napi::Error::New(runtime.env(), msg).ThrowAsJavaScriptException();
+    throw Napi::Error::New(runtime.env(), msg);
 }
 
 [[noreturn]] __declspec(noinline) void rnwinrt::throw_no_function_overload(napi_wrappers::Runtime& runtime,
@@ -75,7 +75,7 @@ std::u16string rnwinrt::string_to_utf16(napi_wrappers::Runtime& runtime, const n
     msg += ".";
     msg.append(fnName);
     msg = msg + " with " + std::to_string(argCount) + " args";
-    Napi::Error::New(runtime.env(), msg).ThrowAsJavaScriptException();
+    throw Napi::Error::New(runtime.env(), msg);
 }
 
 [[noreturn]] __declspec(noinline) void rnwinrt::throw_invalid_delegate_arg_count(
@@ -85,7 +85,7 @@ std::u16string rnwinrt::string_to_utf16(napi_wrappers::Runtime& runtime, const n
     msg.append(typeNamespace);
     msg += ".";
     msg.append(typeName);
-    Napi::Error::New(runtime.env(), msg).ThrowAsJavaScriptException();
+    throw Napi::Error::New(runtime.env(), msg);
 }
 
 // NOTE: Most lists are sorted, so in theory this could be a binary search-turns to linear search. The only thing
@@ -195,7 +195,7 @@ napi_wrappers::Value projected_namespace::get(napi_wrappers::Runtime& runtime, c
 void projected_namespace::set(napi_wrappers::Runtime& runtime, const napi_wrappers::PropNameID& name, const napi_wrappers::Value&)
 {
     auto msg = "TypeError: Cannot assign to property '" + name.utf8(runtime) + "' of a projected WinRT namespace";
-    Napi::Error::New(runtime.env(), msg).ThrowAsJavaScriptException();
+    throw Napi::Error::New(runtime.env(), msg);
 }
 
 std::vector<napi_wrappers::PropNameID> projected_namespace::getPropertyNames(napi_wrappers::Runtime& runtime)
@@ -243,7 +243,7 @@ napi_wrappers::Value projected_enum::get(napi_wrappers::Runtime& runtime, const 
 void projected_enum::set(napi_wrappers::Runtime& runtime, const napi_wrappers::PropNameID& name, const napi_wrappers::Value&)
 {
     auto msg = "TypeError: Cannot assign to property '" + name.utf8(runtime) + "' of a projected WinRT enum";
-    Napi::Error::New(runtime.env(), msg).ThrowAsJavaScriptException();
+    throw Napi::Error::New(runtime.env(), msg);
 }
 
 std::vector<napi_wrappers::PropNameID> projected_enum::getPropertyNames(napi_wrappers::Runtime& runtime)
@@ -271,7 +271,7 @@ static napi_wrappers::Value static_add_event_listener(napi_wrappers::Runtime& ru
 {
     if (count < 2)
     {
-        Napi::Error::New(runtime.env(), "TypeError: addEventListener expects (at least) 2 arguments").ThrowAsJavaScriptException();
+        throw Napi::Error::New(runtime.env(), "TypeError: addEventListener expects (at least) 2 arguments");
     }
 
     auto name = args[0].asString(runtime).utf8(runtime);
@@ -289,7 +289,7 @@ static napi_wrappers::Value static_remove_event_listener(napi_wrappers::Runtime&
 {
     if (count < 2)
     {
-        Napi::Error::New(runtime.env(), "TypeError: removeEventListener expects (at least) 2 arguments").ThrowAsJavaScriptException();
+        throw Napi::Error::New(runtime.env(), "TypeError: removeEventListener expects (at least) 2 arguments");
     }
 
     auto name = args[0].asString(runtime).utf8(runtime);
@@ -354,18 +354,12 @@ void projected_statics_class::set(napi_wrappers::Runtime& runtime, const napi_wr
         // Unlike getters, setters can be null
         if (itr->setter)
         {
-            try
-            {
-                (*itr->setter)(runtime, value);
-            }
-            catch (const std::exception& e)
-            {
-                // Exception already queued as JavaScript exception, just return
-                // Debug: verify exception is being caught
-                fprintf(stderr, "DEBUG: Caught exception in property setter: %s\n", e.what());
-                return;
-            }
+            (*itr->setter)(runtime, value);
         }
+    }
+    else
+    {
+        throw Napi::Error::New(runtime.env(), "TypeError: Cannot assign to property '" + name + "' of a projected WinRT class");
     }
 
     // If no property exists with the given name, then ignore the call rather than throwing. This is more-or-less
@@ -408,32 +402,64 @@ napi_wrappers::Value projected_statics_class::remove_event_listener(napi_wrapper
 
 napi_wrappers::Value static_activatable_class_data::create(napi_wrappers::Runtime& runtime) const
 {
-    auto propId = make_propid(runtime, name);
-    auto fn = napi_wrappers::Function::createFromHostFunction(runtime, propId, 0, constructor);
-    
-    // Attach static members to the constructor function
-    // Add static functions
-    for (const auto& func : functions)
-    {
-        auto funcName = make_propid(runtime, func.name);
-        auto funcObj = napi_wrappers::Function::createFromHostFunction(runtime, funcName, 0, func.function);
-        fn.setProperty(runtime, funcName, napi_wrappers::Value(runtime, std::move(funcObj)));
-    }
-    
-    // Add static properties - wrap in try-catch since some getters may throw
-    for (const auto& prop : properties)
-    {
-        try {
-            auto propName = make_propid(runtime, prop.name);
+    // Create the constructor function
+    auto ctor = napi_wrappers::Function::createFromHostFunction(runtime,
+        make_propid(runtime, name), 0, constructor);
 
-            // TODO: This is actually calling the getter at this point, this is not what we want!
-            fn.setProperty(runtime, propName, prop.getter(runtime));
-        } catch (...) {
-            // Skip properties that throw exceptions when accessed
+    // Get the underlying Napi::Object so we can define properties
+    auto obj = ctor.m_value.As<Napi::Object>();
+
+    // Define getter/setter properties for each static property
+    for (auto&& prop : properties)
+    {
+        auto propName = Napi::String::New(runtime.env(), prop.name.data(), prop.name.size());
+        
+        // Create getter lambda that captures prop by copy
+        auto getter_fn = [prop_getter = prop.getter](const Napi::CallbackInfo& info) -> Napi::Value {
+            napi_wrappers::Runtime rt(info.Env());
+            auto value = prop_getter(rt);
+            return value.m_value;
+        };
+
+        // Create setter lambda (if one exists)
+        if (prop.setter)
+        {
+            auto setter_fn = [prop_setter = *prop.setter](const Napi::CallbackInfo& info) {
+                if (info.Length() > 0)
+                {
+                    napi_wrappers::Runtime rt(info.Env());
+                    napi_wrappers::Value val(rt, info[0]);
+                    
+                    prop_setter(rt, val);
+                }
+            };
+
+            obj.DefineProperty(Napi::PropertyDescriptor::Accessor(
+                propName,
+                getter_fn,
+                setter_fn
+            ));
+        }
+        else
+        {
+            obj.DefineProperty(Napi::PropertyDescriptor::Accessor(
+                propName,
+                getter_fn
+            ));
         }
     }
-    
-    return napi_wrappers::Value(runtime, std::move(fn));
+
+    // Add static functions
+    for (auto&& func : functions)
+    {
+        auto fn = napi_wrappers::Function::createFromHostFunction(runtime,
+            make_propid(runtime, func.name), 0, func.function);
+        obj.Set(Napi::String::New(runtime.env(), func.name.data(), func.name.size()), fn.m_value);
+    }
+
+    // TODO: Add event listener methods if there are events
+
+    return ctor;
 }
 
 #ifndef _WIN32
@@ -514,7 +540,7 @@ namespace rnwinrt
                 auto msg = "TypeError: Non-overloaded function " + std::string(data->name) +
                            " expects " + std::to_string(data->arity) + " arguments, but " +
                            std::to_string(count) + " provided";
-                Napi::Error::New(runtime.env(), msg).ThrowAsJavaScriptException();
+                throw Napi::Error::New(runtime.env(), msg);
             }
 
             return data->function(runtime, instance->m_instance, args);
@@ -540,8 +566,7 @@ namespace rnwinrt
             auto msg = "TypeError: Overloaded function " + std::string(data[0]->name) +
                        " does not have an overload that expects " + std::to_string(count) +
                        " arguments";
-            Napi::Error::New(runtime.env(), msg).ThrowAsJavaScriptException();
-            return napi_wrappers::Value::undefined(runtime); // Never reached
+            throw Napi::Error::New(runtime.env(), msg);
         }
 
         // TODO: Figure out a good SSO size (4 might be larger than we need most of the time. Perhaps 2?)
@@ -731,7 +756,7 @@ napi_wrappers::Value projected_object_instance::add_event_listener(napi_wrappers
 {
     if (count < 2)
     {
-        Napi::Error::New(runtime.env(), "TypeError: addEventListener expects (at least) 2 arguments").ThrowAsJavaScriptException();
+        throw Napi::Error::New(runtime.env(), "TypeError: addEventListener expects (at least) 2 arguments");
     }
 
     auto name = args[0].asString(runtime).utf8(runtime);
@@ -752,7 +777,7 @@ napi_wrappers::Value projected_object_instance::remove_event_listener(napi_wrapp
 {
     if (count < 2)
     {
-        Napi::Error::New(runtime.env(), "TypeError: removeEventListener expects (at least) 2 arguments").ThrowAsJavaScriptException();
+        throw Napi::Error::New(runtime.env(), "TypeError: removeEventListener expects (at least) 2 arguments");
     }
 
     auto name = args[0].asString(runtime).utf8(runtime);
@@ -869,16 +894,14 @@ winrt::guid projected_value_traits<winrt::guid>::as_native(napi_wrappers::Runtim
     }
     else if (str.size() != uuid_length)
     {
-        Napi::Error::New(runtime.env(), "TypeError: Invalid GUID length").ThrowAsJavaScriptException();
-        return {}; // Never reached
+        throw Napi::Error::New(runtime.env(), "TypeError: Invalid GUID length");
     }
 
     winrt::guid result;
     if (::UuidFromStringA(reinterpret_cast<RPC_CSTR>(strBuffer), reinterpret_cast<UUID*>(winrt::put_abi(result))) !=
         ERROR_SUCCESS)
     {
-        Napi::Error::New(runtime.env(), "TypeError: GUID contains unexpected characters").ThrowAsJavaScriptException();
-        return {}; // Never reached
+        throw Napi::Error::New(runtime.env(), "TypeError: GUID contains unexpected characters");
     }
 
     return result;
