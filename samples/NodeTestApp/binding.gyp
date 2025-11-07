@@ -5,7 +5,7 @@
       "sources": [
         "src/pch.cpp",
         "src/addon.cpp",
-        "<!@(node scripts/list_generated_cpp.js)"
+        "<!@(node scripts/list_generated_cpp.cjs)"
       ],
       "include_dirs": [
         "<!@(node -p \"require('node-addon-api').include\")",
