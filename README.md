@@ -1,43 +1,14 @@
-# React Native WinRT
+# What's going on here?
 
-React Native WinRT is a module for [React Native for Windows](https://microsoft.github.io/react-native-windows/) developers who want to call native (non-XAML) WinRT APIs in their apps. It uses components from [xlang](https://github.com/Microsoft/xlang) to [parse metadata](https://github.com/microsoft/winmd) for public or private WinRT COM APIs and generate JSI (JavaScript Interface) wrappers for [C++/WinRT](https://github.com/microsoft/cppwinrt) types at compile-time. The code generator was itself derived from `cppwinrt.exe`.
+This branch is updating react-native-winrt to support Node JS.
 
-This repo generates the [react-native-winrt npm package](https://www.npmjs.com/package/react-native-winrt) as well as the [Microsoft.ReactNative.WinRT NuGet packages](https://www.nuget.org/packages/Microsoft.ReactNative.WinRT) for specific versions of React Native Windows. 
+It's under construction!
 
-## Getting started
+To try building rnwinrt.exe and running the test suite on it, try this script:
 
-Refer to the [usage docs](docs/USAGE.md) for instructions on how to use React Native WinRT in your React Native Windows app to call projected WinRT APIs in JavaScript.
+```
+.\build_and_test.ps1
+```
 
-### Sample code
 
-See the [sample app](/samples/RNWinRTTestApp/) for an example of using React Native WinRT to consume WinRT APIs.
 
-<img src="samples/RNWinRTTestApp/images/sample-app.png" width="500">
-
-*Note: This is an example of the sample app. The image is pulled from the user's photo library and will likely be different.*
-
-## Versioning
-
-The versioning scheme for React Native WinRT aligns with versions of React Native for Windows.
-A new major version of React Native for Windows is not guaranteed to be supported by a mismatched version of React Native WinRT.
-For example, a React Native for Windows 0.67 app may not be compatible with **react-native-winrt** 0.66.* package versions due to potential breaking changes.
-
-React Native WinRT currently supports the following versions of React Native for Windows: 
-
-- [release/0.72](https://github.com/microsoft/react-native-winrt/tree/release/0.72)
-- [release/0.71](https://github.com/microsoft/react-native-winrt/tree/release/0.71)
-- [release/0.70](https://github.com/microsoft/react-native-winrt/tree/release/0.70)
-- [release/0.69](https://github.com/microsoft/react-native-winrt/tree/release/0.69)
-- [release/0.68](https://github.com/microsoft/react-native-winrt/tree/release/0.68)
-- [release/0.67](https://github.com/microsoft/react-native-winrt/tree/release/0.67)
-- [release/0.66](https://github.com/microsoft/react-native-winrt/tree/release/0.66)
-- [release/0.65](https://github.com/microsoft/react-native-winrt/tree/release/0.65)
-- [release/0.64](https://github.com/microsoft/react-native-winrt/tree/release/0.64)
-
-## Contributing
-
-_We want to hear from you!_ File a [new issue](https://github.com/microsoft/react-native-winrt/issues/new) to report a bug, ask a question, or make a suggestion. See our [Contributor's Guide](/CONTRIBUTING.md) for more information.
-
-## Trademarks
-
-This project may contain trademarks or logos for projects, products, or services. Authorized use of Microsoft trademarks or logos is subject to and must follow [Microsoft's Trademark & Brand Guidelines](https://www.microsoft.com/en-us/legal/intellectualproperty/trademarks). Use of Microsoft trademarks or logos in modified versions of this project must not cause confusion or imply Microsoft sponsorship. Any use of third-party trademarks or logos are subject to those third-party's policies.
