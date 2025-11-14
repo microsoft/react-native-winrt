@@ -35,6 +35,7 @@ import { makePropertiesTestScenarios } from './es6tests/PropertiesTests.js';
 import { makeArrayTestScenarios } from './es6tests/ArrayTests.js';
 import { makeCollectionsTestScenarios } from './es6tests/CollectionsTests.js';
 import { makeMiscTestScenarios } from './es6tests/MiscTests.js';
+import { makeDelegateAndEventTestScenarios } from './es6tests/DelegateAndEventTests.js';
 import { TestResult } from './es6tests/TestCommon.js';
 
 // Known failing tests (array_to_native_iterator not implemented, or other known issues)
@@ -92,6 +93,33 @@ const knownFailures = new Set([
     'Test::CompositeStructArrayOutParam',
     'Test::RefArrayOutParam',
     'Test::ObjectArrayOutParam',
+    
+    // Event handler tests - addEventListener not implemented
+    'Test::StaticBoolEventHandler',
+    'Test::StaticCharEventHandler',
+    'Test::StaticNumericEventHandler',
+    'Test::StaticStringEventHandler',
+    'Test::StaticGuidEventHandler',
+    'Test::StaticEnumEventHandler',
+    'Test::StaticCompositeStructEventHandler',
+    'Test::StaticRefEventHandler',
+    'Test::StaticObjectEventHandler',
+    'Async Event Handling',
+    
+    // Array delegate tests - array_to_native_iterator not implemented
+    'Test::StaticInvokeBoolArrayDelegate',
+    'Test::StaticInvokeCharArrayDelegate',
+    'Test::StaticInvokeNumericArrayDelegate',
+    'Test::StaticInvokeStringArrayDelegate',
+    'Test::StaticInvokeGuidArrayDelegate',
+    'Test::StaticInvokeEnumArrayDelegate',
+    'Test::StaticInvokeCompositeStructArrayDelegate',
+    'Test::StaticInvokeRefArrayDelegate',
+    'Test::StaticInvokeObjectArrayDelegate',
+    'Test::StaticInvokeInterwovenDelegate',
+    
+    // Object event handler test - assertion failure
+    'StaticOnlyTest::ObjectEventHandler',
 ]);
 
 
@@ -241,7 +269,7 @@ runner.addTestSuite('Array Tests', makeArrayTestScenarios);
 
 // TODO: Add more test suites as they become Node.js compatible:
 // runner.addTestSuite('Array Tests', makeArrayTestScenarios);
-// runner.addTestSuite('Delegate Tests', makeDelegateAndEventTestScenarios);
+runner.addTestSuite('Delegate Tests', makeDelegateAndEventTestScenarios);
 // runner.addTestSuite('Async Tests', makeAsyncTestScenarios);
 // runner.addTestSuite('Inheritance Tests', makeInheritanceTestScenarios);
 

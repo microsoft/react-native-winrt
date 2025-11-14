@@ -1400,18 +1400,12 @@ namespace rnwinrt
 
         void call_sync(std::function<void()> fn) const
         {
-            printf("call_sync entered, current thread_id: %llu, expected thread_id: %llu\n", 
-                (unsigned long long)std::hash<std::thread::id>{}(std::this_thread::get_id()), 
-                (unsigned long long)std::hash<std::thread::id>{}(thread_id));
             if (thread_id == std::this_thread::get_id())
             {
-                printf("Same thread - calling fn() directly\n");
                 fn();
-                printf("fn() completed\n");
             }
             else
             {
-                printf("Different thread - marshalling via call_invoker\n");
                 winrt::handle event(::CreateEventW(nullptr, true, false, nullptr));
                 if (!event.get())
                 {
@@ -1422,9 +1416,8 @@ namespace rnwinrt
 
                 std::exception_ptr exception;
                 bool invoked = false;
-                printf("About to call call_invoker\n");
                 call_invoker([&, ref = tracker.begin()]() mutable {
-                    printf("Inside call_invoker callback\n");
+                    
                     // Force the completion of the event once the callback completes so we don't need to wait for the
                     // lambda to be destroyed if for some reason it isn't immediate. Note that this sets the callback
                     // pointer to null, so there's no dangling reference anywhere
@@ -1433,21 +1426,16 @@ namespace rnwinrt
 
                     try
                     {
-                        printf("About to call fn() inside call_invoker\n");
                         fn();
-                        printf("fn() completed inside call_invoker\n");
                     }
                     catch (...)
                     {
-                        printf("Exception caught in call_invoker\n");
                         exception = std::current_exception();
                     }
 
                     invoked = true;
-                    printf("Setting invoked = true\n");
                 });
 
-                printf("Waiting for event\n");
                 if (::WaitForSingleObject(event.get(), INFINITE) != WAIT_OBJECT_0)
                 {
                     winrt::terminate();

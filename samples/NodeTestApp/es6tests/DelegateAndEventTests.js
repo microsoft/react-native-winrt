@@ -11,7 +11,7 @@ import {
     assert,
     allSetGuid,
     zeroGuid
-} from './TestCommon'
+} from './TestCommon.js'
 
 export function makeDelegateAndEventTestScenarios(pThis) {
     return [
