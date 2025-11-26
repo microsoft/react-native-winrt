@@ -157,10 +157,13 @@ class ES6TestRunner {
 
     runSync(scenario, fn) {
         try {
+            // verbose?
+            console.log(`Running test: ${scenario.name}`);
             fn();
             scenario.result = TestResult.Pass;
             this.passCount++;
         } catch (e) {
+            console.log(`   Failed: ${scenario.name}`);
             scenario.result = TestResult.Fail;
             scenario.failureText = e.message;
             this.failures.push({ name: scenario.name, error: e.message });
@@ -265,10 +268,9 @@ runner.addTestSuite('Property Tests', makePropertiesTestScenarios);
 runner.addTestSuite('Function Tests', makeBasicFunctionTestScenarios);
 runner.addTestSuite('Array Tests', makeArrayTestScenarios);
 //crash here:
-//runner.addTestSuite('Collections Tests', makeCollectionsTestScenarios);
+runner.addTestSuite('Collections Tests', makeCollectionsTestScenarios);
 
 // TODO: Add more test suites as they become Node.js compatible:
-// runner.addTestSuite('Array Tests', makeArrayTestScenarios);
 runner.addTestSuite('Delegate Tests', makeDelegateAndEventTestScenarios);
 // runner.addTestSuite('Async Tests', makeAsyncTestScenarios);
 // runner.addTestSuite('Inheritance Tests', makeInheritanceTestScenarios);
