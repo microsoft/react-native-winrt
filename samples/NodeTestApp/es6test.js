@@ -46,56 +46,16 @@ const knownFailures = new Set([
     // Enum tests
     'Enum keys',
     
-    // Property tests - array properties not working
-    'Test::StaticBooleanArrayProperty',
-    'Test::StaticCharArrayProperty',
-    'Test::StaticNumericArrayProperty',
-    'Test::StaticStringArrayProperty',
-    'Test::StaticGuidArrayProperty',
-    'Test::StaticEnumArrayProperty',
-    'Test::StaticCompositeStructArrayProperty',
-    'Test::StaticRefArrayProperty',
-    'Test::StaticObjectArrayProperty',
-    'Test::BooleanArrayProperty',
-    'Test::CharArrayProperty',
-    'Test::NumericArrayProperty',
-    'Test::StringArrayProperty',
-    'Test::GuidArrayProperty',
-    'Test::EnumArrayProperty',
-    'Test::CompositeStructArrayProperty',
-    'Test::RefArrayProperty',
-    'Test::ObjectArrayProperty',
+    // Property tests
     'Test::PropertyValue',
     
-    // Function tests - array parameters not working
-    'Test::StaticOrAll',
-    'Test::StaticAddAll',
-    'Test::StaticAppendAll',
-    'Test::StaticInterwovenParams',
-    'Test::OrAll',
-    'Test::AddAll',
-    'Test::AppendAll',
-    'Test::InterwovenParams',
-    
-    // Array tests - array out params not working
-    'Test::StaticBoolArrayOutParam',
-    'Test::StaticCharArrayOutParam',
-    'Test::StaticNumericArrayOutParam',
-    'Test::StaticStringArrayOutParam',
-    'Test::StaticGuidArrayOutParam',
-    'Test::StaticEnumArrayOutParam',
-    'Test::StaticCompositeStructArrayOutParam',
-    'Test::StaticRefArrayOutParam',
-    'Test::StaticObjectArrayOutParam',
-    'Test::BoolArrayOutParam',
-    'Test::CharArrayOutParam',
-    'Test::NumericArrayOutParam',
-    'Test::StringArrayOutParam',
-    'Test::GuidArrayOutParam',
-    'Test::EnumArrayOutParam',
-    'Test::CompositeStructArrayOutParam',
-    'Test::RefArrayOutParam',
-    'Test::ObjectArrayOutParam',
+    // Collection tests
+    'IObservableVector<Int32>',
+    'IObservableMap<Int32>',
+    'IVector behaves like Array',
+    'IVectorView behaves like Array',
+    'IMap with string keys behaves like JS object',
+    'IMapView with string keys behaves like readonly JS object',
     
     // Event handler tests - addEventListener not implemented
     'Test::StaticBoolEventHandler',
@@ -108,18 +68,6 @@ const knownFailures = new Set([
     'Test::StaticRefEventHandler',
     'Test::StaticObjectEventHandler',
     'Async Event Handling',
-    
-    // Array delegate tests - array_to_native_iterator not implemented
-    'Test::StaticInvokeBoolArrayDelegate',
-    'Test::StaticInvokeCharArrayDelegate',
-    'Test::StaticInvokeNumericArrayDelegate',
-    'Test::StaticInvokeStringArrayDelegate',
-    'Test::StaticInvokeGuidArrayDelegate',
-    'Test::StaticInvokeEnumArrayDelegate',
-    'Test::StaticInvokeCompositeStructArrayDelegate',
-    'Test::StaticInvokeRefArrayDelegate',
-    'Test::StaticInvokeObjectArrayDelegate',
-    'Test::StaticInvokeInterwovenDelegate',
     
     // Object event handler test - assertion failure
     'StaticOnlyTest::ObjectEventHandler',
