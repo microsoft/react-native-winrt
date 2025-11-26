@@ -106,6 +106,8 @@ static auto find_by_name(span<const ThingWithName> list, std::string_view name) 
 
 napi_wrappers::Value object_instance_cache::get_instance(napi_wrappers::Runtime& runtime, const winrt::IInspectable& value)
 {
+    // TODO: need to make sure this whole function makes sense and test it...
+
     if ((std::chrono::steady_clock::now() - last_cleanup) >= cleanup_interval)
     {
         cleanup(runtime);
@@ -458,6 +460,8 @@ napi_wrappers::Value static_activatable_class_data::create(napi_wrappers::Runtim
     }
 
     // TODO: Add event listener methods if there are events
+    // TODO: Fix these errors: TestComponent.Test.addEventListener
+    // TODO: Why do we need to do this for each static class? Can we do it once somewhere else?
 
     return ctor;
 }

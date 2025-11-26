@@ -626,8 +626,9 @@ namespace rnwinrt
     {
         return napi_wrappers::Function::createFromHostFunction(runtime, name, paramCount,
             [fn](napi_wrappers::Runtime& runtime, const napi_wrappers::Value& thisValue, const napi_wrappers::Value* args, size_t count) {
-                //auto strongThis = thisValue.asObject(runtime).asHostObject<T>(runtime);
-                auto strongThis = TryUnwrap<T>(thisValue.asObject(runtime));
+                // TODO: Need to get this callback working and make sure it's tested well
+                auto strongThis = thisValue.asObject(runtime).asHostObject<T>(runtime);
+                //auto strongThis = TryUnwrap<T>(thisValue.asObject(runtime));
                 if (!strongThis)
                 {
                     throw Napi::Error::New(runtime.env(), "Failed to resolve host object");
@@ -642,8 +643,9 @@ namespace rnwinrt
     {
         return napi_wrappers::Function::createFromHostFunction(runtime, name, paramCount,
             [fn](napi_wrappers::Runtime& runtime, const napi_wrappers::Value& thisValue, const napi_wrappers::Value* args, size_t count) {
-                //auto strongThis = thisValue.asObject(runtime).asHostObject<T>(runtime);
-                auto strongThis = TryUnwrap<T>(thisValue.asObject(runtime));
+                // TODO: Need to get this callback working and make sure it's tested well
+                auto strongThis = thisValue.asObject(runtime).asHostObject<T>(runtime);
+                //auto strongThis = TryUnwrap<T>(thisValue.asObject(runtime));
                 if (!strongThis)
                 {
                     throw Napi::Error::New(runtime.env(), "Failed to resolve host object");
@@ -3057,14 +3059,18 @@ namespace rnwinrt
 
         static winrt::Windows::Foundation::EventHandler<T> as_native(napi_wrappers::Runtime& runtime, const napi_wrappers::Value& value)
         {
+            auto fn = value.asObject(runtime).asFunction(runtime);
+            auto fnRef = Napi::Persistent(fn.m_value.As<Napi::Function>()); // TODO: lifetime ok here?
             return
-                [ctxt = current_runtime_context()->add_reference(), fn = value.asObject(runtime).asFunction(runtime)](
+                [ctxt = current_runtime_context()->add_reference(), fn = value.asObject(runtime).asFunction(runtime), fnRef = std::move(fnRef)](
                     const winrt::Windows::Foundation::IInspectable& sender, const T& args) {
                     // TODO: Do we need to call synchronously? One reason might be to propagate errors, but typically
                     // event sources don't care about those.
+                    
                     ctxt->call_sync([&]() {
-                        fn.call(ctxt->runtime, convert_native_to_value(ctxt->runtime, sender),
-                            convert_native_to_value(ctxt->runtime, args));
+                        auto arg0 = convert_native_to_value(ctxt->runtime, sender);
+                        auto arg1 = convert_native_to_value(ctxt->runtime, args);
+                        fnRef.Value().Call({arg0, arg1});
                     });
                 };
         }

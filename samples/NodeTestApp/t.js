@@ -19,11 +19,31 @@ function test_StaticNumericArrayProperty()
     console.log("StaticNumericArrayProperty value: ", propValue);
 }
 
+function test_RaiseObjectEvent()
+{
+    const testObject = new TestComponent.TestObject(4444);
+
+    const handler = function(sender, arg)
+    {
+        console.log("  !!! In event handler !!!");    
+        console.log("  Sender: ", sender);
+        console.log("  Arg: ", arg);
+        console.log("  Value: ", arg.value);
+    }
+
+    console.log("Add event handler");
+    TestComponent.StaticOnlyTest.addEventListener('objecteventhandler', handler)
+
+    console.log("Raise event");
+    TestComponent.StaticOnlyTest.raiseObjectEvent(testObject);
+}
+
 
 try
 {
     
-    test_StaticNumericArrayProperty();
+    //test_StaticNumericArrayProperty();
+    test_RaiseObjectEvent();
 
     console.log('---');
     console.log("Test PASSED.")

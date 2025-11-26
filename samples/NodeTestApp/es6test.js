@@ -68,9 +68,6 @@ const knownFailures = new Set([
     'Test::StaticRefEventHandler',
     'Test::StaticObjectEventHandler',
     'Async Event Handling',
-    
-    // Object event handler test - assertion failure
-    'StaticOnlyTest::ObjectEventHandler',
 ]);
 
 
