@@ -35,7 +35,9 @@ namespace napi_wrappers {
         auto hostObjectPtr = new HostObjectPtr(hostObj);
         auto external = Napi::External<HostObjectPtr>::New(env.env(), hostObjectPtr,
             [](Napi::Env, HostObjectPtr* ptr) { delete ptr; });
-        obj.Set("_hostObject_", external);
+        
+        // TODO: Remove this _hostObject_ prop, it's not working.
+        //obj.Set("_hostObject_", external);
         
         // Get all property names from the HostObject and define getters/setters for them
         try {

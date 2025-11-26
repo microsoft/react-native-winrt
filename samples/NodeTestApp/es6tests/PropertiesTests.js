@@ -121,9 +121,11 @@ export function makePropertiesTestScenarios(pThis) {
 function runSyncPropertyTest(scenario, type, vals, invalidVals, get, set) {
     this.runSync(scenario, () => {
         var initial = get();
+        // VERBOSE: console.log('Initial value: ', initial);
         assert.equal(type, typeof(initial));
 
         for (var val of vals) {
+            // VERBOSE: console.log('Setting value: ', val);
             var assignedVal;
             assignedVal = set(val);
             assert.equal(get(), val);

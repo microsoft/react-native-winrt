@@ -43,6 +43,9 @@ function checkEquals(lhs, rhs) {
             var result = checkEquals(lhs[i], rhs[i]);
             if (!result.success) {
                 result.msg = 'Mismatched array elements at index ' + i + ': ' + result.msg;
+                // VERBOSE: Dump both arrays
+                //console.log('LHS array:', lhs);
+                //console.log('RHS array:', rhs);
                 return result;
             }
         }

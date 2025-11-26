@@ -6,22 +6,24 @@ const addon = require('bindings')('winrtaddon');
 const TestComponent = addon.TestComponent;
 const Test = TestComponent.Test;
 
+function test_StaticNumericArrayProperty()
+{
+    console.log("Test StaticNumericArrayProperty...");
+    
+    console.log("Call setter with [101, 102, 103]");
+    Test.staticNumericArrayProperty = [101, 102, 103];
 
-var array = [5, 10, 15];
-console.log("Original array: ", array);
+    console.log("Read property value");
+    var propValue = Test.staticNumericArrayProperty;
+
+    console.log("StaticNumericArrayProperty value: ", propValue);
+}
+
 
 try
 {
-    console.log("Call returnSameNumericVector...");
-    var collection = Test.returnSameNumericVector(array);
-    console.log("Returned object: ", collection);
-    console.log("  collection.length: ", collection.length);
     
-    // print the values
-    for (let i = 0; i < collection.length; i++)
-    {
-        console.log(`  collection[${i}]: `, collection.getAt(i));
-    }
+    test_StaticNumericArrayProperty();
 
     console.log('---');
     console.log("Test PASSED.")
@@ -31,13 +33,3 @@ catch (e)
     console.log('---');
     console.log("Test FAILED. Exception: ", e.message)
 }
-
-
-
-//var numericValuesToAdd = [7, 14, 21];
-//console.log("Values to add: ", numericValuesToAdd);
-
-//doArrayAsVectorTest(sameArray, array, numericValuesToAdd);
-
-
-//console.log("Final array: ", sameArray);

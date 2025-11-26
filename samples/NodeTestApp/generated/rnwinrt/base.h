@@ -628,6 +628,10 @@ namespace rnwinrt
             [fn](napi_wrappers::Runtime& runtime, const napi_wrappers::Value& thisValue, const napi_wrappers::Value* args, size_t count) {
                 //auto strongThis = thisValue.asObject(runtime).asHostObject<T>(runtime);
                 auto strongThis = TryUnwrap<T>(thisValue.asObject(runtime));
+                if (!strongThis)
+                {
+                    throw Napi::Error::New(runtime.env(), "Failed to resolve host object");
+                }
                 return (strongThis.get()->*fn)(runtime, args, count);
             });
     }
@@ -640,6 +644,10 @@ namespace rnwinrt
             [fn](napi_wrappers::Runtime& runtime, const napi_wrappers::Value& thisValue, const napi_wrappers::Value* args, size_t count) {
                 //auto strongThis = thisValue.asObject(runtime).asHostObject<T>(runtime);
                 auto strongThis = TryUnwrap<T>(thisValue.asObject(runtime));
+                if (!strongThis)
+                {
+                    throw Napi::Error::New(runtime.env(), "Failed to resolve host object");
+                }
                 return (strongThis.get()->*fn)(runtime, args, count);
             });
     }
@@ -2698,7 +2706,6 @@ namespace rnwinrt
     {
         pass_array_wrapper(napi_wrappers::Runtime& runtime, const napi_wrappers::Value& value)
         {
-#if 0 // not working yet
             auto array = value.asObject(runtime).asArray(runtime);
             auto size = array.size(runtime);
             m_data.reserve(size);
@@ -2706,8 +2713,6 @@ namespace rnwinrt
             {
                 m_data.push_back(convert_value_to_native<T>(runtime, array.getValueAtIndex(runtime, i)));
             }
-#endif // not working yet
-            throw Napi::Error::New(runtime.env(), "TODO: not working yet (array_to_native_iterator constructor)");
         }
 
         operator winrt::array_view<const T>()
@@ -4853,7 +4858,47 @@ inline Napi::Object WinRTObjectWrapper::Create(Napi::Env env, std::shared_ptr<rn
             return info.Env().Undefined();
         });
         
+        // Create setter trap that delegates to projected_object_instance::set()
+        auto setTrap = Napi::Function::New(env, [](const Napi::CallbackInfo& info) -> Napi::Value {
+            auto target = info[0].As<Napi::Object>();
+            auto prop = info[1];
+            auto value = info[2];
+            
+            // Get the wrapper
+            auto wrapper = Napi::ObjectWrap<WinRTObjectWrapper>::Unwrap(target);
+            if (!wrapper) {
+                return Napi::Boolean::New(info.Env(), false);
+            }
+            
+            // Delegate all property setting to projected_object_instance::set()
+            napi_wrappers::Runtime runtime(info.Env());
+            
+            if (prop.IsString()) {
+                auto propStr = prop.As<Napi::String>().Utf8Value();
+                auto propId = napi_wrappers::PropNameID::forUtf8(runtime,
+                    reinterpret_cast<const uint8_t*>(propStr.c_str()), propStr.size());
+                
+                wrapper->m_projectedInstance->set(runtime, propId, napi_wrappers::Value(runtime, value));
+                return Napi::Boolean::New(info.Env(), true);
+            } else if (prop.IsNumber()) {
+                // Convert number to string for property access
+                auto propStr = std::to_string(prop.As<Napi::Number>().Uint32Value());
+                auto propId = napi_wrappers::PropNameID::forUtf8(runtime,
+                    reinterpret_cast<const uint8_t*>(propStr.c_str()), propStr.size());
+                
+                wrapper->m_projectedInstance->set(runtime, propId, napi_wrappers::Value(runtime, value));
+                return Napi::Boolean::New(info.Env(), true);
+            } else if (prop.IsSymbol()) {
+                // For symbols, use default behavior
+                target.Set(prop.As<Napi::Symbol>(), value);
+                return Napi::Boolean::New(info.Env(), true);
+            }
+            
+            return Napi::Boolean::New(info.Env(), false);
+        });
+        
         handler.Set("get", getTrap);
+        handler.Set("set", setTrap);
         
         // Create the Proxy
         auto proxyConstructor = env.Global().Get("Proxy").As<Napi::Function>();

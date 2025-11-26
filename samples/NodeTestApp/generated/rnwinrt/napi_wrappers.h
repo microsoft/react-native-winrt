@@ -413,7 +413,7 @@ namespace napi_wrappers
     {
         if (!isArray(env))
         {
-            throw JSError(env, "Object is not an Array"); // TODO: Attach a JS error value for richer diagnostics
+            throw Napi::Error::New(env.env(), "Object is not an Array");
         }
         return Array(m_value.As<Napi::Array>());
     }

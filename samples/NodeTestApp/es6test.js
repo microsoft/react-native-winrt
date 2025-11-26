@@ -7,8 +7,9 @@
  * This runs the same test scenarios as the React Native test app, but in Node.js using ES6 modules
  * 
  * Usage:
- *   node es6test.js          - Run tests excluding known failures
- *   node es6test.js --all    - Run all tests including known failures
+ *   node es6test.js                    - Run tests excluding known failures
+ *   node es6test.js --all              - Run all tests including known failures
+ *   node es6test.js --test <testname>  - Run a specific test by name
  * 
  * @format
  */
@@ -22,6 +23,8 @@ const { TestComponent } = addon;
 // Parse command line arguments
 const args = process.argv.slice(2);
 const runAll = args.includes('--all') || args.includes('-all');
+const testIndex = args.findIndex(arg => arg === '--test' || arg === '-test' || arg === '-t');
+const specificTest = testIndex !== -1 && testIndex + 1 < args.length ? args[testIndex + 1] : null;
 
 // Make TestComponent available globally BEFORE importing test modules
 // This is required because TestCommon.js creates TestValues at module load time
@@ -125,7 +128,7 @@ const knownFailures = new Set([
 
 // ES6 Class for test runner
 class ES6TestRunner {
-    constructor(skipKnownFailures = true) {
+    constructor(skipKnownFailures = true, specificTest = null) {
         this.test = new TestComponent.Test();
         this.completedCount = 0;
         this.passCount = 0;
@@ -133,15 +136,20 @@ class ES6TestRunner {
         this.testSuites = [];
         this.skipKnownFailures = skipKnownFailures;
         this.skippedCount = 0;
+        this.specificTest = specificTest;
     }
 
     addTestSuite(name, makeScenarios) {
         const scenarios = makeScenarios(this);
         
-        // Filter out known failures unless running with --all
-        const filteredScenarios = this.skipKnownFailures 
-            ? scenarios.filter(s => !knownFailures.has(s.name))
-            : scenarios;
+        // Filter for specific test if requested
+        let filteredScenarios = scenarios;
+        if (this.specificTest) {
+            filteredScenarios = scenarios.filter(s => s.name.includes(this.specificTest));
+        } else if (this.skipKnownFailures) {
+            // Filter out known failures unless running with --all
+            filteredScenarios = scenarios.filter(s => !knownFailures.has(s.name));
+        }
         
         const skipped = scenarios.length - filteredScenarios.length;
         if (skipped > 0) {
@@ -197,7 +205,13 @@ class ES6TestRunner {
 
         const allScenarios = this.allScenarios();
         
-        if (this.skipKnownFailures && this.skippedCount > 0) {
+        if (this.specificTest) {
+            console.log(`Running specific test: "${this.specificTest}"`);
+            if (allScenarios.length === 0) {
+                console.log(`No tests found matching "${this.specificTest}"\n`);
+                return false;
+            }
+        } else if (this.skipKnownFailures && this.skippedCount > 0) {
             console.log(`Running with known failures skipped (${this.skippedCount} tests skipped)`);
             console.log(`Use --all to run all tests including known failures\n`);
         }
@@ -259,7 +273,7 @@ class ES6TestRunner {
     }
 }
 
-const runner = new ES6TestRunner(!runAll); // Skip known failures unless --all is specified
+const runner = new ES6TestRunner(!runAll && !specificTest, specificTest); // Skip known failures unless --all or --test is specified
 
 // Add test suites (similar to App.js testSuites array)
 runner.addTestSuite('Misc Tests', makeMiscTestScenarios);
