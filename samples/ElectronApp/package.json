@@ -1,0 +1,23 @@
+{
+  "name": "e-wasdk-fiddler",
+  "version": "1.0.0",
+  "main": "main.js",
+  "scripts": {
+    "preinstall": "npx winapp restore && node-gyp configure --directory=winrtAddon && node buildprojection.js",
+    "build": "node-gyp build --debug --directory=winrtAddon",
+    "rebuild": "npm run clean && node-gyp build --debug --directory=winrtAddon",
+    "clean": "node-gyp clean configure --directory=winrtAddon",
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "start": "copy .winapp\\bin\\x64\\Microsoft.WindowsAppRuntime.Bootstrap.dll && electron ."
+  },
+  "author": "",
+  "license": "ISC",
+  "description": "",
+  "devDependencies": {
+    "@microsoft/winappcli": "^0.1.7",
+    "electron": "^38.4.0",
+    "nan": "^2.23.0",
+    "node-addon-api": "^8.5.0",
+    "node-gyp": "^11.5.0"
+  }
+}

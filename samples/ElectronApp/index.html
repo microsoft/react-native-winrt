@@ -1,0 +1,263 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8" />
+    <title>Execute JavaScript against WinAppSDK APIs</title>
+    <meta http-equiv="Content-Security-Policy" content="script-src 'self' 'unsafe-inline';" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <style>
+        :root {
+            --bg: #0f1115;
+            --bg-alt: #161a21;
+            --panel: #1f242c;
+            --border: #2c333d;
+            --accent: #4da3ff;
+            --accent-glow: 180 100% 50%;
+            --text: #e5e9ef;
+            --text-dim: #a5b1c2;
+            --danger: #ff5f56;
+            --radius: 10px;
+            --shadow: 0 4px 18px -4px rgba(0,0,0,0.5);
+        }
+        body.light {
+            --bg: #fafafa; --bg-alt:#f5f7fa; --panel:#ffffff; --border:#dfe3e8; --text:#1f2328; --text-dim:#5c6675; --accent:#0069c2; --shadow: 0 4px 14px -2px rgba(0,0,0,0.15);
+        }
+        * { box-sizing: border-box; }
+        body { margin:0; font-family: system-ui,Segoe UI,Arial,sans-serif; background: var(--bg); color: var(--text); line-height:1.4; }
+        header {
+            display:flex; align-items:center; gap:1rem; padding:0.85rem 1.25rem; background:linear-gradient(120deg,var(--panel),var(--bg-alt)); border-bottom:1px solid var(--border);
+        }
+        header img { height:40px; opacity:0.9; }
+        header h1 { font-size:1.2rem; font-weight:600; margin:0; letter-spacing:.5px; }
+        header .tag { font-size:.7rem; padding:.25rem .5rem; border-radius:4px; background:var(--accent); color:#fff; font-weight:600; letter-spacing:.5px; }
+        #theme-toggle { margin-left:auto; }
+    main { width:100%; margin:0; padding:1.2rem 1.4rem 2.5rem; }
+        .grid { display:grid; gap:1.2rem; grid-template-columns: repeat(auto-fit,minmax(340px,1fr)); }
+        /* On wider viewports, give the editor more horizontal space */
+        @media (min-width: 1100px) {
+            .grid { grid-template-columns: 1.45fr 1fr; }
+            #editor-panel textarea { min-height:280px; }
+        }
+        .panel { background:var(--panel); border:1px solid var(--border); border-radius:var(--radius); padding:1rem 1rem 1.1rem; box-shadow:var(--shadow); position:relative; overflow:hidden; }
+        .panel h2 { margin:.15rem 0 .75rem; font-size:1rem; font-weight:600; letter-spacing:.5px; }
+        p { margin:.5rem 0 1rem; color:var(--text-dim); }
+        code, pre, textarea { font-family:Consolas, SFMono-Regular, Menlo, monospace; font-size:.9rem; }
+        textarea { width:100%; resize:vertical; min-height:240px; background:#14181f; color:var(--text); border:1px solid var(--border); border-radius:6px; padding:.75rem .85rem; outline:none; line-height:1.35; tab-size:2; }
+        textarea:focus { border-color: var(--accent); box-shadow:0 0 0 2px color-mix(in srgb,var(--accent) 60%, transparent); }
+        .actions { display:flex; flex-wrap:wrap; gap:.6rem; align-items:center; margin-top:.85rem; }
+        button, select { font: inherit; }
+        button {
+            background: var(--accent); color:#fff; border:none; padding:.6rem 1.05rem; border-radius:6px; font-weight:600; letter-spacing:.5px; cursor:pointer; position:relative; transition:background .2s, transform .15s;
+        }
+        button:hover { background: color-mix(in srgb,var(--accent) 85%, #fff); }
+        button:active { transform: translateY(1px); }
+        button.secondary { background: var(--bg-alt); color: var(--text); border:1px solid var(--border); }
+        button.secondary:hover { background: var(--panel); }
+        select { background: var(--bg-alt); border:1px solid var(--border); color: var(--text); padding:.5rem .6rem; border-radius:6px; min-width:160px; }
+        label { display:flex; align-items:center; gap:.4rem; font-size:.8rem; color: var(--text-dim); }
+        #exec-status { font-style:italic; min-width:60px; }
+        pre#execution-logs { background:#101317; border:1px solid var(--border); border-radius:6px; padding:.75rem .85rem; min-height:140px; white-space:pre-wrap; overflow:auto; position:relative; }
+        pre#execution-logs::before { content:'LOGS'; position:absolute; top:4px; right:8px; font-size:.6rem; letter-spacing:.8px; color:var(--text-dim); }
+        .badge { background:#232a33; color:var(--text-dim); padding:.25rem .5rem; border-radius:4px; font-size:.65rem; border:1px solid var(--border); }
+        footer { text-align:center; font-size:.65rem; padding:1.25rem 0 0; color:var(--text-dim); }
+        a { color: var(--accent); text-decoration:none; }
+        a:hover { text-decoration:underline; }
+        .status-ok { color:#3fb950; }
+        .status-error { color: var(--danger); }
+        .top-note { font-size:.75rem; margin-top:.25rem; }
+        .inline { display:inline-block; }
+        #dotnet-error { color: var(--danger); font-weight:600; }
+        .theme-toggle-icon { font-size:.9rem; }
+        @media (max-width:600px) {
+            header h1 { font-size:1rem; }
+            .grid { grid-template-columns: 1fr; }
+        }
+    </style>
+</head>
+<body class="dark">
+    <header>
+        <h1>NodeWinRT + WinAppSDK</h1>
+        <span class="tag">Electron Demo</span>
+        <button id="theme-toggle" class="secondary" title="Toggle light/dark"><span class="theme-toggle-icon">🌙</span></button>
+    </header>
+    <main>
+        <div class="top-note"><span id="dotnet-error"></span></div>
+        <div class="grid">
+            <section class="panel" id="editor-panel">
+                <h2>JavaScript Runner</h2>
+                <p>Run JavaScript in the Electron main process with loaded <code>winrt</code> projections. Use <code>log()</code> / <code>console.log()</code> for output. First run loads NodeWinRT + WinAppSDK (ensure WinAppSDK 1.8 is installed).</p>
+                <textarea id="user-code" placeholder="// Enter code here, or pick a snippet ↓" spellcheck="false" autocorrect="off" autocomplete="off" autocapitalize="off"></textarea>
+                <div class="actions">
+                    <button id="execute-code">Run ▶</button>
+                    <label>Snippet:
+                        <select id="snippet-select"><option value="">-- choose --</option></select>
+                    </label>
+                    <button id="insert-snippet" type="button" class="secondary">Insert</button>
+                    <span id="exec-status"></span>
+                </div>
+            </section>
+            <section class="panel" id="output-panel">
+                <h2>Output</h2>
+                <pre id="execution-logs"></pre>
+                <div class="actions" style="margin-top:.6rem;">
+                    <button id="clear-logs" class="secondary" type="button">Clear</button>
+                    <button id="copy-logs" class="secondary" type="button">Copy</button>
+                </div>
+            </section>
+        </div>
+        <footer>
+            <span>NodeWinRT Electron example • <a href="https://github.com/JesseCol/NodeWinRT" target="_blank" rel="noreferrer">GitHub</a></span>
+        </footer>
+
+        <!-- Hidden snippet templates -->
+        <section id="snippets" style="display:none;">
+            <template id="snippet-release-info" data-name="Release Info">
+// Windows App Runtime Release Info
+const releaseInfo = winrt.Microsoft.Windows.ApplicationModel.WindowsAppRuntime.ReleaseInfo;
+console.log('releaseInfo.major:', releaseInfo.major);
+console.log('releaseInfo.minor:', releaseInfo.minor);
+console.log('releaseInfo.patch:', releaseInfo.patch);
+console.log('releaseInfo.versionTag:', releaseInfo.versionTag);
+console.log('releaseInfo.asString:', releaseInfo.asString);
+            </template>
+            <template id="snippet-display-area" data-name="Display Area">
+// Get primary display area info
+const display = winrt.Microsoft.UI.Windowing.DisplayArea.getFromPoint({x:10,y:10}, 0);
+const b = display.outerBounds;
+console.log(display.isPrimary, b.x, b.y, b.width, b.height);
+            </template>
+            <template id="snippet-rect-int32" data-name="RectInt32 Example">
+// Create and inspect a RectInt32
+const rect = new winrt.Windows.Graphics.RectInt32(10, 20, 160, 90);
+return rect;
+            </template>
+            <template id="snippet-async-await" data-name="Async + Await">
+// Demonstrate top-level await in snippet execution
+await new Promise(r => setTimeout(r, 300));
+return 'Finished after 300ms. Runtime: ' + winrt.System.Environment.Version.toString();
+            </template>
+            <template id="snippet-language-model-options" data-name="Language Model Options">
+var options = new winrt.Microsoft.Windows.AI.Text.LanguageModelOptions();
+options.temperature = 0.5;
+options.topP = 0.9;
+options.topK = 40;
+
+var imageContentFilterSeverity = new winrt.Microsoft.Windows.AI.ContentSafety.ImageContentFilterSeverity();
+imageContentFilterSeverity.adultContentLevel = winrt.Microsoft.Windows.AI.ContentSafety.SeverityLevel.minimum;
+
+var contentFilterOptions = new winrt.Microsoft.Windows.AI.ContentSafety.ContentFilterOptions();
+contentFilterOptions.languageModelOptions = options;
+contentFilterOptions.imageContentFilterSeverity = imageContentFilterSeverity;
+options.contentFilterOptions = contentFilterOptions;
+
+console.log('options.contentFilterOptions.imageContentFilterSeverity.adultContentLevel: ', options.contentFilterOptions.imageContentFilterSeverity.adultContentLevel);
+            </template>
+            <template id="snippet-app-window-create" data-name="Create AppWindow">
+// Create DispatcherQueue (if not already) and an AppWindow
+try { winrt.Microsoft.UI.Dispatching.DispatcherQueueController.CreateOnCurrentThread(); } catch (e) { }
+const aw = winrt.Microsoft.UI.Windowing.AppWindow.create();
+aw.title = 'Hello from WinAppSDK!';
+aw.moveAndResize({x: 100, y: 100, width: 400, height: 400});
+aw.addEventListener('closing', () => { 
+    // (This will only write to the console, not the Html page)
+    console.log('AppWindow closing');
+});
+aw.show();
+return 'AppWindow created and shown';
+            </template>
+            <template id="notifications-demo" data-name="Notifications Demo">
+// (May require packaged context)
+var builder = new winrt.Microsoft.Windows.AppNotifications.Builder.AppNotificationBuilder();
+builder.addText('Hello from Node.js!');
+var notification = builder.buildNotification();
+winrt.Microsoft.Windows.AppNotifications.AppNotificationManager.Default.show(notification);
+            </template>
+        </section>
+    </main>
+    <script>
+    (function(){
+        const btn = document.getElementById('execute-code');
+        const input = document.getElementById('user-code');
+        const status = document.getElementById('exec-status');
+        const logsEl = document.getElementById('execution-logs');
+        const snippetSelect = document.getElementById('snippet-select');
+        const insertBtn = document.getElementById('insert-snippet');
+        const clearBtn = document.getElementById('clear-logs');
+        const copyBtn = document.getElementById('copy-logs');
+        const themeToggle = document.getElementById('theme-toggle');
+
+        // Theme toggle
+        themeToggle.addEventListener('click', () => {
+            const body = document.body;
+            const nowLight = body.classList.toggle('light');
+            if(nowLight){ themeToggle.innerHTML = '<span class="theme-toggle-icon">☀️</span>'; } else { themeToggle.innerHTML = '<span class="theme-toggle-icon">🌙</span>'; }
+        });
+
+        // Load snippet templates dynamically
+        const templateNodes = document.querySelectorAll('#snippets template');
+        const snippetMap = new Map();
+        templateNodes.forEach(t => {
+            const id = t.id.replace(/^snippet-/, '');
+            const name = t.dataset.name || id;
+            const code = t.content.textContent.replace(/^[\n\r]+/, '').replace(/[\n\r]+\s*$/, '');
+            snippetMap.set(id, { name, code });
+            const opt = document.createElement('option');
+            opt.value = id;
+            opt.textContent = name;
+            snippetSelect.appendChild(opt);
+        });
+
+        function loadSnippet() {
+            const key = snippetSelect.value;
+            if (!key) return;
+            const snip = snippetMap.get(key);
+            if (!snip) return;
+            input.value = snip.code;
+        }
+
+        snippetSelect.addEventListener('change', loadSnippet);
+        insertBtn.addEventListener('click', loadSnippet);
+
+        clearBtn.addEventListener('click', () => { logsEl.textContent = ''; status.textContent=''; });
+        copyBtn.addEventListener('click', async () => {
+            try {
+                await navigator.clipboard.writeText(logsEl.textContent || '');
+                copyBtn.textContent = 'Copied!';
+                setTimeout(()=> copyBtn.textContent='Copy', 1200);
+            } catch(e){
+                copyBtn.textContent = 'Failed';
+                setTimeout(()=> copyBtn.textContent='Copy', 1200);
+            }
+        });
+
+        if(!btn) return;
+        btn.addEventListener('click', async () => {
+            const code = input.value.trim();
+            if(!code){
+                logsEl.textContent = '(enter some code)';
+                return;
+            }
+            status.textContent = 'Running...';
+            status.className='';
+            logsEl.textContent = '';
+            try {
+                const response = await window.api.runUserCode(code);
+                logsEl.textContent = response.output || '';
+                if(response.ok){
+                    status.textContent = 'Done';
+                    status.className='status-ok';
+                } else {
+                    status.textContent = 'Error';
+                    status.className='status-error';
+                }
+            } catch(err){
+                logsEl.textContent = 'IPC Error: ' + err.message;
+                status.textContent = 'Error';
+                status.className='status-error';
+            }
+        });
+    })();
+    </script>
+    <script src="renderer.js"></script>
+</body>
+</html>

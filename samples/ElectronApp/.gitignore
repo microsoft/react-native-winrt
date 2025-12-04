@@ -1,0 +1,14 @@
+
+# Windows SDK packages and generated files
+.winsdk
+
+# Development certificate
+devcert.pfx
+
+int
+generated
+*.dll
+tools
+
+# Windows SDK packages and generated files
+.winapp
