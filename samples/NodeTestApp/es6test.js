@@ -57,16 +57,7 @@ const knownFailures = new Set([
     'IMap with string keys behaves like JS object',
     'IMapView with string keys behaves like readonly JS object',
     
-    // Event handler tests - addEventListener not implemented
-    'Test::StaticBoolEventHandler',
-    'Test::StaticCharEventHandler',
-    'Test::StaticNumericEventHandler',
-    'Test::StaticStringEventHandler',
-    'Test::StaticGuidEventHandler',
-    'Test::StaticEnumEventHandler',
-    'Test::StaticCompositeStructEventHandler',
-    'Test::StaticRefEventHandler',
-    'Test::StaticObjectEventHandler',
+    // TODO: Async happens off-thread, need to figure out how to support that
     'Async Event Handling',
 ]);
 

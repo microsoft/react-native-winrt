@@ -459,9 +459,44 @@ napi_wrappers::Value static_activatable_class_data::create(napi_wrappers::Runtim
         obj.Set(Napi::String::New(runtime.env(), func.name.data(), func.name.size()), fn.m_value);
     }
 
-    // TODO: Add event listener methods if there are events
-    // TODO: Fix these errors: TestComponent.Test.addEventListener
-    // TODO: Why do we need to do this for each static class? Can we do it once somewhere else?
+    // Add event listener methods if there are events
+    // TODO: This feels like duplicate code, can we combine this with object event handling or other logic?
+    if (!events.empty())
+    {
+        // Create a shared event registration array that will be captured by the event listener closures
+        auto event_registrations = std::make_shared<event_registration_array>();
+        
+        // addEventListener
+        auto addEventListener = [this, event_registrations](const Napi::CallbackInfo& info) -> Napi::Value {
+            napi_wrappers::Runtime rt(info.Env());
+            size_t count = info.Length();
+            std::vector<napi_wrappers::Value> args;
+            args.reserve(count);
+            for (size_t i = 0; i < count; ++i)
+            {
+                args.emplace_back(rt, info[i]);
+            }
+            auto result = static_add_event_listener(rt, args.data(), count, this, *event_registrations);
+            return result.m_value;
+        };
+        
+        // removeEventListener
+        auto removeEventListener = [this, event_registrations](const Napi::CallbackInfo& info) -> Napi::Value {
+            napi_wrappers::Runtime rt(info.Env());
+            size_t count = info.Length();
+            std::vector<napi_wrappers::Value> args;
+            args.reserve(count);
+            for (size_t i = 0; i < count; ++i)
+            {
+                args.emplace_back(rt, info[i]);
+            }
+            auto result = static_remove_event_listener(rt, args.data(), count, this, *event_registrations);
+            return result.m_value;
+        };
+        
+        obj.Set("addEventListener", Napi::Function::New(runtime.env(), addEventListener));
+        obj.Set("removeEventListener", Napi::Function::New(runtime.env(), removeEventListener));
+    }
 
     return ctor;
 }
