@@ -618,12 +618,21 @@ namespace rnwinrt
     }
 
     template <typename T>
+    std::shared_ptr<T> TryUnwrap(const napi_wrappers::Object& obj);
+
+    template <typename T>
     napi_wrappers::Function bind_host_function(napi_wrappers::Runtime& runtime, const napi_wrappers::PropNameID& name, unsigned int paramCount,
         napi_wrappers::Value (T::*fn)(napi_wrappers::Runtime&, const napi_wrappers::Value*, size_t))
     {
         return napi_wrappers::Function::createFromHostFunction(runtime, name, paramCount,
             [fn](napi_wrappers::Runtime& runtime, const napi_wrappers::Value& thisValue, const napi_wrappers::Value* args, size_t count) {
+                // TODO: Need to get this callback working and make sure it's tested well
                 auto strongThis = thisValue.asObject(runtime).asHostObject<T>(runtime);
+                //auto strongThis = TryUnwrap<T>(thisValue.asObject(runtime));
+                if (!strongThis)
+                {
+                    throw Napi::Error::New(runtime.env(), "Failed to resolve host object");
+                }
                 return (strongThis.get()->*fn)(runtime, args, count);
             });
     }
@@ -634,7 +643,13 @@ namespace rnwinrt
     {
         return napi_wrappers::Function::createFromHostFunction(runtime, name, paramCount,
             [fn](napi_wrappers::Runtime& runtime, const napi_wrappers::Value& thisValue, const napi_wrappers::Value* args, size_t count) {
+                // TODO: Need to get this callback working and make sure it's tested well
                 auto strongThis = thisValue.asObject(runtime).asHostObject<T>(runtime);
+                //auto strongThis = TryUnwrap<T>(thisValue.asObject(runtime));
+                if (!strongThis)
+                {
+                    throw Napi::Error::New(runtime.env(), "Failed to resolve host object");
+                }
                 return (strongThis.get()->*fn)(runtime, args, count);
             });
     }
@@ -1400,18 +1415,12 @@ namespace rnwinrt
 
         void call_sync(std::function<void()> fn) const
         {
-            printf("call_sync entered, current thread_id: %llu, expected thread_id: %llu\n", 
-                (unsigned long long)std::hash<std::thread::id>{}(std::this_thread::get_id()), 
-                (unsigned long long)std::hash<std::thread::id>{}(thread_id));
             if (thread_id == std::this_thread::get_id())
             {
-                printf("Same thread - calling fn() directly\n");
                 fn();
-                printf("fn() completed\n");
             }
             else
             {
-                printf("Different thread - marshalling via call_invoker\n");
                 winrt::handle event(::CreateEventW(nullptr, true, false, nullptr));
                 if (!event.get())
                 {
@@ -1422,9 +1431,8 @@ namespace rnwinrt
 
                 std::exception_ptr exception;
                 bool invoked = false;
-                printf("About to call call_invoker\n");
                 call_invoker([&, ref = tracker.begin()]() mutable {
-                    printf("Inside call_invoker callback\n");
+                    
                     // Force the completion of the event once the callback completes so we don't need to wait for the
                     // lambda to be destroyed if for some reason it isn't immediate. Note that this sets the callback
                     // pointer to null, so there's no dangling reference anywhere
@@ -1433,21 +1441,16 @@ namespace rnwinrt
 
                     try
                     {
-                        printf("About to call fn() inside call_invoker\n");
                         fn();
-                        printf("fn() completed inside call_invoker\n");
                     }
                     catch (...)
                     {
-                        printf("Exception caught in call_invoker\n");
                         exception = std::current_exception();
                     }
 
                     invoked = true;
-                    printf("Setting invoked = true\n");
                 });
 
-                printf("Waiting for event\n");
                 if (::WaitForSingleObject(event.get(), INFINITE) != WAIT_OBJECT_0)
                 {
                     winrt::terminate();
@@ -1691,6 +1694,11 @@ public:
     static Napi::Object Create(Napi::Env env, std::shared_ptr<rnwinrt::projected_object_instance> projectedInstance);
     const winrt::Windows::Foundation::IInspectable& instance() const noexcept;
 
+    std::shared_ptr<rnwinrt::projected_object_instance> get_projected_instance() const noexcept
+    {
+        return m_projectedInstance;
+    }
+
 private:
     static Napi::FunctionReference& GetConstructor(Napi::Env env, const rnwinrt::sso_vector<const rnwinrt::static_interface_data*>& interfaces);
     Napi::Value GenericGetter(const Napi::CallbackInfo& info);
@@ -1705,6 +1713,29 @@ private:
 
     std::shared_ptr<rnwinrt::projected_object_instance> m_projectedInstance;
 };
+
+// TryUnwrap specialization for projected_object_instance
+// Must be in the rnwinrt namespace where TryUnwrap template is declared
+namespace rnwinrt
+{
+    template<>
+    inline std::shared_ptr<rnwinrt::projected_object_instance> TryUnwrap(const napi_wrappers::Object& obj)
+    {
+        // Convert napi_wrappers::Object to Napi::Object
+        Napi::Value val = static_cast<Napi::Value>(obj);
+        if (!val.IsObject()) {
+            return nullptr;
+        }
+        Napi::Object napiObj = val.As<Napi::Object>();
+        
+        WinRTObjectWrapper* inst = WinRTObjectWrapper::Unwrap(napiObj);
+        if (inst)
+        {
+            return inst->get_projected_instance();
+        }
+        return nullptr;
+    }
+}
 
 // Types used for object instances, etc.
 namespace rnwinrt
@@ -2227,7 +2258,9 @@ namespace rnwinrt
     template <typename D, typename T>
     struct array_vector_base
     {
-        array_vector_base(napi_wrappers::Runtime& runtime, napi_wrappers::Array array) : runtime(runtime), array(std::move(array))
+        array_vector_base(napi_wrappers::Runtime& runtime, napi_wrappers::Array array)
+            : runtime(runtime)
+            , array(Napi::Persistent(array.napiValue().As<Napi::Array>()))
         {
         }
 
@@ -2249,7 +2282,7 @@ namespace rnwinrt
         std::uint32_t Size()
         {
             CheckThread();
-            return static_cast<std::uint32_t>(array.size(runtime));
+            return static_cast<std::uint32_t>(getArray().size(runtime));
         }
 
         T GetAt(std::uint32_t index)
@@ -2260,7 +2293,7 @@ namespace rnwinrt
                 throw winrt::hresult_out_of_bounds();
             }
 
-            return convert_value_to_native<T>(runtime, array.getValueAtIndex(runtime, index));
+            return convert_value_to_native<T>(runtime, getArray().getValueAtIndex(runtime, index));
         }
 
         std::uint32_t GetMany(std::uint32_t startIndex, winrt::array_view<T> items)
@@ -2269,7 +2302,7 @@ namespace rnwinrt
             auto count = std::min(size - startIndex, items.size());
             for (uint32_t i = 0; i < count; ++i)
             {
-                items[i] = convert_value_to_native<T>(runtime, array.getValueAtIndex(runtime, startIndex + i));
+                items[i] = convert_value_to_native<T>(runtime, getArray().getValueAtIndex(runtime, startIndex + i));
             }
 
             return count;
@@ -2280,7 +2313,7 @@ namespace rnwinrt
             auto size = Size(); // NOTE: Checks thread access
             for (uint32_t i = 0; i < size; ++i)
             {
-                if (value == convert_value_to_native<T>(runtime, array.getValueAtIndex(runtime, i)))
+                if (value == convert_value_to_native<T>(runtime, getArray().getValueAtIndex(runtime, i)))
                 {
                     index = i;
                     return true;
@@ -2295,51 +2328,51 @@ namespace rnwinrt
         {
             // NOTE: JSI doesn't currently seem to allow modification of arrays from native
             CheckThread();
-            auto pushFn = array.getPropertyAsFunction(runtime, "push");
-            pushFn.callWithThis(runtime, array, convert_native_to_value(runtime, value));
+            auto pushFn = getArray().getPropertyAsFunction(runtime, "push");
+            pushFn.callWithThis(runtime, getArray(), convert_native_to_value(runtime, value));
         }
 
         void Clear()
         {
             // NOTE: JSI doesn't currently seem to allow modification of arrays from native
             CheckThread();
-            array.setProperty(runtime, "length", 0);
+            getArray().setProperty(runtime, "length", 0);
         }
 
         void InsertAt(std::uint32_t index, T const& value)
         {
             // NOTE: JSI doesn't currently seem to allow modification of arrays from native
             CheckThread();
-            auto spliceFn = array.getPropertyAsFunction(runtime, "splice");
+            auto spliceFn = getArray().getPropertyAsFunction(runtime, "splice");
             spliceFn.callWithThis(
-                runtime, array, static_cast<double>(index), 0, convert_native_to_value(runtime, value));
+                runtime, getArray(), static_cast<double>(index), 0, convert_native_to_value(runtime, value));
         }
 
         void RemoveAt(std::uint32_t index)
         {
             // NOTE: JSI doesn't currently seem to allow modification of arrays from native
             CheckThread();
-            auto spliceFn = array.getPropertyAsFunction(runtime, "splice");
-            spliceFn.callWithThis(runtime, array, static_cast<double>(index), 1);
+            auto spliceFn = getArray().getPropertyAsFunction(runtime, "splice");
+            spliceFn.callWithThis(runtime, getArray(), static_cast<double>(index), 1);
         }
 
         void RemoveAtEnd()
         {
             // NOTE: JSI doesn't currently seem to allow modification of arrays from native
             CheckThread();
-            auto popFn = array.getPropertyAsFunction(runtime, "pop");
-            popFn.callWithThis(runtime, array);
+            auto popFn = getArray().getPropertyAsFunction(runtime, "pop");
+            popFn.callWithThis(runtime, getArray());
         }
 
         void ReplaceAll(winrt::array_view<const T> const& items)
         {
             // NOTE: JSI doesn't currently seem to allow modification of arrays from native
             CheckThread();
-            array.setProperty(runtime, "length", static_cast<double>(items.size()));
+            getArray().setProperty(runtime, "length", static_cast<double>(items.size()));
 
             for (uint32_t i = 0; i < items.size(); ++i)
             {
-                array.setValueAtIndex(runtime, i, convert_native_to_value(runtime, items[i]));
+                getArray().setValueAtIndex(runtime, i, convert_native_to_value(runtime, items[i]));
             }
         }
 
@@ -2351,11 +2384,16 @@ namespace rnwinrt
                 throw winrt::hresult_out_of_bounds();
             }
 
-            array.setValueAtIndex(runtime, index, convert_native_to_value(runtime, value));
+            getArray().setValueAtIndex(runtime, index, convert_native_to_value(runtime, value));
         }
 
-        napi_wrappers::Runtime& runtime;
-        napi_wrappers::Array array;
+        napi_wrappers::Array getArray()
+        {
+            return napi_wrappers::Array{array.Value()};
+        }
+
+        napi_wrappers::Runtime runtime;  // TODO: It's not safe to store like this.  Need to stash it in a TLS slot maybe?
+        Napi::Reference<Napi::Array> array;
         std::thread::id thread_id = std::this_thread::get_id();
     };
 
@@ -2401,7 +2439,7 @@ namespace rnwinrt
 
         winrt::Windows::Foundation::Collections::IVectorView<T> GetView()
         {
-            return winrt::make<array_vector_view<T>>(this->runtime, this->array.getArray(this->runtime));
+            return winrt::make<array_vector_view<T>>(this->runtime, this->getArray().getArray(this->runtime));
         }
     };
 }
@@ -2670,7 +2708,6 @@ namespace rnwinrt
     {
         pass_array_wrapper(napi_wrappers::Runtime& runtime, const napi_wrappers::Value& value)
         {
-#if 0 // not working yet
             auto array = value.asObject(runtime).asArray(runtime);
             auto size = array.size(runtime);
             m_data.reserve(size);
@@ -2678,8 +2715,6 @@ namespace rnwinrt
             {
                 m_data.push_back(convert_value_to_native<T>(runtime, array.getValueAtIndex(runtime, i)));
             }
-#endif // not working yet
-            throw Napi::Error::New(runtime.env(), "TODO: not working yet (array_to_native_iterator constructor)");
         }
 
         operator winrt::array_view<const T>()
@@ -2787,19 +2822,23 @@ namespace rnwinrt
                 auto napiObj = obj.m_value.As<Napi::Object>();
                 
                 // Try direct unwrap first
-                auto wrapper = Napi::ObjectWrap<WinRTObjectWrapper>::Unwrap(napiObj);
-                if (wrapper) {
-                    return asTargetType(wrapper->instance());
-                }
-                
-                // If that failed, check if this is a Proxy with _wrapper_ property
-                if (napiObj.Has("_wrapper_")) {
-                    auto wrapperObj = napiObj.Get("_wrapper_").As<Napi::Object>();
-                    wrapper = Napi::ObjectWrap<WinRTObjectWrapper>::Unwrap(wrapperObj);
+                try {
+                    auto wrapper = Napi::ObjectWrap<WinRTObjectWrapper>::Unwrap(napiObj);
+
                     if (wrapper) {
                         return asTargetType(wrapper->instance());
                     }
+                    
+                    // If that failed, check if this is a Proxy with _wrapper_ property
+                    if (napiObj.Has("_wrapper_")) {
+                        auto wrapperObj = napiObj.Get("_wrapper_").As<Napi::Object>();
+                        wrapper = Napi::ObjectWrap<WinRTObjectWrapper>::Unwrap(wrapperObj);
+                        if (wrapper) {
+                            return asTargetType(wrapper->instance());
+                        }
+                    }
                 }
+                catch (const Napi::Error&) { /* Not our object, that's ok*/ }
             }
             #endif
             
@@ -3020,14 +3059,18 @@ namespace rnwinrt
 
         static winrt::Windows::Foundation::EventHandler<T> as_native(napi_wrappers::Runtime& runtime, const napi_wrappers::Value& value)
         {
+            auto fn = value.asObject(runtime).asFunction(runtime);
+            auto fnRef = Napi::Persistent(fn.m_value.As<Napi::Function>()); // TODO: lifetime ok here?
             return
-                [ctxt = current_runtime_context()->add_reference(), fn = value.asObject(runtime).asFunction(runtime)](
+                [ctxt = current_runtime_context()->add_reference(), fn = value.asObject(runtime).asFunction(runtime), fnRef = std::move(fnRef)](
                     const winrt::Windows::Foundation::IInspectable& sender, const T& args) {
                     // TODO: Do we need to call synchronously? One reason might be to propagate errors, but typically
                     // event sources don't care about those.
+                    
                     ctxt->call_sync([&]() {
-                        fn.call(ctxt->runtime, convert_native_to_value(ctxt->runtime, sender),
-                            convert_native_to_value(ctxt->runtime, args));
+                        auto arg0 = convert_native_to_value(ctxt->runtime, sender);
+                        auto arg1 = convert_native_to_value(ctxt->runtime, args);
+                        fnRef.Value().Call({arg0, arg1});
                     });
                 };
         }
@@ -4774,6 +4817,8 @@ inline Napi::Object WinRTObjectWrapper::Create(Napi::Env env, std::shared_ptr<rn
     
     // For collections, set up a Proxy to handle indexed access
     if (isCollection) {
+        // TODO: This code needs to be hit by test coverage.
+
         // Create a Proxy handler that intercepts numeric indices
         auto handler = Napi::Object::New(env);
         
@@ -4819,7 +4864,47 @@ inline Napi::Object WinRTObjectWrapper::Create(Napi::Env env, std::shared_ptr<rn
             return info.Env().Undefined();
         });
         
+        // Create setter trap that delegates to projected_object_instance::set()
+        auto setTrap = Napi::Function::New(env, [](const Napi::CallbackInfo& info) -> Napi::Value {
+            auto target = info[0].As<Napi::Object>();
+            auto prop = info[1];
+            auto value = info[2];
+            
+            // Get the wrapper
+            auto wrapper = Napi::ObjectWrap<WinRTObjectWrapper>::Unwrap(target);
+            if (!wrapper) {
+                return Napi::Boolean::New(info.Env(), false);
+            }
+            
+            // Delegate all property setting to projected_object_instance::set()
+            napi_wrappers::Runtime runtime(info.Env());
+            
+            if (prop.IsString()) {
+                auto propStr = prop.As<Napi::String>().Utf8Value();
+                auto propId = napi_wrappers::PropNameID::forUtf8(runtime,
+                    reinterpret_cast<const uint8_t*>(propStr.c_str()), propStr.size());
+                
+                wrapper->m_projectedInstance->set(runtime, propId, napi_wrappers::Value(runtime, value));
+                return Napi::Boolean::New(info.Env(), true);
+            } else if (prop.IsNumber()) {
+                // Convert number to string for property access
+                auto propStr = std::to_string(prop.As<Napi::Number>().Uint32Value());
+                auto propId = napi_wrappers::PropNameID::forUtf8(runtime,
+                    reinterpret_cast<const uint8_t*>(propStr.c_str()), propStr.size());
+                
+                wrapper->m_projectedInstance->set(runtime, propId, napi_wrappers::Value(runtime, value));
+                return Napi::Boolean::New(info.Env(), true);
+            } else if (prop.IsSymbol()) {
+                // For symbols, use default behavior
+                target.Set(prop.As<Napi::Symbol>(), value);
+                return Napi::Boolean::New(info.Env(), true);
+            }
+            
+            return Napi::Boolean::New(info.Env(), false);
+        });
+        
         handler.Set("get", getTrap);
+        handler.Set("set", setTrap);
         
         // Create the Proxy
         auto proxyConstructor = env.Global().Get("Proxy").As<Napi::Function>();
@@ -5032,32 +5117,16 @@ inline Napi::Value WinRTObjectWrapper::RemoveEventListener(const Napi::CallbackI
     return info.Env().Undefined();
 }
 
-inline Napi::Value WinRTObjectWrapper::IndexedGetter(const Napi::CallbackInfo& info)
+// Additional TryUnwrap specializations needed for linking
+// These are in the rnwinrt namespace where TryUnwrap template is declared
+namespace rnwinrt
 {
-    // info[0] is the index (as uint32_t passed by NAPI)
-    napi_wrappers::Runtime runtime(info.Env());
-    
-    // Convert index to string for property access (runtime_get_property expects string)
-    auto indexStr = std::to_string(info[0].As<Napi::Number>().Uint32Value());
-    auto propId = napi_wrappers::PropNameID::forUtf8(runtime, 
-        reinterpret_cast<const uint8_t*>(indexStr.c_str()), indexStr.size());
-    
-    // Delegate to projected_object_instance::get()
-    auto result = m_projectedInstance->get(runtime, propId);
-    return result.m_value;
-}
+    // projected_statics_class specialization
+    template<typename T>
+    inline std::shared_ptr<T> TryUnwrap(const napi_wrappers::Object&)
+    {
+        // projected_statics_class doesn't use WinRTObjectWrapper
+        return nullptr;
+    }
 
-inline void WinRTObjectWrapper::IndexedSetter(const Napi::CallbackInfo& info, const Napi::Value& value)
-{
-    // info[0] is the index, value is the value to set
-    napi_wrappers::Runtime runtime(info.Env());
-    
-    // Convert index to string for property access (runtime_set_property expects string)
-    auto indexStr = std::to_string(info[0].As<Napi::Number>().Uint32Value());
-    auto propId = napi_wrappers::PropNameID::forUtf8(runtime,
-        reinterpret_cast<const uint8_t*>(indexStr.c_str()), indexStr.size());
-    
-    // Delegate to projected_object_instance::set()
-    m_projectedInstance->set(runtime, propId, napi_wrappers::Value(runtime, value));
 }
-

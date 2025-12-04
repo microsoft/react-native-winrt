@@ -88,7 +88,7 @@ namespace napi_wrappers
         static Value create(Runtime& env, int64_t num) { return Value(Napi::Number::New(env.env(), static_cast<double>(num))); }
         static Value create(Runtime& env, uint32_t num) { return Value(Napi::Number::New(env.env(), num)); }
         
-
+        Napi::Value napiValue() const { return m_value; }
         
         operator Napi::Value() const { return m_value; }
         operator napi_value() const { return m_value; }
@@ -219,6 +219,11 @@ namespace napi_wrappers
         Function asFunction(Runtime& env) const;
         Object getPropertyAsObject(Runtime& env, const char* name) const;
         bool strictEquals(const Object& other) const;
+
+        Napi::Reference<Napi::Object> CreateRef()
+        {
+            return Napi::Persistent(m_value.As<Napi::Object>());
+        }
         
         // Static version for base.h usage
         static bool strictEquals(Runtime& env, const Object& obj1, const Object& obj2);
@@ -347,13 +352,12 @@ namespace napi_wrappers
         std::string m_str;
     };
     
-
-    
     // Template methods must stay in header
     template<typename T>
     inline std::shared_ptr<T> Object::asHostObject(Runtime& env) const 
     {
         try {
+
             // Access the _hostObject_ property (the ProxyGetTrap will handle this specially)
             auto hostObjectValue = getProperty(env, "_hostObject_");
             
@@ -409,7 +413,7 @@ namespace napi_wrappers
     {
         if (!isArray(env))
         {
-            throw JSError(env, "Object is not an Array"); // TODO: Attach a JS error value for richer diagnostics
+            throw Napi::Error::New(env.env(), "Object is not an Array");
         }
         return Array(m_value.As<Napi::Array>());
     }

@@ -35,6 +35,8 @@ namespace napi_wrappers {
         auto hostObjectPtr = new HostObjectPtr(hostObj);
         auto external = Napi::External<HostObjectPtr>::New(env.env(), hostObjectPtr,
             [](Napi::Env, HostObjectPtr* ptr) { delete ptr; });
+        
+        // TODO: I'd kinda like to remove this property and always use an ObjectWrap instead.
         obj.Set("_hostObject_", external);
         
         // Get all property names from the HostObject and define getters/setters for them
