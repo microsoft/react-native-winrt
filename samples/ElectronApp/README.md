@@ -2,6 +2,11 @@
 
 This sample shows how an Electron app can call WinAppSDK APIs using rnwinrt in "node mode" (using the new -node flag).
 
+In this screen capture, we call the WinAppSDK AppWindow API to show a new window from Electron Javascript code:
+
+![alt text](electronWinrt.gif)
+
+
 # How to build electron sample
 
 ## Prerequisites
