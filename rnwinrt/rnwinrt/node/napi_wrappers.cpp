@@ -1,3 +1,7 @@
+// Copyright (c) Microsoft Corporation.
+// Licensed under the MIT License.
+// THIS FILE CONTAINS AI-GENERATED CODE.  It still needs human review.
+
 #include "pch.h"
 #include "napi_wrappers.h"
 #include "base.h"

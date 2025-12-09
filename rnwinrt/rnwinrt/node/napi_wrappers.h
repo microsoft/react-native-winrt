@@ -1,3 +1,7 @@
+// Copyright (c) Microsoft Corporation.
+// Licensed under the MIT License.
+// THIS FILE CONTAINS AI-GENERATED CODE.  It still needs human review.
+
 #pragma once
 #include "pch.h"
 #include <functional>

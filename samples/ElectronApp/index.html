@@ -122,19 +122,18 @@ console.log('releaseInfo.asString:', releaseInfo.asString);
             </template>
             <template id="snippet-display-area" data-name="Display Area">
 // Get primary display area info
-const display = winrt.Microsoft.UI.Windowing.DisplayArea.getFromPoint({x:10,y:10}, 0);
+const point = { x: 10, y: 10 };
+console.log("Finding display at point:", point.x, point.y);
+const display = winrt.Microsoft.UI.Windowing.DisplayArea.getFromPoint(point, 0);
 const b = display.outerBounds;
-console.log(display.isPrimary, b.x, b.y, b.width, b.height);
+console.log("Is the point on your primary display?", display.isPrimary);
+console.log("The bounds of the display containing the point are:", b.x, b.y, b.width, b.height);
             </template>
-            <template id="snippet-rect-int32" data-name="RectInt32 Example">
+            <template id="snippet-rect-int32" data-name="RectInt32 Example (TODO)">
 // Create and inspect a RectInt32
-const rect = new winrt.Windows.Graphics.RectInt32(10, 20, 160, 90);
-return rect;
-            </template>
-            <template id="snippet-async-await" data-name="Async + Await">
-// Demonstrate top-level await in snippet execution
-await new Promise(r => setTimeout(r, 300));
-return 'Finished after 300ms. Runtime: ' + winrt.System.Environment.Version.toString();
+console.log("This doesn't work yet!  Please come back later.")
+//const rect = new winrt.Windows.Graphics.RectInt32(10, 20, 160, 90);
+//return rect;
             </template>
             <template id="snippet-language-model-options" data-name="Language Model Options">
 var options = new winrt.Microsoft.Windows.AI.Text.LanguageModelOptions();
@@ -150,7 +149,7 @@ contentFilterOptions.languageModelOptions = options;
 contentFilterOptions.imageContentFilterSeverity = imageContentFilterSeverity;
 options.contentFilterOptions = contentFilterOptions;
 
-console.log('options.contentFilterOptions.imageContentFilterSeverity.adultContentLevel: ', options.contentFilterOptions.imageContentFilterSeverity.adultContentLevel);
+console.log('adultContentLevel: ', options.contentFilterOptions.imageContentFilterSeverity.adultContentLevel);
             </template>
             <template id="snippet-app-window-create" data-name="Create AppWindow">
 // Create DispatcherQueue (if not already) and an AppWindow
@@ -165,12 +164,14 @@ aw.addEventListener('closing', () => {
 aw.show();
 return 'AppWindow created and shown';
             </template>
-            <template id="notifications-demo" data-name="Notifications Demo">
+            <template id="notifications-demo" data-name="Notifications Demo (TODO)">
 // (May require packaged context)
-var builder = new winrt.Microsoft.Windows.AppNotifications.Builder.AppNotificationBuilder();
-builder.addText('Hello from Node.js!');
-var notification = builder.buildNotification();
-winrt.Microsoft.Windows.AppNotifications.AppNotificationManager.Default.show(notification);
+console.log("This doesn't work yet because we're not generating wrappers for this API.  That might be trivial to fix.");
+console.log("Also, the app needs to be packaged.  This should be easy using WinAppCLI.");
+//var builder = new winrt.Microsoft.Windows.AppNotifications.Builder.AppNotificationBuilder();
+//builder.addText('Hello from Node.js!');
+//var notification = builder.buildNotification();
+//winrt.Microsoft.Windows.AppNotifications.AppNotificationManager.Default.show(notification);
             </template>
         </section>
     </main>

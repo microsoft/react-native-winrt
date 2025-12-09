@@ -5,6 +5,7 @@
 # Development certificate
 devcert.pfx
 
+# Intermediate/temp files
 int
 generated
 *.dll
