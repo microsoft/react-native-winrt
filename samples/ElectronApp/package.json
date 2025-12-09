@@ -3,7 +3,7 @@
   "version": "1.0.0",
   "main": "main.js",
   "scripts": {
-    "preinstall": "npx winapp restore && node-gyp configure --directory=winrtAddon && node buildprojection.js",
+    "preinstall": "npx winapp restore && node buildprojection.js && node-gyp configure --directory=winrtAddon",
     "build": "node-gyp build --debug --directory=winrtAddon",
     "rebuild": "npm run clean && node-gyp build --debug --directory=winrtAddon",
     "clean": "node-gyp clean configure --directory=winrtAddon",
