@@ -10,9 +10,9 @@ In this screen capture, we call the WinAppSDK AppWindow API to show a new window
 # How to build electron sample
 
 ## Prerequisites
-* npm
+* Node (`winget install --id OpenJS.NodeJS.23`)
 * python
-* node-gyp
+* node-gyp (?)
 * Visual Studio
 
 ## Steps
