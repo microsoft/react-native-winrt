@@ -63,8 +63,26 @@ public:
         }
     }
 
+    void WriteDeprecatedJsdoc(TextWriter& textWriter, std::string_view message)
+    {
+        if (!message.empty())
+        {
+            textWriter.WriteIndentedLine("/** ^@deprecated "sv);
+            textWriter.Write(message);
+            textWriter.Write(" */"sv);
+        }
+        else
+        {
+            textWriter.WriteIndentedLine("/** ^@deprecated */"sv);
+        }
+    }
+
     void WriteDelegate(winmd::reader::TypeDef const& type, TextWriter& textWriter)
     {
+        if (is_deprecated(type))
+        {
+            WriteDeprecatedJsdoc(textWriter, get_deprecated_message(type));
+        }
         textWriter.WriteIndentedLine(
             "type % = %", [&]() { WriteGenericTypeName(type, textWriter); },
             [&]() {
@@ -81,8 +99,13 @@ public:
 
     void WriteEnum(winmd::reader::TypeDef const& type, TextWriter& textWriter)
     {
+        if (is_deprecated(type))
+        {
+            WriteDeprecatedJsdoc(textWriter, get_deprecated_message(type));
+        }
         textWriter.WriteIndentedLine("enum % {%}"sv, type.TypeName(), [&]() {
             textWriter.AddIndent();
+            bool parent_deprecated = is_deprecated(type);
             for (auto field : type.FieldList())
             {
                 if (field.Name() == "value__")
@@ -90,6 +113,11 @@ public:
                     continue;
                 };
 
+                if (is_deprecated(field) || parent_deprecated)
+                {
+                    auto msg = is_deprecated(field) ? get_deprecated_message(field) : get_deprecated_message(type);
+                    WriteDeprecatedJsdoc(textWriter, msg);
+                }
                 textWriter.WriteIndentedLine("% = %,"sv, TextWriter::ToCamelCase(std::string(field.Name())), [&]() {
                     auto value = field.Constant();
                     switch (value.Type())
@@ -118,6 +146,10 @@ public:
         if ((category == winmd::reader::category::interface_type) && exclusiveto_class(type))
         {
             return;
+        }
+        if (is_deprecated(type))
+        {
+            WriteDeprecatedJsdoc(textWriter, get_deprecated_message(type));
         }
         textWriter.WriteIndentedLine(
             "%% %%% {%}"sv,
@@ -224,6 +256,10 @@ public:
                 // Fields:
                 for (auto&& field : type.FieldList())
                 {
+                    if (is_deprecated(field))
+                    {
+                        WriteDeprecatedJsdoc(textWriter, get_deprecated_message(field));
+                    }
                     textWriter.WriteIndentedLine(
                         "%%: ",
                         [&]() {
@@ -238,6 +274,10 @@ public:
                 // Properties:
                 for (auto&& prop : type.PropertyList())
                 {
+                    if (is_deprecated(prop))
+                    {
+                        WriteDeprecatedJsdoc(textWriter, get_deprecated_message(prop));
+                    }
                     textWriter.WriteIndentedLine();
                     WriteAccess(prop.MethodSemantic().first.Method().Flags().Access(), textWriter,
                         category != winmd::reader::category::class_type);
@@ -264,6 +304,10 @@ public:
                         continue;
                     else if (!method.SpecialName() || (method.Name() == ".ctor"sv))
                     {
+                        if (is_deprecated(method))
+                        {
+                            WriteDeprecatedJsdoc(textWriter, get_deprecated_message(method));
+                        }
                         textWriter.WriteIndentedLine();
                         WriteMethod(method, type, textWriter);
                     }
@@ -278,6 +322,10 @@ public:
                 // Event Listeners:
                 for (auto&& method : eventListeners)
                 {
+                    if (is_deprecated(method))
+                    {
+                        WriteDeprecatedJsdoc(textWriter, get_deprecated_message(method));
+                    }
                     WriteEventListener(method, type, textWriter);
                 }
 

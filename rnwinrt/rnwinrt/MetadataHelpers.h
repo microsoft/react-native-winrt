@@ -74,6 +74,27 @@ inline bool is_deprecated(const T& row)
 }
 
 template <typename T>
+inline std::string_view get_deprecated_message(const T& row)
+{
+    using namespace std::literals;
+    auto attr = winmd::reader::get_attribute(row, metadata_namespace, "DeprecatedAttribute"sv);
+    if (attr)
+    {
+        auto sig = attr.Value();
+        auto const& fixedArgs = sig.FixedArgs();
+        if (fixedArgs.size() >= 1)
+        {
+            auto const& elemSig = std::get<winmd::reader::ElemSig>(fixedArgs[0].value);
+            if (std::holds_alternative<std::string_view>(elemSig.value))
+            {
+                return std::get<std::string_view>(elemSig.value);
+            }
+        }
+    }
+    return {};
+}
+
+template <typename T>
 inline bool is_web_host_hidden(const T& row)
 {
     using namespace std::literals;
