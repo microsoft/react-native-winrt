@@ -79,6 +79,10 @@ public:
 
     void WriteDelegate(winmd::reader::TypeDef const& type, TextWriter& textWriter)
     {
+        if (is_removed(type))
+        {
+            return;
+        }
         if (is_deprecated(type))
         {
             WriteDeprecatedJsdoc(textWriter, get_deprecated_message(type));
@@ -99,6 +103,10 @@ public:
 
     void WriteEnum(winmd::reader::TypeDef const& type, TextWriter& textWriter)
     {
+        if (is_removed(type))
+        {
+            return;
+        }
         if (is_deprecated(type))
         {
             WriteDeprecatedJsdoc(textWriter, get_deprecated_message(type));
@@ -112,6 +120,11 @@ public:
                 {
                     continue;
                 };
+
+                if (is_removed(field))
+                {
+                    continue;
+                }
 
                 if (is_deprecated(field) || parent_deprecated)
                 {
@@ -144,6 +157,10 @@ public:
     {
         auto category = winmd::reader::get_category(type);
         if ((category == winmd::reader::category::interface_type) && exclusiveto_class(type))
+        {
+            return;
+        }
+        if (is_removed(type))
         {
             return;
         }
@@ -256,6 +273,10 @@ public:
                 // Fields:
                 for (auto&& field : type.FieldList())
                 {
+                    if (is_removed(field))
+                    {
+                        continue;
+                    }
                     if (is_deprecated(field))
                     {
                         WriteDeprecatedJsdoc(textWriter, get_deprecated_message(field));
@@ -274,6 +295,10 @@ public:
                 // Properties:
                 for (auto&& prop : type.PropertyList())
                 {
+                    if (is_removed(prop))
+                    {
+                        continue;
+                    }
                     if (is_deprecated(prop))
                     {
                         WriteDeprecatedJsdoc(textWriter, get_deprecated_message(prop));
@@ -302,6 +327,8 @@ public:
                 {
                     if (!is_method_allowed(settings, method))
                         continue;
+                    else if (is_removed(method))
+                        continue;
                     else if (!method.SpecialName() || (method.Name() == ".ctor"sv))
                     {
                         if (is_deprecated(method))
@@ -322,6 +349,10 @@ public:
                 // Event Listeners:
                 for (auto&& method : eventListeners)
                 {
+                    if (is_removed(method))
+                    {
+                        continue;
+                    }
                     if (is_deprecated(method))
                     {
                         WriteDeprecatedJsdoc(textWriter, get_deprecated_message(method));
