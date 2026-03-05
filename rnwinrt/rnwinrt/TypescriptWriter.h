@@ -79,7 +79,7 @@ public:
 
     void WriteDelegate(winmd::reader::TypeDef const& type, TextWriter& textWriter)
     {
-        if (is_removed(type))
+        if (!settings.IncludeDeprecated && is_removed(type))
         {
             return;
         }
@@ -103,7 +103,7 @@ public:
 
     void WriteEnum(winmd::reader::TypeDef const& type, TextWriter& textWriter)
     {
-        if (is_removed(type))
+        if (!settings.IncludeDeprecated && is_removed(type))
         {
             return;
         }
@@ -121,7 +121,7 @@ public:
                     continue;
                 };
 
-                if (is_removed(field))
+                if (!settings.IncludeDeprecated && is_removed(field))
                 {
                     continue;
                 }
@@ -160,7 +160,7 @@ public:
         {
             return;
         }
-        if (is_removed(type))
+        if (!settings.IncludeDeprecated && is_removed(type))
         {
             return;
         }
@@ -273,7 +273,7 @@ public:
                 // Fields:
                 for (auto&& field : type.FieldList())
                 {
-                    if (is_removed(field))
+                    if (!settings.IncludeDeprecated && is_removed(field))
                     {
                         continue;
                     }
@@ -295,13 +295,15 @@ public:
                 // Properties:
                 for (auto&& prop : type.PropertyList())
                 {
-                    if (is_removed(prop))
+                    // MIDL places DeprecatedAttribute on getter method, not Property row
+                    auto getter = prop.MethodSemantic().first.Method();
+                    if (!settings.IncludeDeprecated && is_removed(getter))
                     {
                         continue;
                     }
-                    if (is_deprecated(prop))
+                    if (is_deprecated(getter))
                     {
-                        WriteDeprecatedJsdoc(textWriter, get_deprecated_message(prop));
+                        WriteDeprecatedJsdoc(textWriter, get_deprecated_message(getter));
                     }
                     textWriter.WriteIndentedLine();
                     WriteAccess(prop.MethodSemantic().first.Method().Flags().Access(), textWriter,
@@ -327,7 +329,7 @@ public:
                 {
                     if (!is_method_allowed(settings, method))
                         continue;
-                    else if (is_removed(method))
+                    else if (!settings.IncludeDeprecated && is_removed(method))
                         continue;
                     else if (!method.SpecialName() || (method.Name() == ".ctor"sv))
                     {
@@ -349,7 +351,7 @@ public:
                 // Event Listeners:
                 for (auto&& method : eventListeners)
                 {
-                    if (is_removed(method))
+                    if (!settings.IncludeDeprecated && is_removed(method))
                     {
                         continue;
                     }
