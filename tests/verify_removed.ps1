@@ -43,6 +43,22 @@ if (Test-Path $writerFile) {
     Assert-True ($writerContent -match "WriteDeprecatedJsdoc") "TypescriptWriter has WriteDeprecatedJsdoc()"
 }
 
+Write-Host "`n=== Source code: type filtering ===" -ForegroundColor Cyan
+
+$settingsFile = Join-Path "rnwinrt\rnwinrt" "Settings.cpp"
+if (Test-Path $settingsFile) {
+    $settingsContent = Get-Content $settingsFile -Raw
+    Assert-True ($settingsContent -match "is_removed\(typeDef\)") `
+        "Settings.cpp is_type_allowed() checks is_removed()"
+}
+
+$reactGenFile = Join-Path "rnwinrt\rnwinrt" "react\ReactFileGenerator.cpp"
+if (Test-Path $reactGenFile) {
+    $reactGenContent = Get-Content $reactGenFile -Raw
+    Assert-True ($reactGenContent -match "is_removed") `
+        "ReactFileGenerator.cpp has is_removed() guard checks"
+}
+
 # === WinMD-based generation verification ===
 if (!(Test-Path $WinMDPath)) {
     Write-Host "SKIP: WinMD not found at $WinMDPath (WinMD tests skipped)" -ForegroundColor Yellow
@@ -123,6 +139,36 @@ Write-Host "`n=== Mode 1 (no deprecated): Removed constructors excluded ===" -Fo
 Assert-True ($content1 -match 'constructor\(\)') "Default constructor present"
 Assert-True ($content1 -notmatch 'constructor\(name: string, config: number\)') "Removed constructor excluded"
 
+# --- C++ bridge output verification (ReactFileGenerator.cpp coverage) ---
+$cppOutDir = Join-Path $env:TEMP "rnwinrt_verify_cpp_$(Get-Random)"
+New-Item -ItemType Directory -Path $cppOutDir -Force | Out-Null
+
+Write-Host "`nGenerating C++ bridge code WITHOUT -deprecatedincluded..."
+& $rnwinrtPath -input $WinMDPath -input local -include DeprecationTest -include Windows.Foundation -output $cppOutDir 2>&1 | Out-Null
+
+$gHFile = Join-Path $cppOutDir "rnwinrt\DeprecationTest.g.h"
+$gCppFile = Join-Path $cppOutDir "rnwinrt\DeprecationTest.g.cpp"
+
+Write-Host "`n=== C++ bridge: Removed types excluded ===" -ForegroundColor Cyan
+if (Test-Path $gHFile) {
+    $gHContent = Get-Content $gHFile -Raw
+    Assert-True ($gHContent -notmatch 'RemovedClass') "RemovedClass excluded from C++ bridge header"
+    Assert-True ($gHContent -notmatch 'RemovedEnum') "RemovedEnum excluded from C++ bridge header"
+    Assert-True ($gHContent -match 'TestComponent') "TestComponent present in C++ bridge header"
+} else {
+    Write-Host "  SKIP: DeprecationTest.g.h not generated" -ForegroundColor Yellow
+}
+
+if (Test-Path $gCppFile) {
+    $gCppContent = Get-Content $gCppFile -Raw
+    Assert-True ($gCppContent -notmatch 'RemovedClass') "RemovedClass excluded from C++ bridge source"
+    Assert-True ($gCppContent -match 'TestComponent') "TestComponent present in C++ bridge source"
+} else {
+    Write-Host "  SKIP: DeprecationTest.g.cpp not generated" -ForegroundColor Yellow
+}
+
+Remove-Item -Recurse -Force $cppOutDir -ErrorAction SilentlyContinue
+
 # --- Mode 2: With -deprecatedincluded (all items present with annotations) ---
 $outDir2 = Join-Path $env:TEMP "rnwinrt_verify_incl_$(Get-Random)"
 New-Item -ItemType Directory -Path $outDir2 -Force | Out-Null
@@ -131,11 +177,11 @@ Write-Host "`nGenerating TypeScript WITH -deprecatedincluded..."
 & $rnwinrtPath -input $WinMDPath -input local -include DeprecationTest -include Windows.Foundation -tsoutput $outDir2 -deprecatedincluded 2>&1 | Out-Null
 $content2 = Get-Content (Join-Path $outDir2 "DeprecationTest.d.ts") -Raw
 
-Write-Host "`n=== Mode 2 (deprecated included): Removed types have @deprecated ===" -ForegroundColor Cyan
-Assert-True ($content2 -match '(?s)/\*\*\s*@deprecated\s+RemovedClass.*?\*/\s*class RemovedClass') `
-    "RemovedClass has @deprecated annotation"
-Assert-True ($content2 -match '(?s)/\*\*\s*@deprecated\s+RemovedEnum.*?\*/\s*enum RemovedEnum') `
-    "RemovedEnum has @deprecated annotation"
+Write-Host "`n=== Mode 2 (deprecated included): Removed types still excluded (removed > deprecated) ===" -ForegroundColor Cyan
+Assert-True ($content2 -notmatch 'class RemovedClass') `
+    "RemovedClass still excluded (removed types are always hidden)"
+Assert-True ($content2 -notmatch 'enum RemovedEnum') `
+    "RemovedEnum still excluded (removed types are always hidden)"
 
 Write-Host "`n=== Mode 2 (deprecated included): Deprecated types have @deprecated ===" -ForegroundColor Cyan
 Assert-True ($content2 -match '(?s)/\*\*\s*@deprecated\s+DeprecatedClass.*?\*/\s*class DeprecatedClass') `
@@ -146,20 +192,22 @@ Assert-True ($content2 -match '(?s)/\*\*\s*@deprecated\s+DeprecatedEnum.*?\*/\s*
 Write-Host "`n=== Mode 2 (deprecated included): Deprecated methods on TestComponent ===" -ForegroundColor Cyan
 Assert-True ($content2 -match '(?s)/\*\*\s*@deprecated\s+GetGamma.*?\*/\s*public getGamma') `
     "getGamma has @deprecated annotation"
-Assert-True ($content2 -match '(?s)/\*\*\s*@deprecated\s+GetEpsilon.*?\*/\s*public getEpsilon') `
-    "getEpsilon (removed) has @deprecated annotation"
 
-Write-Host "`n=== Mode 2 (deprecated included): Static methods annotated ===" -ForegroundColor Cyan
+Write-Host "`n=== Mode 2 (deprecated included): Removed members still excluded ===" -ForegroundColor Cyan
+Assert-True ($content2 -notmatch 'getEpsilon') `
+    "getEpsilon (removed) excluded even with -deprecatedincluded"
+Assert-True ($content2 -notmatch 'staticRemovedMethod') `
+    "staticRemovedMethod excluded even with -deprecatedincluded"
+Assert-True ($content2 -notmatch 'removedevent') `
+    "removedEvent excluded even with -deprecatedincluded"
+
+Write-Host "`n=== Mode 2 (deprecated included): Deprecated statics annotated ===" -ForegroundColor Cyan
 Assert-True ($content2 -match '(?s)/\*\*\s*@deprecated\s+StaticDeprecatedMethod.*?\*/\s*public static staticDeprecatedMethod') `
     "staticDeprecatedMethod has @deprecated"
-Assert-True ($content2 -match '(?s)/\*\*\s*@deprecated\s+StaticRemovedMethod.*?\*/\s*public static staticRemovedMethod') `
-    "staticRemovedMethod has @deprecated"
 
-Write-Host "`n=== Mode 2 (deprecated included): Events annotated ===" -ForegroundColor Cyan
+Write-Host "`n=== Mode 2 (deprecated included): Deprecated events annotated ===" -ForegroundColor Cyan
 Assert-True ($content2 -match '(?s)/\*\*\s*@deprecated\s+DeprecatedEvent.*?\*/\s*public addEventListener\(type: "deprecatedevent"') `
     "DeprecatedEvent has @deprecated"
-Assert-True ($content2 -match '(?s)/\*\*\s*@deprecated\s+RemovedEvent.*?\*/\s*public addEventListener\(type: "removedevent"') `
-    "RemovedEvent has @deprecated"
 
 # Cleanup
 Remove-Item -Recurse -Force $outDir1 -ErrorAction SilentlyContinue

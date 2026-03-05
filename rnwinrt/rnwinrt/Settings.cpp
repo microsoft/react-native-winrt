@@ -75,6 +75,11 @@ bool is_type_allowed(const Settings& settings, const TypeDef& typeDef)
         return false;
     }
 
+    if (is_removed(typeDef))
+    {
+        return false;
+    }
+
     if (!settings.IncludeDeprecated && is_deprecated(typeDef))
     {
         return false;

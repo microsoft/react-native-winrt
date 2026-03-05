@@ -79,7 +79,7 @@ public:
 
     void WriteDelegate(winmd::reader::TypeDef const& type, TextWriter& textWriter)
     {
-        if (!settings.IncludeDeprecated && is_removed(type))
+        if (is_removed(type))
         {
             return;
         }
@@ -103,7 +103,7 @@ public:
 
     void WriteEnum(winmd::reader::TypeDef const& type, TextWriter& textWriter)
     {
-        if (!settings.IncludeDeprecated && is_removed(type))
+        if (is_removed(type))
         {
             return;
         }
@@ -121,7 +121,7 @@ public:
                     continue;
                 };
 
-                if (!settings.IncludeDeprecated && is_removed(field))
+                if (is_removed(field))
                 {
                     continue;
                 }
@@ -160,7 +160,7 @@ public:
         {
             return;
         }
-        if (!settings.IncludeDeprecated && is_removed(type))
+        if (is_removed(type))
         {
             return;
         }
@@ -273,7 +273,7 @@ public:
                 // Fields:
                 for (auto&& field : type.FieldList())
                 {
-                    if (!settings.IncludeDeprecated && is_removed(field))
+                    if (is_removed(field))
                     {
                         continue;
                     }
@@ -297,7 +297,7 @@ public:
                 {
                     // MIDL places DeprecatedAttribute on getter method, not Property row
                     auto getter = prop.MethodSemantic().first.Method();
-                    if (!settings.IncludeDeprecated && is_removed(getter))
+                    if (is_removed(getter))
                     {
                         continue;
                     }
@@ -329,7 +329,7 @@ public:
                 {
                     if (!is_method_allowed(settings, method))
                         continue;
-                    else if (!settings.IncludeDeprecated && is_removed(method))
+                    else if (is_removed(method))
                         continue;
                     else if (!method.SpecialName() || (method.Name() == ".ctor"sv))
                     {
@@ -351,7 +351,7 @@ public:
                 // Event Listeners:
                 for (auto&& method : eventListeners)
                 {
-                    if (!settings.IncludeDeprecated && is_removed(method))
+                    if (is_removed(method))
                     {
                         continue;
                     }
