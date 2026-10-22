@@ -8,14 +8,15 @@ updates:
   target-branch: "main"
   cooldown:
     default-days: 8
+  ignore:
+    - dependency-name: "*"
+      update-types:
+        - "version-update:semver-major"
   groups:
     all-dependencies:
       applies-to: version-updates
       patterns:
         - '*'
-      update-types:
-        - 'minor'
-        - 'patch'
     security-updates:
       applies-to: security-updates
       patterns:
