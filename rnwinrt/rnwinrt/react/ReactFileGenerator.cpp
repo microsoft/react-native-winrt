@@ -226,6 +226,9 @@ namespace rnwinrt::classes::%
 
         for (auto& classDef : ns.class_children)
         {
+            if (is_removed(classDef->type_def))
+                continue;
+
             writer.write_fmt(R"^-^(
     namespace %
     {
@@ -857,6 +860,9 @@ namespace rnwinrt::namespaces::%
     // Static class data
     for (auto& classData : ns.class_children)
     {
+        if (is_removed(classData->type_def))
+            continue;
+
         write_rnwinrt_class_projection_data(writer, *classData);
     }
 
